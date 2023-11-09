@@ -8,12 +8,12 @@ namespace DeliveryMonitoring.Controllers
     {
         private readonly HttpClient _client;
 
-        Uri baseAddress = new Uri("http://196.189.21.67:8084/api");
+        Uri baseAddress = new Uri("uri_path");
         public CompanyController(HttpClient client)
         {
             _client = client;
             _client.BaseAddress = baseAddress;
-            _client.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
+            _client.DefaultRequestHeaders.Add("key", "secret_key");
         }
 
         [HttpGet]
