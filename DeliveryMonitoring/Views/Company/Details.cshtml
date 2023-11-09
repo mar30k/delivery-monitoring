@@ -1,0 +1,44 @@
+﻿@model DeliveryMonitoring.Models.Company
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<body>
+
+    <div class="container-fluid p-3">
+
+        <h3>Company Details</h3>
+        <hr />
+        <img src="@Model.attachments[0]" alt="company logo">
+        <dl class="row">
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.brandName)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.brandName)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.rating)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.rating)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.ratingCount)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.ratingCount)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.tin)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.tin)
+            </dd>
+            <a asp-action="Index">Back to List</a>
+        </dl>
+    </div>
+
+</body>
+

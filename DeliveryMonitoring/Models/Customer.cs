@@ -1,0 +1,18 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace DeliveryMonitoring.Models
+{
+    public class Customer
+    {
+        public string deviceId { get; set; }
+        [Display(Name = "First Name")]
+        public string firstName { get; set; }
+        [Display(Name = "Customer Address")]
+        public string geocodeAddress { get; set; }
+        public latLng latLng { get; set; }
+        [Display(Name = "Phone Number")]
+        public long phoneNumber { get; set; }
+        [Display(Name = "Specific Address")]
+        public string specificAddress { get; set; }
+    }
+}

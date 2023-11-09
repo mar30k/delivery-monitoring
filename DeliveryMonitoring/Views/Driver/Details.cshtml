@@ -1,0 +1,136 @@
+﻿@model DeliveryMonitoring.Models.Driver
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+
+<div class="container-fluid pt-5">
+    <h4>Driver Details</h4>
+    
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <hr />
+            <div class="row">
+                <!--First Name Beginning-->
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.firstName)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.firstName)
+                </dd>
+                <!--First Name Ending-->
+                <!--Last Updated at Beginning-->
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.lastUpdatedAt)
+                </dt>
+                <dd class="col-sm-10">
+                    @{
+                        long unixtimestamp = Model.lastUpdatedAt;
+                    }
+                    @DateTimeOffset.FromUnixTimeMilliseconds(unixtimestamp).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
+                </dd>
+                <!--Last Updated at Ending-->
+                <!--Phone Number Beginning-->
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.phoneNumber)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.phoneNumber)
+                </dd>
+                <!--Phone Number Ending-->
+                <!--Driver Status Beginning-->
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.status)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.status)
+                </dd>
+                <!--Driver Status Ending-->
+
+                <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    Additional Info
+                </a>
+
+                <div class="collapse pt-3" id="collapseExample">
+                    <div class="card card-body">
+                        <dt class="col-sm-2">
+                            @Html.DisplayNameFor(model => model.companyTin)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.companyTin)
+                        </dd>
+                        <dt class="col-sm-2">
+                            @Html.DisplayNameFor(model => model.deviceID)
+                        </dt>
+                        <dd class="col-sm-10">
+                            @Html.DisplayFor(model => model.deviceID)
+                        </dd>
+                    </div>
+                </div>
+            </div>
+            
+
+            <div class="pt-3 pb-3">
+                <a class="btn btn-primary" asp-action="Index">Back to List</a>
+            </div>
+        </div>
+        <div class="col-12 col-md-6" id="map">
+
+        </div>
+        
+    </div>
+
+    
+
+    <!--Map JavaScript Implementation Starts Here-->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
+    </script>
+
+    <script>
+        function initMap() {
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 21,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+        @{
+            if (Model != null)
+            {
+                <text>
+                    const places = [{ Name: '@Model.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@Model.phoneNumber', Status: '@Model.status', lat: @Model.latLng.lat, lng: @Model.latLng.lng},];
+                </text>
+            }
+        }
+
+                        var marker, i
+            for (i = 0; i < places.length; i++) {
+                var marker = new google.maps.Marker({
+                    position: { lat: places[i].lat, lng: places[i].lng },
+                    title: places[i].Name,
+                    map: map,
+                    icon: '/images/carIcona.png'
+                });
+
+                map.setCenter(marker.getPosition());
+
+                var content = "<b>Name:</b> " + places[i].Name + "<br/><b>LastUpdatedAt:</b> " + places[i].LastUpdatedAt + "<br/><b>Phone:</b> " + places[i].Phone + "<br/><b>Status:</b> " + places[i].Status
+
+                var infowindow = new google.maps.InfoWindow()
+
+                google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
+                    return function () {
+                        infowindow.setContent(content);
+                        infowindow.open(map, marker);
+                    };
+                })(marker, content, infowindow));
+
+                google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
+                    return function () {
+                        infowindow.close();
+                    };
+                })(infowindow));
+            }
+        }
+    </script>
+</div>
+

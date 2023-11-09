@@ -1,0 +1,181 @@
+﻿@model IEnumerable<DeliveryMonitoring.Models.Driver>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="container-fluid p-3">
+    <h3>List of Drivers</h3>
+    
+    <a class="btn" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+        <i class="bi bi-filter"></i>Filter
+    </a>
+
+    <div class="collapse" id="collapseExample">
+        <form method="get" action="@Url.Action("Filter", "Driver")">
+
+            <div class="row mb-3">
+                <div class="col-12 col-lg-2">
+                    <label for="status">Status:</label>
+                    <select class="form-control" id="status" name="status">
+                        <option value="">All</option>
+                        <option value="offline">Offline</option>
+                        <option value="ready">Ready</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="delivering">Delivering</option>
+                        <option value="completed">Completed</option>
+                        <!-- Add other status options as needed -->
+                    </select>
+                </div>
+
+                <div class="col-12 col-lg-2">
+                    <label for="companyTin">Company TIN:</label>
+                    <input type="text" class="form-control" id="companyTin" name="companyTin" placeholder="Enter Company TIN">
+                </div>
+                
+                <div class="col-2">
+                    <br/>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+    
+
+    <div class="row">
+        <!--The table is Written Here-->
+        <div class="col-12 col-lg-7 table-responsive">
+            <hr />
+            <table class="table" id="tablelist">
+                <thead>
+                    <tr>
+
+                        <th>
+                            @Html.DisplayNameFor(model => model.firstName)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.lastUpdatedAt)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.phoneNumber)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.status)
+                        </th>
+                        <th>
+                            Driver Details
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+
+                        <tr>
+
+                            <td>
+                                @Html.DisplayFor(modelItem => item.firstName)
+                            </td>
+                            <td>
+                                @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
+
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.phoneNumber)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.status)
+                            </td>
+                            <td>
+                                <a class="btn btn-primary" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <!--this is the table ending-->
+
+        <!--Find the map here-->
+        <div class="col-12 col-lg-5" id="map">
+
+        </div>
+        <!--Map ends here-->
+    </div>
+
+    <!--Map JavaScript Implementation Starts Here-->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
+    </script>
+
+    <script>
+        function initMap() {
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 21,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+        @{
+            if (Model != null && Model.Count() > 0)
+            {
+                <text>
+                        const places = [
+                </text>
+
+                foreach (var item in Model)
+                {
+                    <text>
+                            { Name: '@item.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@item.phoneNumber', Status: '@item.status', lat: @item.latLng.lat, lng: @item.latLng.lng},
+                    </text>
+                }
+                <text>
+                                    ];
+                </text>
+            }
+        }
+
+                var marker, i
+            for (i = 0; i < places.length; i++) {
+                var marker = new google.maps.Marker({
+                    position: { lat: places[i].lat, lng: places[i].lng },
+                    title: places[i].Name,
+                    map: map,
+                    icon: '/images/carIcona.png'
+                });
+
+                map.setCenter(marker.getPosition());
+
+                var content = "<b>Name:</b> " + places[i].Name + "<br/><b>LastUpdatedAt:</b> " + places[i].LastUpdatedAt + "<br/><b>Phone:</b> " + places[i].Phone + "<br/><b>Status:</b> " + places[i].Status
+
+                var infowindow = new google.maps.InfoWindow()
+
+                google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
+                    return function () {
+                        infowindow.setContent(content);
+                        infowindow.open(map, marker);
+                    };
+                })(marker, content, infowindow));
+
+                google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
+                    return function () {
+                        infowindow.close();
+                    };
+                })(infowindow));
+            }
+        }
+    </script>
+    <!--Map JavaScript Implementation Ends Here-->
+
+    <!--Jquery Datatable Starts Here-->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+    <script>
+        var js = jQuery.noConflict(true);
+        js(document).ready(function () {
+            js('#tablelist').DataTable({
+                responsive: true
+            });
+        });
+    </script>
+    <!--Jquery Datatable Ends Here-->
+</div>

@@ -1,0 +1,65 @@
+﻿/* styles.css */
+
+/* Base styling for cards */
+.card {
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: 0.25rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s;
+}
+
+    /* Hover effect */
+    .card:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        background-color: lightskyblue;
+        
+    }
+
+/* Styling for card titles */
+.card-title {
+    font-size: 1.5rem;
+    color: #333;
+}
+
+/* Styling for card text (counts) */
+.card-text {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #007bff; /* Blue color for emphasis */
+}
+
+/* Styling for buttons */
+.card-link {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: bold;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+
+.btn-success {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.btn:hover{
+    background-color: black;
+}
+
+.border-success {
+    border-color: #28a745;
+}
+
+#donutchart{
+    min-height: 200px;
+    min-width: 200px;
+    max-width: 400px;
+    max-height: 400px;
+}

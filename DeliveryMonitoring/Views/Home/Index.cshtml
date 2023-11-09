@@ -1,0 +1,124 @@
+﻿@model DeliveryMonitoring.Models.HomeViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Drivers Registered</h5>
+                    <h1 class="card-text">@Model.Drivers.Count</h1>
+                    <a href="/Driver/Index" class="card-link btn btn-success">See All</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Requested Orders</h5>
+                    <h1 class="card-text">@Model.Orders.Count</h1>
+                    <a href="/Order/Index" class="card-link btn btn-success">See All</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Other Status</h5>
+                    <h1 class="card-text">#</h1>
+                    <a href="#" class="card-link btn btn-success">See All</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Other Status</h5>
+                    <h1 class="card-text">#</h1>
+                    <a href="#" class="card-link btn btn-success">See All</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="card col-12 col-md-6">
+            <div class="card-header">
+                <h3>Check Drivers Status</h3>
+                <a class="" data-bs-toggle="collapse" data-bs-target="#donutchart" aria-expanded="false" aria-controls="donutchart">
+                    <i class="bi bi-arrow-up"></i>Collapse
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="collapse show col-12" id="donutchart">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!--code to display the donught chart starts here-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        @{
+            int offlineCount = 0;
+            int readyCount = 0;
+            int acceptedCount = 0;
+            int deliveringCount = 0;
+            int completedCount = 0;
+            foreach(var access in Model.Drivers)
+            {
+                if (access.status == "offline")
+                {
+                    offlineCount++;
+                }
+                if (access.status == "ready")
+                {
+                    readyCount++;
+                }
+                if (access.status == "accepted")
+                {
+                    acceptedCount++;
+                }
+                if (access.status == "delivering")
+                {
+                    deliveringCount++;
+                }
+                if (access.status == "completed")
+                {
+                    completedCount++;
+                }
+            }
+        }
+        const ctx = document.getElementById('myChart');
+        
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed'],
+                datasets: [{
+                    label: 'Drivers',
+                    data: [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount],
+                    backgroundColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 205, 86)',
+                        'rgb(0, 128, 0)',
+                        'rgb(0, 0, 0)'
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+
+        });
+    </script>
+    <!--code to display the donught chart ends here-->
+</div>

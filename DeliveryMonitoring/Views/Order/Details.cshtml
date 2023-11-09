@@ -1,0 +1,67 @@
+﻿@model DeliveryMonitoring.Models.Order
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+
+
+<div class="container-fluid pt-3">
+    <h3>Order Details</h3>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.branchName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.branchName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.companyTin)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.companyTin)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.isNoDriverAck)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.isNoDriverAck)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.orderArrivedAckByCustomer)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.orderArrivedAckByCustomer)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.orderArrivedAckByDriver)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.orderArrivedAckByDriver)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.requestCreatedAt)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.requestCreatedAt)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.status)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.status)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.voucherCode)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.voucherCode)
+        </dd>
+    </dl>
+
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+</div>
+

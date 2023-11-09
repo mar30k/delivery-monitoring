@@ -1,0 +1,96 @@
+﻿@model IEnumerable<DeliveryMonitoring.Models.Order>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<div class="container-fluid pt-3">
+    <h3>List of Orders</h3>
+    <div class="row">
+        <div class="col-12 table-responsive">
+            <table class="table" id="tablelist">
+                <thead>
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => model.branchName)
+                        </th>
+                        
+                        <th>
+                            @Html.DisplayNameFor(model => model.customer.firstName)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.customer.geocodeAddress)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.customer.phoneNumber)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.customer.specificAddress)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.requestCreatedAt)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.status)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.voucherCode)
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.branchName)
+                            </td>
+                            
+                            <td>
+                                @item.customer.firstName
+                            </td>
+                            <td>
+                                @item.customer.geocodeAddress
+                            </td>
+                            <td>
+                                @item.customer.phoneNumber
+                            </td>
+                            <td>
+                                @item.customer.specificAddress
+                            </td>
+                            <td>
+                                @DateTimeOffset.FromUnixTimeMilliseconds(item.requestCreatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.status)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.voucherCode)
+                            </td>
+                            <td>
+                                <a class="btn btn-primary" asp-controller="Order" asp-action="Details" asp-route-id="@item.voucherCode">Details</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        
+    </div>
+    
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+    <script>
+        var js = jQuery.noConflict(true);
+        js(document).ready(function () {
+            js('#tablelist').DataTable({
+                responsive: true
+            });
+        });
+    </script>
+
+</div>
+

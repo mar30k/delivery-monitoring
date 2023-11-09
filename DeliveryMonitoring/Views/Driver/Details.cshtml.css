@@ -1,0 +1,56 @@
+﻿body {
+}
+#map {
+    min-width: 400px; /* Set a minimum width */
+    min-height: 410px; /* Set a minimum height */
+    max-width: none; /* No maximum width */
+    max-height: none; /* No maximum height */
+    border: 1px solid #ddd; /* Add a border for clarity */
+}
+
+/* Add this CSS to a separate file, e.g., styles.css */
+
+/* Overall container style */
+.container-fluid {
+    margin-top: 20px;
+}
+
+/* Header style */
+h4 {
+    color: #007bff; /* Change the color as needed */
+}
+
+/* Left column style */
+.col-left {
+    margin-bottom: 20px;
+}
+
+/* Additional Info link style */
+a[data-bs-toggle="collapse"] {
+    color: #007bff; /* Change the color as needed */
+    cursor: pointer;
+}
+
+/* Card inside the collapsed section style */
+.card-body {
+    
+    padding: 10px;
+}
+    .card-body:hover {
+        background-color: #f8f9fa; /* Change the background color as needed */
+    }
+/* Back to List button style */
+.pt-3.pb-3 {
+    text-align: left;
+}
+
+/* Responsive styling for smaller screens */
+@media (max-width: 767px) {
+    .col-left {
+        margin-bottom: 0;
+    }
+
+    #map {
+        height: 200px; /* Adjust the height for smaller screens */
+    }
+}

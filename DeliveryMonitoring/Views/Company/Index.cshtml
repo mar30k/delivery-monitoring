@@ -1,0 +1,51 @@
+﻿@model DeliveryMonitoring.Models.Companies
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="container-fluid pt-3">
+    
+    <h3>List of Companies</h3>
+
+    <table class="table" id="tablelist">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.companyTins)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.companyTins)
+            {
+                <tr>
+                    <td>
+                        @item
+                    </td>
+                    <td>
+                        <a class="btn btn-primary" asp-controller="Company" asp-action="Details" asp-route-id="@item">Details</a>
+                    </td>
+                </tr>
+            }
+
+
+        </tbody>
+    </table>
+
+    <!--Jquery Datatable Starts Here-->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+    <script>
+        var js = jQuery.noConflict(true);
+        js(document).ready(function () {
+            js('#tablelist').DataTable({
+
+            });
+        });
+    </script>
+    <!--Jquery Datatable Ends Here-->
+</div>
+
