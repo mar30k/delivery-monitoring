@@ -19,8 +19,8 @@
                 <dd class="col-sm-10">
                     @Html.DisplayFor(model => model.firstName)
                 </dd>
-                
                 <!--First Name Ending-->
+
                 <!--Last Updated at Beginning-->
                 <dt class="col-sm-2">
                     @Html.DisplayNameFor(model => model.lastUpdatedAt)
@@ -32,6 +32,7 @@
                     @DateTimeOffset.FromUnixTimeMilliseconds(unixtimestamp).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
                 </dd>
                 <!--Last Updated at Ending-->
+
                 <!--Phone Number Beginning-->
                 <dt class="col-sm-2">
                     @Html.DisplayNameFor(model => model.phoneNumber)
@@ -40,6 +41,7 @@
                     @Html.DisplayFor(model => model.phoneNumber)
                 </dd>
                 <!--Phone Number Ending-->
+
                 <!--Driver Status Beginning-->
                 <dt class="col-sm-2">
                     @Html.DisplayNameFor(model => model.status)
@@ -49,6 +51,13 @@
                 </dd>
                 <!--Driver Status Ending-->
 
+                <!--Address Beginning-->
+                @{
+                    double latitude = Model.latLng.lat;
+                    double longtiude = Model.latLng.lng;
+                    @*yet to be implemented*@
+                }
+                <!--Address Ending-->
                 <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
                     Additional Info
                 </a>

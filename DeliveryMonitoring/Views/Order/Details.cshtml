@@ -4,58 +4,79 @@
     ViewData["Title"] = "Details";
 }
 
+<div class="container-fluid col-11 pt-5">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Company Details</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">
+                            @Html.DisplayNameFor(model => model.branchName)
+                        </dt>
+                        <dd class="col-sm-5">
+                            @Html.DisplayFor(model => model.branchName)
+                        </dd>
+                        <dt class="col-sm-5">
+                            @Html.DisplayNameFor(model => model.companyTin)
+                        </dt>
+                        <dd class="col-sm-5">
+                            @Html.DisplayFor(model => model.companyTin)
+                        </dd>
+                    </dl>
 
+                </div>
+            </div>
+            <br/>
+            <div class="card">
+                <div class="card-header">
+                    <h4>Customer Details</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">
+                            @Html.DisplayNameFor(model => model.customer.deviceId)
+                        </dt>
+                        <dd class="col-sm-5">
+                            @Html.DisplayFor(model => model.customer.deviceId)
+                        </dd>
+                        <dt class="col-sm-5">
+                            @Html.DisplayNameFor(model => model.customer.firstName)
+                        </dt>
+                        <dd class="col-sm-5">
+                            @Html.DisplayFor(model => model.customer.firstName)
+                        </dd>
+                        <dt class="col-sm-5">
+                            @Html.DisplayNameFor(model => model.customer.geocodeAddress)
+                        </dt>
+                        <dd class="col-sm-5">
+                            @Html.DisplayFor(model => model.customer.geocodeAddress)
+                        </dd>
+                        <dt class="col-sm-5">
+                            @Html.DisplayNameFor(model => model.customer.phoneNumber)
+                        </dt>
+                        <dd class="col-sm-5">
+                            @Html.DisplayFor(model => model.customer.phoneNumber)
+                        </dd>
+                        <dt class="col-sm-5">
+                            @Html.DisplayNameFor(model => model.customer.specificAddress)
+                        </dt>
+                        <dd class="col-sm-5">
+                            @Html.DisplayFor(model => model.customer.specificAddress)
+                        </dd>
 
-<div class="container-fluid pt-3">
+                        
+                    </dl>
+                </div>
+
+            </div>
+    <br />
     <div class="card">
         <div class="card-header">
-            <h3>Order Details</h3>
+            <h4>Activity Timeline</h4>
         </div>
         <div class="card-body">
             <dl class="row">
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.branchName)
-                </dt>
-                <dd class="col-sm-5">
-                    @Html.DisplayFor(model => model.branchName)
-                </dd>
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.companyTin)
-                </dt>
-                <dd class="col-sm-5">
-                    @Html.DisplayFor(model => model.companyTin)
-                </dd>
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.customer.deviceId)
-                </dt>
-                <dd class="col-sm-5">
-                    @Html.DisplayFor(model => model.customer.deviceId)
-                </dd>
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.customer.firstName)
-                </dt>
-                <dd class="col-sm-5">
-                    @Html.DisplayFor(model => model.customer.firstName)
-                </dd>
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.customer.geocodeAddress)
-                </dt>
-                <dd class="col-sm-5">
-                    @Html.DisplayFor(model => model.customer.geocodeAddress)
-                </dd>
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.customer.phoneNumber)
-                </dt>
-                <dd class="col-sm-5">
-                    @Html.DisplayFor(model => model.customer.phoneNumber)
-                </dd>
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.customer.specificAddress)
-                </dt>
-                <dd class="col-sm-5">
-                    @Html.DisplayFor(model => model.customer.specificAddress)
-                </dd>
-
                 <dt class="col-sm-5">
                     @Html.DisplayNameFor(model => model.requestCreatedAt)
                 </dt>
@@ -119,9 +140,6 @@
                 <a class="btn btn-primary" asp-action="Index">Back to List</a>
             </div>
         </div>
-    </div>
-    
-    
-    
+    </div>  
 </div>
 
