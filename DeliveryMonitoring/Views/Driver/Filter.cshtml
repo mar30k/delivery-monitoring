@@ -10,10 +10,10 @@
     <h3>Filtered Result</h3>
     <div class="row">
         <!--The table is Written Here-->
-        <div class="col">
+        <div class="col-12 col-lg-6 table-responsive">
             
                 <hr />
-                <table class="table" id="tablelist">
+            <table class="table" id="tablelist">
                     <thead>
                         <tr>
 
@@ -67,7 +67,7 @@
         </div>
         <!--this is the table ending-->
         <!--Find the map here-->
-        <div class="col" id="map">
+        <div class="col-12 col-lg-6" id="map">
         </div>
         <!--Map ends here-->
     </div>
@@ -140,7 +140,7 @@
         var js = jQuery.noConflict(true);
         js(document).ready(function () {
             js('#tablelist').DataTable({
-
+                responsive: true
             });
         });
     </script>

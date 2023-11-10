@@ -4,6 +4,7 @@ namespace DeliveryMonitoring.Models
 {
     public class Customer
     {
+        [Display(Name = "Device ID")]
         public string deviceId { get; set; }
         [Display(Name = "First Name")]
         public string firstName { get; set; }
@@ -11,7 +12,7 @@ namespace DeliveryMonitoring.Models
         public string geocodeAddress { get; set; }
         public latLng latLng { get; set; }
         [Display(Name = "Phone Number")]
-        public long phoneNumber { get; set; }
+        public string phoneNumber { get; set; }
         [Display(Name = "Specific Address")]
         public string specificAddress { get; set; }
     }

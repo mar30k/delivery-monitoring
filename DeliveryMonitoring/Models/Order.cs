@@ -7,11 +7,14 @@ namespace DeliveryMonitoring.Models
         [Display(Name = "Branch Name")]
         public string branchName { get; set; }
         [Display(Name = "Company TIN")]
-        public long companyTin { get; set; }
+        public string companyTin { get; set; }
         [Display(Name = "Customer")]
         public Customer customer { get; set; }
-        public bool isNoDriverAck {  get; set; }
+        [Display(Name = "No Driver Acknowledged")]
+        public bool isNoDriversAck {  get; set; }
+        [Display(Name = "Order Arrived Acknowledged by Customer")]
         public bool orderArrivedAckByCustomer { get; set; }
+        [Display(Name = "Order Arrived Acknowledged by Driver")]
         public bool orderArrivedAckByDriver { get; set; }
         [Display(Name = "Request Created At")]
         public long requestCreatedAt { get; set; }

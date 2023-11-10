@@ -1,7 +1,5 @@
 ﻿body {
 }
-
-
 /* Header style */
 h3 {
     color: #007bff; /* Change the color as needed */
@@ -35,9 +33,9 @@ h3 {
         min-width: 400px; /* Set a different minimum width for large screens */
         min-height: 400px; /* Set a different minimum height for large screens */
     }
-    
 }
-@media (min-width: 1422px){
+
+@media (min-width: 1422px) {
     #map {
         min-width: 600px; /* Set a different minimum width for large screens */
         min-height: 600px; /* Set a different minimum height for large screens */
