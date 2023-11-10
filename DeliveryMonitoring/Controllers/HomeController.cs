@@ -6,8 +6,10 @@ using System.Net.Http;
 
 namespace DeliveryMonitoring.Controllers
 {
+    
     public class HomeController : Controller
     {
+        //HttpClient Setup starts here
         private readonly HttpClient _client;
 
         Uri baseAddress = new Uri("http://196.189.21.67:8084/api");
@@ -18,7 +20,9 @@ namespace DeliveryMonitoring.Controllers
             _client.BaseAddress = baseAddress;
             _client.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
         }
+        //HttpClient Setup ends here
 
+        //This returns the view for Home/Index Page
         public IActionResult Index()
         {
             // Fetch driver data
@@ -52,9 +56,13 @@ namespace DeliveryMonitoring.Controllers
 
             return View(viewModel);
         }
+        //This is the end of the code that returns the view for Home/Index Page
+
+        //This is the view for Home/Privacy Page
         public IActionResult Privacy()
         {
             return View();
         }
+        //This is the end of the code for the view of Home/Privacy Page
     }
 }
