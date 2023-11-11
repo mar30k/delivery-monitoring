@@ -12,7 +12,7 @@
 <body>
 
     <!--sidebar starts here-->
-    <div class="sidebar" style="display:none" id="mySidebar">
+    <div class="sidebar" style="display:block" id="mySidebar">
         <!--sidebar close button starts here-->
         <button class="w3-bar-item w3-button w3-large"
                 onclick="w3_close()">
@@ -27,6 +27,7 @@
             <li><a href="/Order/Index"><i class="bi bi-box"></i><span>Orders</span></a></li>
             <li><a href="/Company/Index"><i class="bi bi-building"></i><span>Companies</span></a></li>
             <li><a href="/Home/Privacy"><i class="bi bi-shield-check"></i><span>Privacy</span></a></li>
+            <li><a href=""><i class="bi bi-person-circle"></i><span>Logout</span></a></li>
         </ul>
     </div>
     <!--sidebar ends here-->
@@ -40,28 +41,41 @@
                     <a class="m-3" onclick="w3_open()"><i class="bi bi-list"></i></a>
                 
                     <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DeliveryMonitoring</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+
+                    <!--collapsible navbar code-->
+                    <!--
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                             aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
+                    -->
                     
-                        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    
+                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                        
                         <ul class="navbar-nav flex-grow-1" style="text-align: right">
 
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Driver" asp-action="Index">Drivers</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Order" asp-action="Index">Orders</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Company" asp-action="Index">Companies</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                                </li>
+                        </ul>
+                        
+                        
+                        <ul class="navbar-nav justify-content-end">
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Driver" asp-action="Index">Drivers</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Order" asp-action="Index">Orders</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Company" asp-action="Index">Companies</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="" asp-action=""><i class="bi bi-person-circle"></i>Logout</a>
                             </li>
                         </ul>
                     </div>
@@ -91,16 +105,17 @@
     
     <!--this makes the sidebar responsive-->
     <script>
+        document.getElementById("main").style.marginLeft = "13.2%";
         function w3_open() {
             document.getElementById("main").style.marginLeft = "15%";
             document.getElementById("mySidebar").style.width = "15%";
             document.getElementById("mySidebar").style.display = "block";
-            document.getElementById("openNav").style.display = 'none';
+            
         }
         function w3_close() {
             document.getElementById("main").style.marginLeft = "0%";
             document.getElementById("mySidebar").style.display = "none";
-            document.getElementById("openNav").style.display = "inline-block";
+            
         }
     </script>
     <!--sidebar responsiveness ends here-->

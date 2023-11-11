@@ -57,9 +57,80 @@
     border-color: #28a745;
 }
 
-#donutchart{
-    min-height: 200px;
-    min-width: 200px;
-    max-width: 400px;
-    max-height: 400px;
+@media (max-width: 360px) {
+    #donutchart {
+        min-width: 100px; /* Set a different minimum width for small screens */
+        min-height: 250px; /* Set a different minimum height for small screens */
+    }
+}
+/* Adjust map size for small screens */
+@media (min-width: 360px) and (max-width: 767px) {
+    #donutchart {
+        min-width: 300px; /* Set a different minimum width for small screens */
+        min-height: 400px; /* Set a different minimum height for small screens */
+    }
+}
+
+/* Adjust map size for medium screens */
+@media (min-width: 768px) and (max-width: 991px) {
+    #donutchart {
+        min-width: 350px; /* Set a different minimum width for medium screens */
+        min-height: 350px; /* Set a different minimum height for medium screens */
+    }
+}
+
+/* Adjust map size for large screens */
+@media (min-width: 992px) and (max-width: 1421px) {
+    #donutchart {
+        min-width: 400px; /* Set a different minimum width for large screens */
+        min-height: 400px; /* Set a different minimum height for large screens */
+    }
+}
+
+@media (min-width: 1422px) {
+    #donutchart {
+        max-width: 500px; /* Set a different minimum width for large screens */
+        max-height: 500px; /* Set a different minimum height for large screens */
+    }
+}
+
+
+
+
+
+@media (max-width: 360px) {
+    #map {
+        min-width: 100px; /* Set a different minimum width for small screens */
+        min-height: 250px; /* Set a different minimum height for small screens */
+    }
+}
+/* Adjust map size for small screens */
+@media (min-width: 360px) and (max-width: 767px) {
+    #map {
+        min-width: 300px; /* Set a different minimum width for small screens */
+        min-height: 400px; /* Set a different minimum height for small screens */
+    }
+}
+
+/* Adjust map size for medium screens */
+@media (min-width: 768px) and (max-width: 991px) {
+    #map {
+        min-width: 600px; /* Set a different minimum width for medium screens */
+        min-height: 600px; /* Set a different minimum height for medium screens */
+    }
+}
+
+/* Adjust map size for large screens */
+@media (min-width: 992px) and (max-width: 1421px) {
+    #map {
+        min-width: 400px; /* Set a different minimum width for large screens */
+        min-height: 400px; /* Set a different minimum height for large screens */
+    }
+}
+
+@media (min-width: 1422px) {
+    #map {
+        min-width: 600px; /* Set a different minimum width for large screens */
+        min-height: 600px; /* Set a different minimum height for large screens */
+    }
 }

@@ -1,9 +1,40 @@
-﻿@model DeliveryMonitoring.Models.Company
+﻿@using System.Text
+
+@model DeliveryMonitoring.Models.Company
 
 @{
     ViewData["Title"] = "Details";
 }
 
+@functions {
+    // Helper function to convert a numeric rating to a star representation
+    string GetStarRating(double rating)
+    {
+       
+        int fullStars = (int)rating;
+        bool hasHalfStar = rating - fullStars >= 0.5;
+
+        StringBuilder stars = new StringBuilder();
+
+        for (int i = 1; i <= 5; i++)
+        {
+            if (i <= fullStars)
+            {
+                stars.Append("<i class='bi bi-star-fill'></i>"); // Assuming you're using Bootstrap Icons
+            }
+            else if (i == fullStars + 1 && hasHalfStar)
+            {
+                stars.Append("<i class='bi bi-star-half'></i>");
+            }
+            else
+            {
+                stars.Append("<i class='bi bi-star'></i>");
+            }
+        }
+
+        return stars.ToString();
+    }
+}
 <body>
 
     <div class="container-fluid p-3">
@@ -22,7 +53,7 @@
                 @Html.DisplayNameFor(model => model.rating)
             </dt>
             <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.rating)
+                @Html.Raw(GetStarRating(Model.rating))
             </dd>
             <dt class="col-sm-2">
                 @Html.DisplayNameFor(model => model.ratingCount)
@@ -36,8 +67,9 @@
             <dd class="col-sm-10">
                 @Html.DisplayFor(model => model.tin)
             </dd>
-            <a asp-action="Index">Back to List</a>
+            
         </dl>
+        <a class="btn btn-primary" asp-action="Index">Back to List</a>
     </div>
 
 </body>

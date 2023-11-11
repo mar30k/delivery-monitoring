@@ -19,7 +19,7 @@
         <div class="col-12 col-md-6 col-lg-3 mb-3">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Requested Orders</h5>
+                    <h5 class="card-title">Total Orders</h5>
                     <h1 class="card-text">@Model.Orders.Count</h1>
                     <a href="/Order/Index" class="card-link btn btn-success">See All</a>
                 </div>
@@ -48,18 +48,23 @@
     </div>
 
     <div class="row mt-3">
-        <div class="card col-12 col-md-6">
-            <div class="card-header">
+        <div class="col-12 col-md-6">
+            <div class="">
                 <h3>Check Drivers Status</h3>
+                <hr/>
                 <a class="" data-bs-toggle="collapse" data-bs-target="#donutchart" aria-expanded="false" aria-controls="donutchart">
-                    <i class="bi bi-arrow-up"></i>Collapse
+                    <i class="bi bi-arrow-up"></i> Collapse
                 </a>
             </div>
-            <div class="card-body">
+            <div class="">
                 <div class="collapse show col-12" id="donutchart">
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
+        </div>
+
+        <div class="col-12 col-md-6" id="map">
+           
         </div>
         
     </div>
@@ -121,4 +126,64 @@
         });
     </script>
     <!--code to display the donught chart ends here-->
+    <!--Map JavaScript Implementation Starts Here-->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
+    </script>
+
+    <script>
+        function initMap() {
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 21,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+        @{
+            if (Model != null && Model.Drivers.Count() > 0)
+            {
+                <text>
+                                        const places = [
+                </text>
+
+                foreach (var item in Model.Drivers)
+                {
+                    <text>
+                            { Name: '@item.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@item.phoneNumber', Status: '@item.status', lat: @item.latLng.lat, lng: @item.latLng.lng},
+                    </text>
+                }
+                <text>
+                                                    ];
+                </text>
+            }
+        }
+
+                        var marker, i
+            for (i = 0; i < places.length; i++) {
+                var marker = new google.maps.Marker({
+                    position: { lat: places[i].lat, lng: places[i].lng },
+                    title: places[i].Name,
+                    map: map,
+                    icon: '/images/carIcona.png'
+                });
+
+                map.setCenter(marker.getPosition());
+
+                var content = "<b>Name:</b> " + places[i].Name + "<br/><b>LastUpdatedAt:</b> " + places[i].LastUpdatedAt + "<br/><b>Phone:</b> " + places[i].Phone + "<br/><b>Status:</b> " + places[i].Status
+
+                var infowindow = new google.maps.InfoWindow()
+
+                google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
+                    return function () {
+                        infowindow.setContent(content);
+                        infowindow.open(map, marker);
+                    };
+                })(marker, content, infowindow));
+
+                google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
+                    return function () {
+                        infowindow.close();
+                    };
+                })(infowindow));
+            }
+        }
+    </script>
+    <!--Map JavaScript Implementation Ends Here-->
 </div>
