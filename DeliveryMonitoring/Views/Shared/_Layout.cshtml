@@ -38,6 +38,7 @@
         <header>
             <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
                 <div class="container-fluid">
+                    
                     <a class="m-3" onclick="w3_open()"><i class="bi bi-list"></i></a>
                 
                     <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DeliveryMonitoring</a>
@@ -105,7 +106,8 @@
     
     <!--this makes the sidebar responsive-->
     <script>
-        document.getElementById("main").style.marginLeft = "13.2%";
+        document.getElementById("mySidebar").style.width = "15%";
+        document.getElementById("main").style.marginLeft = "15%";
         function w3_open() {
             document.getElementById("main").style.marginLeft = "15%";
             document.getElementById("mySidebar").style.width = "15%";
