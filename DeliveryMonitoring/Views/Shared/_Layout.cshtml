@@ -101,12 +101,20 @@
     
     <!--this makes the sidebar responsive-->
     <script>
+        var screenSize = screen.width;
         var main = document.getElementById("main");
         var sidebar = document.getElementById("mySidebar");
         
-        sidebar.style.display = "block";
-        sidebar.style.width = "15%";
-        main.style.marginLeft = "15%";
+        if (screenSize > 767) {
+            sidebar.style.display = "block";
+            sidebar.style.width = "15%";
+            main.style.marginLeft = "15%";
+        }
+        else {
+            sidebar.style.display = "none";
+            sidebar.style.width = "15%";
+            main.style.marginLeft = "0%";
+        }
 
         function toggleSidebar() {
             if (sidebar.style.display === "block") {
