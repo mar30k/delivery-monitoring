@@ -13,10 +13,6 @@
 
     <!--sidebar starts here-->
     <div class="sidebar" id="mySidebar">
-        <!--sidebar close button starts here-->
-        
-        <!--side bar close button ends here-->
-
         <ul>
             <li id="delivery"><a href="/Home/Index"><!--<img src="/images/cnetlogo.png" alt="CNET logo" width="40" height="40">--><span>&nbsp;Delivery Monitoring</span></a></li>
             <li><a href="/Home/Index"><i class="bi bi-house"></i><span>Home</span></a></li>
@@ -105,14 +101,14 @@
     
     <!--this makes the sidebar responsive-->
     <script>
-
-        document.getElementById("mySidebar").style.width = "15%";
-        document.getElementById("main").style.marginLeft = "15%";
+        var main = document.getElementById("main");
+        var sidebar = document.getElementById("mySidebar");
+        
+        sidebar.style.display = "block";
+        sidebar.style.width = "15%";
+        main.style.marginLeft = "15%";
 
         function toggleSidebar() {
-            var main = document.getElementById("main");
-            var sidebar = document.getElementById("mySidebar")
-
             if (sidebar.style.display === "block") {
                 // Sidebar is open, so close it
                 main.style.marginLeft = "0%";
