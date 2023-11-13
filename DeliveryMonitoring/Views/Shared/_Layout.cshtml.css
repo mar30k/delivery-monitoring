@@ -60,20 +60,7 @@ button.accept-policy {
     height: 100%;
     background: #042331;
 }
-    .sidebar button {
-        font-size: 22px;
-        color: red;
-        text-align: center;
-        line-height: 53px;
-        background: rgba(4, 35, 49, 1);
-        user-select: none;
-        
-    }
-    .sidebar button:hover {
-        padding-left: 10px;
-        background-color: black;
-        color: red;
-    }
+
 .sidebar ul a{
     display: block;
     height: 100%;
@@ -92,9 +79,21 @@ ul li:hover a{
     background-color: white;
     color: black;
 }
+
+#delivery{
+    background-color: black;
+}
+
+#delivery:hover a{
+    background-color: black;
+    color: white;
+    padding-left: 0px;
+}
+
 .sidebar ul a i{
     margin-right: 16px;
 }
+
 
 /*to make icons invisibile for smaller screen size*/
 @media (max-width: 767px) {

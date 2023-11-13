@@ -12,16 +12,13 @@
 <body>
 
     <!--sidebar starts here-->
-    <div class="sidebar" style="display:block" id="mySidebar">
+    <div class="sidebar" id="mySidebar">
         <!--sidebar close button starts here-->
-        <button class="w3-bar-item w3-button w3-large"
-                onclick="w3_close()">
-            
-            <i class="bi bi-x-circle"></i>
-        </button>
+        
         <!--side bar close button ends here-->
 
         <ul>
+            <li id="delivery"><a href="/Home/Index"><!--<img src="/images/cnetlogo.png" alt="CNET logo" width="40" height="40">--><span>&nbsp;Delivery Monitoring</span></a></li>
             <li><a href="/Home/Index"><i class="bi bi-house"></i><span>Home</span></a></li>
             <li><a href="/Driver/Index"><i class="bi bi-truck"></i><span>Drivers</span></a></li>
             <li><a href="/Order/Index"><i class="bi bi-box"></i><span>Orders</span></a></li>
@@ -39,9 +36,11 @@
             <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
                 <div class="container-fluid">
                     
-                    <a class="m-3" onclick="w3_open()"><i class="bi bi-list"></i></a>
+                    <a class="w3-bar-item w3-button w3-large m-3" onclick="toggleSidebar()">
+                        <i class="bi bi-list"></i>
+                    </a>
                 
-                    <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DeliveryMonitoring</a>
+                    <!--<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DeliveryMonitoring</a>-->
 
                     <!--collapsible navbar code-->
                     <!--
@@ -106,18 +105,23 @@
     
     <!--this makes the sidebar responsive-->
     <script>
+
         document.getElementById("mySidebar").style.width = "15%";
         document.getElementById("main").style.marginLeft = "15%";
-        function w3_open() {
-            document.getElementById("main").style.marginLeft = "15%";
-            document.getElementById("mySidebar").style.width = "15%";
-            document.getElementById("mySidebar").style.display = "block";
-            
-        }
-        function w3_close() {
-            document.getElementById("main").style.marginLeft = "0%";
-            document.getElementById("mySidebar").style.display = "none";
-            
+
+        function toggleSidebar() {
+            var main = document.getElementById("main");
+            var sidebar = document.getElementById("mySidebar")
+
+            if (sidebar.style.display === "block") {
+                // Sidebar is open, so close it
+                main.style.marginLeft = "0%";
+                sidebar.style.display = "none";
+            } else {
+                // Sidebar is closed, so open it
+                main.style.marginLeft = "15%";
+                sidebar.style.display = "block";
+            }
         }
     </script>
     <!--sidebar responsiveness ends here-->
