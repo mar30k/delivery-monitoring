@@ -7,19 +7,18 @@ namespace DeliveryMonitoring.Controllers
 {
     public class OrderController : Controller
     {
-        private readonly HttpClient _client;
-
-        Uri baseAddress = new Uri("http://196.189.21.67:8084/api");
-        public OrderController(HttpClient client)
+        //HttpClient Setup starts here
+        private readonly IHttpClientFactory _httpClientFactory;
+        public OrderController(IHttpClientFactory httpClientFactory)
         {
-            _client = client;
-            _client.BaseAddress = baseAddress;
-            _client.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
+            _httpClientFactory = httpClientFactory;
         }
+        //HttpClient Setup ends here
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var _client = _httpClientFactory.CreateClient("Delivery");
             List<Order> orders = new List<Order>();
 
             HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "/orderRequests");
@@ -36,6 +35,7 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/Order/Details/{voucherCode}")]
         public async Task<IActionResult> Details(string voucherCode)
         {
+            var _client = _httpClientFactory.CreateClient("Delivery");
             Order order = null;
 
             try

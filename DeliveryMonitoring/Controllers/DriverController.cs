@@ -9,19 +9,16 @@ namespace DeliveryMonitoring.Controllers
 {
     public class DriverController : Controller
     {
-        private readonly HttpClient _client;
-
-        Uri baseAddress = new Uri("http://196.189.21.67:8084/api");
-        public DriverController(HttpClient client)
+        private readonly IHttpClientFactory _httpClientFactory;
+        public DriverController(IHttpClientFactory httpClientFactory)
         {
-            _client = client;
-            _client.BaseAddress = baseAddress;
-            _client.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
+            _httpClientFactory = httpClientFactory;
         }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var _client = _httpClientFactory.CreateClient("Delivery");
             List<Driver> drivers = new List<Driver>();
 
             HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "/drivers");
@@ -38,6 +35,7 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet]
         public async Task<IActionResult> Filter(string status, string companyTin)
         {
+            var _client = _httpClientFactory.CreateClient("Delivery");
             if (string.IsNullOrEmpty(status) && string.IsNullOrEmpty(companyTin))
             {
                 return RedirectToAction("Index");
@@ -76,6 +74,7 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/Driver/Details/{phoneNumber}")]
         public async Task<IActionResult> Details(string phoneNumber)
         {
+            var _client = _httpClientFactory.CreateClient("Delivery");
             Driver driver = null;
 
             try

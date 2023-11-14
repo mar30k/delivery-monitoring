@@ -6,19 +6,16 @@ namespace DeliveryMonitoring.Controllers
 {
     public class CompanyController : Controller
     {
-        private readonly HttpClient _client;
-
-        Uri baseAddress = new Uri("http://196.189.21.67:8084/api");
-        public CompanyController(HttpClient client)
+        private readonly IHttpClientFactory _httpClientFactory;
+        public CompanyController(IHttpClientFactory httpClientFactory)
         {
-            _client = client;
-            _client.BaseAddress = baseAddress;
-            _client.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
+           _httpClientFactory = httpClientFactory;
         }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var _client = _httpClientFactory.CreateClient("Delivery");
             Companies company = null;
 
             try
@@ -48,6 +45,7 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/Company/Details/{companyTins}")]
         public async Task<IActionResult> Details(string companyTins)
         {
+            var _client = _httpClientFactory.CreateClient("Delivery");
             Company company = null;
 
             try

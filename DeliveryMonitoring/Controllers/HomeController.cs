@@ -10,21 +10,17 @@ namespace DeliveryMonitoring.Controllers
     public class HomeController : Controller
     {
         //HttpClient Setup starts here
-        private readonly HttpClient _client;
-
-        Uri baseAddress = new Uri("http://196.189.21.67:8084/api");
-
-        public HomeController(HttpClient client)
+        private readonly IHttpClientFactory _httpClientFactory;
+        public HomeController(IHttpClientFactory httpClientFactory)
         {
-            _client = client;
-            _client.BaseAddress = baseAddress;
-            _client.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
+            _httpClientFactory = httpClientFactory;
         }
         //HttpClient Setup ends here
 
         //This returns the view for Home/Index Page
         public async Task<IActionResult> Index()
         {
+            var _client = _httpClientFactory.CreateClient("Delivery");
             // Fetch driver data
             List<Driver> drivers = new List<Driver>();
 
