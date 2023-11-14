@@ -23,27 +23,27 @@ namespace DeliveryMonitoring.Controllers
         //HttpClient Setup ends here
 
         //This returns the view for Home/Index Page
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             // Fetch driver data
             List<Driver> drivers = new List<Driver>();
 
-            HttpResponseMessage driverResponse = _client.GetAsync(_client.BaseAddress + "/drivers").Result;
+            HttpResponseMessage driverResponse = await _client.GetAsync(_client.BaseAddress + "/drivers");
 
             if (driverResponse.IsSuccessStatusCode)
             {
-                string driverData = driverResponse.Content.ReadAsStringAsync().Result;
+                string driverData = await driverResponse.Content.ReadAsStringAsync();
                 drivers = JsonConvert.DeserializeObject<List<Driver>>(driverData);
             }
 
             // Fetch order data
             List<Order> orders = new List<Order>();
 
-            HttpResponseMessage orderResponse = _client.GetAsync(_client.BaseAddress + "/orderRequests").Result;
+            HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + "/orderRequests");
 
             if (orderResponse.IsSuccessStatusCode)
             {
-                string orderData = orderResponse.Content.ReadAsStringAsync().Result;
+                string orderData = await orderResponse.Content.ReadAsStringAsync();
                 orders = JsonConvert.DeserializeObject<List<Order>>(orderData);
             }
 
@@ -57,12 +57,5 @@ namespace DeliveryMonitoring.Controllers
             return View(viewModel);
         }
         //This is the end of the code that returns the view for Home/Index Page
-
-        //This is the view for Home/Privacy Page
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-        //This is the end of the code for the view of Home/Privacy Page
     }
 }

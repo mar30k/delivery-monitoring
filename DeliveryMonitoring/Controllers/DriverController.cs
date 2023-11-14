@@ -20,15 +20,15 @@ namespace DeliveryMonitoring.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             List<Driver> drivers = new List<Driver>();
 
-            HttpResponseMessage response = _client.GetAsync(_client.BaseAddress + "/drivers").Result;
+            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "/drivers");
 
             if (response.IsSuccessStatusCode)
             {
-                string data = response.Content.ReadAsStringAsync().Result;
+                string data = await response.Content.ReadAsStringAsync();
                 drivers = JsonConvert.DeserializeObject<List<Driver>>(data);
             }
             return View(drivers);
@@ -36,7 +36,7 @@ namespace DeliveryMonitoring.Controllers
         }
 
         [HttpGet]
-        public IActionResult Filter(string status, string companyTin)
+        public async Task<IActionResult> Filter(string status, string companyTin)
         {
             if (string.IsNullOrEmpty(status) && string.IsNullOrEmpty(companyTin))
             {
@@ -62,11 +62,11 @@ namespace DeliveryMonitoring.Controllers
                 endpoint.Append($"companyTin={companyTin}");
             }
 
-            HttpResponseMessage response = _client.GetAsync(endpoint.ToString()).Result;
+            HttpResponseMessage response = await _client.GetAsync(endpoint.ToString());
 
             if (response.IsSuccessStatusCode)
             {
-                string data = response.Content.ReadAsStringAsync().Result;
+                string data = await response.Content.ReadAsStringAsync();
                 filteredDrivers = JsonConvert.DeserializeObject<List<Driver>>(data);
             }
 

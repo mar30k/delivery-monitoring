@@ -18,15 +18,15 @@ namespace DeliveryMonitoring.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             List<Order> orders = new List<Order>();
 
-            HttpResponseMessage response = _client.GetAsync(_client.BaseAddress + "/orderRequests").Result;
+            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "/orderRequests");
 
             if (response.IsSuccessStatusCode)
             {
-                string data = response.Content.ReadAsStringAsync().Result;
+                string data = await response.Content.ReadAsStringAsync();
                 orders = JsonConvert.DeserializeObject<List<Order>>(data);
             }
             return View(orders);
