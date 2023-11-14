@@ -43,11 +43,34 @@ namespace DeliveryMonitoring.Controllers
                 orders = JsonConvert.DeserializeObject<List<Order>>(orderData);
             }
 
+            Companies company = null;
+
+            try
+            {
+                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/companies");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string data = await response.Content.ReadAsStringAsync();
+                    company = JsonConvert.DeserializeObject<Companies>(data);
+                }
+
+                if (company == null)
+                {
+                    return NotFound(); // Return a 404 Not Found response if no driver is found.
+                }
+            }
+            catch (HttpRequestException)
+            {
+                return StatusCode(500); // Handle exception with a 500 Internal Server Error
+            }
+
             // Create HomeViewModel
             var viewModel = new HomeViewModel
             {
                 Drivers = drivers,
-                Orders = orders
+                Orders = orders,
+                Comps = company
             };
 
             return View(viewModel);

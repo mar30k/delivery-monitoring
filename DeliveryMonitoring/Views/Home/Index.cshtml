@@ -6,7 +6,7 @@
 
 <div class="container-fluid mt-3">
     <div class="row">
-        <div class="col-12 col-md-6 mb-3">
+        <div class="col-12 col-md-4 mb-3">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Drivers Registered</h5>
@@ -16,12 +16,22 @@
             </div>
         </div>
 
-        <div class="col-12 col-md-6 mb-3">
+        <div class="col-12 col-md-4 mb-3">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Total Orders</h5>
                     <h1 class="card-text">@Model.Orders.Count</h1>
                     <a href="/Order/Index" class="card-link btn btn-success">See All</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Companies Count</h5>
+                    <h1 class="card-text">@Model.Comps.companyTins.Count</h1>
+                    <a href="/Company/Index" class="card-link btn btn-success">See All</a>
                 </div>
             </div>
         </div>
