@@ -4,12 +4,12 @@
     ViewData["Title"] = "Index";
 }
 
-<div class="container-fluid pt-5 col-11">
+<div class="container-fluid pt-5 col-lg-11">
     
     <h3>List of Companies</h3>
     <div class="pt-3">
-        <table class="table cell-border compact stripe hover" id="tablelist">
-            <thead>
+        <table class="table compact stripe hover pt-3" id="tablelist">
+            <thead class="table-dark">
                 <tr>
                     <th>
                         @Html.DisplayNameFor(model => model.companyTins)

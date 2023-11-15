@@ -80,10 +80,17 @@
 }
 
 /* Adjust map size for large screens */
-@media (min-width: 992px) and (max-width: 1421px) {
+@media (min-width: 992px) and (max-width: 1023px) {
     #donutchart {
         min-width: 400px; /* Set a different minimum width for large screens */
         min-height: 400px; /* Set a different minimum height for large screens */
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1421px) {
+    #donutchart {
+        min-width: 360px; /* Set a different minimum width for large screens */
+        min-height: 360px; /* Set a different minimum height for large screens */
     }
 }
 

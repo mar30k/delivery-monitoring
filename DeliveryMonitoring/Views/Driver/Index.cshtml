@@ -47,8 +47,8 @@
         <!--The table is Written Here-->
         <div class="col-12 col-xl-5 table-responsive">
             <hr />
-            <table class="table cell-border compact stripe hover" id="tablelist">
-                <thead>
+            <table class="table compact stripe hover pt-3" id="tablelist">
+                <thead class="table-dark">
                     <tr>
 
                         <th>
@@ -68,7 +68,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody >
                     @foreach (var item in Model)
                     {
 
@@ -166,6 +166,7 @@
     <!--Map JavaScript Implementation Ends Here-->
 
     <!--Jquery Datatable Starts Here-->
+    
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
