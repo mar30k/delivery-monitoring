@@ -45,9 +45,9 @@
 
     <div class="row">
         <!--The table is Written Here-->
-        <div class="col-12 col-lg-6 table-responsive">
+        <div class="col-12 col-lg-5 table-responsive">
             <hr />
-            <table class="table" id="tablelist">
+            <table class="table cell-border compact stripe hover" id="tablelist">
                 <thead>
                     <tr>
 
@@ -88,7 +88,7 @@
                                 @Html.DisplayFor(modelItem => item.status)
                             </td>
                             <td>
-                                <a class="btn btn-primary" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>
+                                <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>
                             </td>
                         </tr>
                     }
@@ -98,7 +98,7 @@
         <!--this is the table ending-->
 
         <!--Find the map here-->
-        <div class="col-12 col-lg-6" id="map">
+        <div class="col-12 col-lg-7" id="map">
 
         </div>
         <!--Map ends here-->
@@ -111,7 +111,7 @@
     <script>
         function initMap() {
             const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 21,
+                zoom: 22,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
         @{
@@ -139,7 +139,7 @@
                     position: { lat: places[i].lat, lng: places[i].lng },
                     title: places[i].Name,
                     map: map,
-                    icon: '/images/scooter1.png'
+                    icon: '/images/motor32.png'
                 });
 
                 map.setCenter(marker.getPosition());

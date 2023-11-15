@@ -4,35 +4,37 @@
     ViewData["Title"] = "Index";
 }
 
-<div class="container-fluid pt-3">
+<div class="container-fluid pt-5 col-11">
     
     <h3>List of Companies</h3>
-
-    <table class="table" id="tablelist">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.companyTins)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.companyTins)
-            {
+    <div class="pt-3">
+        <table class="table cell-border compact stripe hover" id="tablelist">
+            <thead>
                 <tr>
-                    <td>
-                        @item
-                    </td>
-                    <td>
-                        <a class="btn btn-primary" asp-controller="Company" asp-action="Details" asp-route-id="@item">Details</a>
-                    </td>
+                    <th>
+                        @Html.DisplayNameFor(model => model.companyTins)
+                    </th>
+                    <th></th>
                 </tr>
-            }
+            </thead>
+            <tbody>
+                @foreach (var item in Model.companyTins)
+                {
+                    <tr>
+                        <td>
+                            @item
+                        </td>
+                        <td>
+                            <a class="btn btn-outline-dark" asp-controller="Company" asp-action="Details" asp-route-id="@item">Details</a>
+                        </td>
+                    </tr>
+                }
 
 
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
+    
 
     <!--Jquery Datatable Starts Here-->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

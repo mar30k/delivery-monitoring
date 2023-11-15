@@ -9,7 +9,7 @@
     
     
     <div class="row">
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-5">
             <h4>Driver Details</h4>
             <hr />
             <div class="row">
@@ -85,7 +85,7 @@
                 <a class="btn btn-primary" asp-action="Index">Back to List</a>
             </div>
         </div>
-        <div class="col-12 col-md-6" id="map">
+        <div class="col-12 col-md-7" id="map">
 
         </div>
         
@@ -100,7 +100,7 @@
     <script>
         function initMap() {
             const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 21,
+                zoom: 22,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
         @{
@@ -118,7 +118,7 @@
                     position: { lat: places[i].lat, lng: places[i].lng },
                     title: places[i].Name,
                     map: map,
-                    icon: '/images/scooter1.png'
+                    icon: '/images/motor32.png'
                 });
 
                 map.setCenter(marker.getPosition());

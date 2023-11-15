@@ -37,14 +37,15 @@
         </div>
     </div>
 
+    <!--The Donut Chart and the Map Starts Here-->
     <div class="row mt-3">
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-5">
             <div class="" id="donut">
                 <h3>Check Drivers Status</h3>
                 <hr/>
-                <a class="" data-bs-toggle="collapse" data-bs-target="#donutchart" aria-expanded="false" aria-controls="donutchart">
+                <button class="colbut" data-bs-toggle="collapse" data-bs-target="#donutchart" aria-expanded="false" aria-controls="donutchart">
                     <i class="bi bi-arrow-up"></i> Collapse
-                </a>
+                </button>
             </div>
             <div class="">
                 <div class="collapse show col-12" id="donutchart">
@@ -53,11 +54,12 @@
             </div>
         </div>
 
-        <div class="col-12 col-md-6" id="map">
+        <div class="col-12 col-md-7" id="map">
            
         </div>
         
     </div>
+    <!--The donut chart and the map ends here-->
     
     <!--code to display the donught chart starts here-->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -123,7 +125,7 @@
     <script>
         function initMap() {
             const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 21,
+                zoom: 22,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
         @{
@@ -151,7 +153,7 @@
                     position: { lat: places[i].lat, lng: places[i].lng },
                     title: places[i].Name,
                     map: map,
-                    icon: '/images/scooter1.png'
+                    icon: '/images/motor32.png'
                 });
 
                 map.setCenter(marker.getPosition());

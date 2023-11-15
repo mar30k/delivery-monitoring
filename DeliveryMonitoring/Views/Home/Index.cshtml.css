@@ -89,8 +89,8 @@
 
 @media (min-width: 1422px) {
     #donutchart {
-        max-width: 500px; /* Set a different minimum width for large screens */
-        max-height: 500px; /* Set a different minimum height for large screens */
+        width: 500px; /* Set a different minimum width for large screens */
+        height: 500px; /* Set a different minimum height for large screens */
     }
 }
 
@@ -134,3 +134,12 @@
         min-height: 600px; /* Set a different minimum height for large screens */
     }
 }
+
+.colbut {
+    border: none;
+    /* You can add additional styles as needed */
+    
+    background-color: #fff; /* Set your desired background color */
+    color: dodgerblue;
+}
+
