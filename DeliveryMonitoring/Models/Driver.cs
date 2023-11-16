@@ -17,6 +17,6 @@ namespace DeliveryMonitoring.Models
         [Display(Name = "Phone Number")]
         public string phoneNumber { get; set; }
         [Display(Name = "Status")]
-        public string status { get; set; }  
+        public string status { get; set; }
     }
 }

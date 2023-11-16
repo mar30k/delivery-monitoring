@@ -59,11 +59,12 @@
                     <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Additional Info
                     </a>
-                
+            </div>
                 
 
-                <div class="collapse pt-3" id="collapseExample">
+                <div class="collapse pt-3 row" id="collapseExample">
                     <div class="card card-body">
+                        <dl>
                         <dt class="col-sm-5">
                             @Html.DisplayNameFor(model => model.companyTin)
                         </dt>
@@ -76,9 +77,11 @@
                         <dd class="col-sm-9">
                             @Html.DisplayFor(model => model.deviceID)
                         </dd>
+                        </dl>
+                        
                     </div>
                 </div>
-            </div>
+            
             
 
             <div class="pt-3 pb-3">
@@ -94,15 +97,22 @@
     
 
     <!--Map JavaScript Implementation Starts Here-->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDihZpSLFD2uyptHT-UQDSfJm9BKHRK-VU&callback=initMap&libraries=places&v=weekly" defer>
     </script>
 
     <script>
         function initMap() {
             const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 22,
+                zoom: 20,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
+
+            //google map's direction service to draw the line in real road setting
+            var directionsService = new google.maps.DirectionsService();
+            var directionsRenderer = new google.maps.DirectionsRenderer();
+            directionsRenderer.setMap(map);
+            //google map's direction service to draw the line in real road setting ends here
+
         @{
             if (Model != null)
             {
@@ -118,7 +128,7 @@
                     position: { lat: places[i].lat, lng: places[i].lng },
                     title: places[i].Name,
                     map: map,
-                    icon: '/images/motor32.png'
+                    icon: '/images/motor.png'
                 });
 
                 map.setCenter(marker.getPosition());
@@ -140,6 +150,24 @@
                     };
                 })(infowindow));
             }
+
+            //the path to the destination is written by the following code
+            var destinationLat = 9.3302548; // Example latitude
+            var destinationLng = 39.2854767; // Example longitude
+            
+            // Request directions and set them on the map
+            var request = {
+                origin: new google.maps.LatLng(places[0].lat, places[0].lng), // Starting point
+                destination: new google.maps.LatLng(destinationLat, destinationLng), // Destination point
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+
+            directionsService.route(request, function (result, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    directionsRenderer.setDirections(result);
+                }
+            });
+            //the path to the destination is written by the following code - £ends here
         }
     </script>
 </div>
