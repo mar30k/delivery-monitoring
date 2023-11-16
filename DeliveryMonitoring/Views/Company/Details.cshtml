@@ -41,34 +41,43 @@
 
         <h3>Company Details</h3>
         <hr />
-        <img src="@Model.attachments[0]" alt="company logo">
-        <dl class="row">
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.brandName)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.brandName)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.rating)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.Raw(GetStarRating(Model.rating))
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.ratingCount)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.ratingCount)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.tin)
-            </dt>
-            <dd class="col-sm-10">
-                @Html.DisplayFor(model => model.tin)
-            </dd>
-            
-        </dl>
+        <div class="row">
+            <div class="col-12 col-lg-6">
+                <img src="@Model.attachments[0]" alt="company logo">
+            </div>
+            <div class="col-12 col-lg-6">
+                <dl class="row">
+                    <dt class="col-sm-2">
+                        @Html.DisplayNameFor(model => model.brandName)
+                    </dt>
+                    <dd class="col-sm-10">
+                        @Html.DisplayFor(model => model.brandName)
+                    </dd>
+                    <dt class="col-sm-2">
+                        @Html.DisplayNameFor(model => model.rating)
+                    </dt>
+                    <dd class="col-sm-10">
+                        @Html.Raw(GetStarRating(Model.rating))
+                    </dd>
+                    <dt class="col-sm-2">
+                        @Html.DisplayNameFor(model => model.ratingCount)
+                    </dt>
+                    <dd class="col-sm-10">
+                        @Html.DisplayFor(model => model.ratingCount)
+                    </dd>
+                    <dt class="col-sm-2">
+                        @Html.DisplayNameFor(model => model.tin)
+                    </dt>
+                    <dd class="col-sm-10">
+                        @Html.DisplayFor(model => model.tin)
+                    </dd>
+
+                </dl>
+            </div>
+        </div>
+        
+        
+        
         <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
     </div>
 

@@ -3,6 +3,7 @@
 .container-fluid {
     
 }
-.card-header{
-    background-color: lightblue;
+.card-header {
+    background-color: #042331;
+    color: white;
 }
