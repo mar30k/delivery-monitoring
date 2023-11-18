@@ -121,7 +121,7 @@
             if (Model != null)
             {
                     <text>
-                                        const places = [{ Name: '@Model.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@Model.phoneNumber', Status: '@Model.status', lat: @Model.latLng.lat, lng: @Model.latLng.lng},];
+                        const places = [{ Name: '@Model.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@Model.phoneNumber', Status: '@Model.status', lat: @Model.latLng.lat, lng: @Model.latLng.lng},];
                     </text>
             }
         }
@@ -131,13 +131,16 @@
                                 var marker, i;
             for (i = 0; i < places.length; i++) {
                 var marker = new google.maps.Marker({
-                    position: { lat: 9.0166004, lng: 38.7631881},
+                    position: { lat: 9.01664, lng: 38.76288 },
                     title: places[i].Name,
                     map: map,
                     icon: {
-                        url: '/images/motor.png', // Specify your custom icon URL
-                        scaledSize: new google.maps.Size(32, 32), // Adjust the size as needed
-                        anchor: new google.maps.Point(16, 16), // Center the anchor point
+                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                        scale: 4,
+                        //rotation: bearing,
+                        //url: '/images/motor.png', // Specify your custom icon URL
+                        //scaledSize: new google.maps.Size(32, 32), // Adjust the size as needed
+                        //anchor: new google.maps.Point(16, 16), // Center the anchor point
                     },
 
                 });
@@ -167,7 +170,6 @@
 
             //the coordinates the motor moves starts here
             const coordinates = [
-                [9.0166004, 38.7631881],
                 [9.01664, 38.76288],
                 [9.0147, 38.76265],
                 [9.01394, 38.76294],
@@ -186,14 +188,20 @@
                 [9.01408, 38.78115],
                 [9.01481, 38.78347],
                 [9.01541, 38.78597],
+                [9.01722, 38.79408],
+                [9.01811, 38.79689],
+                [9.01877, 38.79892],
+                [9.01923, 38.80119],
+                [9.01978, 38.80436],
+                [9.02035, 38.80787],
                 
             ];
             //the coordinates the motor moves ends here
 
 
             var index = 0; // Index to keep track of the current coordinate
-            var destinationLat = 9.01541; // Example latitude
-            var destinationLng = 38.78597; // Example longitude
+            var destinationLat = 9.02035; // Example latitude
+            var destinationLng = 38.80787; // Example longitude
             //var marker;
 
             function moveCar() {
