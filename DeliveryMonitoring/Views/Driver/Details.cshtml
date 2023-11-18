@@ -208,43 +208,64 @@
                 // Update the car's position
                 if (index < coordinates.length - 1) {
                     index++;
-                }
-                else {
+                } else {
                     // Car has reached the final destination, clear the interval
                     clearInterval(intervalId);
                     return;
                 }
-                var newPosition = new google.maps.LatLng(coordinates[index][0], coordinates[index][1]);
-                marker.setPosition(newPosition);
 
-                // Update the directions request
-                var request = {
-                    origin: newPosition,
-                    destination: new google.maps.LatLng(destinationLat, destinationLng),
-                    travelMode: google.maps.TravelMode.DRIVING
-                };
+                var startPosition = new google.maps.LatLng(coordinates[index - 1][0], coordinates[index - 1][1]);
+                var endPosition = new google.maps.LatLng(coordinates[index][0], coordinates[index][1]);
 
-                directionsService.route(request, function (result, status) {
-                    if (status == google.maps.DirectionsStatus.OK) {
-                        directionsRenderer.setDirections(result);
+                // Calculate the step size for interpolation
+                var numSteps = 100; // You can adjust the number of steps for smoother movement
+                var step = 0;
 
-                        // Get the overview path of the route
-                        var path = result.routes[0].overview_path;
-                        // Compute the bearing (rotation angle) between consecutive points
-                        var bearing = google.maps.geometry.spherical.computeHeading(path[index], path[index + 1]);
+                // Use setInterval for interpolation and smooth sliding
+                var interval = setInterval(function () {
+                    step += 1;
 
-                        marker.setIcon({
-                            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                            scale: 4,
-                            rotation: bearing,
-                        });
+                    // Calculate the interpolated position
+                    var interpolatedPosition = google.maps.geometry.spherical.interpolate(startPosition, endPosition, step / numSteps);
+
+                    // Set the marker position
+                    marker.setPosition(interpolatedPosition);
+
+                    // Update the directions request
+                    var request = {
+                        origin: interpolatedPosition,
+                        destination: new google.maps.LatLng(destinationLat, destinationLng),
+                        travelMode: google.maps.TravelMode.DRIVING
+                    };
+
+                    directionsService.route(request, function (result, status) {
+                        if (status == google.maps.DirectionsStatus.OK) {
+                            directionsRenderer.setDirections(result);
+
+                            // Get the overview path of the route
+                            var path = result.routes[0].overview_path;
+                            // Compute the bearing (rotation angle) between consecutive points
+                            var bearing = google.maps.geometry.spherical.computeHeading(path[index - 1], path[index]);
+
+                            // Set the marker icon with rotation
+                            marker.setIcon({
+                                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                                scale: 4,
+                                rotation: bearing,
+                            });
+                        }
+                    });
+
+                    // Check if reached the final position
+                    if (step == numSteps) {
+                        clearInterval(interval);
                     }
-                });
-                
-
+                }, 10); // You can adjust the interval time for smoother movement
             }
-            setInterval(moveCar, 1000); // Call moveCar every 1000 milliseconds (1 second)
-            
+
+            // Set a lower interval time for smoother movement
+            var intervalId = setInterval(moveCar, 2000);
+
         }
         
     </script>
