@@ -131,7 +131,7 @@
                                 var marker, i;
             for (i = 0; i < places.length; i++) {
                 var marker = new google.maps.Marker({
-                    position: { lat: 9.01664, lng: 38.76288 },
+                    position: { lat: places[i].lat, lng: places[i].lng },
                     title: places[i].Name,
                     map: map,
                     icon: {
@@ -257,7 +257,7 @@
                             });
                         }
                     });
-
+                    
                     // Check if reached the final position
                     if (step == numSteps) {
                         clearInterval(interval);
