@@ -137,7 +137,7 @@
                     icon: {
                         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                         scale: 4,
-                        //url: '/images/motor.svg'
+                        //url: '/images/motor2.svg'
                         //rotation: bearing,
                         //url: '/images/motor.png', // Specify your custom icon URL
                         //scaledSize: new google.maps.Size(32, 32), // Adjust the size as needed
@@ -215,8 +215,8 @@
                     return;
                 }
 
-                var startPosition = new google.maps.LatLng(coordinates[index - 1][0], coordinates[index - 1][1]);
-                var endPosition = new google.maps.LatLng(coordinates[index][0], coordinates[index][1]);
+                var startPosition = new google.maps.LatLng(coordinates[index][0], coordinates[index][1]);
+                var endPosition = new google.maps.LatLng(coordinates[index + 1][0], coordinates[index + 1][1]);
 
                 // Calculate the step size for interpolation
                 var numSteps = 100; // You can adjust the number of steps for smoother movement
@@ -252,7 +252,7 @@
                             marker.setIcon({
                                 path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                                 scale: 4,
-                                //url: '/images/motor.svg'
+                                //url: '/images/motor2.svg'
                                 rotation: bearing,
                             });
                         }
