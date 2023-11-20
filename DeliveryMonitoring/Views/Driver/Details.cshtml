@@ -215,8 +215,8 @@
                     return;
                 }
 
-                var startPosition = new google.maps.LatLng(coordinates[index][0], coordinates[index][1]);
-                var endPosition = new google.maps.LatLng(coordinates[index + 1][0], coordinates[index + 1][1]);
+                var startPosition = new google.maps.LatLng(coordinates[index - 1][0], coordinates[index][1]);
+                var endPosition = new google.maps.LatLng(coordinates[index][0], coordinates[index][1]);
 
                 // Calculate the step size for interpolation
                 var numSteps = 100; // You can adjust the number of steps for smoother movement
