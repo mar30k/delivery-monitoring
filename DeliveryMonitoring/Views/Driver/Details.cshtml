@@ -199,8 +199,6 @@
             var index = 0; // Index to keep track of the current coordinate
             var beginPosition = new google.maps.LatLng(coordinates[0][0], coordinates[0][1]);
             var destinationPosition = new google.maps.LatLng(coordinates[coordinates.length - 1][0], coordinates[coordinates.length - 1][1]);
-            
-            //var marker;
 
             // Update the directions request
             var request = {
@@ -231,6 +229,7 @@
                     // Car has reached the final destination, clear the interval
                     clearInterval(intervalId);
                     directionsRenderer.setMap(null); // Hide the directions
+                    map.setCenter(marker.getPosition());
                     return;
                 }
 
@@ -243,7 +242,7 @@
 
                 // Calculate the bearing between consecutive points
                 var bearing = google.maps.geometry.spherical.computeHeading(startPosition, endPosition);
-
+                //map.setCenter(marker.getPosition());
                 // Use setInterval for interpolation and smooth sliding
                 var interval = setInterval(function () {
                     step += 1;
