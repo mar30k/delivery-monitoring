@@ -123,9 +123,10 @@
             [9.01541, 38.78597],
             [9.01722, 38.79408],
             [9.01811, 38.79689],
-            [9.01811, 38.79689],
+            
           
         ];
+
         //the coordinates the motor moves ends here
         function initMap() {
 
@@ -196,74 +197,75 @@
             }
 
             var index = 0; // Index to keep track of the current coordinate
-            var destinationLat = coordinates[coordinates.length - 1][0]; // Example latitude
-            var destinationLng = coordinates[coordinates.length - 1][1]; // Example longitude
+            var beginPosition = new google.maps.LatLng(coordinates[0][0], coordinates[0][1]);
+            var destinationPosition = new google.maps.LatLng(coordinates[coordinates.length - 1][0], coordinates[coordinates.length - 1][1]);
+            
             //var marker;
 
-            function moveCar() {
+            // Update the directions request
+            var request = {
+                origin: beginPosition,
+                destination: destinationPosition,
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+
+            directionsService.route(request, function (result, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    directionsRenderer.setDirections(result);
+
+                    // Compute the initial bearing
+                    var initialBearing = google.maps.geometry.spherical.computeHeading(result.routes[0].overview_path[0], result.routes[0].overview_path[1]);
+
+                    // Move the car with the initial bearing
+                    moveCar(result, initialBearing);
+                } else {
+                    console.error('Initial directions request failed with status:', status);
+                }
+            });
+
+            function moveCar(directionsResult, initialBearing) {
                 // Update the car's position
                 if (index < coordinates.length - 1) {
                     index++;
                 } else {
                     // Car has reached the final destination, clear the interval
                     clearInterval(intervalId);
+                    directionsRenderer.setMap(null); // Hide the directions
                     return;
                 }
 
                 var startPosition = new google.maps.LatLng(coordinates[index - 1][0], coordinates[index - 1][1]);
                 var endPosition = new google.maps.LatLng(coordinates[index][0], coordinates[index][1]);
-                console.log('startPosition:', startPosition);
-                console.log('endPosition:', endPosition);
+
                 // Calculate the step size for interpolation
-                var numSteps = 100; // You can adjust the number of steps for smoother movement
+                var numSteps = 100;
                 var step = 0;
-                
-                // Update the directions request
-                var request = {
-                    origin: startPosition,
-                    destination: new google.maps.LatLng(destinationLat, destinationLng),
-                    travelMode: google.maps.TravelMode.DRIVING
-                };
-                
-                directionsService.route(request, function (result, status) {
-                    if (status == google.maps.DirectionsStatus.OK) {
-                        directionsRenderer.setDirections(result);
 
-                        // Get the overview path of the route
-                        var path = result.routes[0].overview_path;
-                        console.log('path:', path.length);
-                        // Check if the path is not empty
-                        if (path && path.length > 1) {
-                            // Compute the bearing (rotation angle) between consecutive points
-                            var bearing = google.maps.geometry.spherical.computeHeading(path[0], path[1]);
-                            console.log('bearing:', bearing);
-                            // Use setInterval for interpolation and smooth sliding
-                            var interval = setInterval(function () {
-                                step += 1;
+                // Calculate the bearing between consecutive points
+                var bearing = google.maps.geometry.spherical.computeHeading(startPosition, endPosition);
 
-                                // Calculate the interpolated position
-                                var interpolatedPosition = google.maps.geometry.spherical.interpolate(startPosition, endPosition, step / numSteps);
+                // Use setInterval for interpolation and smooth sliding
+                var interval = setInterval(function () {
+                    step += 1;
 
-                                // Set the marker position
-                                marker.setPosition(interpolatedPosition);
-                                // Set the marker icon with rotation
-                                marker.setIcon({
-                                    path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                                    scale: 4,
-                                    //url: '/images/motor2.svg'
-                                    rotation: bearing,
-                                });
+                    // Calculate the interpolated position
+                    var interpolatedPosition = google.maps.geometry.spherical.interpolate(startPosition, endPosition, step / numSteps);
 
-                                // Check if reached the final position
-                                if (step == numSteps) {
-                                    clearInterval(interval);
-                                }
-                            }, 20); // You can adjust the interval time for smoother movement
-                        }
-                    } else {
-                        console.error('Directions request failed with status:', status);
+                    // Set the marker position
+                    marker.setPosition(interpolatedPosition);
+
+                    // Set the marker icon with rotation
+                    marker.setIcon({
+                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                        scale: 4,
+                        rotation: bearing,
+                    });
+
+                    // Check if reached the final position
+                    if (step == numSteps) {
+                        clearInterval(interval);
                     }
-                });
+                }, 20);
             }
 
             // Set a lower interval time for smoother movement
