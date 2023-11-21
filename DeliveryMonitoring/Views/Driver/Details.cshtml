@@ -103,6 +103,22 @@
     <script>
         //the coordinates the motor moves starts here
         const coordinates = [
+            [9.01664, 38.76288],
+            [9.0147, 38.76265],
+            [9.01394, 38.76294],
+            [9.01191, 38.76275],
+            [9.01123, 38.76264],
+            [9.01103, 38.76267],
+            [9.01083, 38.76275],
+            [9.01074, 38.76367],
+            [9.01051, 38.76633],
+            [9.01032, 38.7682],
+            [9.01003, 38.7712],
+            [9.01002, 38.7722],
+            [9.01013, 38.77301],
+            [9.01085, 38.77477],
+            [9.0118, 38.77658],
+            [9.01408, 38.78115],
             [9.01481, 38.78347],
             [9.01541, 38.78597],
             [9.01722, 38.79408],
@@ -118,6 +134,9 @@
             [9.01878, 38.82288],
             [9.01904, 38.82412],
             [9.01953, 38.82562],
+            [9.01958, 38.82619],
+            [9.01958, 38.82619],
+          
         ];
         //the coordinates the motor moves ends here
         function initMap() {
@@ -228,7 +247,7 @@
                         // Check if the path is not empty
                         if (path && path.length > 1) {
                             // Compute the bearing (rotation angle) between consecutive points
-                            var bearing = google.maps.geometry.spherical.computeHeading(path[index - 1], path[index]);
+                            var bearing = google.maps.geometry.spherical.computeHeading(path[0], path[1]);
                             console.log('bearing:', bearing);
                             // Use setInterval for interpolation and smooth sliding
                             var interval = setInterval(function () {
