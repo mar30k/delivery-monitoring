@@ -4,7 +4,26 @@
     ViewData["Title"] = "Details";
 }
 
-<div class="container-fluid col-11 pt-5">            
+<div class="container-fluid col-11 pt-5">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Driver Details</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">
+                        @Html.DisplayNameFor(model => model.assignedDriverPhoneNumber)
+                        </dt>
+                        <dd class="col-sm-5">
+                    <i class="bi bi-telephone-fill"></i>&nbsp;@Html.DisplayFor(model => model.assignedDriverPhoneNumber)
+                        </dd>
+                        
+                    </dl>
+
+                </div>
+            </div>
+            <br />
+
             <div class="card">
                 <div class="card-header">
                     <h4>Company Details</h4>
@@ -72,24 +91,42 @@
                 </div>
                 <div class="card-body">
                     <dl class="row">
+
                         <dt class="col-sm-5">
                             @Html.DisplayNameFor(model => model.requestCreatedAt)
                         </dt>
                         <dd class="col-sm-5">
                     <i class="bi bi-clock-fill">&nbsp;</i>@DateTimeOffset.FromUnixTimeMilliseconds(Model.requestCreatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
                         </dd>
+
                         <dt class="col-sm-5">
                             @Html.DisplayNameFor(model => model.status)
                         </dt>
                         <dd class="col-sm-5">
                     <i class="bi bi-bell-fill"></i>&nbsp;@Html.DisplayFor(model => model.status)
                         </dd>
+
                         <dt class="col-sm-5">
                             @Html.DisplayNameFor(model => model.voucherCode)
                         </dt>
                         <dd class="col-sm-5">
                     <i class="bi bi-qr-code"></i>&nbsp;@Html.DisplayFor(model => model.voucherCode)
                         </dd>
+
+                        <dt class="col-sm-5">
+                            @Html.DisplayNameFor(model => model.isAssignedAck)
+                        </dt>
+                        <dd class="col-sm-5">
+                            @if (Model.isAssignedAck == true)
+                            {
+                                <span><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-x-circle"></i>&nbsp;No</span>
+                            }
+                        </dd>
+
                         <dt class="col-sm-5">
                             @Html.DisplayNameFor(model => model.isNoDriversAck)
                         </dt>
@@ -103,6 +140,7 @@
                         <span><i class="bi bi-x-circle"></i>&nbsp;No</span>
                             }
                         </dd>
+
                         <dt class="col-sm-5">
                             @Html.DisplayNameFor(model => model.orderArrivedAckByCustomer)
                         </dt>

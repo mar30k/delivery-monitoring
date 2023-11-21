@@ -11,9 +11,11 @@
                 <thead class="table-dark">
                     <tr>
                         <th>
+                            @Html.DisplayNameFor(model => model.assignedDriverPhoneNumber)
+                        </th>
+                        <th>
                             @Html.DisplayNameFor(model => model.branchName)
                         </th>
-                        
                         <th>
                             @Html.DisplayNameFor(model => model.customer.firstName)
                         </th>
@@ -42,6 +44,9 @@
                     @foreach (var item in Model)
                     {
                         <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.assignedDriverPhoneNumber)
+                            </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.branchName)
                             </td>

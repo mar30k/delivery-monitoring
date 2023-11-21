@@ -75,6 +75,19 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Details(string phoneNumber)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
+
+
+            // Fetch order data
+            List<Order> orders = new List<Order>();
+
+            HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + "/orderRequests");
+
+            if (orderResponse.IsSuccessStatusCode)
+            {
+                string orderData = await orderResponse.Content.ReadAsStringAsync();
+                orders = JsonConvert.DeserializeObject<List<Order>>(orderData);
+            }
+
             Driver driver = null;
 
             try
@@ -90,16 +103,21 @@ namespace DeliveryMonitoring.Controllers
                 if (driver == null)
                 {
                     return NotFound(); // Return a 404 Not Found response if no driver is found.
-                }
-
-                return View(driver);
+                }                
             }
             catch (HttpRequestException)
             {
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
-        }
 
-        
+            // Create HomeViewModel
+            var viewModel = new DriverDetailsViewModel
+            {
+                Drivers = driver,
+                Orders = orders
+            };
+
+            return View(viewModel);
+        }
     }
 }

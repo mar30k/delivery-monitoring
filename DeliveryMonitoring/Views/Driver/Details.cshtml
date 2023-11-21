@@ -1,4 +1,4 @@
-﻿@model DeliveryMonitoring.Models.Driver
+﻿@model DeliveryMonitoring.Models.DriverDetailsViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -16,46 +16,39 @@
                 
                     <!--First Name Beginning-->
                     <dt class="col-sm-5">
-                        @Html.DisplayNameFor(model => model.firstName)
+                        @Html.DisplayNameFor(model => model.Drivers.firstName)
                     </dt>
                     <dd class="col-sm-7">
-                        @Html.DisplayFor(model => model.firstName)
+                        @Model.Drivers.firstName
                     </dd>
                     <!--First Name Ending-->
                     <!--Last Updated at Beginning-->
                     <dt class="col-sm-5">
-                        @Html.DisplayNameFor(model => model.lastUpdatedAt)
+                        @Html.DisplayNameFor(model => model.Drivers.lastUpdatedAt)
                     </dt>
                     <dd class="col-sm-7">
                         @{
-                            long unixtimestamp = Model.lastUpdatedAt;
+                            long unixtimestamp = Model.Drivers.lastUpdatedAt;
                         }
                         @DateTimeOffset.FromUnixTimeMilliseconds(unixtimestamp).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
                     </dd>
                     <!--Last Updated at Ending-->
                     <!--Phone Number Beginning-->
                     <dt class="col-sm-5">
-                        @Html.DisplayNameFor(model => model.phoneNumber)
+                        @Html.DisplayNameFor(model => model.Drivers.phoneNumber)
                     </dt>
                     <dd class="col-sm-7">
-                        @Html.DisplayFor(model => model.phoneNumber)
+                        @Html.DisplayFor(model => model.Drivers.phoneNumber)
                     </dd>
                     <!--Phone Number Ending-->
                     <!--Driver Status Beginning-->
                     <dt class="col-sm-5">
-                        @Html.DisplayNameFor(model => model.status)
+                        @Html.DisplayNameFor(model => model.Drivers.status)
                     </dt>
                     <dd class="col-sm-7">
-                        @Html.DisplayFor(model => model.status)
+                        @Html.DisplayFor(model => model.Drivers.status)
                     </dd>
                     <!--Driver Status Ending-->
-                    <!--Address Beginning-->
-                    @{
-                        double latitude = Model.latLng.lat;
-                        double longtiude = Model.latLng.lng;
-                            @*yet to be implemented*@
-                    }
-                    <!--Address Ending-->
                     <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Additional Info
                     </a>
@@ -66,16 +59,16 @@
                     <div class="card card-body">
                         <dl>
                         <dt class="col-sm-5">
-                            @Html.DisplayNameFor(model => model.companyTin)
+                            @Html.DisplayNameFor(model => model.Drivers.companyTin)
                         </dt>
                         <dd class="col-sm-7">
-                            @Html.DisplayFor(model => model.companyTin)
+                            @Html.DisplayFor(model => model.Drivers.companyTin)
                         </dd>
                         <dt class="col-sm-3">
-                            @Html.DisplayNameFor(model => model.deviceID)
+                            @Html.DisplayNameFor(model => model.Drivers.deviceID)
                         </dt>
                         <dd class="col-sm-9">
-                            @Html.DisplayFor(model => model.deviceID)
+                            @Html.DisplayFor(model => model.Drivers.deviceID)
                         </dd>
                         </dl>
                         
@@ -87,6 +80,7 @@
             <div class="pt-3 pb-3">
                 <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
             </div>
+
         </div>
         <div class="col-12 col-md-7" id="map">
 
@@ -101,38 +95,12 @@
     </script>
 
     <script>
-        //the coordinates the motor moves starts here
-        const coordinates = [
-            [9.01664, 38.76288],
-            [9.0147, 38.76265],
-            [9.01394, 38.76294],
-            [9.01191, 38.76275],
-            [9.01123, 38.76264],
-            [9.01103, 38.76267],
-            [9.01083, 38.76275],
-            [9.01074, 38.76367],
-            [9.01051, 38.76633],
-            [9.01032, 38.7682],
-            [9.01003, 38.7712],
-            [9.01002, 38.7722],
-            [9.01013, 38.77301],
-            [9.01085, 38.77477],
-            [9.0118, 38.77658],
-            [9.01408, 38.78115],
-            [9.01481, 38.78347],
-            [9.01541, 38.78597],
-            [9.01722, 38.79408],
-            [9.01811, 38.79689],
-            
-          
-        ];
-
-        //the coordinates the motor moves ends here
+        
         function initMap() {
 
             //initializes the map with specified parameters
             const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 22,
+                zoom: 20,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
             //initializes the map with specified parameters - ends here
@@ -147,9 +115,22 @@
         @{
             if (Model != null)
             {
-                    <text>
-                        const places = [{ Name: '@Model.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@Model.phoneNumber', Status: '@Model.status', lat: @Model.latLng.lat, lng: @Model.latLng.lng},];
-                    </text>
+                foreach(var item in Model.Orders)
+                {
+                    if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
+                    {
+                        <text>
+                            const places = [{ Name: '@Model.Drivers.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@Model.Drivers.phoneNumber', Status: '@Model.Drivers.status', lat: @Model.Drivers.latLng.lat, lng: @Model.Drivers.latLng.lng, DestLat: @item.customer.latLng.lat, DestLng: @item.customer.latLng.lng},];
+                        </text>
+                    }
+                    else
+                    {
+                        <text>
+                            const places = [{ Name: '@Model.Drivers.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@Model.Drivers.phoneNumber', Status: '@Model.Drivers.status', lat: @Model.Drivers.latLng.lat, lng: @Model.Drivers.latLng.lng},];
+                        </text>
+                    }
+                    
+                }            
             }
         }
             //this takes all the information from the api response and save it in a places array - ends here
@@ -158,17 +139,13 @@
                                 var marker, i;
             for (i = 0; i < places.length; i++) {
                 var marker = new google.maps.Marker({
-                    position: { lat: coordinates[0][0], lng: coordinates[0][1] },
+                    position: { lat: places[i].lat, lng: places[i].lng},
                     title: places[i].Name,
                     map: map,
                     icon: {
                         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                         scale: 4,
-                        //url: '/images/motor2.svg'
-                        //rotation: bearing,
-                        //url: '/images/motor.png', // Specify your custom icon URL
-                        //scaledSize: new google.maps.Size(32, 32), // Adjust the size as needed
-                        //anchor: new google.maps.Point(16, 16), // Center the anchor point
+                        
                     },
 
                 });
@@ -196,79 +173,91 @@
                 ////content for each driver ends here
             }
 
-            var index = 0; // Index to keep track of the current coordinate
-            var beginPosition = new google.maps.LatLng(coordinates[0][0], coordinates[0][1]);
-            var destinationPosition = new google.maps.LatLng(coordinates[coordinates.length - 1][0], coordinates[coordinates.length - 1][1]);
+            //the coordinates are being added when the driver moves
+            var coordinates = [[places[0].lat, places[0].lng]];
 
-            // Update the directions request
-            var request = {
-                origin: beginPosition,
-                destination: destinationPosition,
-                travelMode: google.maps.TravelMode.DRIVING
-            };
 
-            directionsService.route(request, function (result, status) {
-                if (status == google.maps.DirectionsStatus.OK) {
-                    directionsRenderer.setDirections(result);
+            //this one moves the driver if status is delivering
+            if (places[0].Status == "delivering") {
+                
+                var beginPosition = new google.maps.LatLng(places[0].lat, places[0].lng);
+                var destinationPosition = new google.maps.LatLng(places[0].DestLat, places[0].DestLng);
 
-                    // Compute the initial bearing
-                    var initialBearing = google.maps.geometry.spherical.computeHeading(result.routes[0].overview_path[0], result.routes[0].overview_path[1]);
+                // Update the directions request
+                var request = {
+                    origin: beginPosition,
+                    destination: destinationPosition,
+                    travelMode: google.maps.TravelMode.DRIVING
+                };
 
-                    // Move the car with the initial bearing
-                    moveCar(result, initialBearing);
-                } else {
-                    console.error('Initial directions request failed with status:', status);
-                }
-            });
+                directionsService.route(request, function (result, status) {
+                    if (status == google.maps.DirectionsStatus.OK) {
+                        directionsRenderer.setDirections(result);
 
-            function moveCar(directionsResult, initialBearing) {
-                // Update the car's position
-                if (index < coordinates.length - 1) {
-                    index++;
-                } else {
-                    // Car has reached the final destination, clear the interval
-                    clearInterval(intervalId);
-                    directionsRenderer.setMap(null); // Hide the directions
-                    map.setCenter(marker.getPosition());
-                    return;
-                }
+                        // Compute the initial bearing
+                        var initialBearing = google.maps.geometry.spherical.computeHeading(result.routes[0].overview_path[0], result.routes[0].overview_path[1]);
 
-                var startPosition = new google.maps.LatLng(coordinates[index - 1][0], coordinates[index - 1][1]);
-                var endPosition = new google.maps.LatLng(coordinates[index][0], coordinates[index][1]);
-
-                // Calculate the step size for interpolation
-                var numSteps = 100;
-                var step = 0;
-
-                // Calculate the bearing between consecutive points
-                var bearing = google.maps.geometry.spherical.computeHeading(startPosition, endPosition);
-                //map.setCenter(marker.getPosition());
-                // Use setInterval for interpolation and smooth sliding
-                var interval = setInterval(function () {
-                    step += 1;
-
-                    // Calculate the interpolated position
-                    var interpolatedPosition = google.maps.geometry.spherical.interpolate(startPosition, endPosition, step / numSteps);
-
-                    // Set the marker position
-                    marker.setPosition(interpolatedPosition);
-
-                    // Set the marker icon with rotation
-                    marker.setIcon({
-                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                        scale: 4,
-                        rotation: bearing,
-                    });
-
-                    // Check if reached the final position
-                    if (step == numSteps) {
-                        clearInterval(interval);
+                        // Move the car with the initial bearing
+                        moveCar(result, initialBearing);
+                    } else {
+                        console.error('Initial directions request failed with status:', status);
                     }
-                }, 20);
-            }
+                });
 
-            // Set a lower interval time for smoother movement
-            var intervalId = setInterval(moveCar, 2000);
+                function moveCar(directionsResult, initialBearing) {
+                    
+                    coordinates.push([places[0].lat, place[0].lng])
+
+                    var index = 0; // Index to keep track of the current coordinate
+                    // Update the car's position
+                    if (index < coordinates.length) {
+                        index++;
+                    } else {
+                        // Car has reached the final destination, clear the interval
+                        clearInterval(intervalId);
+                        directionsRenderer.setMap(null); // Hide the directions
+                        map.setCenter(marker.getPosition());
+                        return;
+                    }
+
+                    var startPosition = new google.maps.LatLng(coordinates[index - 1][0], coordinates[index - 1][1]);
+                    var endPosition = new google.maps.LatLng(coordinates[index][0], coordinates[index][1]);
+
+                    // Calculate the step size for interpolation
+                    var numSteps = 100;
+                    var step = 0;
+
+                    // Calculate the bearing between consecutive points
+                    var bearing = google.maps.geometry.spherical.computeHeading(startPosition, endPosition);
+                    //map.setCenter(marker.getPosition());
+                    // Use setInterval for interpolation and smooth sliding
+                    var interval = setInterval(function () {
+                        step += 1;
+
+                        // Calculate the interpolated position
+                        var interpolatedPosition = google.maps.geometry.spherical.interpolate(startPosition, endPosition, step / numSteps);
+
+                        // Set the marker position
+                        marker.setPosition(interpolatedPosition);
+
+                        // Set the marker icon with rotation
+                        marker.setIcon({
+                            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                            scale: 4,
+                            rotation: bearing,
+                        });
+
+                        // Check if reached the final position
+                        if (step == numSteps) {
+                            clearInterval(interval);
+                        }
+                    }, 20);
+                }
+
+                // Set a lower interval time for smoother movement
+                var intervalId = setInterval(moveCar, 2000);
+            }
+            //this one moves the driver if status is delivering - ends here
 
 
         }
