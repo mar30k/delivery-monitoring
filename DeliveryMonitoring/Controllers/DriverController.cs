@@ -71,6 +71,8 @@ namespace DeliveryMonitoring.Controllers
             return View(filteredDrivers);
         }
 
+
+        //Details Page Endpoint Consumption -- Starts Here
         [HttpGet("/Driver/Details/{phoneNumber}")]
         public async Task<IActionResult> Details(string phoneNumber)
         {
@@ -86,8 +88,18 @@ namespace DeliveryMonitoring.Controllers
             {
                 string orderData = await orderResponse.Content.ReadAsStringAsync();
                 orders = JsonConvert.DeserializeObject<List<Order>>(orderData);
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                foreach (var order in orders)
+                {
+                   order.assignedDriverPhoneNumber = "0939977886";
+                   order.customer.latLng.lat = 9.01123;
+                   order.customer.latLng.lng = 38.76264;
+                }
+
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
 
+            // Fetch driver data
             Driver driver = null;
 
             try
@@ -98,18 +110,27 @@ namespace DeliveryMonitoring.Controllers
                 {
                     string data = await response.Content.ReadAsStringAsync();
                     driver = JsonConvert.DeserializeObject<Driver>(data);
-                }
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    if (driver.phoneNumber == "0939977886")
+                    {
+                        driver.status = "delivering";
+                        driver.latLng.lat = 9.01664;
+                        driver.latLng.lng = 38.76288;
+                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    }
 
-                if (driver == null)
-                {
-                    return NotFound(); // Return a 404 Not Found response if no driver is found.
-                }                
+                    if (driver == null)
+                    {
+                        return NotFound(); // Return a 404 Not Found response if no driver is found.
+                    }
+                }
             }
+
             catch (HttpRequestException)
             {
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
-
+            
             // Create HomeViewModel
             var viewModel = new DriverDetailsViewModel
             {
@@ -119,5 +140,25 @@ namespace DeliveryMonitoring.Controllers
 
             return View(viewModel);
         }
+        //Details Page Endpoint Consumption -- Ends Here
+
+        /////////////////////////////////////////////////////
+        [HttpGet("/Driver/LiveLocation/{phoneNumber}")]
+        public async Task<IActionResult> LiveLocation(string phoneNumber)
+        {
+            var _client = _httpClientFactory.CreateClient("Delivery");
+            string data = null;
+
+            HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers/{phoneNumber}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                data = await response.Content.ReadAsStringAsync();
+            }
+
+            return Ok(data);
+
+        }
+        ////////////////////////////////////////////////////////////
     }
 }

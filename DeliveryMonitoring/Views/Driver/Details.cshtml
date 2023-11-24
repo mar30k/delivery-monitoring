@@ -95,10 +95,10 @@
     </script>
 
     <script>
-        
-        function initMap() {
 
-            //initializes the map with specified parameters
+        function initMap() {
+            // Initialize an array to hold live location
+            let index = 0;
             const map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 20,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
@@ -110,42 +110,43 @@
             var directionsRenderer = new google.maps.DirectionsRenderer();
             directionsRenderer.setMap(map);
             //google map's direction service to draw the line in real road setting ends here
-        
+
             //this takes all the information from the api response and save it in a places array
         @{
             if (Model != null)
             {
-                foreach(var item in Model.Orders)
+                foreach (var item in Model.Orders)
                 {
                     if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
                     {
-                        <text>
-                            const places = [{ Name: '@Model.Drivers.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@Model.Drivers.phoneNumber', Status: '@Model.Drivers.status', lat: @Model.Drivers.latLng.lat, lng: @Model.Drivers.latLng.lng, DestLat: @item.customer.latLng.lat, DestLng: @item.customer.latLng.lng},];
-                        </text>
+                                        <text>
+                                            const places = [{ Name: '@Model.Drivers.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@Model.Drivers.phoneNumber', Status: '@Model.Drivers.status', lat: @Model.Drivers.latLng.lat, lng: @Model.Drivers.latLng.lng, DestLat: @item.customer.latLng.lat, DestLng: @item.customer.latLng.lng},];
+                                        </text>
                     }
                     else
                     {
-                        <text>
-                            const places = [{ Name: '@Model.Drivers.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@Model.Drivers.phoneNumber', Status: '@Model.Drivers.status', lat: @Model.Drivers.latLng.lat, lng: @Model.Drivers.latLng.lng},];
-                        </text>
+                                        <text>
+                                            const places = [{ Name: '@Model.Drivers.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@Model.Drivers.phoneNumber', Status: '@Model.Drivers.status', lat: @Model.Drivers.latLng.lat, lng: @Model.Drivers.latLng.lng},];
+                                        </text>
                     }
-                    
-                }            
+
+                }
             }
         }
-            //this takes all the information from the api response and save it in a places array - ends here
+                    //this takes all the information from the api response and save it in a places array - ends here
 
-            //sets the marker in the specified position
-                                var marker, i;
-            for (i = 0; i < places.length; i++) {
-                var marker = new google.maps.Marker({
-                    position: { lat: places[i].lat, lng: places[i].lng},
+                    //sets the marker in the specified position
+                                        var marker;
+                                        var i = 0;
+            
+                marker = new google.maps.Marker({
+                    position: { lat: places[0].lat, lng: places[0].lng },
                     title: places[i].Name,
                     map: map,
                     icon: {
                         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                         scale: 4,
-                        
+
                     },
 
                 });
@@ -171,12 +172,7 @@
                     };
                 })(infowindow));
                 ////content for each driver ends here
-            }
-
-            //the coordinates are being added when the driver moves
-            var coordinates = [[places[0].lat, places[0].lng]];
-
-
+            let liveLocation = [places[0].lat, places[0].lng];
             //this one moves the driver if status is delivering
             if (places[0].Status == "delivering") {
                 
@@ -193,75 +189,124 @@
                 directionsService.route(request, function (result, status) {
                     if (status == google.maps.DirectionsStatus.OK) {
                         directionsRenderer.setDirections(result);
+                        
+                        //var newPosition = new google.maps.LatLng(liveLocation[0], liveLocation[1]);
+                        //marker.setPosition(newPosition);
+                        //marker.setIcon({
+                           // path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                        //});
+                        // Set an interval to fetch the updated location from the API and call moveCar
+                        var apiResponseInterval = setInterval(function () {
+                            console.log('Live Location Before:', liveLocation[0], liveLocation[1]);
+                            if (liveLocation.length > 0) {
+                                
+                                liveLocation.pop();
+                                liveLocation.pop();
+                            }
+                            // Fetch the updated location from the API
+                            fetch(`/Driver/LiveLocation/${places[0].Phone}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log('API Response:', data);
+                                    // Update live location array with new data
+                                    //if (data && data.latLng && data.latLng.lat !== undefined && data.latLng.lng !== undefined) {
+                                        // Update live location array with new data
+                                    //liveLocation.push(data.latLng.lat);
+                                    //liveLocation.push(data.latLng.lat);
+                                    
+                                    if (index === 0) 
+                                    { 
+                                        liveLocation.push(9.0147);
+                                        liveLocation.push(38.76265);
+                                        
+                                    }
+                                    if (index === 1) {
+                                        liveLocation.push(9.01394);
+                                        liveLocation.push(38.76294);
 
-                        // Compute the initial bearing
-                        var initialBearing = google.maps.geometry.spherical.computeHeading(result.routes[0].overview_path[0], result.routes[0].overview_path[1]);
+                                    }
+                                    if (index === 2) {
+                                        liveLocation.push(9.01191);
+                                        liveLocation.push(38.76275);
 
-                        // Move the car with the initial bearing
-                        moveCar(result, initialBearing);
+                                    }
+                                    if (index === 3) {
+                                        liveLocation.push(9.01123);
+                                        liveLocation.push(38.76264);
+
+                                    }
+                                    console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
+                                    console.log('Live Location After:', liveLocation[0], liveLocation[1]);
+                                    //}
+                                    moveCar();
+                                })
+                                .catch(error => console.error('Error fetching live location:', error, error.responseText));
+                           
+                            if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng()) {
+                                clearInterval(apiResponseInterval);
+                                directionsRenderer.setMap(null); // Hide the directions
+                                marker.setPosition(new google.maps.LatLng(liveLocation[0], liveLocation[1]))
+                                map.setCenter(marker.getPosition());       
+                            }
+                        }, 10000); // Adjust the interval time as needed
+
                     } else {
                         console.error('Initial directions request failed with status:', status);
                     }
                 });
 
-                function moveCar(directionsResult, initialBearing) {
-                    
-                    coordinates.push([places[0].lat, place[0].lng])
+                function moveCar() {
+                    index++;
+                            // Check if the driver's location has changed
+                    if (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng()) {
 
-                    var index = 0; // Index to keep track of the current coordinate
-                    // Update the car's position
-                    if (index < coordinates.length) {
-                        index++;
-                    } else {
-                        // Car has reached the final destination, clear the interval
-                        clearInterval(intervalId);
-                        directionsRenderer.setMap(null); // Hide the directions
-                        map.setCenter(marker.getPosition());
-                        return;
+                        var liveLatLng = new google.maps.LatLng(liveLocation[0], liveLocation[1]);
+                        // Calculate the bearing between the previous location and the current location
+                        var bearing = google.maps.geometry.spherical.computeHeading(marker.getPosition(), liveLatLng);
+
+                        // Calculate the step size for interpolation
+                        var numSteps = 100;
+                        var step = 0;
+
+
+                        // Use setInterval for interpolation and smooth sliding
+                        var interval = setInterval(function () {
+                            step += 1;
+
+                            // Calculate the interpolated position
+                            var interpolatedPosition = google.maps.geometry.spherical.interpolate(marker.getPosition(), liveLatLng, step / numSteps);
+
+                            // Set the marker position
+                            marker.setPosition(interpolatedPosition);
+
+                            // Set the marker icon with rotation
+                            marker.setIcon({
+                                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                                scale: 4,
+                                rotation: bearing,
+                            });
+
+                            // Check if reached the final position
+                            if (step == numSteps) {
+                                clearInterval(interval);
+                            }
+                        }, 80);
+                        //var newPosition = new google.maps.LatLng(liveLocation[0], liveLocation[1]);
+                        //marker.setPosition(newPosition);
                     }
-
-                    var startPosition = new google.maps.LatLng(coordinates[index - 1][0], coordinates[index - 1][1]);
-                    var endPosition = new google.maps.LatLng(coordinates[index][0], coordinates[index][1]);
-
-                    // Calculate the step size for interpolation
-                    var numSteps = 100;
-                    var step = 0;
-
-                    // Calculate the bearing between consecutive points
-                    var bearing = google.maps.geometry.spherical.computeHeading(startPosition, endPosition);
-                    //map.setCenter(marker.getPosition());
-                    // Use setInterval for interpolation and smooth sliding
-                    var interval = setInterval(function () {
-                        step += 1;
-
-                        // Calculate the interpolated position
-                        var interpolatedPosition = google.maps.geometry.spherical.interpolate(startPosition, endPosition, step / numSteps);
-
-                        // Set the marker position
-                        marker.setPosition(interpolatedPosition);
-
-                        // Set the marker icon with rotation
-                        marker.setIcon({
-                            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                            scale: 4,
-                            rotation: bearing,
-                        });
-
-                        // Check if reached the final position
-                        if (step == numSteps) {
-                            clearInterval(interval);
-                        }
-                    }, 20);
+                    //else {
+                        //marker.setPosition(new google.maps.LatLng(liveLocation[0], liveLocation[1]))
+                        //marker.setIcon({
+                            //path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                        //});
+                    //}
                 }
-
-                // Set a lower interval time for smoother movement
-                var intervalId = setInterval(moveCar, 2000);
             }
             //this one moves the driver if status is delivering - ends here
 
 
         }
-        
+
     </script>
 </div>
 
