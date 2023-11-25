@@ -17,7 +17,12 @@
                         <dd class="col-sm-5">
                     <i class="bi bi-telephone-fill"></i>&nbsp;@Html.DisplayFor(model => model.assignedDriverPhoneNumber)
                         </dd>
-                        
+                @{
+                    var phoneNumber = Model.assignedDriverPhoneNumber;
+                }
+                <dd class="col-sm-2">
+                    <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@phoneNumber">Check Order Status</a>
+                </dd>
                     </dl>
 
                 </div>
@@ -84,39 +89,48 @@
 
             </div>
             <br/>
+                        
+
+    <div class="col-12 table-responsive">
         
-            <div class="card">
-                <div class="card-header">
-                    <h4>Activity Timeline</h4>
-                </div>
-                <div class="card-body">
-                    <dl class="row">
-
-                        <dt class="col-sm-5">
-                            @Html.DisplayNameFor(model => model.requestCreatedAt)
-                        </dt>
-                        <dd class="col-sm-5">
-                    <i class="bi bi-clock-fill">&nbsp;</i>@DateTimeOffset.FromUnixTimeMilliseconds(Model.requestCreatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
-                        </dd>
-
-                        <dt class="col-sm-5">
-                            @Html.DisplayNameFor(model => model.status)
-                        </dt>
-                        <dd class="col-sm-5">
-                    <i class="bi bi-bell-fill"></i>&nbsp;@Html.DisplayFor(model => model.status)
-                        </dd>
-
-                        <dt class="col-sm-5">
-                            @Html.DisplayNameFor(model => model.voucherCode)
-                        </dt>
-                        <dd class="col-sm-5">
-                    <i class="bi bi-qr-code"></i>&nbsp;@Html.DisplayFor(model => model.voucherCode)
-                        </dd>
-
-                        <dt class="col-sm-5">
-                            @Html.DisplayNameFor(model => model.isAssignedAck)
-                        </dt>
-                        <dd class="col-sm-5">
+        <table class="table pt-3" id="orderTable">
+            <thead class="table-dark">
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.requestCreatedAt)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.status)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.voucherCode)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.isAssignedAck)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.isNoDriversAck)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.orderArrivedAckByCustomer)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.orderArrivedAckByDriver)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr>
+                        <td>
+                            <i class="bi bi-clock-fill">&nbsp;@DateTimeOffset.FromUnixTimeMilliseconds(Model.requestCreatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")</i>
+                        </td>
+                        <td>
+                            <i class="bi bi-bell-fill"></i>&nbsp;@Html.DisplayFor(model => model.status)
+                        </td>
+                        <td>
+                            <i class="bi bi-qr-code"></i>&nbsp;@Html.DisplayFor(model => model.voucherCode)
+                        </td>
+                        <td>
                             @if (Model.isAssignedAck == true)
                             {
                                 <span><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
@@ -125,55 +139,45 @@
                             {
                                 <span><i class="bi bi-x-circle"></i>&nbsp;No</span>
                             }
-                        </dd>
+                        </td>
+                    <td>
+                        @if (Model.isNoDriversAck == true)
+                        {
+                            <span><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-x-circle"></i>&nbsp;No</span>
+                        }
+                    </td>
+                    <td>
+                        @if (Model.orderArrivedAckByCustomer == true)
+                        {
+                            <span><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-x-circle"></i>&nbsp;No</span>
+                        }
+                    </td>
+                    <td>
+                        @if (Model.orderArrivedAckByDriver == true)
+                        {
+                            <span><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-x-circle"></i>&nbsp;No</span>
+                        }
+                    </td>
+                    </tr>
+            </tbody>
+        </table>
+    </div>
 
-                        <dt class="col-sm-5">
-                            @Html.DisplayNameFor(model => model.isNoDriversAck)
-                        </dt>
-                        <dd class="col-sm-5">
-                            @if (Model.isNoDriversAck == true)
-                            {
-                        <span><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
-                            }
-                            else
-                            {
-                        <span><i class="bi bi-x-circle"></i>&nbsp;No</span>
-                            }
-                        </dd>
-
-                        <dt class="col-sm-5">
-                            @Html.DisplayNameFor(model => model.orderArrivedAckByCustomer)
-                        </dt>
-                        <dd class="col-sm-5">
-                            @if (Model.orderArrivedAckByCustomer == true)
-                            {
-                        <span><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
-                            }
-                            else
-                            {
-                        <span><i class="bi bi-x-circle"></i>&nbsp;No</span>
-                            }
-                        </dd>
-                        <dt class="col-sm-5">
-                            @Html.DisplayNameFor(model => model.orderArrivedAckByDriver)
-                        </dt>
-                        <dd class="col-sm-5">
-                            @if (Model.orderArrivedAckByDriver == true)
-                            {
-                        <span><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
-                            }
-                            else
-                            {
-                        <span><i class="bi bi-x-circle"></i>&nbsp;No</span>
-                            }
-                        </dd>
-                    </dl>
-
-                    <div>
-                        <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
-                    </div>
-                </div>
-            </div>
+    <div>
+        <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
+    </div>
                                             
     <br />
 </div>

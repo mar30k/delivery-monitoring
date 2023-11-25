@@ -12,7 +12,7 @@
         <div class="col-12 col-md-5">
             <h4>Driver Details</h4>
             <hr />
-            <div class="row">
+            <dl class="row">
                 
                     <!--First Name Beginning-->
                     <dt class="col-sm-5">
@@ -52,7 +52,7 @@
                     <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Additional Info
                     </a>
-            </div>
+            </dl>
                 
 
                 <div class="collapse pt-3 row" id="collapseExample">
@@ -98,9 +98,9 @@
 
         function initMap() {
             // Initialize an array to hold live location
-            let index = 0;
+            //var index = 0;
             var bearing = 0;
-            const places = [];
+            var places = [];
 
             const map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 20,
@@ -123,27 +123,49 @@
                     if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
                     {
                                         <text>
-                                            places.push({   
-                                                Name: '@Model.Drivers.firstName',
-                                                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', 
-                                                Phone: '@Model.Drivers.phoneNumber', 
-                                                Status: '@Model.Drivers.status', 
-                                                lat: @Model.Drivers.latLng.lat, 
-                                                lng: @Model.Drivers.latLng.lng, 
-                                                DestLat: @item.customer.latLng.lat, 
-                                                DestLng: @item.customer.latLng.lng});
+                            @*const places = [{
+                Name: '@Model.Drivers.firstName',
+                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                Phone: '@Model.Drivers.phoneNumber',
+                Status: '@Model.Drivers.status',
+                lat: @Model.Drivers.latLng.lat,
+                lng: @Model.Drivers.latLng.lng,
+                DestLat: @item.customer.latLng.lat,
+                DestLng: @item.customer.latLng.lng}];*@
+                                                        
+
+
+                                places.push({
+                                    Name: '@Model.Drivers.firstName',
+                                    LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                    Phone: '@Model.Drivers.phoneNumber',
+                                    Status: '@Model.Drivers.status',
+                                    lat: @Model.Drivers.latLng.lat,
+                                    lng: @Model.Drivers.latLng.lng,
+                                    DestLat: @item.customer.latLng.lat,
+                                    DestLng: @item.customer.latLng.lng});
                                         </text>
                     }
                     else
                     {
                                         <text>
-                                            places.push({ 
-                                                Name: '@Model.Drivers.firstName', 
-                                                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', 
-                                                Phone: '@Model.Drivers.phoneNumber', 
-                                                Status: '@Model.Drivers.status', 
-                                                lat: @Model.Drivers.latLng.lat, 
-                                                lng: @Model.Drivers.latLng.lng});
+
+                            @*const places = [{
+                Name: '@Model.Drivers.firstName',
+                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                Phone: '@Model.Drivers.phoneNumber',
+                Status: '@Model.Drivers.status',
+                lat: @Model.Drivers.latLng.lat,
+                lng: @Model.Drivers.latLng.lng
+                            }];*@
+
+                                places.push({
+                                    Name: '@Model.Drivers.firstName',
+                                    LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                    Phone: '@Model.Drivers.phoneNumber',
+                                    Status: '@Model.Drivers.status',
+                                    lat: @Model.Drivers.latLng.lat,
+                                    lng: @Model.Drivers.latLng.lng});
                                         </text>
                     }
 
@@ -189,7 +211,10 @@
                     };
                 })(infowindow));
                 ////content for each driver ends here
-            let liveLocation = [places[0].lat, places[0].lng];
+
+
+            var liveLocation = [places[0].lat, places[0].lng];
+            
             //this one moves the driver if status is delivering
             if (places[0].Status == "delivering") {
                 
@@ -224,9 +249,10 @@
                                     // Update live location array with new data
                                     //if (data && data.latLng && data.latLng.lat !== undefined && data.latLng.lng !== undefined) {
                                         // Update live location array with new data
-                                    //liveLocation.push(data.latLng.lat);
-                                    //liveLocation.push(data.latLng.lat);
+                                    liveLocation.push(data.latLng.lat);
+                                    liveLocation.push(data.latLng.lng);
                                     
+                                    /*
                                     if (index === 0) 
                                     { 
                                         liveLocation.push(9.0147);
@@ -252,7 +278,7 @@
                                         liveLocation.push(38.76264);
 
                                     }
-                                    
+                                    */
                                     
                                     console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
                                     console.log('Live Location After:', liveLocation[0], liveLocation[1]);
@@ -260,15 +286,9 @@
                                
                                     moveCar();
 
-                                    if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status !== "offline") {
+                                    if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status !== "delivering") {
                                         clearInterval(apiResponseInterval);
                                         directionsRenderer.setMap(null); // Hide the directions
-                                        //marker.setPosition(destinationPosition)
-                                        //marker.setIcon({
-                                        //path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                                        //scale: 4,
-                                        //rotation: bearing,
-                                        //});
                                         map.setCenter(marker.getPosition());
                                         console.log('marker inside last stop:', marker.getPosition().lat(), marker.getPosition().lng());
                                     }
@@ -284,8 +304,8 @@
                 });
 
                 function moveCar() {
-                    
-                    index++;
+                    console.log('Live Location After in moveCar:', liveLocation[0], liveLocation[1]);
+                    //index++;
                             // Check if the driver's location has changed
                     if (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng()) {
 
