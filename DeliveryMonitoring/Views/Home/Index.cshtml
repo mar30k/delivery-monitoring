@@ -137,9 +137,13 @@
 
                 foreach (var item in Model.Drivers)
                 {
-                    <text>
-                            { Name: '@item.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@item.phoneNumber', Status: '@item.status', lat: @item.latLng.lat, lng: @item.latLng.lng},
-                    </text>
+                    if(item.latLng != null)
+                    {
+                        <text>
+                                { Name: '@item.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@item.phoneNumber', Status: '@item.status', lat: @item.latLng.lat, lng: @item.latLng.lng},
+                        </text>
+                    }
+                    
                 }
                 <text>
                                                     ];

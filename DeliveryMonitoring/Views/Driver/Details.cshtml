@@ -6,58 +6,86 @@
 
 
 <div class="container-fluid pt-5">
-    
-    
+
+
     <div class="row">
         <div class="col-12 col-md-5">
             <h4>Driver Details</h4>
             <hr />
             <dl class="row">
-                
-                    <!--First Name Beginning-->
-                    <dt class="col-sm-5">
-                        @Html.DisplayNameFor(model => model.Drivers.firstName)
-                    </dt>
-                    <dd class="col-sm-7">
-                        @Model.Drivers.firstName
-                    </dd>
-                    <!--First Name Ending-->
-                    <!--Last Updated at Beginning-->
-                    <dt class="col-sm-5">
-                        @Html.DisplayNameFor(model => model.Drivers.lastUpdatedAt)
-                    </dt>
-                    <dd class="col-sm-7">
-                        @{
-                            long unixtimestamp = Model.Drivers.lastUpdatedAt;
-                        }
-                        @DateTimeOffset.FromUnixTimeMilliseconds(unixtimestamp).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
-                    </dd>
-                    <!--Last Updated at Ending-->
-                    <!--Phone Number Beginning-->
-                    <dt class="col-sm-5">
-                        @Html.DisplayNameFor(model => model.Drivers.phoneNumber)
-                    </dt>
-                    <dd class="col-sm-7">
-                        @Html.DisplayFor(model => model.Drivers.phoneNumber)
-                    </dd>
-                    <!--Phone Number Ending-->
-                    <!--Driver Status Beginning-->
-                    <dt class="col-sm-5">
-                        @Html.DisplayNameFor(model => model.Drivers.status)
-                    </dt>
-                    <dd class="col-sm-7">
-                        @Html.DisplayFor(model => model.Drivers.status)
-                    </dd>
-                    <!--Driver Status Ending-->
-                    <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-                        Additional Info
-                    </a>
-            </dl>
-                
 
-                <div class="collapse pt-3 row" id="collapseExample">
-                    <div class="card card-body">
-                        <dl>
+                <!--First Name Beginning-->
+                <dt class="col-sm-5">
+                    @Html.DisplayNameFor(model => model.Drivers.firstName)
+                </dt>
+                <dd class="col-sm-7">
+                    @Model.Drivers.firstName
+                </dd>
+                <!--First Name Ending-->
+                <!--Last Updated at Beginning-->
+                <dt class="col-sm-5">
+                    @Html.DisplayNameFor(model => model.Drivers.lastUpdatedAt)
+                </dt>
+                <dd class="col-sm-7">
+                    @{
+                        long unixtimestamp = Model.Drivers.lastUpdatedAt;
+                    }
+                    @DateTimeOffset.FromUnixTimeMilliseconds(unixtimestamp).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
+                </dd>
+                <!--Last Updated at Ending-->
+                <!--Phone Number Beginning-->
+                <dt class="col-sm-5">
+                    @Html.DisplayNameFor(model => model.Drivers.phoneNumber)
+                </dt>
+                <dd class="col-sm-7">
+                    @Html.DisplayFor(model => model.Drivers.phoneNumber)
+                </dd>
+                <!--Phone Number Ending-->
+                <!--Driver Status Beginning-->
+                <dt class="col-sm-5">
+                    @Html.DisplayNameFor(model => model.Drivers.status)
+                </dt>
+                <dd class="col-sm-7">
+                    @Html.DisplayFor(model => model.Drivers.status)
+                </dd>
+                <dt class="col-sm-5">
+                    @Html.DisplayNameFor(model => model.Drivers.isDisabled)
+                </dt>
+
+                <dd class="col-sm-7">
+                    @{
+                        if (Model?.Drivers?.isDisabled != null)
+                        {
+                            if (Model.Drivers.isDisabled == true)
+                            {
+                                // isDisabled exists and is true
+                                <text>Disabled</text>
+                            }
+                            else
+                            {
+                                // isDisabled exists and is false
+                                <text>Enabled</text>
+                            }
+                        }
+                        else
+                        {
+                            // isDisabled does not exist in the API response
+                            <text>Enabled</text>
+                        }
+                    }
+                </dd>
+
+
+            </dl>
+            <!--Driver Status Ending-->
+            <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                Additional Info
+            </a>
+
+
+            <div class="collapse pt-3 row" id="collapseExample">
+                <div class="card card-body">
+                    <dl>
                         <dt class="col-sm-5">
                             @Html.DisplayNameFor(model => model.Drivers.companyTin)
                         </dt>
@@ -70,25 +98,29 @@
                         <dd class="col-sm-9">
                             @Html.DisplayFor(model => model.Drivers.deviceID)
                         </dd>
-                        </dl>
-                        
-                    </div>
-                </div>
-            
-            
+                    </dl>
 
-            <div class="pt-3 pb-3">
-                <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
+                </div>
             </div>
+
+
+            <div class="row">
+                <div class="pt-3 pb-3 col-12 col-md-5">
+                    <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
+                </div>
+                <div class="pt-3 pb-3 col-12 col-md-5">
+                    <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Update" asp-route-id="@Model.Drivers.phoneNumber">Update Driver Info</a>
+                </div>
+            </div>
+
 
         </div>
         <div class="col-12 col-md-7" id="map">
-
         </div>
-        
+
     </div>
 
-    
+
 
     <!--Map JavaScript Implementation Starts Here-->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDihZpSLFD2uyptHT-UQDSfJm9BKHRK-VU&callback=initMap&libraries=places,geometry&v=weekly" defer>
@@ -97,8 +129,9 @@
     <script>
 
         function initMap() {
-            // Initialize an array to hold live location
-            //var index = 0;
+
+            var marker;
+            var i = 0;
             var bearing = 0;
             var places = [];
 
@@ -116,68 +149,41 @@
 
             //this takes all the information from the api response and save it in a places array
         @{
-            if (Model != null)
+            if (Model.Drivers != null)
             {
-                foreach (var item in Model.Orders)
+                <text>
+                        places =[{
+                            Name: '@Model.Drivers.firstName',
+                            LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                            Phone: '@Model.Drivers.phoneNumber',
+                            Status: '@Model.Drivers.status',
+                            lat: @Model.Drivers.latLng.lat,
+                            lng: @Model.Drivers.latLng.lng}];
+                </text>
+                if (Model.Orders != null)
                 {
-                    if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
+                    foreach (var item in Model.Orders)
                     {
-                                        <text>
-                            @*const places = [{
-                Name: '@Model.Drivers.firstName',
-                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                Phone: '@Model.Drivers.phoneNumber',
-                Status: '@Model.Drivers.status',
-                lat: @Model.Drivers.latLng.lat,
-                lng: @Model.Drivers.latLng.lng,
-                DestLat: @item.customer.latLng.lat,
-                DestLng: @item.customer.latLng.lng}];*@
-                                                        
-
-
-                                places.push({
-                                    Name: '@Model.Drivers.firstName',
-                                    LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                    Phone: '@Model.Drivers.phoneNumber',
-                                    Status: '@Model.Drivers.status',
-                                    lat: @Model.Drivers.latLng.lat,
-                                    lng: @Model.Drivers.latLng.lng,
-                                    DestLat: @item.customer.latLng.lat,
-                                    DestLng: @item.customer.latLng.lng});
-                                        </text>
+                        if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
+                        {
+                            <text>
+                                    places =[{
+                                        Name: '@Model.Drivers.firstName',
+                                        LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                        Phone: '@Model.Drivers.phoneNumber',
+                                        Status: '@Model.Drivers.status',
+                                        lat: @Model.Drivers.latLng.lat,
+                                        lng: @Model.Drivers.latLng.lng,
+                                        DestLat: @item.customer.latLng.lat,
+                                        DestLng: @item.customer.latLng.lng}];
+                            </text>
+                        }
                     }
-                    else
-                    {
-                                        <text>
-
-                            @*const places = [{
-                Name: '@Model.Drivers.firstName',
-                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                Phone: '@Model.Drivers.phoneNumber',
-                Status: '@Model.Drivers.status',
-                lat: @Model.Drivers.latLng.lat,
-                lng: @Model.Drivers.latLng.lng
-                            }];*@
-
-                                places.push({
-                                    Name: '@Model.Drivers.firstName',
-                                    LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                    Phone: '@Model.Drivers.phoneNumber',
-                                    Status: '@Model.Drivers.status',
-                                    lat: @Model.Drivers.latLng.lat,
-                                    lng: @Model.Drivers.latLng.lng});
-                                        </text>
-                    }
-
                 }
+
             }
         }
-                    //this takes all the information from the api response and save it in a places array - ends here
 
-                    //sets the marker in the specified position
-                                        var marker;
-                                        var i = 0;
-            
                 marker = new google.maps.Marker({
                     position: { lat: places[0].lat, lng: places[0].lng },
                     title: places[i].Name,
@@ -190,34 +196,34 @@
 
                 });
 
-                map.setCenter(marker.getPosition());
-                //sets the marker in the specified position - ends here
+            map.setCenter(marker.getPosition());
+            //sets the marker in the specified position - ends here
 
-                //content for each driver starts here
-                var content = "<b>Name:</b> " + places[i].Name + "<br/><b>LastUpdatedAt:</b> " + places[i].LastUpdatedAt + "<br/><b>Phone:</b> " + places[i].Phone + "<br/><b>Status:</b> " + places[i].Status
+            //content for each driver starts here
+            var content = "<b>Name:</b> " + places[i].Name + "<br/><b>LastUpdatedAt:</b> " + places[i].LastUpdatedAt + "<br/><b>Phone:</b> " + places[i].Phone + "<br/><b>Status:</b> " + places[i].Status
 
-                var infowindow = new google.maps.InfoWindow()
+            var infowindow = new google.maps.InfoWindow()
 
-                google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
-                    return function () {
-                        infowindow.setContent(content);
-                        infowindow.open(map, marker);
-                    };
-                })(marker, content, infowindow));
+            google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
+                return function () {
+                    infowindow.setContent(content);
+                    infowindow.open(map, marker);
+                };
+            })(marker, content, infowindow));
 
-                google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
-                    return function () {
-                        infowindow.close();
-                    };
-                })(infowindow));
-                ////content for each driver ends here
+            google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
+                return function () {
+                    infowindow.close();
+                };
+            })(infowindow));
+            ////content for each driver ends here
 
 
             var liveLocation = [places[0].lat, places[0].lng];
-            
+
             //this one moves the driver if status is delivering
             if (places[0].Status == "delivering") {
-                
+
                 var beginPosition = new google.maps.LatLng(places[0].lat, places[0].lng);
                 var destinationPosition = new google.maps.LatLng(places[0].DestLat, places[0].DestLng);
 
@@ -231,13 +237,13 @@
                 directionsService.route(request, function (result, status) {
                     if (status == google.maps.DirectionsStatus.OK) {
                         directionsRenderer.setDirections(result);
-                        
+
                         // Set an interval to fetch the updated location from the API and call moveCar
                         var apiResponseInterval = setInterval(function () {
-                            
+
                             console.log('Live Location Before:', liveLocation[0], liveLocation[1]);
                             if (liveLocation.length > 0) {
-                                
+
                                 liveLocation.pop();
                                 liveLocation.pop();
                             }
@@ -248,42 +254,14 @@
                                     console.log('API Response:', data);
                                     // Update live location array with new data
                                     //if (data && data.latLng && data.latLng.lat !== undefined && data.latLng.lng !== undefined) {
-                                        // Update live location array with new data
+                                    // Update live location array with new data
                                     liveLocation.push(data.latLng.lat);
                                     liveLocation.push(data.latLng.lng);
-                                    
-                                    /*
-                                    if (index === 0) 
-                                    { 
-                                        liveLocation.push(9.0147);
-                                        liveLocation.push(38.76265);
-                                    }
-                                    if (index === 1) {
-                                        liveLocation.push(9.01394);
-                                        liveLocation.push(38.76294);
 
-                                    }
-                                    if (index === 2) {
-                                        liveLocation.push(9.01191);
-                                        liveLocation.push(38.76275);
-
-                                    }
-                                    if (index === 3) {
-                                        liveLocation.push(9.01123);
-                                        liveLocation.push(38.76264);
-
-                                    }
-                                    if (index === 4) {
-                                        liveLocation.push(9.01123);
-                                        liveLocation.push(38.76264);
-
-                                    }
-                                    */
-                                    
                                     console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
                                     console.log('Live Location After:', liveLocation[0], liveLocation[1]);
                                     //}
-                               
+
                                     moveCar();
 
                                     if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status !== "delivering") {
@@ -294,8 +272,8 @@
                                     }
                                 })
                                 .catch(error => console.error('Error fetching live location:', error, error.responseText));
-                           
-                            
+
+
                         }, 8000); // Adjust the interval time as needed
 
                     } else {
@@ -306,7 +284,7 @@
                 function moveCar() {
                     console.log('Live Location After in moveCar:', liveLocation[0], liveLocation[1]);
                     //index++;
-                            // Check if the driver's location has changed
+                    // Check if the driver's location has changed
                     if (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng()) {
 
                         var liveLatLng = new google.maps.LatLng(liveLocation[0], liveLocation[1]);
@@ -340,6 +318,7 @@
                                 clearInterval(interval);
                                 marker.setPosition(liveLatLng);
                             }
+
                         }, 70);
                     }
                 }

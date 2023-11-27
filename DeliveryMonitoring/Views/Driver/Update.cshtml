@@ -1,0 +1,69 @@
+﻿@model DeliveryMonitoring.Models.Driver
+
+@{
+    ViewData["Title"] = "Update";
+}
+
+<div class="container-fluid col-11">
+    <div class="row pt-5">
+        <h3>Update Driver</h3>
+
+        <div class="col-md-5">
+            <hr />
+            <form method="post" asp-controller="Driver" asp-action="UpdateDriver" asp-route-id="@Model.phoneNumber" enctype="application/json">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="companyTin" class="control-label"></label>
+                    <input asp-for="companyTin" class="form-control" />
+                    <span asp-validation-for="companyTin" class="text-danger"></span>
+                </div>
+                <br />
+
+                <div class="form-group">
+                    <label asp-for="firstName" class="control-label"></label>
+                    <input asp-for="firstName" class="form-control" />
+                    <span asp-validation-for="firstName" class="text-danger"></span>
+                </div>
+                <br />
+
+                <div class="form-group">
+                    <label asp-for="phoneNumber" class="control-label"></label>
+                    <input asp-for="phoneNumber" class="form-control" />
+                    <span asp-validation-for="phoneNumber" class="text-danger"></span>
+                </div>
+                <br />
+
+                <div class="form">
+                    <label asp-for="isDisabled" class="control-label"></label>
+                    <br />
+                    <input type="radio" id="enableRadio" name="isDisabled" value="enable" @(Model != null && !Model.isDisabled ? "checked" : "")>
+                    <label for="enableRadio">Enabled&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                    <input type="radio" id="disableRadio" name="isDisabled" value="disable" @(Model != null && Model.isDisabled ? "checked" : "")>
+                    <label for="disableRadio">Disabled</label>
+                </div>
+                <br />
+
+                <div class="row">
+                    <div class="col-5">
+                        <a class="btn btn-danger" asp-controller="Driver" asp-action="Details" asp-route-id="@Model.phoneNumber">Back</a>
+                    </div>
+
+                    <div class="form-group col-5">
+                        <input type="submit" value="Save" class="btn btn-primary" />
+                    </div>
+                </div>
+                
+
+            </form>
+        </div>
+    </div>
+
+
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
