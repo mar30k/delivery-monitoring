@@ -10,7 +10,7 @@ namespace DeliveryMonitoring.Models
         public string deviceID { get; set; }
         [Display(Name = "First Name")]
         public string firstName { get; set; }
-        [Display(Name = "Eligibility To Work")]
+        [Display(Name = "Work Eligibility")]
         public bool isDisabled { get; set; }
         [Display(Name = "Last Updated At")]
         public long lastUpdatedAt { get; set; }

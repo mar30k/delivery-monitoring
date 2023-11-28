@@ -64,6 +64,9 @@
                             @Html.DisplayNameFor(model => model.status)
                         </th>
                         <th>
+                            @Html.DisplayNameFor(model => model.isDisabled)
+                        </th>
+                        <th>
                             Driver Details
                         </th>
                     </tr>
@@ -86,6 +89,28 @@
                             </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.status)
+                            </td>
+                            <td>
+                                @{
+                                    if (item.isDisabled != null)
+                                    {
+                                        if (item.isDisabled == true)
+                                        {
+                                            // isDisabled exists and is true
+                                            <text>Not Eligible</text>
+                                        }
+                                        else
+                                        {
+                                            // isDisabled exists and is false
+                                            <text>Eligible</text>
+                                        }
+                                    }
+                                    else
+                                    {
+                                    // isDisabled does not exist in the API response
+                                        <text>Eligible</text>
+                                    }
+                                }
                             </td>
                             <td>
                                 <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>
