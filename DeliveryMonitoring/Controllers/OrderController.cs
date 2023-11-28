@@ -36,7 +36,7 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Details(string voucherCode)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-            Order order = null;
+            OrderDetail order = null;
 
             try
             {
@@ -45,7 +45,7 @@ namespace DeliveryMonitoring.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    order = JsonConvert.DeserializeObject<Order>(data);
+                    order = JsonConvert.DeserializeObject<OrderDetail>(data);
                 }
 
                 if (order == null)
