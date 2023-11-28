@@ -197,51 +197,42 @@ namespace DeliveryMonitoring.Controllers
             return View(driver);
         }
 
-
         [HttpPatch("/Driver/UpdateDriver/{phoneNumber}")]
         public async Task<IActionResult> UpdateDriver(string phoneNumber, [FromBody] UpdateDriverModel updateModel)
         {
-            var _client = _httpClientFactory.CreateClient("Delivery");
-
-            // Create the patch body based on the provided structure
-            var patchBody = new
+            if (!ModelState.IsValid)
             {
-                firstName = updateModel.firstName,
-                isDisabled = updateModel.isDisabled,
-                phoneNumber = updateModel.phoneNumber,
-                companyTin = updateModel.companyTin
-            };
+                Console.WriteLine($"invalid modelstate");
+                return BadRequest(ModelState);
+            }
+
+            var _client = _httpClientFactory.CreateClient("Delivery");
 
             try
             {
-                // Use PatchAsync instead of GetAsync
-                var requestUri = $"{_client.BaseAddress}/drivers/{phoneNumber}";
-                var patchContent = new StringContent(JsonConvert.SerializeObject(patchBody), Encoding.UTF8, "application/json");
-                var response = await _client.PatchAsync(requestUri, patchContent);
+                // Send PATCH request to update driver details
+                var patchContent = new StringContent(JsonConvert.SerializeObject(updateModel), Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await _client.PatchAsync($"{_client.BaseAddress}/drivers/{phoneNumber}", patchContent);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Successfully updated, redirect to details page
-                    return RedirectToAction("Details", new { id = phoneNumber });
+                    // Redirect to details page or show success message
+                    return RedirectToAction("Index");
                 }
-                else if (response.StatusCode == HttpStatusCode.NotFound)
+                else
                 {
-                    // Return a 404 Not Found response if no driver is found.
-                    return NotFound();
+                    // Log detailed information about the response
+                    Console.WriteLine($"HTTP PATCH failed with status code: {response.StatusCode}");
+                    Console.WriteLine($"Response content: {await response.Content.ReadAsStringAsync()}");
+                    return View("Error");
                 }
             }
             catch (HttpRequestException)
             {
-                // Handle exception with a 500 Internal Server Error
-                return StatusCode(500);
+                // Log detailed information about the exception
+                Console.WriteLine($"HTTP PATCH request failed with exception:");
+                return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
-
-            // If the update is not successful, return an appropriate view or response
-            return View("Error"); // Change this to the appropriate view or response.
         }
-
-
-
-
     }
 }
