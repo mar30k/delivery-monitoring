@@ -46,8 +46,61 @@
                     @Html.DisplayNameFor(model => model.Drivers.status)
                 </dt>
                 <dd class="col-sm-7">
-                    @Html.DisplayFor(model => model.Drivers.status)
+                    @{
+                        if (Model.Drivers.status == "offline")
+                        {
+                            <div style="background-color: red;
+                                        border-radius: 20px;
+                                        color: black;
+                                        display: inline-block;
+                                        padding: 5px 5px;">
+                                @Html.DisplayFor(model => model.Drivers.status)
+                            </div>
+                        }
+                        else if (Model.Drivers.status == "ready")
+                        {
+                            <div style="background-color: orange;
+                                            border-radius: 20px;
+                                            color: black;
+                                            display: inline-block;
+                                            padding: 5px 5px;">
+                                @Html.DisplayFor(model => model.Drivers.status)
+                            </div>
+                        }
+                        else if (Model.Drivers.status == "accepted")
+                        {
+                            <div style="background-color: yellow;
+                                                border-radius: 20px;
+                                                color: black;
+                                                display: inline-block;
+                                                padding: 5px 5px;">
+                                @Html.DisplayFor(model => model.Drivers.status)
+                            </div>
+                        }
+                        else if (Model.Drivers.status == "delivering")
+                        {
+                            <div style="background-color: deepskyblue;
+                                                    border-radius: 20px;
+                                                    color: black;
+                                                    display: inline-block;
+                                                    padding: 5px 5px;">
+                                @Html.DisplayFor(model => model.Drivers.status)
+                            </div>
+                        }
+                        else if (Model.Drivers.status == "completed")
+                        {
+                            <div style="background-color: lawngreen;
+                                                        border-radius: 20px;
+                                                        color: black;
+                                                        display: inline-block;
+                                                        padding: 5px 5px;">
+                                @Html.DisplayFor(model => model.Drivers.status)
+                            </div>
+                        }
+                    }
                 </dd>
+                <!--Driver Status Ending-->
+
                 <dt class="col-sm-5">
                     @Html.DisplayNameFor(model => model.Drivers.isDisabled)
                 </dt>
@@ -69,13 +122,17 @@
                         }
                         else
                         {
-                            // isDisabled does not exist in the API response
+                        // isDisabled does not exist in the API response
                             <text>Eligible</text>
                         }
                     }
                 </dd>
-
-
+                <dt class="col-sm-5">
+                    @Html.DisplayNameFor(model => model.Drivers.companyTin)
+                </dt>
+                <dd class="col-sm-7">
+                    @Html.DisplayFor(model => model.Drivers.companyTin)
+                </dd>
             </dl>
             <!--Driver Status Ending-->
             <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
@@ -86,12 +143,7 @@
             <div class="collapse pt-3 row" id="collapseExample">
                 <div class="card card-body">
                     <dl>
-                        <dt class="col-sm-5">
-                            @Html.DisplayNameFor(model => model.Drivers.companyTin)
-                        </dt>
-                        <dd class="col-sm-7">
-                            @Html.DisplayFor(model => model.Drivers.companyTin)
-                        </dd>
+
                         <dt class="col-sm-3">
                             @Html.DisplayNameFor(model => model.Drivers.deviceID)
                         </dt>

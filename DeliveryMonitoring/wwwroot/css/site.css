@@ -293,14 +293,20 @@ img {
     font-size: 1em; /* Adjust the font size as needed */
 }
 
-#orderDetail {
-    margin-left: 40px; /* Adjust the margin as needed */
+@media screen and (min-width: 768px) {
+    /* This style will override the previous one for screens 768px and below */
+    #orderDetail {
+        margin-left: 40px; /* Resetting the margin for smaller screens */
+    }
 }
 
 #status {
-    background-color: #4CAF50;    
+    /*background-color: #4CAF50;*/
+    display: inline-block;
+    background-color: lightskyblue;
     border-radius: 20px;
     color: black;
+    padding: 5px 5px;
 }
 
 #letters{
@@ -310,4 +316,10 @@ img {
     margin-left: 5px;
     font-weight: 600;
     font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    .detail {
+        margin-bottom: 40px; /* Reset the margin for screens larger than 768px */
+    }
 }

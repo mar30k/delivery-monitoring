@@ -114,15 +114,15 @@ namespace DeliveryMonitoring.Controllers
                     string data = await response.Content.ReadAsStringAsync();
                     driver = JsonConvert.DeserializeObject<Driver>(data);
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                    /*
-                    if (driver.phoneNumber == "0939977886")
-                    {
-                        driver.status = "delivering";
-                        driver.latLng.lat = 9.01664;
-                        driver.latLng.lng = 38.76288;
+                    
+                    //if (driver.phoneNumber == "0939977886")
+                    //{
+                        //driver.status = "offline";
+                        //driver.latLng.lat = 9.01664;
+                        //driver.latLng.lng = 38.76288;
                         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                    }
-                    */
+                    //}
+                    
 
                     if (driver == null)
                     {
