@@ -8,11 +8,11 @@ namespace DeliveryMonitoring.Models
         public string companyTin { get; set; }
         [Display(Name = "Device ID")]
         public string deviceID { get; set; }
-        [Display(Name = "First Name")]
+        [Display(Name = "Name")]
         public string firstName { get; set; }
         [Display(Name = "Work Eligibility")]
         public bool isDisabled { get; set; }
-        [Display(Name = "Last Updated At")]
+        [Display(Name = "Last Seen")]
         public long lastUpdatedAt { get; set; }
         [Display(Name = "Latitude & Longtuide")]
         public latLng latLng { get; set; }

@@ -4,133 +4,136 @@
     ViewData["Title"] = "Index";
 }
 
-<div class="container-fluid p-3">
-    <h3>List of Drivers</h3>
+<div class="container-fluid g-0">
     
-    <a class="btn" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-        <i class="bi bi-filter"></i>Filter
-    </a>
-
-    <div class="collapse" id="collapseExample">
-        <form method="get" action="@Url.Action("Filter", "Driver")">
-
-            <div class="row mb-3">
-                <div class="col-12 col-lg-2">
-                    <label for="status">Status:</label>
-                    <select class="form-control" id="status" name="status">
-                        <option value="">All</option>
-                        <option value="offline">Offline</option>
-                        <option value="ready">Ready</option>
-                        <option value="accepted">Accepted</option>
-                        <option value="delivering">Delivering</option>
-                        <option value="completed">Completed</option>
-                        <!-- Add other status options as needed -->
-                    </select>
-                </div>
-
-                <div class="col-12 col-lg-2">
-                    <label for="companyTin">Company TIN:</label>
-                    <input type="text" class="form-control" id="companyTin" name="companyTin" placeholder="Enter Company TIN">
-                </div>
-                
-                <div class="col-2">
-                    <br/>
-                    <button type="submit" class="btn btn-primary">Filter</button>
-                </div>
-
-            </div>
-        </form>
+    <!--Find the map here-->
+    <div class="col-12 col-xl-12 pb-3" id="map">
+    </div>
+    <!--Map ends here-->
+    
+    <div class="container-fluid col-11 pt-3">
+        <a class="btn btn-dark" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+            <i class="bi bi-filter"></i>Filter
+        </a>
     </div>
     
+    <div class="container-fluid col-11">
+        <div class="collapse" id="collapseExample">
+            <form method="get" action="@Url.Action("Filter", "Driver")">
 
-    <div class="row">
-        <!--The table is Written Here-->
-        <div class="col-12 col-xl-5 table-responsive">
-            <hr />
-            <table class="table compact stripe hover pt-3" id="tablelist">
-                <thead class="table-dark">
-                    <tr>
+                <div class="row mb-3">
+                    <div class="col-12 col-lg-2">
+                        <label for="status">Status:</label>
+                        <select class="form-control" id="status" name="status">
+                            <option value="">All</option>
+                            <option value="offline">Offline</option>
+                            <option value="ready">Ready</option>
+                            <option value="accepted">Accepted</option>
+                            <option value="delivering">Delivering</option>
+                            <option value="completed">Completed</option>
+                            <!-- Add other status options as needed -->
+                        </select>
+                    </div>
 
-                        <th>
-                            @Html.DisplayNameFor(model => model.firstName)
-                        </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.lastUpdatedAt)
-                        </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.phoneNumber)
-                        </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.status)
-                        </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.isDisabled)
-                        </th>
-                        
-                        <th>
-                            Driver Details
-                        </th>
-                    </tr>
-                </thead>
-                <tbody >
-                    @foreach (var item in Model)
-                    {
+                    <div class="col-12 col-lg-2">
+                        <label for="companyTin">Company TIN:</label>
+                        <input type="text" class="form-control" id="companyTin" name="companyTin" placeholder="Enter Company TIN">
+                    </div>
 
+                    <div class="col-2">
+                        <br />
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+
+        <div class="row">
+            <!--The table is Written Here-->
+            <div class="col-12 col-xl-12 table-responsive">
+                <hr />
+                <table class="table compact stripe hover pt-3" id="tablelist">
+                    <thead class="">
                         <tr>
 
-                            <td>
-                                @Html.DisplayFor(modelItem => item.firstName)
-                            </td>
-                            <td>
-                                @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
+                            <th>
+                                @Html.DisplayNameFor(model => model.firstName)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.lastUpdatedAt)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.phoneNumber)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.status)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.isDisabled)
+                            </th>
 
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.phoneNumber)
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.status)
-                            </td>
-                            <td>
-                                @{
-                                    if (item.isDisabled != null)
-                                    {
-                                        if (item.isDisabled == true)
+                            <th>
+                                Driver Details
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+
+                            <tr>
+
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.firstName)
+                                </td>
+                                <td>
+                                    @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
+
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.phoneNumber)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.status)
+                                </td>
+                                <td>
+                                    @{
+                                        if (item.isDisabled != null)
                                         {
-                                            // isDisabled exists and is true
-                                            <text>Not Eligible</text>
+                                            if (item.isDisabled == true)
+                                            {
+                                                // isDisabled exists and is true
+                                                <text>Not Eligible</text>
+                                            }
+                                            else
+                                            {
+                                                // isDisabled exists and is false
+                                                <text>Eligible</text>
+                                            }
                                         }
                                         else
                                         {
-                                            // isDisabled exists and is false
+                                        // isDisabled does not exist in the API response
                                             <text>Eligible</text>
                                         }
                                     }
-                                    else
-                                    {
-                                    // isDisabled does not exist in the API response
-                                        <text>Eligible</text>
-                                    }
-                                }
-                            </td>
-                            
-                            <td>
-                                <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <!--this is the table ending-->
+                                </td>
 
-        <!--Find the map here-->
-        <div class="col-12 col-xl-7" id="map">
-
+                                <td>
+                                    <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <!--this is the table ending-->
         </div>
-        <!--Map ends here-->
+
     </div>
-
+    
     <!--Map JavaScript Implementation Starts Here-->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
     </script>
@@ -138,7 +141,7 @@
     <script>
         function initMap() {
             const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 22,
+                zoom: 18,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
         @{
@@ -170,7 +173,10 @@
                     position: { lat: places[i].lat, lng: places[i].lng },
                     title: places[i].Name,
                     map: map,
-                    icon: '/images/motor.png'
+                    icon: {
+                        url: '/images/motor.png',
+                        scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
+                    }
                 });
 
                 map.setCenter(marker.getPosition());
