@@ -5,7 +5,7 @@ namespace DeliveryMonitoring.Models
     public class OrderDetail
     {
         [Display(Name = "Driver Phone Number")]
-        public string assignedDriverPhoneNumber { get; set; }
+        public string assignedDriverPhoneNumber { get; set; } = string.Empty;
         [Display(Name = "Branch Name")]
         public string branchName { get; set; }
         [Display(Name = "Company TIN")]

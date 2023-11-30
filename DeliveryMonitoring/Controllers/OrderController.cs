@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace DeliveryMonitoring.Controllers
 {
@@ -46,6 +47,7 @@ namespace DeliveryMonitoring.Controllers
                 {
                     string data = await response.Content.ReadAsStringAsync();
                     order = JsonConvert.DeserializeObject<OrderDetail>(data);
+                    //order.assignedDriverPhoneNumber = "0924438476";
                 }
 
                 if (order == null)

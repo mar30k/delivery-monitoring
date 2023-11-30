@@ -20,14 +20,29 @@
                 </div>
                 <div class="d-flex d-inline-block">
                     <div id="status">
-                        @Html.DisplayFor(model => model.status)
+                        <strong>@Html.DisplayFor(model => model.status)</strong>
                     </div>
                 </div>
             </div>
 
             <div class="pt-3 col-12 col-md-5 d-flex justify-content-end">
                 <div>
-                    <a class="btn btn-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@phoneNumber">Check Order Status</a>
+                    @{
+                        if (phoneNumber != null && phoneNumber.Length < 10)
+                        {
+                            <div style="background-color: red;
+                                                                border-radius: 20px;
+                                                                color: black;
+                                                                display: inline-block;
+                                                                padding: 5px 5px;">
+                                <strong>Driver Not Assigned Yet</strong>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@phoneNumber">Check Order Status</a>
+                        }
+                    }
                 </div>
             </div>
         </div>
