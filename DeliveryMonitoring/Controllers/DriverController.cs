@@ -197,13 +197,13 @@ namespace DeliveryMonitoring.Controllers
             return View(driver);
         }
 
-        [HttpPatch("/Driver/UpdateDriver/{phoneNumber}")]
-        public async Task<IActionResult> UpdateDriver(string phoneNumber, [FromBody] UpdateDriverModel updateModel)
+        [HttpPatch("/Driver/Update/{phoneNumber}")]
+        public async Task<IActionResult> Update(string phoneNumber, [FromBody] UpdateDriverModel updateModel)
         {
             if (!ModelState.IsValid)
             {
-                Console.WriteLine($"invalid modelstate");
-                return BadRequest(ModelState);
+                // If the model is not valid, return to the view with validation errors
+                return View("Update", updateModel);
             }
 
             var _client = _httpClientFactory.CreateClient("Delivery");
@@ -216,8 +216,15 @@ namespace DeliveryMonitoring.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Redirect to details page or show success message
-                    return RedirectToAction("Index");
+                    // Retrieve the updated data
+                    var updatedResponse = await _client.GetAsync($"{_client.BaseAddress}/drivers/{phoneNumber}");
+                    updatedResponse.EnsureSuccessStatusCode(); // Ensure the retrieval was successful
+
+                    // Deserialize the updated data
+                    var updatedDriver = JsonConvert.DeserializeObject<UpdateDriverModel>(await updatedResponse.Content.ReadAsStringAsync());
+
+                    // Pass the updated data to the view
+                    return View("Update", updatedDriver);
                 }
                 else
                 {
@@ -234,5 +241,7 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
         }
+
+
     }
 }

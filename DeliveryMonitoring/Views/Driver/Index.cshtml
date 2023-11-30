@@ -89,8 +89,7 @@
                                     @Html.DisplayFor(modelItem => item.firstName)
                                 </td>
                                 <td>
-                                    @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
-
+                                    @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("HH:mm:ss - ddd, MMMM dd, yyyy")
                                 </td>
                                 <td>
                                     @Html.DisplayFor(modelItem => item.phoneNumber)

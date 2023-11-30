@@ -12,7 +12,7 @@
     </div>
     <!--Map ends here-->
 
-    <div class="container-fluid col-11 pt-3">
+    <div class="container-fluid col-11 col-lg-7 pt-3">
         <div class="card border-0" style="border-radius: 20px;" id="orderCard">
             <div class="row">
 
@@ -22,7 +22,7 @@
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.Drivers.firstName):</span>
                         <span id="outputs">@Model.Drivers.firstName</span>
-                        <span id="outputs">
+                        <a id="outputs">
                             @{
                                 if (Model.Drivers.status == "offline")
                                 {
@@ -75,7 +75,7 @@
                                     </div>
                                 }
                             }
-                        </span>
+                        </a>
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.Drivers.lastUpdatedAt):</span>

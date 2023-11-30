@@ -1,40 +1,63 @@
-﻿@model DeliveryMonitoring.Models.Companies
+﻿@model DeliveryMonitoring.Models.CompanyIndex
 
 @{
     ViewData["Title"] = "Index";
 }
 
 <div class="container-fluid pt-5 col-lg-11">
-    
+
     <h3>List of Companies</h3>
     <div class="pt-3">
         <table class="table compact stripe hover pt-3" id="tablelist">
-            <thead class="table-dark">
+            <thead class="">
                 <tr>
                     <th>
-                        @Html.DisplayNameFor(model => model.companyTins)
+                        @Html.DisplayNameFor(model => model.company.brandName)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Companies.companyTins)
                     </th>
                     <th>Company Details</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model.companyTins)
-                {
-                    <tr>
-                        <td>
-                            @item
-                        </td>
-                        <td>
-                            <a class="btn btn-outline-dark" asp-controller="Company" asp-action="Details" asp-route-id="@item">Details</a>
-                        </td>
-                    </tr>
+                @{
+                    foreach (var item in Model.Companies.companyTins)
+                    {
+                        @if (item == Model.company.tin)
+                        {
+                            <tr>
+                                <td>
+                                    @Model.company.brandName
+                                </td>
+                                <td>
+                                    @item
+                                </td>
+                                <td>
+                                    <a class="btn btn-outline-dark" asp-controller="Company" asp-action="Details" asp-route-id="@item">Details</a>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td>
+                                    @Model.company.brandName
+                                </td>
+                                <td>
+                                    @item
+                                </td>
+                                <td>
+                                    <a class="btn btn-outline-dark" asp-controller="Company" asp-action="Details" asp-route-id="@item">Details</a>
+                                </td>
+                            </tr>
+                        }
+                    }
                 }
-
-
             </tbody>
         </table>
     </div>
-    
+
 
     <!--Jquery Datatable Starts Here-->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

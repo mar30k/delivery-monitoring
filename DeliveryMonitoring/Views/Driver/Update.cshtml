@@ -10,8 +10,8 @@
 
         <div class="col-md-5">
             <hr />
-            <form id="myForm" method="patch" action="@Url.Action("UpdateDriver", "Driver", new { phoneNumber = Model.phoneNumber })">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <form id="myForm" method="patch" action="@Url.Action("Update", "Driver", new { phoneNumber = Model.phoneNumber })">
+                <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
                     <label asp-for="companyTin" class="control-label"></label>
                     <input asp-for="companyTin" class="form-control" />
@@ -60,6 +60,9 @@
 
 
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
 
 <script>
     document.getElementById("saveButton").addEventListener("click", function () {
@@ -72,7 +75,7 @@
         };
 
         // Send a PATCH request using fetch API
-        fetch('@Url.Action("UpdateDriver", "Driver", new { phoneNumber = Model.phoneNumber })', {
+        fetch('@Url.Action("Update", "Driver", new { phoneNumber = Model.phoneNumber })', {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -80,12 +83,12 @@
             body: JSON.stringify(formData)
         }).then(function (response) {
             //if (response.ok) {
-                // Successfully updated, redirect to details page
+                //Successfully updated, redirect to details page
                 window.location.href = '@Url.Action("Index", "Driver")';
-            //} else if (response.status === 404) {
+                //} else if (response.status === 404) {
                 // Return a 404 Not Found response if no driver is found.
                 //console.log('Not Found');
-            //} 
+            //}
         }).catch(function (error) {
             // Handle fetch error
             console.error('Fetch Error:', error);

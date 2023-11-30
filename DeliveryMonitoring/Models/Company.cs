@@ -13,5 +13,7 @@ namespace DeliveryMonitoring.Models
         public List<string> attachments { get; set; }
         [Display(Name = "Brand Name")]
         public string brandName { get; set; }
+        [Display(Name = "Error")]
+        public string error { get; set; }
     }
 }
