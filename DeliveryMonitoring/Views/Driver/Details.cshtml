@@ -5,174 +5,146 @@
 }
 
 
-<div class="container-fluid  col-11 pt-5">
+<div class="container-fluid">
 
+    <!--Find the map here-->
+    <div class="col-12 col-md-12" id="map">
+    </div>
+    <!--Map ends here-->
 
-    <div class="row">
-        <div class="col-12 col-md-5">
-            <h4>Driver Details</h4>
-            <hr />
-            <dl class="row">
-
-                <!--First Name Beginning-->
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.Drivers.firstName)
-                </dt>
-                <dd class="col-sm-7">
-                    @Model.Drivers.firstName
-                </dd>
-                <!--First Name Ending-->
-                <!--Last Updated at Beginning-->
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.Drivers.lastUpdatedAt)
-                </dt>
-                <dd class="col-sm-7">
-                    @{
-                        long unixtimestamp = Model.Drivers.lastUpdatedAt;
-                    }
-                    @DateTimeOffset.FromUnixTimeMilliseconds(unixtimestamp).DateTime.ToString("HH:mm:ss - ddd, MMMM dd, yyyy")
-                </dd>
-                <!--Last Updated at Ending-->
-                <!--Phone Number Beginning-->
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.Drivers.phoneNumber)
-                </dt>
-                <dd class="col-sm-7">
-                    @Html.DisplayFor(model => model.Drivers.phoneNumber)
-                </dd>
-                <!--Phone Number Ending-->
-                <!--Driver Status Beginning-->
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.Drivers.status)
-                </dt>
-                <dd class="col-sm-7">
-                    @{
-                        if (Model.Drivers.status == "offline")
-                        {
-                            <div style="background-color: red;
-                                        border-radius: 20px;
-                                        color: black;
-                                        display: inline-block;
-                                        padding: 5px 5px;">
-                                @Html.DisplayFor(model => model.Drivers.status)
-                            </div>
-                        }
-                        else if (Model.Drivers.status == "ready")
-                        {
-                            <div style="background-color: orange;
-                                            border-radius: 20px;
-                                            color: black;
-                                            display: inline-block;
-                                            padding: 5px 5px;">
-                                @Html.DisplayFor(model => model.Drivers.status)
-                            </div>
-                        }
-                        else if (Model.Drivers.status == "accepted")
-                        {
-                            <div style="background-color: yellow;
-                                                border-radius: 20px;
-                                                color: black;
-                                                display: inline-block;
-                                                padding: 5px 5px;">
-                                @Html.DisplayFor(model => model.Drivers.status)
-                            </div>
-                        }
-                        else if (Model.Drivers.status == "delivering")
-                        {
-                            <div style="background-color: deepskyblue;
-                                                    border-radius: 20px;
-                                                    color: black;
-                                                    display: inline-block;
-                                                    padding: 5px 5px;">
-                                @Html.DisplayFor(model => model.Drivers.status)
-                            </div>
-                        }
-                        else if (Model.Drivers.status == "completed")
-                        {
-                            <div style="background-color: lawngreen;
-                                                        border-radius: 20px;
-                                                        color: black;
-                                                        display: inline-block;
-                                                        padding: 5px 5px;">
-                                @Html.DisplayFor(model => model.Drivers.status)
-                            </div>
-                        }
-                    }
-                </dd>
-                <!--Driver Status Ending-->
-
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.Drivers.isDisabled)
-                </dt>
-
-                <dd class="col-sm-7">
-                    @{
-                        if (Model?.Drivers?.isDisabled != null)
-                        {
-                            if (Model.Drivers.isDisabled == true)
-                            {
-                                // isDisabled exists and is true
-                                <text>Not Eligible</text>
-                            }
-                            else
-                            {
-                                // isDisabled exists and is false
-                                <text>Eligible</text>
-                            }
-                        }
-                        else
-                        {
-                        // isDisabled does not exist in the API response
-                            <text>Eligible</text>
-                        }
-                    }
-                </dd>
-                <dt class="col-sm-5">
-                    @Html.DisplayNameFor(model => model.Drivers.companyTin)
-                </dt>
-                <dd class="col-sm-7">
-                    @Html.DisplayFor(model => model.Drivers.companyTin)
-                </dd>
-            </dl>
-            <!--Driver Status Ending-->
-            <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-                Additional Info
-            </a>
-
-
-            <div class="collapse pt-3 row" id="collapseExample">
-                <div class="card card-body">
-                    <dl>
-
-                        <dt class="col-sm-3">
-                            @Html.DisplayNameFor(model => model.Drivers.deviceID)
-                        </dt>
-                        <dd class="col-sm-9">
-                            @Html.DisplayFor(model => model.Drivers.deviceID)
-                        </dd>
-                    </dl>
-
-                </div>
-            </div>
-
-
+    <div class="container-fluid col-11 pt-3">
+        <div class="card border-0" style="border-radius: 20px;" id="orderCard">
             <div class="row">
+
+                <!--Driver Details-->
+                <div class="col-12 col-md-6 detail pt-3" id="orderDetail">
+                    <h4><i class="bi bi-car-front icon"></i>Driver</h4>
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.firstName):</span>
+                        <span id="outputs">@Model.Drivers.firstName</span>
+                        <span id="outputs">
+                            @{
+                                if (Model.Drivers.status == "offline")
+                                {
+                                    <div style="background-color: red;
+                                                            border-radius: 20px;
+                                                            color: black;
+                                                            display: inline-block;
+                                                            padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
+                                }
+                                else if (Model.Drivers.status == "ready")
+                                {
+                                    <div style="background-color: orange;
+                                                                border-radius: 20px;
+                                                                color: black;
+                                                                display: inline-block;
+                                                                padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
+                                }
+                                else if (Model.Drivers.status == "accepted")
+                                {
+                                    <div style="background-color: yellow;
+                                                                    border-radius: 20px;
+                                                                    color: black;
+                                                                    display: inline-block;
+                                                                    padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
+                                }
+                                else if (Model.Drivers.status == "delivering")
+                                {
+                                    <div style="background-color: deepskyblue;
+                                                                        border-radius: 20px;
+                                                                        color: black;
+                                                                        display: inline-block;
+                                                                        padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
+                                }
+                                else if (Model.Drivers.status == "completed")
+                                {
+                                    <div style="background-color: lawngreen;
+                                                                            border-radius: 20px;
+                                                                            color: black;
+                                                                            display: inline-block;
+                                                                            padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
+                                }
+                            }
+                        </span>
+                    </div>
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.lastUpdatedAt):</span>
+                        <span id="outputs">
+                            @{
+                                long unixtimestamp = Model.Drivers.lastUpdatedAt;
+                            }
+                            @DateTimeOffset.FromUnixTimeMilliseconds(unixtimestamp).DateTime.ToString("HH:mm:ss - ddd, MMMM dd, yyyy")
+                        </span>
+                    </div>
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.phoneNumber):</span>
+                        <span id="outputs">@Html.DisplayFor(model => model.Drivers.phoneNumber)</span>
+                    </div>
+                    
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.isDisabled):</span>
+                        <span id="outputs">
+                            @{
+                                if (Model?.Drivers?.isDisabled != null)
+                                {
+                                    if (Model.Drivers.isDisabled == true)
+                                    {
+                                    // isDisabled exists and is true
+                                        <text>Not Eligible</text>
+                                    }
+                                    else
+                                    {
+                                    // isDisabled exists and is false
+                                        <text>Eligible</text>
+                                    }
+                                }
+                                else
+                                {
+                                // isDisabled does not exist in the API response
+                                    <text>Eligible</text>
+                                }
+                            }
+                        </span>
+                    </div>
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.companyTin):</span>
+                        <span id="outputs">@Html.DisplayFor(model => model.Drivers.companyTin)</span>
+                    </div>
+                    <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        Additional Info
+                    </a>
+                    <div class="collapse pt-3 row" id="collapseExample">
+                        <div>
+                            <span id="letters">@Html.DisplayNameFor(model => model.Drivers.deviceID):</span>
+                            <span id="outputs">@Html.DisplayFor(model => model.Drivers.deviceID)</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="pt-3 col-12 col-md-5 d-flex justify-content-end">
+                    <div>
+                        <a class="btn btn-success" asp-controller="Driver" asp-action="Update" asp-route-id="@Model.Drivers.phoneNumber"><i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info</a>
+                    </div>
+                </div>
+                <!--Driver Details Ending-->
+
                 <div class="pt-3 pb-3 col-12 col-md-5">
                     <a class="btn btn-danger" asp-action="Index">Back to List</a>
                 </div>
-                <div class="pt-3 pb-3 col-12 col-md-5">
-                    <a class="btn btn-success" asp-controller="Driver" asp-action="Update" asp-route-id="@Model.Drivers.phoneNumber"><i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info</a>
-                </div>
             </div>
-
-
         </div>
-        <div class="col-12 col-md-7" id="map">
-        </div>
-
     </div>
-
-
 
     <!--Map JavaScript Implementation Starts Here-->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDihZpSLFD2uyptHT-UQDSfJm9BKHRK-VU&callback=initMap&libraries=places,geometry&v=weekly" defer>
@@ -188,7 +160,7 @@
             var places = [];
 
             const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 20,
+                zoom: 18,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
             //initializes the map with specified parameters - ends here

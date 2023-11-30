@@ -4,17 +4,20 @@
     ViewData["Title"] = "Filter";
 }
 
+<div class="container-fluid">
+    
+    <!--Find the map here-->
+    <div class="col-12 col-lg-12" id="map">
+    </div>
+    <!--Map ends here-->
 
-
-<div class="container-fluid pt-3">
-    <h3>Filtered Drivers</h3>
-    <div class="row">
-        <!--The table is Written Here-->
-        <div class="col-12 col-lg-6 table-responsive">
-            
+    <div class="container-fluid col-11">
+        <div class="row">
+            <!--The table is Written Here-->
+            <div class="col-12 col-lg-12 table-responsive">
                 <hr />
-            <table class="table compact stripe hover pt-3" id="tablelist">
-                <thead class="table-dark">
+                <table class="table compact stripe hover pt-3" id="tablelist">
+                    <thead class="table-dark">
                         <tr>
 
                             <th>
@@ -60,17 +63,16 @@
                         }
                     </tbody>
                 </table>
-            
-            <div class="pt-3 pb-3">
-                <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
+
+                <div class="pt-3 pb-3">
+                    <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
+                </div>
             </div>
+            <!--this is the table ending-->
+
         </div>
-        <!--this is the table ending-->
-        <!--Find the map here-->
-        <div class="col-12 col-lg-6" id="map">
-        </div>
-        <!--Map ends here-->
     </div>
+    
 
     <!--Map JavaScript Implementation Starts Here-->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
@@ -79,7 +81,7 @@
     <script>
         function initMap() {
             const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 21,
+                zoom: 18,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
         @{
@@ -107,7 +109,10 @@
                     position: { lat: places[i].lat, lng: places[i].lng },
                     title: places[i].Name,
                     map: map,
-                    icon: '/images/motor.png'
+                    icon: {
+                        url: '/images/motor.png',
+                        scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
+                    }
                 });
 
                 map.setCenter(marker.getPosition());
