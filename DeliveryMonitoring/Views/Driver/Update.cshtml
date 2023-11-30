@@ -4,11 +4,11 @@
     ViewData["Title"] = "Update";
 }
 
-<div class="container-fluid col-11">
+<div class="container-fluid col-6">
     <div class="row pt-5">
         <h3>Update Driver</h3>
 
-        <div class="col-md-5">
+        <div class="col-12">
             <hr />
             <form id="myForm" method="patch" action="@Url.Action("Update", "Driver", new { phoneNumber = Model.phoneNumber })">
                 <div asp-validation-summary="All" class="text-danger"></div>
