@@ -1,0 +1,128 @@
+﻿@model Login
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html style="background:white;">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Log in</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.7 -->
+    <link rel="stylesheet" href="/Styles&Script/bootstrap/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/Styles&Script/font-awesome/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="/Styles&Script/Ionicons/css/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/Styles&Script/dist/css/AdminLTE.min.css">
+    <!-- iCheck -->
+    <link rel="stylesheet" href="/Styles&Script/plugins/iCheck/square/red.css">
+    <link rel="stylesheet" href="/Styles&Script/select2/dist/css/select2.min.css">
+    <!-- Google Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+    <style>
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #ef5b25;
+            color: white;
+        }
+
+        .login-logo a, .register-logo a {
+            color: #0e0202 !important;
+        }
+
+        [class^='select2'] {
+            border-radius: 0px !important;
+        }
+
+        .login-box-body .form-control-feedback, .register-box-body .form-control-feedback {
+            color: #9f3c19;
+        }
+
+        .select2-container--default .select2-selection--single {
+            border-radius: 0;
+            height: 34px;
+        }
+
+        .div1 {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            border-radius: 4px !important;
+        }
+
+    </style>
+</head>
+
+<body class="hold-transition login-page" style="background:white;">
+    <div class="login-box">
+        <div class="login-logo">
+            <a><b>Admin </b>Dashboard</a>
+        </div>
+        <!-- /.login-logo -->
+        <div class="login-box-body div1">
+            <p class="login-box-msg">Login to start your session</p>
+            <form asp-action="Index" asp-controller="Home" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off">
+                <div class="form-group has-feedback">
+                    <input asp-for="Username" class="form-control" autofocus="autofocus" placeholder="Username" autocomplete="off" />
+                    <span class="glyphicon glyphicon-user form-control-feedback"></span>
+                    <span asp-validation-for="Username"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    <input asp-for="Password" class="form-control" placeholder="Password" autocomplete="off" />
+                    <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                    <span asp-validation-for="Password"></span>
+                </div>
+
+                @{
+                    var errors = ViewData.ModelState.Where(s => s.Value?.Errors.Count > 0).ToList();
+                    if (errors != null && errors.Count > 0)
+                    {
+                        foreach (var item in errors)
+                        {
+                            <p class="text-red">@item.Value?.Errors?.FirstOrDefault()?.ErrorMessage</p>
+                        }
+                    }
+                }
+                <div class="row">
+                    <div class="col-xs-8">
+                        <div class="checkbox icheck">
+                            <input asp-for="RememberMe" />
+                            <label asp-for="RememberMe"></label>
+                        </div>
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-xs-4">
+                        <button type="submit" class="btn btn-primary btn-block btn-flat">Login</button>
+                    </div>
+                    <!-- /.col -->
+                </div>
+            </form>
+
+        </div>
+        <!-- /.login-box-body -->
+     
+            <div>
+                <h3 style="color:#1e120d;" class="text-center">Red Cloud</h3>
+            </div>
+        
+    </div>
+    <!-- /.login-box -->
+    <!-- jQuery 3 -->
+    <script src="/Styles&Script/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap 3.3.7 -->
+    <script src="/Styles&Script/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- iCheck -->
+    <script src="/Styles&Script/plugins/iCheck/icheck.min.js"></script>
+
+    <script src="/Styles&Script/select2/dist/js/select2.full.min.js"></script>
+
+    <script>
+        $('input').iCheck({
+            checkboxClass: 'icheckbox_square-red',
+            radioClass: 'iradio_square-red',
+            increaseArea: '20%' /* optional */
+        });
+    </script>
+</body>
+</html>

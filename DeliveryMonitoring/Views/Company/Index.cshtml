@@ -10,10 +10,7 @@
     <div class="pt-3">
         <table class="table compact stripe hover pt-3" id="tablelist">
             <thead class="">
-                <tr>
-                    <th>
-                        @Html.DisplayNameFor(model => model.company.brandName)
-                    </th>
+                <tr>                    
                     <th>
                         @Html.DisplayNameFor(model => model.Companies.companyTins)
                     </th>
@@ -40,10 +37,7 @@
                         }
                         else
                         {
-                            <tr>
-                                <td>
-                                    @Model.company.brandName
-                                </td>
+                            <tr>                              
                                 <td>
                                     @item
                                 </td>
