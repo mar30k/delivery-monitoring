@@ -91,14 +91,14 @@ namespace DeliveryMonitoring.Controllers
                 string orderData = await orderResponse.Content.ReadAsStringAsync();
                 orders = JsonConvert.DeserializeObject<List<Order>>(orderData);
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                
+
                 //foreach (var order in orders)
                 //{
-                   //order.assignedDriverPhoneNumber = "0939977886";
-                   //order.customer.latLng.lat = 9.01123;
-                   //order.customer.latLng.lng = 38.76264;
+                //order.assignedDriverPhoneNumber = "0939977886";
+                //order.customer.latLng.lat = 9.01123;
+                //order.customer.latLng.lng = 38.76264;
                 //}
-                
+
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
 
@@ -135,7 +135,7 @@ namespace DeliveryMonitoring.Controllers
             {
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
-            
+
             // Create HomeViewModel
             var viewModel = new DriverDetailsViewModel
             {
@@ -165,13 +165,13 @@ namespace DeliveryMonitoring.Controllers
 
         }
         ////////////////////////////////////////////////////////////
-        
+
         [HttpGet("/Driver/Update/{phoneNumber}")]
         public async Task<IActionResult> Update(string phoneNumber)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
             // Fetch driver data
-            Driver driver = null;
+            UpdateDriverModel driver = null;
 
             try
             {
@@ -180,7 +180,7 @@ namespace DeliveryMonitoring.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    driver = JsonConvert.DeserializeObject<Driver>(data);
+                    driver = JsonConvert.DeserializeObject<UpdateDriverModel>(data);
 
                     if (driver == null)
                     {
@@ -198,14 +198,8 @@ namespace DeliveryMonitoring.Controllers
         }
 
         [HttpPatch("/Driver/Update/{phoneNumber}")]
-        public async Task<IActionResult> Update(string phoneNumber, [FromBody] UpdateDriverModel updateModel)
+        public async Task<IActionResult> Update([Bind("firstName,isDisabled,phoneNumber,companyTin")] UpdateDriverModel update, string phoneNumber, [FromBody] UpdateDriverModel updateModel)
         {
-            if (!ModelState.IsValid)
-            {
-                // If the model is not valid, return to the view with validation errors
-                return View("Update", updateModel);
-            }
-
             var _client = _httpClientFactory.CreateClient("Delivery");
 
             try
@@ -213,33 +207,21 @@ namespace DeliveryMonitoring.Controllers
                 // Send PATCH request to update driver details
                 var patchContent = new StringContent(JsonConvert.SerializeObject(updateModel), Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await _client.PatchAsync($"{_client.BaseAddress}/drivers/{phoneNumber}", patchContent);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // Retrieve the updated data
-                    var updatedResponse = await _client.GetAsync($"{_client.BaseAddress}/drivers/{phoneNumber}");
-                    updatedResponse.EnsureSuccessStatusCode(); // Ensure the retrieval was successful
-
-                    // Deserialize the updated data
-                    var updatedDriver = JsonConvert.DeserializeObject<UpdateDriverModel>(await updatedResponse.Content.ReadAsStringAsync());
-
-                    // Pass the updated data to the view
-                    return View("Update", updatedDriver);
-                }
-                else
-                {
-                    // Log detailed information about the response
-                    Console.WriteLine($"HTTP PATCH failed with status code: {response.StatusCode}");
-                    Console.WriteLine($"Response content: {await response.Content.ReadAsStringAsync()}");
-                    return View("Error");
-                }
             }
-            catch (HttpRequestException)
+            catch(HttpRequestException)
             {
                 // Log detailed information about the exception
                 Console.WriteLine($"HTTP PATCH request failed with exception:");
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
+
+            if (ModelState.IsValid)
+            {
+                // Pass the updated data to the view
+                return View("Index", "Driver");
+            }
+            return View(update);
+
         }
 
 

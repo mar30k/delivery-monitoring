@@ -54,7 +54,7 @@
 
     <!--The Donut Chart and the Map Starts Here-->
     <div class="row mt-3">
-        <div class="col-12 col-md-5 mb-3">
+        <div class="col-12 col-md-6 mb-3">
             <div class="card border-0" style="border-radius: 5px;" id="orderCard">
                 <div class="" id="donut">
                     <h4 style="margin-left: 30px; margin-top: 10px;">Drivers Status</h4>                                       
@@ -68,14 +68,14 @@
             
         </div>
 
-        <div class="col-12 col-md-7">
+        <div class="col-12 col-md-6">
             <div class="card border-0" style="border-radius: 5px;" id="orderCard">
                 <div class="" id="donut">
                     <h4 style="margin-left: 30px; margin-top: 10px;">Work Eligibility</h4>
                 </div>
                 <div class="">
-                    <div class="collapse show col-12" id="donutchart">
-                        <canvas id="myChart"></canvas>
+                    <div class="collapse show col-12" id="barchart">
+                        <canvas id="myChart2" style="margin-left: 0px;"></canvas>
                     </div>
                 </div>
             </div>
@@ -98,6 +98,10 @@
             int acceptedCount = 0;
             int deliveringCount = 0;
             int completedCount = 0;
+
+            int eligibleCount = 0;
+            int ineligibleCount = 0;
+
             foreach(var access in Model.Drivers)
             {
                 if (access.status == "offline")
@@ -120,6 +124,14 @@
                 {
                     completedCount++;
                 }
+                if(access.isDisabled == true)
+                {
+                    ineligibleCount++;
+                }
+                if (access.isDisabled == false)
+                {
+                    eligibleCount++;
+                }
             }
         }
         const ctx = document.getElementById('myChart');
@@ -133,7 +145,7 @@
                     label: 'Drivers',
                     data: [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount],
                     backgroundColor: [
-                        'rgb(231, 76, 60)',
+                        'rgb(255, 127, 127)',
                         'rgb(255, 165, 0)',
                         'rgb(255, 255, 127)',
                         'rgb(3, 138, 255)',
@@ -144,11 +156,49 @@
             }, 
 
         });
+
+        const ctx2 = document.getElementById('myChart2');
+        
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Eligible', 'Ineligible'],
+                datasets: [{
+                    label: 'Drivers',
+                    data: [@eligibleCount, @ineligibleCount],
+                    backgroundColor: [
+                        'rgb(60, 179, 113)',
+                        'rgb(255, 127, 127)',
+                        
+                    ],
+                    borderColor: [
+                        'rgb(0, 0, 0)',
+                        'rgb(0, 0, 0)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            },
+            
+        });
     </script>
     <!--code to display the donught chart ends here-->
     <!--Map JavaScript Implementation Starts Here-->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
-    </script>
+    @* <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
+    </script> *@
 
     @* <script>
         function initMap() {

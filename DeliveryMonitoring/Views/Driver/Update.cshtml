@@ -1,4 +1,4 @@
-﻿@model DeliveryMonitoring.Models.Driver
+﻿@model DeliveryMonitoring.Models.UpdateDriverModel
 
 @{
     ViewData["Title"] = "Update";
@@ -16,14 +16,14 @@
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="form-group">
                         <label asp-for="companyTin" class="control-label"></label>
-                        <input asp-for="companyTin" class="form-control" />
+                        <input asp-for="companyTin" class="form-control" pattern="^[0-9]*$" title="Company TIN must contain only numbers." required />
                         <span asp-validation-for="companyTin" class="text-danger"></span>
                     </div>
                     <br />
 
                     <div class="form-group">
                         <label asp-for="firstName" class="control-label"></label>
-                        <input asp-for="firstName" class="form-control" />
+                        <input asp-for="firstName" class="form-control" required />
                         <span asp-validation-for="firstName" class="text-danger"></span>
                     </div>
                     <br />
@@ -68,9 +68,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.17.0/jquery.validate.min.js"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/mvc/5.2.3/jquery.validate.unobtrusive.min.js"></script>
 
 <script>
     document.getElementById("saveButton").addEventListener("click", function () {
+
         // Get form data and convert it to JSON
         var formData = {
             companyTin: document.getElementById("companyTin").value,

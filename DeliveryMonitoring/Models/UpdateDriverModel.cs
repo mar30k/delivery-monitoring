@@ -4,7 +4,7 @@ namespace DeliveryMonitoring.Models
 {
     public class UpdateDriverModel
     {
-        [Display(Name = "First Name")]
+        [Display(Name = "Name")]
         [Required(ErrorMessage = "Name is required.")]
         public string firstName { get; set; }
 
@@ -17,8 +17,8 @@ namespace DeliveryMonitoring.Models
         public string phoneNumber { get; set; }
 
         [Display(Name = "Company TIN")]
-        [RegularExpression("^[0-9]*$", ErrorMessage = "Company TIN must contain only numbers.")]
         [Required(ErrorMessage = "Company TIN is required.")]
+        [RegularExpression("^[0-9]*$", ErrorMessage = "Company TIN must contain only numbers.")]
         public string companyTin { get; set; }
     }
 }
