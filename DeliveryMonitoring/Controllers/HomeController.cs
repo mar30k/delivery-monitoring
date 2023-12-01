@@ -30,6 +30,7 @@ namespace DeliveryMonitoring.Controllers
             {
                 string driverData = await driverResponse.Content.ReadAsStringAsync();
                 drivers = JsonConvert.DeserializeObject<List<Driver>>(driverData);
+                
             }
 
             // Fetch order data

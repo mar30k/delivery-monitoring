@@ -11,20 +11,20 @@
     </div>
     <!--Map ends here-->
     
-    <div class="container-fluid col-11 pt-3">
+    <div class="container-fluid col-10 pt-3 pb-3">
         <a class="btn btn-dark" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
             <i class="bi bi-filter"></i>Filter
         </a>
     </div>
     
-    <div class="container-fluid col-11">
+    <div class="container-fluid col-10">
         <div class="collapse" id="collapseExample">
             <form method="get" action="@Url.Action("Filter", "Driver")">
 
                 <div class="row mb-3">
                     <div class="col-12 col-lg-2">
                         <label for="status">Status:</label>
-                        <select class="form-control" id="status" name="status">
+                        <select class="form-control" name="status">
                             <option value="">All</option>
                             <option value="offline">Offline</option>
                             <option value="ready">Ready</option>
@@ -50,10 +50,10 @@
         </div>
 
 
-        <div class="row">
+        <div class="row card">
             <!--The table is Written Here-->
-            <div class="col-12 col-xl-12 table-responsive">
-                <hr />
+            <div class="pt-3 pb-3 col-12 col-xl-12 table-responsive">
+                
                 <table class="table compact stripe hover pt-3" id="tablelist">
                     <thead class="">
                         <tr>

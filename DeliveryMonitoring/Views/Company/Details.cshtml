@@ -32,36 +32,43 @@
     }
 }
 <body>
-    <div class="container-fluid pt-5 col-11">
-        <h4><i class="bi bi-building icon"></i>Company</h4>
-        <hr />
-        <div class="row">
-            <div class="col-12 col-lg-6">
-                <img src="@Model.attachments[0]" alt="company logo">
-            </div>
-            <div class="col-12 col-lg-6">
+    <div class="container-fluid pt-5 col-9">
+        <div class="card row">
+            
+            
+            <div class="row pt-3 pb-3">
+                <h4><i class="bi bi-building icon"></i>Company</h4>
+                <div class="col-12 col-lg-6">
+                    <img src="@Model.attachments[0]" alt="company logo">
+                </div>
+                <div class="col-12 col-lg-6">
 
-                <div>
-                    <span id="letters">Name:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.brandName)</span>
+                    <div>
+                        <span id="letters">Name:</span>
+                        <span id="outputs">@Html.DisplayFor(model => model.brandName)</span>
+                    </div>
+                    <div>
+                        <span id="letters">Rating:</span>
+                        <span id="outputs">
+                            @Html.Raw(GetStarRating(Model.rating))
+                        </span>
+                    </div>
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.ratingCount):</span>
+                        <span id="outputs">@Html.DisplayFor(model => model.ratingCount)</span>
+                    </div>
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.tin):</span>
+                        <span id="outputs">@Html.DisplayFor(model => model.tin)</span>
+                    </div>
                 </div>
                 <div>
-                    <span id="letters">Rating:</span>
-                    <span id="outputs">
-                        @Html.Raw(GetStarRating(Model.rating))
-                    </span>
-                </div>
-                <div>
-                    <span id="letters">@Html.DisplayNameFor(model => model.ratingCount):</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.ratingCount)</span>
-                </div>
-                <div>
-                    <span id="letters">@Html.DisplayNameFor(model => model.tin):</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.tin)</span>
+                    <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
                 </div>
             </div>
-        </div>
-        <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
+            
+            
+        </div>        
     </div>
 </body>
 

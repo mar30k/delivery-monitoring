@@ -4,58 +4,63 @@
     ViewData["Title"] = "Update";
 }
 
-<div class="container-fluid col-6">
+<div class="container-fluid col-10 col-md-7">
     <div class="row pt-5">
-        <h3>Update Driver</h3>
+        
 
-        <div class="col-12">
-            <hr />
-            <form id="myForm" method="patch" action="@Url.Action("Update", "Driver", new { phoneNumber = Model.phoneNumber })">
-                <div asp-validation-summary="All" class="text-danger"></div>
-                <div class="form-group">
-                    <label asp-for="companyTin" class="control-label"></label>
-                    <input asp-for="companyTin" class="form-control" />
-                    <span asp-validation-for="companyTin" class="text-danger"></span>
-                </div>
-                <br />
-
-                <div class="form-group">
-                    <label asp-for="firstName" class="control-label"></label>
-                    <input asp-for="firstName" class="form-control" />
-                    <span asp-validation-for="firstName" class="text-danger"></span>
-                </div>
-                <br />
-                <div class="form-group">
-                    <label asp-for="phoneNumber" class="control-label"></label>
-                    <input asp-for="phoneNumber" class="form-control" readonly/>
-                    <span asp-validation-for="phoneNumber" class="text-danger"></span>
-                </div>
-                <br />
-                
-
-                <div class="form">
-                    <label asp-for="isDisabled" class="control-label"></label>
+        <div class="card">
+            <div class="col-10" style="margin-left: 30px;">
+                <br /><br />
+                <h3>Update Driver</h3>
+                <form id="myForm" method="patch" action="@Url.Action("Update", "Driver", new { phoneNumber = Model.phoneNumber })">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="companyTin" class="control-label"></label>
+                        <input asp-for="companyTin" class="form-control" />
+                        <span asp-validation-for="companyTin" class="text-danger"></span>
+                    </div>
                     <br />
-                    <input type="radio" id="enableRadio" name="isDisabled" value="false" @(Model != null && !Model.isDisabled ? "checked" : "")>
-                    <label for="isDisabled">Enable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                    <input type="radio" id="disableRadio" name="isDisabled" value="true" @(Model != null && Model.isDisabled ? "checked" : "")>
-                    <label for="isDisabled">Disable</label>
-                </div>
-                <br />
 
-                <div class="row">
-                    <div class="col-5">
-                        <a class="btn btn-danger" asp-controller="Driver" asp-action="Details" asp-route-id="@Model.phoneNumber">Back</a>
+                    <div class="form-group">
+                        <label asp-for="firstName" class="control-label"></label>
+                        <input asp-for="firstName" class="form-control" />
+                        <span asp-validation-for="firstName" class="text-danger"></span>
+                    </div>
+                    <br />
+                    <div class="form-group">
+                        <label asp-for="phoneNumber" class="control-label"></label>
+                        <input asp-for="phoneNumber" class="form-control" readonly />
+                        <span asp-validation-for="phoneNumber" class="text-danger"></span>
+                    </div>
+                    <br />
+
+
+                    <div class="form">
+                        <label asp-for="isDisabled" class="control-label"></label>
+                        <br />
+                        <input type="radio" id="enableRadio" name="isDisabled" value="false" @(Model != null && !Model.isDisabled ? "checked" : "")>
+                        <label for="isDisabled">Enable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                        <input type="radio" id="disableRadio" name="isDisabled" value="true" @(Model != null && Model.isDisabled ? "checked" : "")>
+                        <label for="isDisabled">Disable</label>
+                    </div>
+                    <br />
+
+                    <div class="row">
+                        <div class="col-5">
+                            <a class="btn btn-danger" asp-controller="Driver" asp-action="Details" asp-route-id="@Model.phoneNumber">Back</a>
+                        </div>
+
+                        <div class="form-group col-5">
+                            <button id="saveButton" type="button" class="btn btn-primary"><i class="bi bi-floppy"></i>&nbsp;&nbsp;Save</button>
+                        </div>
                     </div>
 
-                    <div class="form-group col-5">
-                        <button id="saveButton" type="button" class="btn btn-primary"><i class="bi bi-floppy"></i>&nbsp;&nbsp;Save</button>
-                    </div>
-                </div>
-                
 
-            </form>
+                </form>
+                <br /><br /><br /><br />
+            </div>
         </div>
+        
     </div>
 
 

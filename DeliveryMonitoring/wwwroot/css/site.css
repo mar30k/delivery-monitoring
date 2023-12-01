@@ -1,7 +1,8 @@
-#main{
+#main {
     margin-left: 0px;
+    background-color: whitesmoke;
+    min-height: 100vh;
 }
-
 a.navbar-brand {
     white-space: normal;
     text-align: center;
@@ -47,6 +48,7 @@ button.accept-policy {
     padding: 0;
     list-style: none;
     text-decoration: none;
+
 }
 
 /*Sidebar Styling Starts here*/
@@ -119,7 +121,7 @@ ul li:hover a {
 
 /* Base styling for cards */
 .card {
-    background-color: #fff;
+    
     border: 1px solid rgba(0, 0, 0, 0.125);
     border-radius: 0.25rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -127,13 +129,12 @@ ul li:hover a {
 }
 
 #orderCard {
-    background-color: whitesmoke;
+    background-color: white;
     /*background-color: #f7f7f7;*/
 }
     /* Hover effect */
     .card:hover {
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        background-color: #ADD8E6;
     }
 
 /* Styling for card titles */
@@ -321,4 +322,10 @@ img {
     .detail {
         margin-bottom: 40px; /* Reset the margin for screens larger than 768px */
     }
+}
+
+#dashboardIcon {
+    margin-top: 10px;
+    margin-left: 40px;
+    font-size: 4em; /* Adjust the font size as needed */    
 }

@@ -7,56 +7,84 @@
 <div class="container-fluid col-11 mt-3">
     <div class="row">
         <div class="col-12 col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Drivers Registered</h5>
-                    <h1 class="card-text">@Model.Drivers.Count</h1>
-                    <a href="/Driver/Index" class="card-link btn btn-success">See All</a>
-                </div>
+            <div class="card border-0" style="border-radius:5px;" id="orderCard">
+                
+                    <div class="row">
+                        <div class="col-3" id="dashboardIcon">
+                            <i class="bi bi-truck"></i>
+                        </div>
+                        <div class="card-body col-7">
+                            <p class="card-title">Total Drivers</p>
+                            <h1 class="card-text">@Model.Drivers.Count</h1>
+                        </div>
+                    </div>
+                
+                              
             </div>
         </div>
 
         <div class="col-12 col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Total Orders</h5>
-                    <h1 class="card-text">@Model.Orders.Count</h1>
-                    <a href="/Order/Index" class="card-link btn btn-success">See All</a>
-                </div>
+            <div class="card border-0" style="border-radius: 5px;" id="orderCard">
+                <div class="row">
+                    <div class="col-3" id="dashboardIcon">
+                        <i class="bi bi-box"></i>
+                    </div>
+                    <div class="card-body col-7">
+                        <p class="card-title">Total Orders</p>
+                        <h1 class="card-text">@Model.Orders.Count</h1>
+                    </div>
+                </div>                
             </div>
         </div>
 
         <div class="col-12 col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Companies Count</h5>
-                    <h1 class="card-text">@Model.Comps.companyTins.Count</h1>
-                    <a href="/Company/Index" class="card-link btn btn-success">See All</a>
-                </div>
+            <div class="card border-0" style="border-radius: 5px;" id="orderCard">
+                <div class="row">
+                    <div class="col-3" id="dashboardIcon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <div class="card-body col-7">
+                        <p class="card-title">Companies</p>
+                        <h1 class="card-text">@Model.Comps.companyTins.Count</h1>
+                    </div>
+                </div>               
             </div>
         </div>
     </div>
 
     <!--The Donut Chart and the Map Starts Here-->
     <div class="row mt-3">
-        <div class="col-12 col-md-5">
-            <div class="" id="donut">
-                <h3>Check Drivers Status</h3>
-                <hr/>
-                <button class="colbut" data-bs-toggle="collapse" data-bs-target="#donutchart" aria-expanded="false" aria-controls="donutchart">
-                    <i class="bi bi-arrow-up"></i> Collapse
-                </button>
-            </div>
-            <div class="">
-                <div class="collapse show col-12" id="donutchart">
-                    <canvas id="myChart"></canvas>
+        <div class="col-12 col-md-5 mb-3">
+            <div class="card border-0" style="border-radius: 5px;" id="orderCard">
+                <div class="" id="donut">
+                    <h4 style="margin-left: 30px; margin-top: 10px;">Drivers Status</h4>                                       
+                </div>
+                <div class="">
+                    <div class="collapse show col-12" id="donutchart">
+                        <canvas id="myChart"></canvas>
+                    </div>
                 </div>
             </div>
+            
         </div>
 
-        <div class="col-12 col-md-7" id="map">
-           
+        <div class="col-12 col-md-7">
+            <div class="card border-0" style="border-radius: 5px;" id="orderCard">
+                <div class="" id="donut">
+                    <h4 style="margin-left: 30px; margin-top: 10px;">Work Eligibility</h4>
+                </div>
+                <div class="">
+                    <div class="collapse show col-12" id="donutchart">
+                        <canvas id="myChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+        @* <div class="col-12 col-md-7" id="map">
+           
+        </div> *@
         
     </div>
     <!--The donut chart and the map ends here-->
@@ -105,15 +133,15 @@
                     label: 'Drivers',
                     data: [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount],
                     backgroundColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(54, 162, 235)',
-                        'rgb(255, 205, 86)',
-                        'rgb(0, 128, 0)',
-                        'rgb(0, 0, 0)'
+                        'rgb(231, 76, 60)',
+                        'rgb(255, 165, 0)',
+                        'rgb(255, 255, 127)',
+                        'rgb(3, 138, 255)',
+                        'rgb(60, 179, 113)'
                     ],
                     hoverOffset: 4
                 }]
-            },
+            }, 
 
         });
     </script>
@@ -122,7 +150,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
     </script>
 
-    <script>
+    @* <script>
         function initMap() {
             const map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 18,
@@ -184,5 +212,5 @@
             }
         }
     </script>
-    <!--Map JavaScript Implementation Ends Here-->
+    <!--Map JavaScript Implementation Ends Here--> *@
 </div>
