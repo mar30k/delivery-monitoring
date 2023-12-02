@@ -10,44 +10,28 @@
     <div class="card pt-3 pb-3 row">
         <table class="table compact stripe hover pt-3 col-11" id="tablelist">
             <thead class="">
-                <tr>                    
+                <tr>
+                    <th>Company Name</th>
                     <th>
-                        @Html.DisplayNameFor(model => model.Companies.companyTins)
+                        Company TIN
                     </th>
                     <th>Company Details</th>
                 </tr>
             </thead>
             <tbody>
                 @{
-                    foreach (var item in Model.Companies.companyTins)
+                    for (int i = 0; i < Model.Companies.companyTins.Count; i++)
                     {
-                        @if (item == Model.company.tin)
-                        {
-                            <tr>
-                                <td>
-                                    @Model.company.brandName
-                                </td>
-                                <td>
-                                    @item
-                                </td>
-                                <td>
-                                    <a class="btn btn-outline-dark" asp-controller="Company" asp-action="Details" asp-route-id="@item">Details</a>
-                                </td>
-                            </tr>
-                        }
-                        else
-                        {
-                            <tr>                              
-                                <td>
-                                    @item
-                                </td>
-                                <td>
-                                    <a class="btn btn-outline-dark" asp-controller="Company" asp-action="Details" asp-route-id="@item">Details</a>
-                                </td>
-                            </tr>
-                        }
+                        <tr>
+                            <td>@Model.company[i].brandName</td>
+                            <td>@Model.Companies.companyTins[i]</td>
+                            <td>
+                                <a class="btn btn-outline-dark" asp-controller="Company" asp-action="Details" asp-route-id="@Model.Companies.companyTins[i]">Details</a>
+                            </td>
+                        </tr>
                     }
                 }
+            
             </tbody>
         </table>
     </div>

@@ -1,6 +1,7 @@
 ﻿using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Net.Http;
 using static NuGet.Packaging.PackagingConstants;
 
 namespace DeliveryMonitoring.Controllers
@@ -14,52 +15,30 @@ namespace DeliveryMonitoring.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string companyTins)
+        public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
 
-            Companies company1 = null;
-            try
-            {
-                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/companies");
+            // Call the first endpoint to get company TINs
+            HttpResponseMessage companiesResponse = await _client.GetAsync($"{_client.BaseAddress}/companies");
+            string data = await companiesResponse.Content.ReadAsStringAsync();
+            var companiesModel = JsonConvert.DeserializeObject<Companies>(data);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    string data = await response.Content.ReadAsStringAsync();
-                    company1 = JsonConvert.DeserializeObject<Companies>(data);
-                }
-
-                if (company1 == null)
-                {
-                    return NotFound(); // Return a 404 Not Found response if no driver is found.
-                }                
-            }
-            catch (HttpRequestException)
+            // Call the second endpoint for each company TIN to get detailed information
+            var companyDetailsList = new List<Company>();
+            foreach (var companyTins in companiesModel.companyTins)
             {
-                return StatusCode(500); // Handle exception with a 500 Internal Server Error
+                HttpResponseMessage companyDetailsResponse = await _client.GetAsync($"{_client.BaseAddress}/companies/{companyTins}");
+                string data2 = await companyDetailsResponse.Content.ReadAsStringAsync();
+                var companyDetailsModel = JsonConvert.DeserializeObject<Company>(data2);
+                companyDetailsList.Add(companyDetailsModel);
             }
 
-            Company company2 = null;
-            try
-            {
-                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/companies/{companyTins}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    string data = await response.Content.ReadAsStringAsync();
-                    company2 = JsonConvert.DeserializeObject<Company>(data);
-                }                               
-            }
-            catch (HttpRequestException)
-            {
-                return StatusCode(500); // Handle exception with a 500 Internal Server Error
-            }
-
-            // Create HomeViewModel
+            // Create the CompanyIndex view model
             var viewModel = new CompanyIndex
             {
-                Companies =company1,
-                company = company2                
+                Companies = companiesModel,
+                company = companyDetailsList
             };
 
             return View(viewModel);
