@@ -18,8 +18,8 @@ namespace DeliveryMonitoring.Models
 
         [Display(Name = "Company TIN")]
         [Required(ErrorMessage = "Company TIN is required.")]
-        [RegularExpression("^[0-9]*$", ErrorMessage = "Company TIN must contain only numbers.")]
-        [StringLength(10, MinimumLength = 10, ErrorMessage = "Company TIN must be exactly 10 numbers.")]
+        [RegularExpression("^[0-9]*$", ErrorMessage = "Company TIN must be exactly 10 numbers and It must not contain letters.")]
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "Company TIN must be exactly 10 numbers and It must not contain letters.")]
         public string companyTin { get; set; }
     }
 }

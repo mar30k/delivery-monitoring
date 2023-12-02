@@ -101,7 +101,7 @@
         if (companyTinValue.trim() === "") {
             companyTinValidationMessage.textContent = "Company TIN is required.";
         } else if (!isCompanyTinValid) {
-            companyTinValidationMessage.textContent = "";
+            companyTinValidationMessage.textContent = "Company TIN must be exactly 10 numbers and It must not contain letters.";
         } else {
             companyTinValidationMessage.textContent = "";
         }
