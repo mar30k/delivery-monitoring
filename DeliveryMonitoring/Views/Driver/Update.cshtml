@@ -4,32 +4,33 @@
     ViewData["Title"] = "Update";
 }
 
-<div class="container-fluid col-10 col-md-7">
+<div class="container-fluid col-10 col-lg-6">
     <div class="row pt-5">
         
 
         <div class="card">
             <div class="col-10" style="margin-left: 30px;">
                 <br /><br />
-                <h3>Update Driver</h3>
-                <form id="myForm" method="patch" action="@Url.Action("Update", "Driver", new { phoneNumber = Model.phoneNumber })">
+                <h3>Update Driver Info</h3>
+                <br/>
+                <form id="myForm" method="post" action="@Url.Action("Update", "Driver", new { phoneNumber = Model.phoneNumber })">
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="form-group">
-                        <label asp-for="companyTin" class="control-label"></label>
-                        <input asp-for="companyTin" class="form-control" pattern="^[0-9]*$" title="Company TIN must contain only numbers." required />
+                        <label asp-for="companyTin" class="control-label">Company TIN *</label>
+                        <input asp-for="companyTin" class="form-control" id="companyTin" pattern="^[0-9]*$" title="Company TIN must contain only numbers." required />
                         <span asp-validation-for="companyTin" class="text-danger"></span>
                     </div>
                     <br />
 
                     <div class="form-group">
-                        <label asp-for="firstName" class="control-label"></label>
-                        <input asp-for="firstName" class="form-control" required />
+                        <label asp-for="firstName" class="control-label">Name *</label>
+                        <input asp-for="firstName" class="form-control" id="firstName" required />
                         <span asp-validation-for="firstName" class="text-danger"></span>
                     </div>
                     <br />
                     <div class="form-group">
                         <label asp-for="phoneNumber" class="control-label"></label>
-                        <input asp-for="phoneNumber" class="form-control" readonly />
+                        <input asp-for="phoneNumber" class="form-control" id="phoneNumber" readonly />
                         <span asp-validation-for="phoneNumber" class="text-danger"></span>
                     </div>
                     <br />
@@ -65,17 +66,63 @@
 
 
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js" integrity="sha512-WMEKGZ7L5LWgaPeJtw9MBM4i5w5OSBlSjTjCtSnvFJGSVD26gE5+Td12qN5pvWXhuWaWcVwF++F7aqu9cvqP0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
-<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.6.0.min.js"></script>
-<script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.17.0/jquery.validate.min.js"></script>
-<script src="https://ajax.aspnetcdn.com/ajax/mvc/5.2.3/jquery.validate.unobtrusive.min.js"></script>
+
+<!-- Add these links to include Bootstrap CSS and JS -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
 <script>
-    document.getElementById("saveButton").addEventListener("click", function () {
+    // Function to enable or disable the save button based on the input fields
+    function toggleSaveButton() {
+        var companyTinValue = document.getElementById("companyTin").value;
+        var firstNameValue = document.getElementById("firstName").value;
 
-        // Get form data and convert it to JSON
+        var saveButton = document.getElementById("saveButton");
+
+        // Check if companyTIN contains only numbers and has a length of 10
+        var isCompanyTinValid = /^\d+$/.test(companyTinValue) && companyTinValue.length === 10;
+
+        if (companyTinValue.trim() === "" || firstNameValue.trim() === "" || !isCompanyTinValid) {
+            // Disable the button if companyTIN or firstName is empty or if companyTIN is not valid
+            saveButton.disabled = true;
+        } else {
+            // Enable the button if both fields are not empty and companyTIN is valid
+            saveButton.disabled = false;
+        }
+
+        // Trigger validation immediately on input
+        var companyTinValidationMessage = document.querySelector('[data-valmsg-for="companyTin"]');
+        var firstNameValidationMessage = document.querySelector('[data-valmsg-for="firstName"]');
+
+        if (companyTinValue.trim() === "") {
+            companyTinValidationMessage.textContent = "Company TIN is required.";
+        } else if (!isCompanyTinValid) {
+            companyTinValidationMessage.textContent = "";
+        } else {
+            companyTinValidationMessage.textContent = "";
+        }
+
+        if (firstNameValue.trim() === "") {
+            firstNameValidationMessage.textContent = "Name is required.";
+        } else {
+            firstNameValidationMessage.textContent = "";
+        }
+    }
+
+    // Attach the toggleSaveButton function to the input events of the relevant fields
+    document.getElementById("companyTin").addEventListener("input", toggleSaveButton);
+    document.getElementById("firstName").addEventListener("input", toggleSaveButton);
+
+    // Trigger validation immediately on page load
+    toggleSaveButton();
+
+    // Attach the click event handler to the saveButton
+    document.getElementById("saveButton").addEventListener("click", function () {
+        // Continue with your existing code...
         var formData = {
             companyTin: document.getElementById("companyTin").value,
             firstName: document.getElementById("firstName").value,
@@ -91,16 +138,35 @@
             },
             body: JSON.stringify(formData)
         }).then(function (response) {
-            //if (response.ok) {
-                //Successfully updated, redirect to details page
-                window.location.href = '@Url.Action("Index", "Driver")';
-                //} else if (response.status === 404) {
-                // Return a 404 Not Found response if no driver is found.
-                //console.log('Not Found');
-            //}
+            if (response.ok) {
+                // Successfully updated, redirect to details page
+                $('#successModal').modal('show');
+                setTimeout(function () {
+                    $('#successModal').modal('hide');
+                    window.location.href = '@Url.Action("Index", "Driver")';
+                }, 2000);
+            }
         }).catch(function (error) {
             // Handle fetch error
             console.error('Fetch Error:', error);
         });
     });
 </script>
+
+
+<!-- Bootstrap Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content bg-success text-white">
+            <!-- Added bg-success for green background and text-white for white text -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+            </div>
+            <div class="modal-body">
+                Driver Info Updated Successfully!
+            </div>
+
+        </div>
+    </div>
+</div>
+
