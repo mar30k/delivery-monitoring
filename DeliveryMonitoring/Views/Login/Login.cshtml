@@ -62,7 +62,7 @@
         <!-- /.login-logo -->
         <div class="login-box-body div1">
             <p class="login-box-msg">Login to start your session</p>
-            <form asp-action="Index" asp-controller="Home" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off">
+            <form asp-action="Login" asp-controller="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off">
                 <div class="form-group has-feedback">
                     <input asp-for="Username" class="form-control" autofocus="autofocus" placeholder="Username" autocomplete="off" />
                     <span class="glyphicon glyphicon-user form-control-feedback"></span>

@@ -7,11 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MediaBrowser.Common" Version="4.7.9" />
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.25" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.16" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="TweetinviAPI" Version="5.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="CNET_V7_Domain">
+      <HintPath>..\..\..\CNET v7 Login\CNET_V7_Domain.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

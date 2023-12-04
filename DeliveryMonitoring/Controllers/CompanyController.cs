@@ -6,6 +6,7 @@ using static NuGet.Packaging.PackagingConstants;
 
 namespace DeliveryMonitoring.Controllers
 {
+    //[Authorize]
     public class CompanyController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;

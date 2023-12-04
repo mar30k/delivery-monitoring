@@ -1,4 +1,5 @@
 ﻿using DeliveryMonitoring.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -9,19 +10,20 @@ using System.Text;
 
 namespace DeliveryMonitoring.Controllers
 {
+    //[Authorize]
     public class DriverController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
         public DriverController(IHttpClientFactory httpClientFactory)
         {
-            _httpClientFactory = httpClientFactory;
+            _httpClientFactory = httpClientFactory;            
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-            List<Driver> drivers = new List<Driver>();
+            List<Driver> drivers = new List<Driver>();            
 
             HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "/drivers");
 
@@ -31,7 +33,7 @@ namespace DeliveryMonitoring.Controllers
                 drivers = JsonConvert.DeserializeObject<List<Driver>>(data);
             }
             return View(drivers);
-
+            
         }
 
         [HttpGet]
