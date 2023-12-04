@@ -1,10 +1,5 @@
 ﻿@model DeliveryMonitoring.Models.DriverDetailsViewModel
 
-@{
-    ViewData["Title"] = "Details";
-}
-
-
 <div class="container-fluid">
 
     <!--Find the map here-->
@@ -123,13 +118,7 @@
                     <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Additional Info
                     </a>
-                    <div class="collapse pt-3 row" id="collapseExample">
-                        <div>
-                            <span id="letters">@Html.DisplayNameFor(model => model.Drivers.deviceID):</span>
-                            <span id="outputs">@Html.DisplayFor(model => model.Drivers.deviceID)</span>
-                        </div>
-
-                    </div>
+                    
                 </div>
 
                 <div class="pt-3 col-12 col-md-5 d-flex justify-content-end">
@@ -139,9 +128,17 @@
                 </div>
                 <!--Driver Details Ending-->
 
-                <div class="pt-3 pb-3 col-12 col-md-5">
-                    <a class="btn btn-danger" asp-action="Index" style="margin-left: 40px;">Back to List</a>
-                </div>
+                
+            </div>
+            <div class="collapse pt-3 row" id="collapseExample">
+                <div class="col-11" id="orderDetail">
+                    <span id="letters">@Html.DisplayNameFor(model => model.Drivers.deviceID):</span>
+                    <span id="" style="font-weight: 600;
+    font-size: 16px;">@Html.DisplayFor(model => model.Drivers.deviceID)</span>
+                </div>               
+            </div>
+            <div class="pt-3 pb-3 col-12 col-md-5">
+                <a class="btn btn-danger" asp-action="Index" style="margin-left: 40px;">Back to List</a>
             </div>
         </div>
     </div>
