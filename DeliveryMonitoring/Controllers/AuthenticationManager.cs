@@ -2,17 +2,19 @@
 using CNET_ERP_V7.WebConstants;
 using CNET_V7_Domain.Domain.SecuritySchema;
 using CNET_V7_Domain.Misc;
+using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Authentication;
 using Newtonsoft.Json;
 using NuGet.Protocol.Plugins;
+
 
 namespace DeliveryMonitoring.Controllers
 {
     public class AuthenticationManager
     {
         private IHttpContextAccessor _httpContextAccessor;
-        private readonly HttpClient _httpClient;
- 
+        private readonly IHttpClientFactory _httpClientFactory;
+
         private UserDTO _cachedUser;
         public AuthenticationManager(
                 IHttpContextAccessor httpContextAccessor,
@@ -20,12 +22,13 @@ namespace DeliveryMonitoring.Controllers
                 )
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClient = httpClientFactory.CreateClient("DeliveryLogin");
+            _httpClientFactory = httpClientFactory;
         }
 
 
         public async Task<ResponseModel<LoginResponse>> AuthenticateUser(string userName, string password)
         {
+            var _client = _httpClientFactory.CreateClient("DeliveryLogin");
             var _s = new ResponseModel<LoginResponse>();
             if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
             {
@@ -34,8 +37,13 @@ namespace DeliveryMonitoring.Controllers
             }
             else
             {
+                var endpoint = "/SysInitialize/authenticate";
+                string queryString = $"?userName={userName}&password={password}&tin=0076217301";
+                string requestUrl = $"{endpoint}{queryString}";
 
-                HttpResponseMessage response = await _httpClient.GetAsync(_httpClient.BaseAddress);
+                //var x = "http://196.191.244.136:7012/api/SysInitialize/authenticate?userName=CNETAdmin&password=123456&tin=0076217301";
+                HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + requestUrl);
+               
                 string juservalidation = await response.Content.ReadAsStringAsync();
                 var userValidation = JsonConvert.DeserializeObject<ResponseModel<LoginResponse>>(juservalidation);
 
@@ -79,35 +87,20 @@ namespace DeliveryMonitoring.Controllers
             //cache authenticated customer
             _cachedUser = user;
         }
+        public virtual async Task<cookieValidation> identificationValid()
+        {
+            var validinfo = new cookieValidation();
+            var idCookie = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.CookieScheme];
+            if (!string.IsNullOrWhiteSpace(idCookie))
+            {
+         
+                    validinfo.isValid = true;
+                    return validinfo;
+            }
+            validinfo.isValid = false;
+            return validinfo;
+        }
 
-        //public virtual async Task<UserDTO?> GetAuthenticatedUser()
-        //{
-        //    if (_cachedUser != null)
-        //        return _cachedUser;
-
-        //    var authenticateResult = await _httpContextAccessor.HttpContext.AuthenticateAsync(CNET_WebConstantes.CookieScheme);
-        //    if (!authenticateResult.Succeeded)
-        //        return null;
-
-        //    UserDTO? user = null;
-
-        //    //try to get customer by username
-        //    var usernameClaim = authenticateResult.Principal.FindFirst(claim => claim.Type == ClaimTypes.Name
-        //        && claim.Issuer.Equals(CNET_WebConstantes.ClaimsIssuer, StringComparison.InvariantCultureIgnoreCase));
-        //    if (usernameClaim != null)
-        //    {
-        //        user = await _sharedHelpers.GetUserByUserName(usernameClaim.Value) ?? null;
-        //    }
-
-        //    //whether the found user is available
-        //    if (user == null)
-        //        return null;
-
-        //    //cache authenticated customer
-        //    _cachedUser = user;
-
-        //    return _cachedUser;
-        //}
 
         public virtual async void SignOut()
         {

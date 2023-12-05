@@ -19,4 +19,8 @@ namespace DeliveryMonitoring.Models
         [DisplayName("Remember Me")]
         public bool RememberMe { get; set; }
     }
+    public class cookieValidation
+    {
+        public bool isValid { get; set; }
+    }
 }

@@ -1,3 +1,5 @@
+using CNET_ERP_V7.WebConstants;
+using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -14,16 +16,27 @@ builder.Services.AddHttpClient("Delivery", httpClient =>
 });
 builder.Services.AddHttpClient("DeliveryLogin", httpClient =>
 {
-    httpClient.BaseAddress = new Uri("");
+    httpClient.BaseAddress = new Uri("http://196.191.244.136:7012/api");
     //httpClient.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
 });
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Login/Login";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-    });
+//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+//    .AddCookie(options =>
+//    {
+//        options.LoginPath = "/Login/Login";
+//        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+//    });
+builder.Services.AddAuthentication(CNET_WebConstantes.CookieScheme)
+     .AddCookie(CNET_WebConstantes.CookieScheme, options =>
+     {
+         options.AccessDeniedPath = "/account/denied";
+         options.LoginPath = "/login";
+     });
+builder.Services.AddSession();
+
+builder.Services.AddHttpContextAccessor();
+//builder.Services.AddScoped<AuthenticationManager>();
+builder.Services.AddScoped<AuthenticationManager>();
 
 var app = builder.Build();
 

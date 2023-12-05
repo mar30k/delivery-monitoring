@@ -1,5 +1,8 @@
-﻿using DeliveryMonitoring.Models;
+﻿using CNET_V7_Domain.Domain.SecuritySchema;
+using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Net.Http;
 
 namespace DeliveryMonitoring.Controllers
 {
@@ -7,32 +10,39 @@ namespace DeliveryMonitoring.Controllers
 
     {
         private readonly AuthenticationManager _authenticationManager;
-
-        public LoginController(AuthenticationManager authenticationManager)
+        private readonly IHttpClientFactory _httpClientFactory;
+        public LoginController(AuthenticationManager authenticationManager,
+            IHttpClientFactory httpClientFactory)
         {
             _authenticationManager = authenticationManager;
+            _httpClientFactory = httpClientFactory;
         }
 
-        public IActionResult Login()
+        public async Task<IActionResult> Login()
         {
-            return View();
+            var identificationResult = await _authenticationManager.identificationValid();
+
+            if (identificationResult.isValid)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View("Login");
         }
+
 
         [HttpPost]
-        public async Task<IActionResult> Login(Login model, string? returnUrl)
+        public async Task<IActionResult> Login(Login model)
         {
             if (ModelState.IsValid)
             {
                 var loginResult = await _authenticationManager.AuthenticateUser(model.Username?.Trim(), model.Password);
                 if (loginResult.Success)
                 {
-
-                    _authenticationManager.SignIn(loginResult, model.RememberMe);
-                    if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
-                    {
-                        return RedirectToAction("Login", "Login");
-                    }
-                    return Redirect(returnUrl);
+                    var user = await GetUserByUserName(model.Username?.Trim());
+                    _authenticationManager.SignIn(user, model.RememberMe);
+             
+                    return RedirectToAction("Index", "Home");
 
                 }
                 else
@@ -49,5 +59,22 @@ namespace DeliveryMonitoring.Controllers
             _authenticationManager.SignOut();
             return RedirectToAction("Login");
         }
-    }
+        public virtual async Task<UserDTO?> GetUserByUserName(string _userName)
+        {
+            var _client = _httpClientFactory.CreateClient("DeliveryLogin");
+
+            UserDTO? _loggedInUser;
+
+            var response = await _client.GetAsync(_client.BaseAddress+ "/User/filter?userName=" + _userName);
+            if( !response.IsSuccessStatusCode )
+                return null;
+
+                var juser = await response.Content.ReadAsStringAsync();
+            var usernameUser = JsonConvert.DeserializeObject<List<UserDTO>>(juser);
+
+            _loggedInUser = usernameUser != null && usernameUser.Count > 0 ? usernameUser.FirstOrDefault() : null;
+
+            return _loggedInUser;
+        }
+}
 }
