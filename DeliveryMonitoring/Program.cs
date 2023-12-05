@@ -2,10 +2,12 @@ using CNET_ERP_V7.WebConstants;
 using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 builder.Services.AddHttpClient();
@@ -20,12 +22,6 @@ builder.Services.AddHttpClient("DeliveryLogin", httpClient =>
     //httpClient.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
 });
 
-//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-//    .AddCookie(options =>
-//    {
-//        options.LoginPath = "/Login/Login";
-//        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-//    });
 builder.Services.AddAuthentication(CNET_WebConstantes.CookieScheme)
      .AddCookie(CNET_WebConstantes.CookieScheme, options =>
      {

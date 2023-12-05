@@ -1,5 +1,9 @@
 ﻿@model DeliveryMonitoring.Models.DriverDetailsViewModel
+@* @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    var apiKey = Configuration["GoogleMaps:ApiKey"];
 
+} *@
 <div class="container-fluid">
 
     <!--Find the map here-->
@@ -311,7 +315,7 @@
                         var liveLatLng = new google.maps.LatLng(liveLocation[0], liveLocation[1]);
                         // Calculate the bearing between the previous location and the current location
                         bearing = google.maps.geometry.spherical.computeHeading(marker.getPosition(), liveLatLng);
-
+                        
                         // Calculate the step size for interpolation
                         var numSteps = 100;
                         var step = 0;

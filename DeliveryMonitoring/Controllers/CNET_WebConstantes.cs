@@ -8,9 +8,5 @@
 
         public const int IdentificationCookieLifeTime = 10080;
         public const int IdentificationCookieDailyLifeTime = 1440;
-   
-
-
-
     }
 }

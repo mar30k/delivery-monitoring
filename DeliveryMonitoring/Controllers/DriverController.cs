@@ -16,7 +16,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         public DriverController(IHttpClientFactory httpClientFactory)
         {
-            _httpClientFactory = httpClientFactory;            
+            _httpClientFactory = httpClientFactory;
         }
         
         [HttpGet]
@@ -81,7 +81,6 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Details(string phoneNumber)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-
 
             // Fetch order data
             List<Order> orders = new List<Order>();
