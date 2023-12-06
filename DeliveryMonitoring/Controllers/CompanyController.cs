@@ -1,4 +1,5 @@
 ﻿using DeliveryMonitoring.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
@@ -6,7 +7,7 @@ using static NuGet.Packaging.PackagingConstants;
 
 namespace DeliveryMonitoring.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class CompanyController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;

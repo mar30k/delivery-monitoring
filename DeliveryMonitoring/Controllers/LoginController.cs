@@ -1,11 +1,15 @@
 ﻿using CNET_V7_Domain.Domain.SecuritySchema;
 using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using System.Net.Http;
+using Tweetinvi.Core.Models;
+using Tweetinvi.Parameters;
 
 namespace DeliveryMonitoring.Controllers
 {
+    
     public class LoginController : Controller
 
     {
@@ -26,8 +30,8 @@ namespace DeliveryMonitoring.Controllers
             {
                 return RedirectToAction("Index", "Home");
             }
-
             return View("Login");
+
         }
 
 
@@ -41,7 +45,7 @@ namespace DeliveryMonitoring.Controllers
                 {
                     var user = await GetUserByUserName(model.Username?.Trim());
                     _authenticationManager.SignIn(user, model.RememberMe);
-             
+
                     return RedirectToAction("Index", "Home");
 
                 }
@@ -65,16 +69,16 @@ namespace DeliveryMonitoring.Controllers
 
             UserDTO? _loggedInUser;
 
-            var response = await _client.GetAsync(_client.BaseAddress+ "/User/filter?userName=" + _userName);
-            if( !response.IsSuccessStatusCode )
+            var response = await _client.GetAsync(_client.BaseAddress + "/User/filter?userName=" + _userName);
+            if (!response.IsSuccessStatusCode)
                 return null;
 
-                var juser = await response.Content.ReadAsStringAsync();
+            var juser = await response.Content.ReadAsStringAsync();
             var usernameUser = JsonConvert.DeserializeObject<List<UserDTO>>(juser);
 
             _loggedInUser = usernameUser != null && usernameUser.Count > 0 ? usernameUser.FirstOrDefault() : null;
 
             return _loggedInUser;
         }
-}
+    }
 }

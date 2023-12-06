@@ -19,7 +19,6 @@ builder.Services.AddHttpClient("Delivery", httpClient =>
 builder.Services.AddHttpClient("DeliveryLogin", httpClient =>
 {
     httpClient.BaseAddress = new Uri("http://196.191.244.136:7012/api");
-    //httpClient.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
 });
 
 builder.Services.AddAuthentication(CNET_WebConstantes.CookieScheme)
@@ -31,7 +30,6 @@ builder.Services.AddAuthentication(CNET_WebConstantes.CookieScheme)
 builder.Services.AddSession();
 
 builder.Services.AddHttpContextAccessor();
-//builder.Services.AddScoped<AuthenticationManager>();
 builder.Services.AddScoped<AuthenticationManager>();
 
 var app = builder.Build();

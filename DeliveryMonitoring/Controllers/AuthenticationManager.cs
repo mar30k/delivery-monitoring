@@ -43,7 +43,7 @@ namespace DeliveryMonitoring.Controllers
 
                 //var x = "http://196.191.244.136:7012/api/SysInitialize/authenticate?userName=CNETAdmin&password=123456&tin=0076217301";
                 HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + requestUrl);
-               
+
                 string juservalidation = await response.Content.ReadAsStringAsync();
                 var userValidation = JsonConvert.DeserializeObject<ResponseModel<LoginResponse>>(juservalidation);
 
@@ -93,15 +93,13 @@ namespace DeliveryMonitoring.Controllers
             var idCookie = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.CookieScheme];
             if (!string.IsNullOrWhiteSpace(idCookie))
             {
-         
-                    validinfo.isValid = true;
-                    return validinfo;
+                validinfo.isValid = true;
+                return validinfo;
             }
             validinfo.isValid = false;
             return validinfo;
         }
-
-
+       
         public virtual async void SignOut()
         {
             //reset cached customer

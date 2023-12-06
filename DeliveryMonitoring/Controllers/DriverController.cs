@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DeliveryMonitoring.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class DriverController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
@@ -91,16 +91,13 @@ namespace DeliveryMonitoring.Controllers
             {
                 string orderData = await orderResponse.Content.ReadAsStringAsync();
                 orders = JsonConvert.DeserializeObject<List<Order>>(orderData);
-                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 //foreach (var order in orders)
                 //{
-                //order.assignedDriverPhoneNumber = "0939977886";
-                //order.customer.latLng.lat = 9.01123;
-                //order.customer.latLng.lng = 38.76264;
+                //    order.assignedDriverPhoneNumber = "0918539962";
+                //    order.customer.latLng.lat = 9.01123;
+                //    order.customer.latLng.lng = 38.76264;
                 //}
-
-                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
 
             // Fetch driver data
@@ -114,16 +111,13 @@ namespace DeliveryMonitoring.Controllers
                 {
                     string data = await response.Content.ReadAsStringAsync();
                     driver = JsonConvert.DeserializeObject<Driver>(data);
-                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                    //if (driver.phoneNumber == "0924438476")
+                    //if (driver.phoneNumber == "0918539962")
                     //{
-                    //driver.status = "completed";
-                    //driver.latLng.lat = 9.01664;
-                    //driver.latLng.lng = 38.76288;
-                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    //    driver.status = "delivering";
+                    //    driver.latLng.lat = 9.01664;
+                    //    driver.latLng.lng = 38.76288;
                     //}
-
 
                     if (driver == null)
                     {
@@ -156,7 +150,7 @@ namespace DeliveryMonitoring.Controllers
             string data = null;
 
             HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers/{phoneNumber}");
-
+           
             if (response.IsSuccessStatusCode)
             {
                 data = await response.Content.ReadAsStringAsync();

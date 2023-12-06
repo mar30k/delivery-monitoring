@@ -7,7 +7,7 @@ using System.Net.Http;
 
 namespace DeliveryMonitoring.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class HomeController : Controller
     {
         //HttpClient Setup starts here

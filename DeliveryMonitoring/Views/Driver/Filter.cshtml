@@ -93,6 +93,10 @@
 
                 foreach (var item in Model)
                 {
+                    if(item.latLng == null)
+                    {
+                        continue;
+                    }
                     <text>
                             { Name: '@item.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@item.phoneNumber', Status: '@item.status', lat: @item.latLng.lat, lng: @item.latLng.lng},
                     </text>

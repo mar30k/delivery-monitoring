@@ -86,6 +86,11 @@
                         </span>
                     </div>
                     <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.companyTin):</span>
+                        @* <span id="outputs">@Html.DisplayFor(model => model.Drivers.companyTin)</span> *@
+                        <span id="outputs"><a asp-controller="Company" asp-action="Details" asp-route-id="@Model.Drivers.companyTin">@Html.DisplayFor(model => model.Drivers.companyTin)</a></span>
+                    </div>
+                    <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.Drivers.phoneNumber):</span>
                         <span id="outputs">@Html.DisplayFor(model => model.Drivers.phoneNumber)</span>
                     </div>
@@ -115,10 +120,7 @@
                             }
                         </span>
                     </div>
-                    <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.companyTin):</span>
-                        <span id="outputs">@Html.DisplayFor(model => model.Drivers.companyTin)</span>
-                    </div>
+                    
                     <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Additional Info
                     </a>
@@ -141,9 +143,15 @@
     font-size: 16px;">@Html.DisplayFor(model => model.Drivers.deviceID)</span>
                 </div>               
             </div>
-            <div class="pt-3 pb-3 col-12 col-md-5">
-                <a class="btn btn-danger" asp-action="Index" style="margin-left: 40px;">Back to List</a>
+            <div class="row">
+                <div class="pt-3 pb-3 col-12 col-md-9">
+                    <a class="btn btn-danger" asp-action="Index" style="margin-left: 40px;">Back to List</a>
+                </div>
+                @* <div class="pt-3 pb-3 col-12 col-md-3">
+                    <a class="btn btn-dark" asp-controller="Company" asp-action="Details" asp-route-id="@Model.Drivers.companyTin">Company</a>
+                </div> *@
             </div>
+            
         </div>
     </div>
 
@@ -152,9 +160,7 @@
     </script>
 
     <script>
-
         function initMap() {
-
             var marker;
             var i = 0;
             var bearing = 0;
@@ -205,7 +211,6 @@
                         }
                     }
                 }
-
             }
         }
 
@@ -266,7 +271,7 @@
                         // Set an interval to fetch the updated location from the API and call moveCar
                         var apiResponseInterval = setInterval(function () {
 
-                            console.log('Live Location Before:', liveLocation[0], liveLocation[1]);
+                            // console.log('Live Location Before:', liveLocation[0], liveLocation[1]);
                             if (liveLocation.length > 0) {
 
                                 liveLocation.pop();
@@ -276,15 +281,13 @@
                             fetch(`/Driver/LiveLocation/${places[0].Phone}`)
                                 .then(response => response.json())
                                 .then(data => {
-                                    console.log('API Response:', data);
-                                    // Update live location array with new data
-                                    //if (data && data.latLng && data.latLng.lat !== undefined && data.latLng.lng !== undefined) {
-                                    // Update live location array with new data
+                                    // console.log('API Response:', data);
+                                    
                                     liveLocation.push(data.latLng.lat);
                                     liveLocation.push(data.latLng.lng);
 
-                                    console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
-                                    console.log('Live Location After:', liveLocation[0], liveLocation[1]);
+                                    // console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
+                                    // console.log('Live Location After:', liveLocation[0], liveLocation[1]);
                                     //}
 
                                     moveCar();
@@ -293,13 +296,13 @@
                                         clearInterval(apiResponseInterval);
                                         directionsRenderer.setMap(null); // Hide the directions
                                         map.setCenter(marker.getPosition());
-                                        console.log('marker inside last stop:', marker.getPosition().lat(), marker.getPosition().lng());
+                                        // console.log('marker inside last stop:', marker.getPosition().lat(), marker.getPosition().lng());
                                     }
                                 })
                                 .catch(error => console.error('Error fetching live location:', error, error.responseText));
 
 
-                        }, 8000); // Adjust the interval time as needed
+                        }, 1000); // Adjust the interval time as needed
 
                     } else {
                         console.error('Initial directions request failed with status:', status);
@@ -307,7 +310,7 @@
                 });
 
                 function moveCar() {
-                    console.log('Live Location After in moveCar:', liveLocation[0], liveLocation[1]);
+                    // console.log('Live Location After in moveCar:', liveLocation[0], liveLocation[1]);
                     //index++;
                     // Check if the driver's location has changed
                     if (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng()) {
@@ -349,10 +352,7 @@
                 }
             }
             //this one moves the driver if status is delivering - ends here
-
-
         }
-
     </script>
 </div>
 
