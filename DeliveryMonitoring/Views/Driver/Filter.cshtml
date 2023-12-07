@@ -75,7 +75,14 @@
     
 
     <!--Map JavaScript Implementation Starts Here-->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
+    <script>
+        fetch('/Map/GetMapData')
+            .then(response => response.text())
+            .then(script => {
+                // Execute the received script
+                eval(script);
+            })
+            .catch(error => console.error('Error loading Google Maps API:', error));
     </script>
 
     <script>
