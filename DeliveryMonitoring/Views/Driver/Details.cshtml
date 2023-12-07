@@ -310,7 +310,7 @@
                                 .catch(error => console.error('Error fetching live location:', error, error.responseText));
 
 
-                        }, 1000); // Adjust the interval time as needed
+                        }, 10000); // Adjust the interval time as needed
 
                     } else {
                         console.error('Initial directions request failed with status:', status);

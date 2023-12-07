@@ -115,8 +115,8 @@ namespace DeliveryMonitoring.Controllers
                     //if (driver.phoneNumber == "0918539962")
                     //{
                     //    driver.status = "delivering";
-                    //    driver.latLng.lat = 9.01664;
-                    //    driver.latLng.lng = 38.76288;
+                    //    driver.latLng.lat = 9.0166004;
+                    //    driver.latLng.lng = 38.7631881;
                     //}
 
                     if (driver == null)
