@@ -49,8 +49,9 @@
         </div>
     </div>
 
-    <!--The Donut Chart and the Map Starts Here-->
+   
     <div class="row mt-3">
+        <!--The Donut Chart and the Map Starts Here-->
         <div class="col-12 col-md-6 mb-3">
             <div class="card border-0" style="border-radius: 5px;" id="orderCard">
                 <div class="" id="donut">
@@ -61,10 +62,11 @@
                         <canvas id="myChart"></canvas>
                     </div>
                 </div>
-            </div>
-            
+            </div>            
         </div>
+        <!--The donut chart and the map ends here-->
 
+        <!--The Bar Chart and the Map Starts Here-->
         <div class="col-12 col-md-6">
             <div class="card border-0" style="border-radius: 5px;" id="orderCard">
                 <div class="" id="donut">
@@ -76,15 +78,10 @@
                     </div>
                 </div>
             </div>
-
         </div>
-
-        @* <div class="col-12 col-md-7" id="map">
-           
-        </div> *@
-        
+        <!--The Bar Chart and the Map Ends Here-->
     </div>
-    <!--The donut chart and the map ends here-->
+    
     
     <!--code to display the donught chart starts here-->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -193,71 +190,5 @@
         });
     </script>
     <!--code to display the donught chart ends here-->
-    <!--Map JavaScript Implementation Starts Here-->
-    @* <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=&v=weekly" defer>
-    </script> *@
-
-    @* <script>
-        function initMap() {
-            const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 18,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            });
-        @{
-            if (Model != null && Model.Drivers.Count() > 0)
-            {
-                <text>
-                                        const places = [
-                </text>
-
-                foreach (var item in Model.Drivers)
-                {
-                    if(item.latLng != null)
-                    {
-                        <text>
-                                { Name: '@item.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@item.phoneNumber', Status: '@item.status', lat: @item.latLng.lat, lng: @item.latLng.lng},
-                        </text>
-                    }
-                    
-                }
-                <text>
-                                                    ];
-                </text>
-            }
-        }
-
-                        var marker, i
-            for (i = 0; i < places.length; i++) {
-                var marker = new google.maps.Marker({
-                    position: { lat: places[i].lat, lng: places[i].lng },
-                    title: places[i].Name,
-                    map: map,
-                    icon: {
-                        url: '/images/motor.png',
-                        scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
-                    }
-                });
-
-                map.setCenter(marker.getPosition());
-
-                var content = "<b>Name:</b> " + places[i].Name + "<br/><b>LastUpdatedAt:</b> " + places[i].LastUpdatedAt + "<br/><b>Phone:</b> " + places[i].Phone + "<br/><b>Status:</b> " + places[i].Status
-
-                var infowindow = new google.maps.InfoWindow()
-
-                google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
-                    return function () {
-                        infowindow.setContent(content);
-                        infowindow.open(map, marker);
-                    };
-                })(marker, content, infowindow));
-
-                google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
-                    return function () {
-                        infowindow.close();
-                    };
-                })(infowindow));
-            }
-        }
-    </script>
-    <!--Map JavaScript Implementation Ends Here--> *@
+    
 </div>

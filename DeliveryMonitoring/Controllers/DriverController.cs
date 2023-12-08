@@ -76,7 +76,7 @@ namespace DeliveryMonitoring.Controllers
         }
 
 
-        //Details Page Endpoint Consumption -- Starts Here
+        //Driver Details-- Starts Here
         [HttpGet("/Driver/Details/{phoneNumber}")]
         public async Task<IActionResult> Details(string phoneNumber)
         {
@@ -140,9 +140,9 @@ namespace DeliveryMonitoring.Controllers
 
             return View(viewModel);
         }
-        //Details Page Endpoint Consumption -- Ends Here
+        //Driver Details -- Ends Here
 
-        /////////////////////////////////////////////////////
+        //Used for fetching the driver's location regularly - starts here
         [HttpGet("/Driver/LiveLocation/{phoneNumber}")]
         public async Task<IActionResult> LiveLocation(string phoneNumber)
         {
@@ -155,12 +155,11 @@ namespace DeliveryMonitoring.Controllers
             {
                 data = await response.Content.ReadAsStringAsync();
             }
-
             return Ok(data);
-
         }
-        ////////////////////////////////////////////////////////////
+        //Used for fetching the driver's location regularly - ends here
 
+        //Driver Update Page - starts here
         [HttpGet("/Driver/Update/{phoneNumber}")]
         public async Task<IActionResult> Update(string phoneNumber)
         {
@@ -191,7 +190,9 @@ namespace DeliveryMonitoring.Controllers
 
             return View(driver);
         }
+        //Driver Update Page - ends here
 
+        //Used for updating driver's information - starts here
         [HttpPatch("/Driver/Update/{phoneNumber}")]
         public async Task<IActionResult> Update([Bind("firstName,isDisabled,phoneNumber,companyTin")] UpdateDriverModel update, string phoneNumber, [FromBody] UpdateDriverModel updateModel)
         {
@@ -216,9 +217,8 @@ namespace DeliveryMonitoring.Controllers
                 return View("Index", "Driver");
             }
             return View(update);
-
         }
-
+        //Used for updating driver's information - ends here
 
     }
 }

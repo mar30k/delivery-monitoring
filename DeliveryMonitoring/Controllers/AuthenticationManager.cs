@@ -41,7 +41,6 @@ namespace DeliveryMonitoring.Controllers
                 string queryString = $"?userName={userName}&password={password}&tin=0076217301";
                 string requestUrl = $"{endpoint}{queryString}";
 
-                //var x = "http://196.191.244.136:7012/api/SysInitialize/authenticate?userName=CNETAdmin&password=123456&tin=0076217301";
                 HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + requestUrl);
 
                 string juservalidation = await response.Content.ReadAsStringAsync();
@@ -54,7 +53,6 @@ namespace DeliveryMonitoring.Controllers
                     return userValidation;
                 else
                     return userValidation;
-
             }
         }
 
@@ -90,12 +88,21 @@ namespace DeliveryMonitoring.Controllers
         public virtual async Task<cookieValidation> identificationValid()
         {
             var validinfo = new cookieValidation();
-            var idCookie = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.CookieScheme];
-            if (!string.IsNullOrWhiteSpace(idCookie))
+            //var idCookie = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.CookieScheme];
+            //if (!string.IsNullOrWhiteSpace(idCookie))
+            //{
+            //    validinfo.isValid = true;
+            //    return validinfo;
+            //}
+            //validinfo.isValid = false;
+            //return validinfo;
+            // Check if the user is authenticated
+            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
                 validinfo.isValid = true;
                 return validinfo;
             }
+
             validinfo.isValid = false;
             return validinfo;
         }
