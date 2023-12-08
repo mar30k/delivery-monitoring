@@ -1,9 +1,5 @@
 ﻿@model DeliveryMonitoring.Models.DriverDetailsViewModel
-@* @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
-@{
-    var apiKey = Configuration["GoogleMaps:ApiKey"];
 
-} *@
 <div class="container-fluid">
 
     <!--Find the map here-->
@@ -26,16 +22,6 @@
                                 if (Model.Drivers.status == "offline")
                                 {
                                     <div style="background-color: red;
-                                                                border-radius: 20px;
-                                                                color: black;
-                                                                display: inline-block;
-                                                                padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                                else if (Model.Drivers.status == "ready")
-                                {
-                                    <div style="background-color: orange;
                                                                     border-radius: 20px;
                                                                     color: black;
                                                                     display: inline-block;
@@ -43,9 +29,9 @@
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
-                                else if (Model.Drivers.status == "accepted")
+                                else if (Model.Drivers.status == "ready")
                                 {
-                                    <div style="background-color: yellow;
+                                    <div style="background-color: orange;
                                                                         border-radius: 20px;
                                                                         color: black;
                                                                         display: inline-block;
@@ -53,9 +39,9 @@
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
-                                else if (Model.Drivers.status == "delivering")
+                                else if (Model.Drivers.status == "accepted")
                                 {
-                                    <div style="background-color: deepskyblue;
+                                    <div style="background-color: yellow;
                                                                             border-radius: 20px;
                                                                             color: black;
                                                                             display: inline-block;
@@ -63,9 +49,9 @@
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
-                                else if (Model.Drivers.status == "completed")
+                                else if (Model.Drivers.status == "delivering")
                                 {
-                                    <div style="background-color: lawngreen;
+                                    <div style="background-color: deepskyblue;
                                                                                 border-radius: 20px;
                                                                                 color: black;
                                                                                 display: inline-block;
@@ -73,8 +59,28 @@
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
+                                else if (Model.Drivers.status == "completed")
+                                {
+                                    <div style="background-color: lawngreen;
+                                                                                    border-radius: 20px;
+                                                                                    color: black;
+                                                                                    display: inline-block;
+                                                                                    padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
+                                }
                             }
                         </a>
+                        @{
+                            foreach (var item in Model.Orders)
+                            {
+                                if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
+                                {
+                                    var voucher = item.voucherCode;
+                                    <a class="" asp-controller="Order" asp-action="Details" asp-route-id="@voucher" style="margin-left: 0px; text-decoration: none;">- Check Order Details</a>
+                               }
+                            }
+                        }
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.Drivers.lastUpdatedAt):</span>
@@ -87,7 +93,6 @@
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.Drivers.companyTin):</span>
-                        @* <span id="outputs">@Html.DisplayFor(model => model.Drivers.companyTin)</span> *@
                         <span id="outputs"><a asp-controller="Company" asp-action="Details" asp-route-id="@Model.Drivers.companyTin">@Html.DisplayFor(model => model.Drivers.companyTin)</a></span>
                     </div>
                     <div>
@@ -126,12 +131,12 @@
                     </a>
 
                 </div>
-
-                <div class="pt-3 col-12 col-md-5 d-flex justify-content-end">
+                <div class="pt-3 col-5 d-flex justify-content-end">
                     <div>
                         <a class="btn btn-success" asp-controller="Driver" asp-action="Update" asp-route-id="@Model.Drivers.phoneNumber"><i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info</a>
                     </div>
                 </div>
+
                 <!--Driver Details Ending-->
 
 
@@ -139,17 +144,16 @@
             <div class="collapse pt-3 row" id="collapseExample">
                 <div class="col-11" id="orderDetail">
                     <span id="letters">@Html.DisplayNameFor(model => model.Drivers.deviceID):</span>
-                    <span id="" style="font-weight: 600;
-    font-size: 16px;">@Html.DisplayFor(model => model.Drivers.deviceID)</span>
+                    <span id="" style="font-weight: 600; font-size: 16px;">@Html.DisplayFor(model => model.Drivers.deviceID)</span>
                 </div>
             </div>
             <div class="row">
-                <div class="pt-3 pb-3 col-12 col-md-9">
+                <div class="pt-3 pb-3 col-6">
                     <a class="btn btn-danger" asp-action="Index" style="margin-left: 40px;">Back to List</a>
                 </div>
-                @* <div class="pt-3 pb-3 col-12 col-md-3">
-                <a class="btn btn-dark" asp-controller="Company" asp-action="Details" asp-route-id="@Model.Drivers.companyTin">Company</a>
-                </div> *@
+                
+
+
             </div>
 
         </div>

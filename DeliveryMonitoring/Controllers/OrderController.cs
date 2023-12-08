@@ -15,9 +15,11 @@ namespace DeliveryMonitoring.Controllers
         public OrderController(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
+            
         }
         //HttpClient Setup ends here
 
+        //List of Orders Page -- Starts Here
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -32,9 +34,10 @@ namespace DeliveryMonitoring.Controllers
                 orders = JsonConvert.DeserializeObject<List<Order>>(data);
             }
             return View(orders);
-
         }
+        //List of Orders Page -- Ends Here
 
+        //Order Details Page -- Starts Here
         [HttpGet("/Order/Details/{voucherCode}")]
         public async Task<IActionResult> Details(string voucherCode)
         {
@@ -64,5 +67,6 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
         }
+        //Order Details Page -- Ends Here
     }
 }
