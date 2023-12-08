@@ -5,18 +5,18 @@
 }
 
 <div class="container-fluid g-0">
-    
+
     <!--Find the map here-->
     <div class="col-12 col-xl-12 pb-3" id="map">
     </div>
     <!--Map ends here-->
-    
+
     <div class="container-fluid col-10 pt-3 pb-3">
         <a class="btn btn-dark" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
             <i class="bi bi-filter"></i>Filter
         </a>
     </div>
-    
+
     <div class="container-fluid col-10">
         <div class="collapse" id="collapseExample">
             <form method="get" action="@Url.Action("Filter", "Driver")">
@@ -53,7 +53,7 @@
         <div class="row card">
             <!--The table is Written Here-->
             <div class="pt-3 pb-3 col-12 col-xl-12 table-responsive">
-                
+
                 <table class="table compact stripe hover pt-3" id="tablelist">
                     <thead class="">
                         <tr>
@@ -104,18 +104,18 @@
                                             if (item.isDisabled == true)
                                             {
                                                 // isDisabled exists and is true
-                                                <text>Not Eligible</text>
+                                                        <text>Not Eligible</text>
                                             }
                                             else
                                             {
                                                 // isDisabled exists and is false
-                                                <text>Eligible</text>
+                                                        <text>Eligible</text>
                                             }
                                         }
                                         else
                                         {
                                         // isDisabled does not exist in the API response
-                                            <text>Eligible</text>
+                                                    <text>Eligible</text>
                                         }
                                     }
                                 </td>
@@ -143,71 +143,117 @@
     </script>
 
     <script>
+        // var index = -1;
+        var marker;
+        var markers = [];
         function initMap() {
+            // Default center coordinates
+            const defaultLat = 9.0165102; // Replace with your default latitude
+            const defaultLng = 38.7656678; // Replace with your default longitude
+
             const map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: defaultLat, lng: defaultLng },
                 zoom: 18,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
-        @{
-            if (Model != null && Model.Count() > 0)
-            {
-                <text>
-                        const places = [
-                </text>
+            // map.setCenter();
+            // Create an array to store the relevant information
+            
+            function fetchDataAndUpdateMarkers() {
+                // index++;
 
-                foreach (var item in Model)
-                {
-                    if (item.latLng != null)
-                    {
-                        <text>
-                                { Name: '@item.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@item.phoneNumber', Status: '@item.status', lat: @item.latLng.lat, lng: @item.latLng.lng},
-                        </text>
-                    }
-                    
-                }
-                <text>
-                                    ];
-                </text>
+                fetch(`/Driver/LiveLocation`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Iterate over each object in the array
+                        var places = [];
+                        data.forEach(driver => {
+                            // Extract the relevant information from each object
+                            if (driver.latLng && typeof driver.latLng === 'object' && driver.latLng.lat !== undefined && driver.latLng.lng !== undefined) {
+                                var placeInfo = {
+                                    Name: driver.firstName,
+                                    lat: driver.latLng.lat,
+                                    lng: driver.latLng.lng,
+                                    Phone: driver.phoneNumber,
+                                    Status: driver.status
+                                };
+                            }
+                            places.push(placeInfo);
+                        })
+                        
+                        // if(index == 0){
+                        //     places[0].lat = 9.0166004;
+                        //     places[0].lng = 38.7631881;
+                        //     places[1].lat = 9.01191;
+                        //     places[1].lng = 38.76275;
+                            
+                        // }
+                        // if (index == 1) {
+                        //     places[0].lat = 9.0147;
+                        //     places[0].lng = 38.76265;
+                        //     places[1].lat = 9.01123;
+                        //     places[1].lng = 38.76264;
+                        // }
+                        // if (index == 2) {
+                        //     places[0].lat = 9.01394;
+                        //     places[0].lng = 38.76294;
+                        //     places[1].lat = 9.01103;
+                        //     places[1].lng = 38.76267;
+                        // }
+                        // Push the extracted information into the places array
+                        // Filter out undefined values
+                        places = places.filter(place => place !== undefined);
+                        // Process the places array after fetching the data
+                                               
+                        markers.forEach(marker => marker.setMap(null));
+                        markers = []; // Reset the array
+
+                        places.forEach(place => {
+                            marker = new google.maps.Marker({
+                                position: { lat: place.lat, lng: place.lng },
+                                title: place.Name,
+                                map: map,
+                                icon: {
+                                    url: '/images/motor.png',
+                                    scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
+                                }
+                            });
+
+                            markers.push(marker);
+
+                            // Add a listener for the marker
+                            var content = "<b>Name:</b> " + place.Name + "<br/><b>Phone:</b> " + place.Phone + "<br/><b>Status:</b> " + place.Status;
+
+                            var infowindow = new google.maps.InfoWindow();
+
+                            google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
+                                return function () {
+                                    infowindow.setContent(content);
+                                    infowindow.open(map, marker);
+                                };
+                            })(marker, content, infowindow));
+
+                            google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
+                                return function () {
+                                    infowindow.close();
+                                };
+                            })(infowindow));
+                        });
+                        console.log(places);
+                        // console.log(index);
+                        
+                    })
+                    .catch(error => console.error('Error fetching live location:', error, error.responseText));
             }
-        }
-
-                var marker, i
-            for (i = 0; i < places.length; i++) {
-                var marker = new google.maps.Marker({
-                    position: { lat: places[i].lat, lng: places[i].lng },
-                    title: places[i].Name,
-                    map: map,
-                    icon: {
-                        url: '/images/motor.png',
-                        scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
-                    }
-                });
-
-                map.setCenter(marker.getPosition());
-
-                var content = "<b>Name:</b> " + places[i].Name + "<br/><b>LastUpdatedAt:</b> " + places[i].LastUpdatedAt + "<br/><b>Phone:</b> " + places[i].Phone + "<br/><b>Status:</b> " + places[i].Status
-
-                var infowindow = new google.maps.InfoWindow()
-
-                google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
-                    return function () {
-                        infowindow.setContent(content);
-                        infowindow.open(map, marker);
-                    };
-                })(marker, content, infowindow));
-
-                google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
-                    return function () {
-                        infowindow.close();
-                    };
-                })(infowindow));
-            }
+            // Call the function immediately to show the initial view
+            fetchDataAndUpdateMarkers();
+            setInterval(fetchDataAndUpdateMarkers, 10000);
+                                
         }
     </script>
     <!--Map JavaScript Implementation Ends Here-->
-
     <!--Jquery Datatable Starts Here-->
-    
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>

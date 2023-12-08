@@ -159,6 +159,25 @@ namespace DeliveryMonitoring.Controllers
         }
         //Used for fetching the driver's location regularly - ends here
 
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Used for fetching the all driver's location regularly - starts here
+        [HttpGet("/Driver/LiveLocation")]
+        public async Task<IActionResult> LiveLocation()
+        {
+            var _client = _httpClientFactory.CreateClient("Delivery");
+            string data = null;
+
+            HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers");
+
+            if (response.IsSuccessStatusCode)
+            {
+                data = await response.Content.ReadAsStringAsync();
+            }
+            return Ok(data);
+        }
+        //Used for fetching the all driver's location regularly - ends here
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
         //Driver Update Page - starts here
         [HttpGet("/Driver/Update/{phoneNumber}")]
         public async Task<IActionResult> Update(string phoneNumber)
