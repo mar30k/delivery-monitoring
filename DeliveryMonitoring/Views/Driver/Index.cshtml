@@ -104,18 +104,18 @@
                                             if (item.isDisabled == true)
                                             {
                                                 // isDisabled exists and is true
-                                                        <text>Not Eligible</text>
+                                                <text>Not Eligible</text>
                                             }
                                             else
                                             {
                                                 // isDisabled exists and is false
-                                                        <text>Eligible</text>
+                                                <text>Eligible</text>
                                             }
                                         }
                                         else
                                         {
                                         // isDisabled does not exist in the API response
-                                                    <text>Eligible</text>
+                                            <text>Eligible</text>
                                         }
                                     }
                                 </td>
@@ -132,14 +132,15 @@
         </div>
 
     </div>
+
     <script>
-        fetch('/Map/GetMapData')
-            .then(response => response.text())
-            .then(script => {
-                // Execute the received script
-                eval(script);
-            })
-            .catch(error => console.error('Error loading Google Maps API:', error));
+    fetch('/Map/GetMapData')
+    .then(response => response.text())
+    .then(script => {
+    // Execute the received script
+    eval(script);
+    })
+    .catch(error => console.error('Error loading Google Maps API:', error));
     </script>
 
     <script>
@@ -158,7 +159,7 @@
             });
             // map.setCenter();
             // Create an array to store the relevant information
-            
+
             function fetchDataAndUpdateMarkers() {
                 // index++;
 
@@ -180,13 +181,13 @@
                             }
                             places.push(placeInfo);
                         })
-                        
+
                         // if(index == 0){
                         //     places[0].lat = 9.0166004;
                         //     places[0].lng = 38.7631881;
                         //     places[1].lat = 9.01191;
                         //     places[1].lng = 38.76275;
-                            
+
                         // }
                         // if (index == 1) {
                         //     places[0].lat = 9.0147;
@@ -204,7 +205,7 @@
                         // Filter out undefined values
                         places = places.filter(place => place !== undefined);
                         // Process the places array after fetching the data
-                                               
+
                         markers.forEach(marker => marker.setMap(null));
                         markers = []; // Reset the array
 
@@ -239,16 +240,16 @@
                                 };
                             })(infowindow));
                         });
-                        console.log(places);
+                        // console.log(places);
                         // console.log(index);
-                        
+
                     })
                     .catch(error => console.error('Error fetching live location:', error, error.responseText));
             }
             // Call the function immediately to show the initial view
             fetchDataAndUpdateMarkers();
-            setInterval(fetchDataAndUpdateMarkers, 10000);
-                                
+            // setInterval(fetchDataAndUpdateMarkers, 10000);
+
         }
     </script>
     <!--Map JavaScript Implementation Ends Here-->

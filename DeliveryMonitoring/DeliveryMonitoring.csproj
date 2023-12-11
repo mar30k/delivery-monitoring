@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <Reference Include="CNET_V7_Domain">
-      <HintPath>..\..\CNET v7 Login\CNET_V7_Domain.dll</HintPath>
+      <HintPath>CNET_V7_Domain.dll</HintPath>
     </Reference>
   </ItemGroup>
 

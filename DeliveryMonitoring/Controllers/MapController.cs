@@ -19,7 +19,7 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> GetMapData()
         {
             // Replace YOUR_GOOGLE_MAPS_API_KEY with your actual API key
-            string apiKey = "AIzaSyDihZpSLFD2uyptHT-UQDSfJm9BKHRK-VU";
+            string apiKey = "AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ";
             string apiUrl = "https://maps.googleapis.com/maps/api/js?key=" + apiKey + "&callback=initMap&libraries=places,geometry&v=weekly";
 
             using (var client = _httpClientFactory.CreateClient())
