@@ -86,9 +86,13 @@
     </script>
 
     <script>
+        const defaultLat = 9.0103899; // Replace with your default latitude
+        const defaultLng = 38.7614259; // Replace with your default longitude
+
         function initMap() {
             const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 18,
+                center: { lat: defaultLat, lng: defaultLng },
+                zoom: 13,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
         @{
@@ -125,9 +129,7 @@
                         scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
                     }
                 });
-
-                map.setCenter(marker.getPosition());
-
+                
                 var content = "<b>Name:</b> " + places[i].Name + "<br/><b>LastUpdatedAt:</b> " + places[i].LastUpdatedAt + "<br/><b>Phone:</b> " + places[i].Phone + "<br/><b>Status:</b> " + places[i].Status
 
                 var infowindow = new google.maps.InfoWindow()

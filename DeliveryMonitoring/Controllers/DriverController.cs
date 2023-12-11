@@ -159,7 +159,6 @@ namespace DeliveryMonitoring.Controllers
         }
         //Used for fetching the driver's location regularly - ends here
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //Used for fetching the all driver's location regularly - starts here
         [HttpGet("/Driver/LiveLocation")]
         public async Task<IActionResult> LiveLocation()
@@ -175,9 +174,8 @@ namespace DeliveryMonitoring.Controllers
             }
             return Ok(data);
         }
-        //Used for fetching the all driver's location regularly - ends here
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+        //Used for fetching the all driver's location regularly - ends here       
+
         //Driver Update Page - starts here
         [HttpGet("/Driver/Update/{phoneNumber}")]
         public async Task<IActionResult> Update(string phoneNumber)

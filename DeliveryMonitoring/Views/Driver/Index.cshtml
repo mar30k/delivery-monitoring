@@ -149,12 +149,12 @@
         var markers = [];
         function initMap() {
             // Default center coordinates
-            const defaultLat = 9.0165102; // Replace with your default latitude
-            const defaultLng = 38.7656678; // Replace with your default longitude
+            const defaultLat = 9.0103899; // Replace with your default latitude
+            const defaultLng = 38.7614259; // Replace with your default longitude
 
             const map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: defaultLat, lng: defaultLng },
-                zoom: 18,
+                zoom: 13,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
             // map.setCenter();
@@ -248,7 +248,7 @@
             }
             // Call the function immediately to show the initial view
             fetchDataAndUpdateMarkers();
-            // setInterval(fetchDataAndUpdateMarkers, 10000);
+            setInterval(fetchDataAndUpdateMarkers, 600000);
                                 
         }
     </script>
