@@ -1,0 +1,166 @@
+﻿@model IEnumerable<DeliveryMonitoring.Models.Driver>
+
+@{
+    ViewData["Title"] = "Filter";
+}
+
+<div class="container-fluid">
+
+    <!--Find the map here-->
+    <div class="col-12 col-lg-12" id="map">
+    </div>
+    <!--Map ends here-->
+
+    <div class="container-fluid pt-3 col-10">
+        <div class="row card">
+            <!--The table is Written Here-->
+            <div class="col-12 col-lg-12 table-responsive pt-3">
+
+                <table class="table compact stripe hover pt-3" id="tablelist">
+                    <thead class="">
+                        <tr>
+
+                            <th>
+                                @Html.DisplayNameFor(model => model.firstName)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.lastUpdatedAt)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.phoneNumber)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.status)
+                            </th>
+                            <th>
+                                Driver Details
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+
+                            <tr>
+
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.firstName)
+                                </td>
+                                <td>
+                                    @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
+
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.phoneNumber)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.status)
+                                </td>
+                                <td>
+                                    <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="pt-3 pb-3">
+                    <a class="btn btn-outline-dark" asp-action="Index">All Drivers</a>
+                </div>
+            </div>
+            <!--this is the table ending-->
+
+        </div>
+    </div>
+
+
+    <!--Map JavaScript Implementation Starts Here-->
+    <script>
+        fetch('/Map/GetMapData')
+            .then(response => response.text())
+            .then(script => {
+                // Execute the received script
+                eval(script);
+            })
+            .catch(error => console.error('Error loading Google Maps API:', error));
+    </script>
+
+    <script>
+        const defaultLat = 9.0103899; // Replace with your default latitude
+        const defaultLng = 38.7614259; // Replace with your default longitude
+
+        function initMap() {
+            const map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: defaultLat, lng: defaultLng },
+                zoom: 13,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+        @{
+            if (Model != null && Model.Count() > 0)
+            {
+                <text>
+                                                        const places = [
+                </text>
+
+                foreach (var item in Model)
+                {
+                    if (item.latLng == null)
+                    {
+                        continue;
+                    }
+                    <text>
+                            { Name: '@item.firstName', LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")', Phone: '@item.phoneNumber', Status: '@item.status', lat: @item.latLng.lat, lng: @item.latLng.lng},
+                    </text>
+                }
+                <text>
+                                                                    ];
+                </text>
+            }
+        }
+
+                                var marker, i
+            for (i = 0; i < places.length; i++) {
+                var marker = new google.maps.Marker({
+                    position: { lat: places[i].lat, lng: places[i].lng },
+                    title: places[i].Name,
+                    map: map,
+                    icon: {
+                        url: '/images/motor.png',
+                        scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
+                    }
+                });
+
+                var content = "<b>Name:</b> " + places[i].Name + "<br/><b>LastUpdatedAt:</b> " + places[i].LastUpdatedAt + "<br/><b>Phone:</b> " + places[i].Phone + "<br/><b>Status:</b> " + places[i].Status
+
+                var infowindow = new google.maps.InfoWindow()
+
+                google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
+                    return function () {
+                        infowindow.setContent(content);
+                        infowindow.open(map, marker);
+                    };
+                })(marker, content, infowindow));
+
+                google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
+                    return function () {
+                        infowindow.close();
+                    };
+                })(infowindow));
+            }
+        }
+    </script>
+    <!--Map JavaScript Implementation Ends Here-->
+    <!--Jquery Datatable Starts Here-->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+    <script>
+        var js = jQuery.noConflict(true);
+        js(document).ready(function () {
+            js('#tablelist').DataTable({
+                responsive: true
+            });
+        });
+    </script>
+    <!--Jquery Datatable Ends Here-->
+</div>

@@ -75,6 +75,23 @@ namespace DeliveryMonitoring.Controllers
             return View(filteredDrivers);
         }
 
+        [HttpGet("/Driver/FilterCompany/{companyTin}")]
+        public async Task<IActionResult> FilterCompany(string companyTin)
+        {
+            var _client = _httpClientFactory.CreateClient("Delivery");
+            
+            List<Driver> filteredDrivers = new List<Driver>();
+
+            HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers?companyTin={companyTin}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                filteredDrivers = JsonConvert.DeserializeObject<List<Driver>>(data);
+            }
+            return View(filteredDrivers);
+        }
+
 
         //Driver Details-- Starts Here
         [HttpGet("/Driver/Details/{phoneNumber}")]

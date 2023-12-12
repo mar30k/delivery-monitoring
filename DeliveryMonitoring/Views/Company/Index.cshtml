@@ -16,6 +16,7 @@
                         Company TIN
                     </th>
                     <th>Company Details</th>
+                    <th>Check Drivers</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,6 +28,9 @@
                             <td>@Model.Companies.companyTins[i]</td>
                             <td>
                                 <a class="btn btn-outline-dark" asp-controller="Company" asp-action="Details" asp-route-id="@Model.Companies.companyTins[i]">Details</a>
+                            </td>
+                            <td>
+                                <a asp-controller="Driver" asp-action="FilterCompany" asp-route-id="@Model.Companies.companyTins[i]">Drivers</a>
                             </td>
                         </tr>
                     }
