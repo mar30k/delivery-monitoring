@@ -11,11 +11,14 @@
                 <thead class="">
                     <tr>
                         <th>
-                            @Html.DisplayNameFor(model => model.assignedDriverPhoneNumber)
+                            @Html.DisplayNameFor(model => model.requestCreatedAt)
                         </th>
                         <th>
-                            @Html.DisplayNameFor(model => model.branchName)
+                            @Html.DisplayNameFor(model => model.status)
                         </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.assignedDriverPhoneNumber)
+                        </th>                       
                         <th>
                             @Html.DisplayNameFor(model => model.customer.firstName)
                         </th>
@@ -24,16 +27,7 @@
                         </th>
                         <th>
                             @Html.DisplayNameFor(model => model.customer.phoneNumber)
-                        </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.customer.specificAddress)
-                        </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.requestCreatedAt)
-                        </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.status)
-                        </th>
+                        </th>                                                                 
                         <th>
                             @Html.DisplayNameFor(model => model.voucherCode)
                         </th>
@@ -45,30 +39,23 @@
                     {
                         <tr>
                             <td>
-                                @Html.DisplayFor(modelItem => item.assignedDriverPhoneNumber)
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.branchName)
-                            </td>
-                            
-                            <td>
-                                @item.customer.firstName
-                            </td>
-                            <td>
-                                @item.customer.geocodeAddress
-                            </td>
-                            <td>
-                                @item.customer.phoneNumber
-                            </td>
-                            <td>
-                                @item.customer.specificAddress
-                            </td>
-                            <td>
                                 @DateTimeOffset.FromUnixTimeMilliseconds(item.requestCreatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
                             </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.status)
                             </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.assignedDriverPhoneNumber)
+                            </td>                                                        
+                            <td>
+                                @item.customer.firstName
+                            </td>
+                            <td>
+                                @item.customer.geocodeAddress - @item.customer.specificAddress
+                            </td>
+                            <td>
+                                @item.customer.phoneNumber
+                            </td>                                                                                  
                             <td>
                                 @Html.DisplayFor(modelItem => item.voucherCode)
                             </td>

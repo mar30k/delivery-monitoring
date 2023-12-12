@@ -19,6 +19,7 @@ namespace DeliveryMonitoring.Controllers
             _httpClientFactory = httpClientFactory;
         }
         
+        //Driver Index Page - starts here
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -32,9 +33,26 @@ namespace DeliveryMonitoring.Controllers
                 string data = await response.Content.ReadAsStringAsync();
                 drivers = JsonConvert.DeserializeObject<List<Driver>>(data);
             }
-            return View(drivers);
-            
+            return View(drivers);         
         }
+        //Driver Index Page - ends here
+
+        //Used for fetching the all driver's location regularly - starts here
+        [HttpGet("/Driver/LiveLocation")]
+        public async Task<IActionResult> LiveLocation()
+        {
+            var _client = _httpClientFactory.CreateClient("Delivery");
+            string data = null;
+
+            HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers");
+
+            if (response.IsSuccessStatusCode)
+            {
+                data = await response.Content.ReadAsStringAsync();
+            }
+            return Ok(data);
+        }
+        //Used for fetching the all driver's location regularly - ends here       
 
         [HttpGet]
         public async Task<IActionResult> Filter(string status, string companyTin)
@@ -92,6 +110,22 @@ namespace DeliveryMonitoring.Controllers
             return View(filteredDrivers);
         }
 
+        //Used for fetching the driver's location regularly - starts here
+        [HttpGet("/Driver/LiveLocationByCompany/{companyTin}")]
+        public async Task<IActionResult> LiveLocationByCompany(string companyTin)
+        {
+            var _client = _httpClientFactory.CreateClient("Delivery");
+            string data = null;
+
+            HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers?companyTin={companyTin}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                data = await response.Content.ReadAsStringAsync();
+            }
+            return Ok(data);
+        }
+        //Used for fetching the driver's location regularly - ends here
 
         //Driver Details-- Starts Here
         [HttpGet("/Driver/Details/{phoneNumber}")]
@@ -175,23 +209,6 @@ namespace DeliveryMonitoring.Controllers
             return Ok(data);
         }
         //Used for fetching the driver's location regularly - ends here
-
-        //Used for fetching the all driver's location regularly - starts here
-        [HttpGet("/Driver/LiveLocation")]
-        public async Task<IActionResult> LiveLocation()
-        {
-            var _client = _httpClientFactory.CreateClient("Delivery");
-            string data = null;
-
-            HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers");
-
-            if (response.IsSuccessStatusCode)
-            {
-                data = await response.Content.ReadAsStringAsync();
-            }
-            return Ok(data);
-        }
-        //Used for fetching the all driver's location regularly - ends here       
 
         //Driver Update Page - starts here
         [HttpGet("/Driver/Update/{phoneNumber}")]

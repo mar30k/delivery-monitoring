@@ -20,7 +20,7 @@ namespace DeliveryMonitoring.Models
         public bool orderArrivedAckByCustomer { get; set; }
         [Display(Name = "Order Arrived Acknowledged by Driver")]
         public bool orderArrivedAckByDriver { get; set; }
-        [Display(Name = "Request Created At")]
+        [Display(Name = "Requested At")]
         public long requestCreatedAt { get; set; }
         [Display(Name = "Status")]
         public string status { get; set; }
