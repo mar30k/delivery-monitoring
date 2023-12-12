@@ -173,7 +173,7 @@ button.accept-policy {
 }
 
 .btn:hover {
-    background-color: black;
+    /*background-color: black;*/
     color: white;
 }
 
@@ -350,4 +350,8 @@ img {
     margin-top: 10px;
     margin-left: 40px;
     font-size: 4em; /* Adjust the font size as needed */    
+}
+
+.modal-header, .modal-body, .modal-footer {
+    border: 0;
 }
