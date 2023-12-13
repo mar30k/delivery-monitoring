@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<DeliveryMonitoring.Models.Driver>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "List of Drivers";
 }
 
 <div class="container-fluid g-0">
@@ -249,7 +249,6 @@
             // Call the function immediately to show the initial view
             fetchDataAndUpdateMarkers();
             setInterval(fetchDataAndUpdateMarkers, 300000);
-                                
         }
     </script>
     <!--Map JavaScript Implementation Ends Here-->

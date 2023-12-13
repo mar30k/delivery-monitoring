@@ -19,6 +19,7 @@ namespace DeliveryMonitoring.Controllers
             _httpClientFactory = httpClientFactory;
         }
         
+
         //Driver Index Page - starts here
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -54,6 +55,8 @@ namespace DeliveryMonitoring.Controllers
         }
         //Used for fetching the all driver's location regularly - ends here       
 
+
+        //Used for filtering Drivers based on their status & company TIN - starts here
         [HttpGet]
         public async Task<IActionResult> Filter(string status, string companyTin)
         {
@@ -92,7 +95,51 @@ namespace DeliveryMonitoring.Controllers
 
             return View(filteredDrivers);
         }
+        //Used for filtering Drivers based on their status & company TIN - ends here
 
+        //Used for filtering Drivers Live Location based on their status & company TIN - starts here
+        [HttpGet("/Driver/LiveFilter/{status?}/{companyTin?}")]
+        public async Task<IActionResult> LiveFilter(string? status, string companyTin)
+        {
+            string data = null;
+            var _client = _httpClientFactory.CreateClient("Delivery");
+            if (string.IsNullOrEmpty(status) && string.IsNullOrEmpty(companyTin))
+            {
+                return RedirectToAction("Index");
+            }
+
+            List<Driver> filteredDrivers = new List<Driver>();
+
+            // Build the endpoint based on the provided filters
+            StringBuilder endpoint = new StringBuilder($"{_client.BaseAddress}/drivers?");
+
+            if (status != "null")
+            {
+                endpoint.Append($"status={status}");
+            }
+
+            if (!string.IsNullOrEmpty(companyTin))
+            {
+                if (endpoint.Length > 0)
+                {
+                    endpoint.Append("&");
+                }
+                endpoint.Append($"companyTin={companyTin}");
+            }
+
+            HttpResponseMessage response = await _client.GetAsync(endpoint.ToString());
+
+            if (response.IsSuccessStatusCode)
+            {
+                data = await response.Content.ReadAsStringAsync();                
+            }
+
+            return Ok(data);
+        }
+        //Used for filtering Drivers based on their status & company TIN - ends here
+
+
+        //Used for filtering Drivers based on their CompanyTIN - starts here
         [HttpGet("/Driver/FilterCompany/{companyTin}")]
         public async Task<IActionResult> FilterCompany(string companyTin)
         {
@@ -109,6 +156,7 @@ namespace DeliveryMonitoring.Controllers
             }
             return View(filteredDrivers);
         }
+        //Used for filtering Drivers based on their CompanyTIN - ends here
 
         //Used for fetching the driver's location regularly - starts here
         [HttpGet("/Driver/LiveLocationByCompany/{companyTin}")]
