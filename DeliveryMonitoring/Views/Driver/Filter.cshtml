@@ -90,8 +90,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         let status = urlParams.get('status');
         const companyTin = urlParams.get('companyTin');
-        console.log(status);
-        console.log(companyTin);
 
         // Construct the URL conditionally based on whether the parameters are not empty
         let fetchUrl = `/Driver/LiveFilter`;
@@ -105,7 +103,7 @@
             status = null;
             fetchUrl = `/Driver/LiveFilter/${status}/${companyTin}`;
         }
-        console.log(fetchUrl)
+        
         var marker;
         var markers = [];
         function initMap() {
@@ -209,7 +207,7 @@
             }
             // Call the function immediately to show the initial view
             fetchDataAndUpdateMarkers();
-            // setInterval(fetchDataAndUpdateMarkers, 300000);
+            setInterval(fetchDataAndUpdateMarkers, 3000000);
 
         }
     </script>
