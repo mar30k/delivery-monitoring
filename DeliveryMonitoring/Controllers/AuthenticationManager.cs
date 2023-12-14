@@ -15,7 +15,7 @@ namespace DeliveryMonitoring.Controllers
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        private UserDTO _cachedUser;
+        private UserDTO? _cachedUser;
         public AuthenticationManager(
                 IHttpContextAccessor httpContextAccessor,
                 IHttpClientFactory httpClientFactory
@@ -47,12 +47,18 @@ namespace DeliveryMonitoring.Controllers
                 var userValidation = JsonConvert.DeserializeObject<ResponseModel<LoginResponse>>(juservalidation);
 
                 if (!response.IsSuccessStatusCode)
-                    return userValidation;
-
-                if (userValidation.Success)
+                {
+                    if (userValidation != null)
+                    {
+                        return userValidation;
+                    }
+                }
+                if (userValidation != null && userValidation.Success)
                     return userValidation;
                 else
+                {
                     return userValidation;
+                }
             }
         }
 
@@ -79,11 +85,13 @@ namespace DeliveryMonitoring.Controllers
                 IssuedUtc = DateTime.UtcNow
             };
 
-            //sign in
-            await _httpContextAccessor.HttpContext.SignInAsync(CNET_WebConstantes.CookieScheme, userPrincipal, authenticationProperties);
-
-            //cache authenticated customer
-            _cachedUser = user;
+            if (_httpContextAccessor.HttpContext != null)
+            {
+                //sign in
+                await _httpContextAccessor.HttpContext.SignInAsync(CNET_WebConstantes.CookieScheme, userPrincipal, authenticationProperties);
+                //cache authenticated customer
+                _cachedUser = user;
+            }
         }
         public virtual async Task<cookieValidation> identificationValid()
         {
@@ -106,7 +114,7 @@ namespace DeliveryMonitoring.Controllers
             validinfo.isValid = false;
             return validinfo;
         }
-       
+
         public virtual async void SignOut()
         {
             //reset cached customer

@@ -6,7 +6,9 @@
 }
 
 <div class="container-fluid col-11 pt-5">
+
     <h3>Order Details</h3>
+
     <div class="card border-0" style="border-radius: 0px;" id="orderCard">
         <br />
         <div class="row">
@@ -19,8 +21,40 @@
                     @DateTimeOffset.FromUnixTimeMilliseconds(Model.requestCreatedAt).DateTime.ToString("HH:mm:ss - ddd, MMMM dd, yyyy")
                 </div>
                 <div class="d-flex d-inline-block">
-                    <div id="status">
-                        <strong>@Html.DisplayFor(model => model.status)</strong>
+                    <div>
+                        @{
+                            if (Model.status == "requested")
+                            {
+                                <div style="background-color: deepskyblue;
+                                                                        border-radius: 20px;
+                                                                        color: black;
+                                                                        display: inline-block;
+                                                                        padding: 5px 5px;">
+                                    <strong>@Html.DisplayFor(model => model.status)</strong>
+                                </div>
+                            }
+                            else if (Model.status == "assigned")
+                            {
+                                <div style="background-color: lawngreen;
+                                                                            border-radius: 20px;
+                                                                            color: black;
+                                                                            display: inline-block;
+                                                                            padding: 5px 5px;">
+                                    <strong>@Html.DisplayFor(model => model.status)</strong>
+                                </div>
+                            }
+                            else
+                            {
+                                <div style="background-color: yellow;
+                                                                                border-radius: 20px;
+                                                                                color: black;
+                                                                                display: inline-block;
+                                                                                padding: 5px 5px;">
+                                    <strong>@Html.DisplayFor(model => model.status)</strong>
+                                </div>
+                            }
+                        }
+
                     </div>
                 </div>
             </div>
@@ -31,10 +65,10 @@
                         if (phoneNumber != null && phoneNumber.Length < 10)
                         {
                             <div style="background-color: red;
-                                                                border-radius: 20px;
-                                                                color: black;
-                                                                display: inline-block;
-                                                                padding: 5px 5px;">
+                                                                    border-radius: 20px;
+                                                                    color: black;
+                                                                    display: inline-block;
+                                                                    padding: 5px 5px;">
                                 <strong>Driver Not Assigned</strong>
                             </div>
                         }
@@ -50,6 +84,7 @@
         <br />
 
         <div class="row">
+
             <!--Customer Details-->
             <div class="col-12 col-md-4 detail" id="orderDetail">
                 <h4><i class="bi bi-person-circle icon"></i>Customer</h4>
@@ -74,6 +109,7 @@
                 </div>
             </div>
             <!--Customer Details Ends Here-->
+
             <!--Company Details-->
             <div class="col-12 col-md-4 detail">
                 <h4><i class="bi bi-building icon"></i>Company</h4>
@@ -85,23 +121,24 @@
                     <span id="letters">TIN:</span>
                     <span id="outputs">
                         <a asp-controller="Company" asp-action="Details" asp-route-id="@Model.companyTin">@Html.DisplayFor(model => model.companyTin)</a>
-                        
                     </span>
                 </div>
-                
             </div>
             <!--Company Details Ends Here-->
+
             <!--Driver Details-->
             <div class="col-12 col-md-3">
                 <h4><i class="bi bi-car-front icon"></i>Driver</h4>
                 <div>
                     <span id="letters">Phone:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.assignedDriverPhoneNumber)</span>
+                    <span id="outputs">
+                        @Html.DisplayFor(model => model.assignedDriverPhoneNumber)
+                    </span>
                 </div>
             </div>
             <!--Driver Details Ends Here-->
-
         </div>
+
         <br />
         <br />
         <!--Order Items Table-->
@@ -133,7 +170,7 @@
                 <tbody>
                     @foreach (var item in Model.LineItems)
                     {
-                        double multiplicaitonValue = (100 + item.taxValue)/100;
+                        double multiplicaitonValue = (100 + item.taxValue) / 100;
                         double beforeTax = item.unitAmount * multiplicaitonValue;
                         beforeTax = Math.Round(beforeTax, 2);
                         <tr>
@@ -161,7 +198,7 @@
                                 @Html.DisplayFor(modelItem => item.unitAmount) ETB
                             </td>
                             <td>
-                               @beforeTax ETB
+                                @beforeTax ETB
                             </td>
 
                             <td>
@@ -179,7 +216,7 @@
                         </td>
                         @{
                             int sum = 0;
-                            foreach(var item in Model.LineItems)
+                            foreach (var item in Model.LineItems)
                             {
                                 sum += item.quantity;
                             }

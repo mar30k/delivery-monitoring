@@ -40,15 +40,17 @@ namespace DeliveryMonitoring.Controllers
         {
             if (ModelState.IsValid)
             {
-                var loginResult = await _authenticationManager.AuthenticateUser(model.Username?.Trim(), model.Password);
+                var loginResult = await _authenticationManager.AuthenticateUser(model.Username?.Trim() ?? "", model.Password ?? "");
                 if (loginResult.Success)
                 {
-                    var user = await GetUserByUserName(model.Username?.Trim());
-                    _authenticationManager.SignIn(user, model.RememberMe);
-
+                    var user = await GetUserByUserName(model.Username?.Trim() ?? "");
+                    if (user != null)
+                    {
+                        _authenticationManager.SignIn(user, model.RememberMe);
+                    }
                     return RedirectToAction("Index", "Home");
-
                 }
+
                 else
                 {
                     ModelState.AddModelError("", "Incorrect Username or Password!");

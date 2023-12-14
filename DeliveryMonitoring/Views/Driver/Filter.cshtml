@@ -40,9 +40,7 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
-
                             <tr>
-
                                 <td>
                                     @Html.DisplayFor(modelItem => item.firstName)
                                 </td>
@@ -73,8 +71,6 @@
         </div>
     </div>
     
-
-    <!--Map JavaScript Implementation Starts Here-->
     <script>
         fetch('/Map/GetMapData')
             .then(response => response.text())
@@ -208,7 +204,6 @@
             // Call the function immediately to show the initial view
             fetchDataAndUpdateMarkers();
             setInterval(fetchDataAndUpdateMarkers, 3000000);
-
         }
     </script>
     <!--Map JavaScript Implementation Ends Here-->

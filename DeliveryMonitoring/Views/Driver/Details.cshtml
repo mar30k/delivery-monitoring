@@ -127,21 +127,16 @@
                             }
                         </span>
                     </div>
-
                     <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
                         Additional Info
                     </a>
-
                 </div>
                 <div class="pt-3 col-12 col-md-4 d-flex justify-content-end">
                     <div>
                         <a class="btn btn-success" asp-controller="Driver" asp-action="Update" asp-route-id="@Model.Drivers.phoneNumber"><i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info</a>
                     </div>
                 </div>
-
                 <!--Driver Details Ending-->
-
-
             </div>
             <div class="collapse pt-3 row" id="collapseExample">
                 <div class="col-11" id="orderDetail">
@@ -153,15 +148,10 @@
                 <div class="pt-3 pb-3 col-12 col-md-6">
                     <a class="btn btn-danger" asp-action="Index" style="margin-left: 40px;">Back to List</a>
                 </div>
-                
-
-
             </div>
-
         </div>
     </div>
 
-    <!--Google Map API-->
     <script>
         fetch('/Map/GetMapData')
             .then(response => response.text())
@@ -171,8 +161,7 @@
             })
             .catch(error => console.error('Error loading Google Maps API:', error));
     </script>
-    <!--Google Map API-->
-    
+
     <script>
         function initMap() {
             var marker;
