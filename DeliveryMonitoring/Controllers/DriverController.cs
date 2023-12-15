@@ -193,7 +193,7 @@ namespace DeliveryMonitoring.Controllers
 
                 //foreach (var order in orders)
                 //{
-                //    order.assignedDriverPhoneNumber = "0918539962";
+                //    order.assignedDriverPhoneNumber = "0912918305";
                 //    order.customer.latLng.lat = 9.01123;
                 //    order.customer.latLng.lng = 38.76264;
                 //}
@@ -211,9 +211,9 @@ namespace DeliveryMonitoring.Controllers
                     string data = await response.Content.ReadAsStringAsync();
                     driver = JsonConvert.DeserializeObject<Driver>(data);
 
-                    //if (driver.phoneNumber == "0918539962")
+                    //if (driver.phoneNumber == "0912918305")
                     //{
-                    //    driver.status = "delivering";
+                    //    //driver.status = "delivering";
                     //    driver.latLng.lat = 9.0166004;
                     //    driver.latLng.lng = 38.7631881;
                     //}

@@ -24,36 +24,6 @@
                                 if (Model.Drivers.status == "offline")
                                 {
                                     <div style="background-color: red;
-                                                                    border-radius: 20px;
-                                                                    color: black;
-                                                                    display: inline-block;
-                                                                    padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                                else if (Model.Drivers.status == "ready")
-                                {
-                                    <div style="background-color: orange;
-                                                                        border-radius: 20px;
-                                                                        color: black;
-                                                                        display: inline-block;
-                                                                        padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                                else if (Model.Drivers.status == "accepted")
-                                {
-                                    <div style="background-color: yellow;
-                                                                            border-radius: 20px;
-                                                                            color: black;
-                                                                            display: inline-block;
-                                                                            padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                                else if (Model.Drivers.status == "delivering")
-                                {
-                                    <div style="background-color: deepskyblue;
                                                                                 border-radius: 20px;
                                                                                 color: black;
                                                                                 display: inline-block;
@@ -61,13 +31,43 @@
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
-                                else if (Model.Drivers.status == "completed")
+                                else if (Model.Drivers.status == "ready")
                                 {
-                                    <div style="background-color: lawngreen;
+                                    <div style="background-color: orange;
                                                                                     border-radius: 20px;
                                                                                     color: black;
                                                                                     display: inline-block;
                                                                                     padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
+                                }
+                                else if (Model.Drivers.status == "accepted")
+                                {
+                                    <div style="background-color: yellow;
+                                                                                        border-radius: 20px;
+                                                                                        color: black;
+                                                                                        display: inline-block;
+                                                                                        padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
+                                }
+                                else if (Model.Drivers.status == "delivering")
+                                {
+                                    <div style="background-color: deepskyblue;
+                                                                                            border-radius: 20px;
+                                                                                            color: black;
+                                                                                            display: inline-block;
+                                                                                            padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
+                                }
+                                else if (Model.Drivers.status == "completed")
+                                {
+                                    <div style="background-color: lawngreen;
+                                                                                                border-radius: 20px;
+                                                                                                color: black;
+                                                                                                display: inline-block;
+                                                                                                padding: 5px 5px;">
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
@@ -80,7 +80,7 @@
                                 {
                                     var voucher = item.voucherCode;
                                     <a class="" asp-controller="Order" asp-action="Details" asp-route-id="@voucher" style="margin-left: 0px; text-decoration: none;">- Check Order Details</a>
-                               }
+                                }
                             }
                         }
                     </div>
@@ -164,13 +164,17 @@
 
     <script>
         function initMap() {
+            let index = 0;
+            var map;
+            var orderAssigned = false;
             var marker;
+            var marker2;
             var i = 0;
             var bearing = 0;
             var places = [];
 
-            const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 18,
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 16,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
             //initializes the map with specified parameters - ends here
@@ -201,15 +205,16 @@
                         if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
                         {
                             <text>
-                                    places =[{
-                                        Name: '@Model.Drivers.firstName',
-                                        LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                        Phone: '@Model.Drivers.phoneNumber',
-                                        Status: '@Model.Drivers.status',
-                                        lat: @Model.Drivers.latLng.lat,
-                                        lng: @Model.Drivers.latLng.lng,
-                                        DestLat: @item.customer.latLng.lat,
-                                        DestLng: @item.customer.latLng.lng}];
+                                    orderAssigned = true;
+                                places = [{
+                                    Name: '@Model.Drivers.firstName',
+                                    LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                    Phone: '@Model.Drivers.phoneNumber',
+                                    Status: '@Model.Drivers.status',
+                                    lat: @Model.Drivers.latLng.lat,
+                                    lng: @Model.Drivers.latLng.lng,
+                                    DestLat: @item.customer.latLng.lat,
+                                    DestLng: @item.customer.latLng.lng}];
                             </text>
                         }
                     }
@@ -224,9 +229,7 @@
                     icon: {
                         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                         scale: 4,
-
                     },
-
                 });
 
             map.setCenter(marker.getPosition());
@@ -251,11 +254,19 @@
             })(infowindow));
             ////content for each driver ends here
 
-
             var liveLocation = [places[0].lat, places[0].lng];
 
             //this one moves the driver if status is delivering
-            if (places[0].Status == "delivering") {
+            if (orderAssigned) {
+                marker2 = new google.maps.Marker({
+                    position: { lat: places[0].DestLat, lng: places[0].DestLng },
+                    title: 'Order Destination',
+                    map: map,
+                    icon: {
+                        url: '/images/Destination.png',
+                        scaledSize: new google.maps.Size(48, 48)
+                    },
+                });
 
                 var beginPosition = new google.maps.LatLng(places[0].lat, places[0].lng);
                 var destinationPosition = new google.maps.LatLng(places[0].DestLat, places[0].DestLng);
@@ -295,7 +306,7 @@
 
                                     moveCar();
 
-                                    if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status !== "delivering") {
+                                    if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status === "completed") {
                                         clearInterval(apiResponseInterval);
                                         directionsRenderer.setMap(null); // Hide the directions
                                         map.setCenter(marker.getPosition());
@@ -308,13 +319,62 @@
                         }, 10000); // Adjust the interval time as needed
 
                     } else {
-                        console.error('Initial directions request failed with status:', status);
+                        // Set an interval to fetch the updated location from the API and call moveCar
+                        var apiResponse = setInterval(function () {
+
+                            console.log('Live Location Before:', liveLocation[0], liveLocation[1]);
+                            if (liveLocation.length > 0) {
+
+                                liveLocation.pop();
+                                liveLocation.pop();
+                            }
+                            // Fetch the updated location from the API
+                            fetch(`/Driver/LiveLocation/${places[0].Phone}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log('API Response:', data);
+
+                                    // liveLocation.push(data.latLng.lat);
+                                    // liveLocation.push(data.latLng.lng);
+                                    if (index === 0) {
+                                        liveLocation.push(9.0147);
+                                        liveLocation.push(38.76265);
+
+                                    }
+                                    if (index === 1) {
+                                        liveLocation.push(9.01394);
+                                        liveLocation.push(38.76294);
+                                    }
+                                    if (index === 2) {
+                                        liveLocation.push(9.01191);
+                                        liveLocation.push(38.76275);
+                                    }
+                                    if (index === 3) {
+                                        liveLocation.push(9.01123);
+                                        liveLocation.push(38.76264);
+                                    }
+                                    console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
+                                    console.log('Live Location After:', liveLocation[0], liveLocation[1]);
+                                    //}
+
+                                    moveCar();
+
+                                    if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status === "completed") {
+                                        clearInterval(apiResponse);
+                                        marker2.setMap(null);                                        
+                                        console.log('marker inside last stop:', marker.getPosition().lat(), marker.getPosition().lng());                                     
+                                    }
+                                })
+                                .catch(error => console.error('Error fetching live location:', error, error.responseText));
+
+
+                        }, 10000); // Adjust the interval time as needed
                     }
                 });
 
                 function moveCar() {
                     // console.log('Live Location After in moveCar:', liveLocation[0], liveLocation[1]);
-                    //index++;
+                    index++;
                     // Check if the driver's location has changed
                     if (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng()) {
 
@@ -348,6 +408,7 @@
                             if (step == numSteps) {
                                 clearInterval(interval);
                                 marker.setPosition(liveLatLng);
+                                map.setCenter(marker.getPosition());
                             }
 
                         }, 70);
