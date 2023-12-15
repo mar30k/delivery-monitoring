@@ -96,7 +96,7 @@
             }
  
         }
-        
+        var map;
         var marker;
         var markers = [];
         function initMap() {
@@ -104,7 +104,7 @@
             const defaultLat = 9.0103899; // Replace with your default latitude
             const defaultLng = 38.7614259; // Replace with your default longitude
 
-            const map = new google.maps.Map(document.getElementById("map"), {
+            map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: defaultLat, lng: defaultLng },
                 zoom: 13,
                 mapTypeId: google.maps.MapTypeId.ROADMAP

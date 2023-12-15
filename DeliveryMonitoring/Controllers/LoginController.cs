@@ -1,7 +1,7 @@
 ﻿using CNET_V7_Domain.Domain.SecuritySchema;
 using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+//using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json;
 using System.Net.Http;
 using Tweetinvi.Core.Models;
@@ -9,7 +9,7 @@ using Tweetinvi.Parameters;
 
 namespace DeliveryMonitoring.Controllers
 {
-    
+
     public class LoginController : Controller
 
     {
@@ -40,17 +40,15 @@ namespace DeliveryMonitoring.Controllers
         {
             if (ModelState.IsValid)
             {
-                var loginResult = await _authenticationManager.AuthenticateUser(model.Username?.Trim() ?? "", model.Password ?? "");
+                var loginResult = await _authenticationManager.AuthenticateUser(model.Username?.Trim(), model.Password);
                 if (loginResult.Success)
                 {
-                    var user = await GetUserByUserName(model.Username?.Trim() ?? "");
-                    if (user != null)
-                    {
-                        _authenticationManager.SignIn(user, model.RememberMe);
-                    }
-                    return RedirectToAction("Index", "Home");
-                }
+                    var user = await GetUserByUserName(model.Username?.Trim());
+                    _authenticationManager.SignIn(user, model.RememberMe);
 
+                    return RedirectToAction("Index", "Home");
+
+                }
                 else
                 {
                     ModelState.AddModelError("", "Incorrect Username or Password!");

@@ -15,7 +15,7 @@ namespace DeliveryMonitoring.Controllers
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        private UserDTO? _cachedUser;
+        private UserDTO _cachedUser;
         public AuthenticationManager(
                 IHttpContextAccessor httpContextAccessor,
                 IHttpClientFactory httpClientFactory
@@ -47,18 +47,12 @@ namespace DeliveryMonitoring.Controllers
                 var userValidation = JsonConvert.DeserializeObject<ResponseModel<LoginResponse>>(juservalidation);
 
                 if (!response.IsSuccessStatusCode)
-                {
-                    if (userValidation != null)
-                    {
-                        return userValidation;
-                    }
-                }
-                if (userValidation != null && userValidation.Success)
+                    return userValidation;
+
+                if (userValidation.Success)
                     return userValidation;
                 else
-                {
                     return userValidation;
-                }
             }
         }
 
@@ -85,30 +79,27 @@ namespace DeliveryMonitoring.Controllers
                 IssuedUtc = DateTime.UtcNow
             };
 
-            if (_httpContextAccessor.HttpContext != null)
-            {
-                //sign in
-                await _httpContextAccessor.HttpContext.SignInAsync(CNET_WebConstantes.CookieScheme, userPrincipal, authenticationProperties);
-                //cache authenticated customer
-                _cachedUser = user;
-            }
+            //sign in
+            await _httpContextAccessor.HttpContext.SignInAsync(CNET_WebConstantes.CookieScheme, userPrincipal, authenticationProperties);
+
+            //cache authenticated customer
+            _cachedUser = user;
         }
         public virtual async Task<cookieValidation> identificationValid()
         {
             var validinfo = new cookieValidation();
-            //var idCookie = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.CookieScheme];
-            //if (!string.IsNullOrWhiteSpace(idCookie))
-            //{
-            //    validinfo.isValid = true;
-            //    return validinfo;
-            //}
-            //validinfo.isValid = false;
-            //return validinfo;
-            // Check if the user is authenticated
-            if (_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+
+            var authenticateResult = await _httpContextAccessor.HttpContext.AuthenticateAsync();
+
+            if (authenticateResult.Succeeded)
             {
-                validinfo.isValid = true;
-                return validinfo;
+                var authenticationProperties = authenticateResult.Properties;
+
+                if (authenticationProperties?.IsPersistent == true)
+                {
+                    validinfo.isValid = true;  // User is authenticated and the authentication is persistent
+                    return validinfo;
+                }
             }
 
             validinfo.isValid = false;
