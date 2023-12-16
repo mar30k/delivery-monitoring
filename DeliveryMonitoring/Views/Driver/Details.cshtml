@@ -23,53 +23,53 @@
                             @{
                                 if (Model.Drivers.status == "offline")
                                 {
-                                    <div style="background-color: red;
-                                                                                                    border-radius: 20px;
-                                                                                                    color: black;
-                                                                                                    display: inline-block;
-                                                                                                    padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                                else if (Model.Drivers.status == "ready")
-                                {
-                                    <div style="background-color: orange;
+                                        <div style="background-color: red;
                                                                                                         border-radius: 20px;
                                                                                                         color: black;
                                                                                                         display: inline-block;
                                                                                                         padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
+                                            @Html.DisplayFor(model => model.Drivers.status)
+                                        </div>
                                 }
-                                else if (Model.Drivers.status == "accepted")
+                                else if (Model.Drivers.status == "ready")
                                 {
-                                    <div style="background-color: yellow;
+                                        <div style="background-color: orange;
                                                                                                             border-radius: 20px;
                                                                                                             color: black;
                                                                                                             display: inline-block;
                                                                                                             padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
+                                            @Html.DisplayFor(model => model.Drivers.status)
+                                        </div>
                                 }
-                                else if (Model.Drivers.status == "delivering")
+                                else if (Model.Drivers.status == "accepted")
                                 {
-                                    <div style="background-color: deepskyblue;
+                                        <div style="background-color: yellow;
                                                                                                                 border-radius: 20px;
                                                                                                                 color: black;
                                                                                                                 display: inline-block;
                                                                                                                 padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
+                                            @Html.DisplayFor(model => model.Drivers.status)
+                                        </div>
                                 }
-                                else if (Model.Drivers.status == "completed")
+                                else if (Model.Drivers.status == "delivering")
                                 {
-                                    <div style="background-color: lawngreen;
+                                        <div style="background-color: deepskyblue;
                                                                                                                     border-radius: 20px;
                                                                                                                     color: black;
                                                                                                                     display: inline-block;
                                                                                                                     padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
+                                            @Html.DisplayFor(model => model.Drivers.status)
+                                        </div>
+                                }
+                                else if (Model.Drivers.status == "completed")
+                                {
+                                        <div style="background-color: lawngreen;
+                                                                                                                        border-radius: 20px;
+                                                                                                                        color: black;
+                                                                                                                        display: inline-block;
+                                                                                                                        padding: 5px 5px;">
+                                            @Html.DisplayFor(model => model.Drivers.status)
+                                        </div>
                                 }
                             }
                         </a>
@@ -79,7 +79,7 @@
                                 if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
                                 {
                                     var voucher = item.voucherCode;
-                                    <a class="" asp-controller="Order" asp-action="Details" asp-route-id="@voucher" style="margin-left: 0px; text-decoration: none;">- Check Order Details</a>
+                                        <a class="" asp-controller="Order" asp-action="Details" asp-route-id="@voucher" style="margin-left: 0px; text-decoration: none;">- Check Order Details</a>
                                 }
                             }
                         }
@@ -111,18 +111,18 @@
                                     if (Model.Drivers.isDisabled == true)
                                     {
                                     // isDisabled exists and is true
-                                        <text>Not Eligible</text>
+                                            <text>Not Eligible</text>
                                     }
                                     else
                                     {
                                     // isDisabled exists and is false
-                                        <text>Eligible</text>
+                                            <text>Eligible</text>
                                     }
                                 }
                                 else
                                 {
                                 // isDisabled does not exist in the API response
-                                    <text>Eligible</text>
+                                        <text>Eligible</text>
                                 }
                             }
                         </span>
@@ -189,33 +189,33 @@
         @{
             if (Model.Drivers != null)
             {
-                <text>
-                        places =[{
-                            Name: '@Model.Drivers.firstName',
-                            LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                            Phone: '@Model.Drivers.phoneNumber',
-                            Status: '@Model.Drivers.status',
-                            lat: @Model.Drivers.latLng.lat,
-                            lng: @Model.Drivers.latLng.lng}];
-                </text>
+                    <text>
+                            places =[{
+                                Name: '@Model.Drivers.firstName',
+                                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                Phone: '@Model.Drivers.phoneNumber',
+                                Status: '@Model.Drivers.status',
+                                lat: @Model.Drivers.latLng.lat,
+                                lng: @Model.Drivers.latLng.lng}];
+                    </text>
                 if (Model.Orders != null)
                 {
                     foreach (var item in Model.Orders)
                     {
                         if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
                         {
-                            <text>
-                                    orderAssigned = true;
-                                places = [{
-                                    Name: '@Model.Drivers.firstName',
-                                    LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                    Phone: '@Model.Drivers.phoneNumber',
-                                    Status: '@Model.Drivers.status',
-                                    lat: @Model.Drivers.latLng.lat,
-                                    lng: @Model.Drivers.latLng.lng,
-                                    DestLat: @item.customer.latLng.lat,
-                                    DestLng: @item.customer.latLng.lng}];
-                            </text>
+                                <text>
+                                        orderAssigned = true;
+                                    places = [{
+                                        Name: '@Model.Drivers.firstName',
+                                        LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                        Phone: '@Model.Drivers.phoneNumber',
+                                        Status: '@Model.Drivers.status',
+                                        lat: @Model.Drivers.latLng.lat,
+                                        lng: @Model.Drivers.latLng.lng,
+                                        DestLat: @item.customer.latLng.lat,
+                                        DestLng: @item.customer.latLng.lng}];
+                                </text>
                         }
                     }
                 }
@@ -267,7 +267,7 @@
                         scaledSize: new google.maps.Size(48, 48)
                     },
                 });
-                
+
                 var beginPosition = new google.maps.LatLng(places[0].lat, places[0].lng);
                 var destinationPosition = new google.maps.LatLng(places[0].DestLat, places[0].DestLng);
 
@@ -358,7 +358,7 @@
                                     // }
                                     // console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
                                     // console.log('Live Location After:', liveLocation[0], liveLocation[1]);         
-                                    
+
                                     moveCar();
 
                                     if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status === "completed") {
@@ -415,7 +415,7 @@
                     }
                 }
             }
-            //this one moves the driver if status is delivering - ends here
+            //this one moves the driver if order is assigned - ends here
         }
     </script>
 </div>
