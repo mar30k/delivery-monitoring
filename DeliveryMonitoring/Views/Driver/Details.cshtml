@@ -293,9 +293,12 @@
                                 .then(response => response.json())
                                 .then(data => {
 
-                                    liveLocation.push(data.latLng.lat);
-                                    liveLocation.push(data.latLng.lng);
-
+                                    if(data.latLng.lat !== undefined && data.latLng.lng !== undefined)
+                                    {
+                                        liveLocation.push(data.latLng.lat);
+                                        liveLocation.push(data.latLng.lng);
+                                    }
+                                    
                                     moveCar();
 
                                     if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status === "completed") {
@@ -322,8 +325,11 @@
                                 .then(response => response.json())
                                 .then(data => {
 
-                                    liveLocation.push(data.latLng.lat);
-                                    liveLocation.push(data.latLng.lng);
+                                    if (data.latLng.lat !== undefined && data.latLng.lng !== undefined) 
+                                    {
+                                        liveLocation.push(data.latLng.lat);
+                                        liveLocation.push(data.latLng.lng);
+                                    }
 
                                     moveCar();
 
@@ -331,7 +337,6 @@
                                         clearInterval(apiResponse);
                                         marker2.setMap(null);
                                         initMap();
-
                                     }
                                 })
                                 .catch(error => console.error('Error fetching live location:', error, error.responseText));
@@ -351,8 +356,11 @@
                     fetch(`/Driver/LiveLocation/${places[0].Phone}`)
                         .then(response => response.json())
                         .then(data => {
-                            liveLocation.push(data.latLng.lat);
-                            liveLocation.push(data.latLng.lng);
+
+                            if (data.latLng.lat !== undefined && data.latLng.lng !== undefined) {
+                                liveLocation.push(data.latLng.lat);
+                                liveLocation.push(data.latLng.lng);
+                            }
 
                             moveCar();
 
@@ -366,7 +374,7 @@
             }
             function moveCar() {
                 // Check if the driver's location has changed
-                if (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng()) {
+                if (liveLocation.length > 0 && (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng())) {
 
                     var liveLatLng = new google.maps.LatLng(liveLocation[0], liveLocation[1]);
                     // Calculate the bearing between the previous location and the current location
