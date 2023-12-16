@@ -24,50 +24,50 @@
                                 if (Model.Drivers.status == "offline")
                                 {
                                     <div style="background-color: red;
-                                                                                border-radius: 20px;
-                                                                                color: black;
-                                                                                display: inline-block;
-                                                                                padding: 5px 5px;">
+                                                                                                    border-radius: 20px;
+                                                                                                    color: black;
+                                                                                                    display: inline-block;
+                                                                                                    padding: 5px 5px;">
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
                                 else if (Model.Drivers.status == "ready")
                                 {
                                     <div style="background-color: orange;
-                                                                                    border-radius: 20px;
-                                                                                    color: black;
-                                                                                    display: inline-block;
-                                                                                    padding: 5px 5px;">
+                                                                                                        border-radius: 20px;
+                                                                                                        color: black;
+                                                                                                        display: inline-block;
+                                                                                                        padding: 5px 5px;">
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
                                 else if (Model.Drivers.status == "accepted")
                                 {
                                     <div style="background-color: yellow;
-                                                                                        border-radius: 20px;
-                                                                                        color: black;
-                                                                                        display: inline-block;
-                                                                                        padding: 5px 5px;">
+                                                                                                            border-radius: 20px;
+                                                                                                            color: black;
+                                                                                                            display: inline-block;
+                                                                                                            padding: 5px 5px;">
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
                                 else if (Model.Drivers.status == "delivering")
                                 {
                                     <div style="background-color: deepskyblue;
-                                                                                            border-radius: 20px;
-                                                                                            color: black;
-                                                                                            display: inline-block;
-                                                                                            padding: 5px 5px;">
+                                                                                                                border-radius: 20px;
+                                                                                                                color: black;
+                                                                                                                display: inline-block;
+                                                                                                                padding: 5px 5px;">
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
                                 else if (Model.Drivers.status == "completed")
                                 {
                                     <div style="background-color: lawngreen;
-                                                                                                border-radius: 20px;
-                                                                                                color: black;
-                                                                                                display: inline-block;
-                                                                                                padding: 5px 5px;">
+                                                                                                                    border-radius: 20px;
+                                                                                                                    color: black;
+                                                                                                                    display: inline-block;
+                                                                                                                    padding: 5px 5px;">
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
@@ -267,7 +267,7 @@
                         scaledSize: new google.maps.Size(48, 48)
                     },
                 });
-
+                
                 var beginPosition = new google.maps.LatLng(places[0].lat, places[0].lng);
                 var destinationPosition = new google.maps.LatLng(places[0].DestLat, places[0].DestLng);
 
@@ -321,8 +321,7 @@
                     } else {
                         // Set an interval to fetch the updated location from the API and call moveCar
                         var apiResponse = setInterval(function () {
-
-                            console.log('Live Location Before:', liveLocation[0], liveLocation[1]);
+                            // console.log('Live Location Before:', liveLocation[0], liveLocation[1]);
                             if (liveLocation.length > 0) {
 
                                 liveLocation.pop();
@@ -332,42 +331,43 @@
                             fetch(`/Driver/LiveLocation/${places[0].Phone}`)
                                 .then(response => response.json())
                                 .then(data => {
-                                    console.log('API Response:', data);
+                                    // console.log('API Response:', data);
 
-                                    // liveLocation.push(data.latLng.lat);
-                                    // liveLocation.push(data.latLng.lng);
-                                    if (index === 0) {
-                                        liveLocation.push(9.0147);
-                                        liveLocation.push(38.76265);
+                                    liveLocation.push(data.latLng.lat);
+                                    liveLocation.push(data.latLng.lng);
 
-                                    }
-                                    if (index === 1) {
-                                        liveLocation.push(9.01394);
-                                        liveLocation.push(38.76294);
-                                    }
-                                    if (index === 2) {
-                                        liveLocation.push(9.01191);
-                                        liveLocation.push(38.76275);
-                                    }
-                                    if (index === 3) {
-                                        liveLocation.push(9.01123);
-                                        liveLocation.push(38.76264);
-                                    }
-                                    console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
-                                    console.log('Live Location After:', liveLocation[0], liveLocation[1]);
-                                    //}
-
+                                    // if (index === 0) {
+                                    //     liveLocation.push(9.0147);
+                                    //     liveLocation.push(38.76265);
+                                    // }
+                                    // if (index === 1) {
+                                    //     liveLocation.push(9.01394);
+                                    //     liveLocation.push(38.76294);
+                                    // }
+                                    // if (index === 2) {
+                                    //     liveLocation.push(9.01191);
+                                    //     liveLocation.push(38.76275);
+                                    // }
+                                    // if (index === 3) {
+                                    //     liveLocation.push(9.01123);
+                                    //     liveLocation.push(38.76264);
+                                    // }
+                                    // if (index === 4) {
+                                    //     liveLocation.push(9.01191);
+                                    //     liveLocation.push(38.76275);
+                                    // }
+                                    // console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
+                                    // console.log('Live Location After:', liveLocation[0], liveLocation[1]);         
+                                    
                                     moveCar();
 
                                     if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status === "completed") {
                                         clearInterval(apiResponse);
-                                        marker2.setMap(null);                                        
-                                        console.log('marker inside last stop:', marker.getPosition().lat(), marker.getPosition().lng());                                     
+                                        marker2.setMap(null);
+                                        // console.log('marker inside last stop:', marker.getPosition().lat(), marker.getPosition().lng());                                       
                                     }
                                 })
                                 .catch(error => console.error('Error fetching live location:', error, error.responseText));
-
-
                         }, 10000); // Adjust the interval time as needed
                     }
                 });
