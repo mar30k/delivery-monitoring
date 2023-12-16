@@ -23,53 +23,53 @@
                             @{
                                 if (Model.Drivers.status == "offline")
                                 {
-                                        <div style="background-color: red;
-                                                                                                        border-radius: 20px;
-                                                                                                        color: black;
-                                                                                                        display: inline-block;
-                                                                                                        padding: 5px 5px;">
-                                            @Html.DisplayFor(model => model.Drivers.status)
-                                        </div>
+                                    <div style="background-color: red;
+                                                                                                                                        border-radius: 20px;
+                                                                                                                                        color: black;
+                                                                                                                                        display: inline-block;
+                                                                                                                                        padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
                                 }
                                 else if (Model.Drivers.status == "ready")
                                 {
-                                        <div style="background-color: orange;
-                                                                                                            border-radius: 20px;
-                                                                                                            color: black;
-                                                                                                            display: inline-block;
-                                                                                                            padding: 5px 5px;">
-                                            @Html.DisplayFor(model => model.Drivers.status)
-                                        </div>
+                                    <div style="background-color: orange;
+                                                                                                                                            border-radius: 20px;
+                                                                                                                                            color: black;
+                                                                                                                                            display: inline-block;
+                                                                                                                                            padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
                                 }
                                 else if (Model.Drivers.status == "accepted")
                                 {
-                                        <div style="background-color: yellow;
-                                                                                                                border-radius: 20px;
-                                                                                                                color: black;
-                                                                                                                display: inline-block;
-                                                                                                                padding: 5px 5px;">
-                                            @Html.DisplayFor(model => model.Drivers.status)
-                                        </div>
+                                    <div style="background-color: yellow;
+                                                                                                                                                border-radius: 20px;
+                                                                                                                                                color: black;
+                                                                                                                                                display: inline-block;
+                                                                                                                                                padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
                                 }
                                 else if (Model.Drivers.status == "delivering")
                                 {
-                                        <div style="background-color: deepskyblue;
-                                                                                                                    border-radius: 20px;
-                                                                                                                    color: black;
-                                                                                                                    display: inline-block;
-                                                                                                                    padding: 5px 5px;">
-                                            @Html.DisplayFor(model => model.Drivers.status)
-                                        </div>
+                                    <div style="background-color: deepskyblue;
+                                                                                                                                                    border-radius: 20px;
+                                                                                                                                                    color: black;
+                                                                                                                                                    display: inline-block;
+                                                                                                                                                    padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
                                 }
                                 else if (Model.Drivers.status == "completed")
                                 {
-                                        <div style="background-color: lawngreen;
-                                                                                                                        border-radius: 20px;
-                                                                                                                        color: black;
-                                                                                                                        display: inline-block;
-                                                                                                                        padding: 5px 5px;">
-                                            @Html.DisplayFor(model => model.Drivers.status)
-                                        </div>
+                                    <div style="background-color: lawngreen;
+                                                                                                                                                        border-radius: 20px;
+                                                                                                                                                        color: black;
+                                                                                                                                                        display: inline-block;
+                                                                                                                                                        padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
                                 }
                             }
                         </a>
@@ -79,7 +79,7 @@
                                 if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
                                 {
                                     var voucher = item.voucherCode;
-                                        <a class="" asp-controller="Order" asp-action="Details" asp-route-id="@voucher" style="margin-left: 0px; text-decoration: none;">- Check Order Details</a>
+                                    <a class="" asp-controller="Order" asp-action="Details" asp-route-id="@voucher" style="margin-left: 0px; text-decoration: none;">- Order Details</a>
                                 }
                             }
                         }
@@ -111,18 +111,18 @@
                                     if (Model.Drivers.isDisabled == true)
                                     {
                                     // isDisabled exists and is true
-                                            <text>Not Eligible</text>
+                                        <text>Not Eligible</text>
                                     }
                                     else
                                     {
                                     // isDisabled exists and is false
-                                            <text>Eligible</text>
+                                        <text>Eligible</text>
                                     }
                                 }
                                 else
                                 {
                                 // isDisabled does not exist in the API response
-                                        <text>Eligible</text>
+                                    <text>Eligible</text>
                                 }
                             }
                         </span>
@@ -163,8 +163,7 @@
     </script>
 
     <script>
-        function initMap() {
-            let index = 0;
+        function initMap() {           
             var map;
             var orderAssigned = false;
             var marker;
@@ -189,39 +188,38 @@
         @{
             if (Model.Drivers != null)
             {
-                    <text>
-                            places =[{
-                                Name: '@Model.Drivers.firstName',
-                                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                Phone: '@Model.Drivers.phoneNumber',
-                                Status: '@Model.Drivers.status',
-                                lat: @Model.Drivers.latLng.lat,
-                                lng: @Model.Drivers.latLng.lng}];
-                    </text>
+                <text>
+                        places =[{
+                            Name: '@Model.Drivers.firstName',
+                            LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                            Phone: '@Model.Drivers.phoneNumber',
+                            Status: '@Model.Drivers.status',
+                            lat: @Model.Drivers.latLng.lat,
+                            lng: @Model.Drivers.latLng.lng}];
+                </text>
                 if (Model.Orders != null)
                 {
                     foreach (var item in Model.Orders)
                     {
                         if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
                         {
-                                <text>
-                                        orderAssigned = true;
-                                    places = [{
-                                        Name: '@Model.Drivers.firstName',
-                                        LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                        Phone: '@Model.Drivers.phoneNumber',
-                                        Status: '@Model.Drivers.status',
-                                        lat: @Model.Drivers.latLng.lat,
-                                        lng: @Model.Drivers.latLng.lng,
-                                        DestLat: @item.customer.latLng.lat,
-                                        DestLng: @item.customer.latLng.lng}];
-                                </text>
+                            <text>
+                                    orderAssigned = true;
+                                places = [{
+                                    Name: '@Model.Drivers.firstName',
+                                    LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                    Phone: '@Model.Drivers.phoneNumber',
+                                    Status: '@Model.Drivers.status',
+                                    lat: @Model.Drivers.latLng.lat,
+                                    lng: @Model.Drivers.latLng.lng,
+                                    DestLat: @item.customer.latLng.lat,
+                                    DestLng: @item.customer.latLng.lng}];
+                            </text>
                         }
                     }
                 }
             }
         }
-
                 marker = new google.maps.Marker({
                     position: { lat: places[0].lat, lng: places[0].lng },
                     title: places[i].Name,
@@ -285,7 +283,6 @@
                         // Set an interval to fetch the updated location from the API and call moveCar
                         var apiResponseInterval = setInterval(function () {
 
-                            // console.log('Live Location Before:', liveLocation[0], liveLocation[1]);
                             if (liveLocation.length > 0) {
 
                                 liveLocation.pop();
@@ -294,23 +291,18 @@
                             // Fetch the updated location from the API
                             fetch(`/Driver/LiveLocation/${places[0].Phone}`)
                                 .then(response => response.json())
-                                .then(data => {
-                                    // console.log('API Response:', data);
+                                .then(data => {                                    
 
                                     liveLocation.push(data.latLng.lat);
                                     liveLocation.push(data.latLng.lng);
-
-                                    // console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
-                                    // console.log('Live Location After:', liveLocation[0], liveLocation[1]);
-                                    //}
-
+                                  
                                     moveCar();
 
                                     if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status === "completed") {
                                         clearInterval(apiResponseInterval);
                                         directionsRenderer.setMap(null); // Hide the directions
                                         map.setCenter(marker.getPosition());
-                                        // console.log('marker inside last stop:', marker.getPosition().lat(), marker.getPosition().lng());
+                                        initMap();
                                     }
                                 })
                                 .catch(error => console.error('Error fetching live location:', error, error.responseText));
@@ -320,10 +312,8 @@
 
                     } else {
                         // Set an interval to fetch the updated location from the API and call moveCar
-                        var apiResponse = setInterval(function () {
-                            // console.log('Live Location Before:', liveLocation[0], liveLocation[1]);
+                        var apiResponse = setInterval(function () {                           
                             if (liveLocation.length > 0) {
-
                                 liveLocation.pop();
                                 liveLocation.pop();
                             }
@@ -331,91 +321,87 @@
                             fetch(`/Driver/LiveLocation/${places[0].Phone}`)
                                 .then(response => response.json())
                                 .then(data => {
-                                    // console.log('API Response:', data);
-
+                                    
                                     liveLocation.push(data.latLng.lat);
                                     liveLocation.push(data.latLng.lng);
-
-                                    // if (index === 0) {
-                                    //     liveLocation.push(9.0147);
-                                    //     liveLocation.push(38.76265);
-                                    // }
-                                    // if (index === 1) {
-                                    //     liveLocation.push(9.01394);
-                                    //     liveLocation.push(38.76294);
-                                    // }
-                                    // if (index === 2) {
-                                    //     liveLocation.push(9.01191);
-                                    //     liveLocation.push(38.76275);
-                                    // }
-                                    // if (index === 3) {
-                                    //     liveLocation.push(9.01123);
-                                    //     liveLocation.push(38.76264);
-                                    // }
-                                    // if (index === 4) {
-                                    //     liveLocation.push(9.01191);
-                                    //     liveLocation.push(38.76275);
-                                    // }
-                                    // console.log('marker inside fetch:', marker.getPosition().lat(), marker.getPosition().lng());
-                                    // console.log('Live Location After:', liveLocation[0], liveLocation[1]);         
 
                                     moveCar();
 
                                     if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status === "completed") {
                                         clearInterval(apiResponse);
                                         marker2.setMap(null);
-                                        // console.log('marker inside last stop:', marker.getPosition().lat(), marker.getPosition().lng());                                       
+                                        initMap();
+                                       
                                     }
                                 })
                                 .catch(error => console.error('Error fetching live location:', error, error.responseText));
                         }, 10000); // Adjust the interval time as needed
                     }
-                });
-
-                function moveCar() {
-                    // console.log('Live Location After in moveCar:', liveLocation[0], liveLocation[1]);
-                    index++;
-                    // Check if the driver's location has changed
-                    if (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng()) {
-
-                        var liveLatLng = new google.maps.LatLng(liveLocation[0], liveLocation[1]);
-                        // Calculate the bearing between the previous location and the current location
-                        bearing = google.maps.geometry.spherical.computeHeading(marker.getPosition(), liveLatLng);
-
-                        // Calculate the step size for interpolation
-                        var numSteps = 100;
-                        var step = 0;
-
-
-                        // Use setInterval for interpolation and smooth sliding
-                        var interval = setInterval(function () {
-                            step += 1;
-
-                            // Calculate the interpolated position
-                            var interpolatedPosition = google.maps.geometry.spherical.interpolate(marker.getPosition(), liveLatLng, step / numSteps);
-
-                            // Set the marker position
-                            marker.setPosition(interpolatedPosition);
-
-                            // Set the marker icon with rotation
-                            marker.setIcon({
-                                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                                scale: 4,
-                                rotation: bearing,
-                            });
-
-                            // Check if reached the final position
-                            if (step == numSteps) {
-                                clearInterval(interval);
-                                marker.setPosition(liveLatLng);
-                                map.setCenter(marker.getPosition());
-                            }
-
-                        }, 70);
-                    }
-                }
+                });               
             }
             //this one moves the driver if order is assigned - ends here
+            else {
+                // Set an interval to fetch the updated location from the API and call moveCar
+                var AR = setInterval(function () {                    
+                    if (liveLocation.length > 0) {
+                        liveLocation.pop();
+                        liveLocation.pop();
+                    }
+                    // Fetch the updated location from the API
+                    fetch(`/Driver/LiveLocation/${places[0].Phone}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            liveLocation.push(data.latLng.lat);
+                            liveLocation.push(data.latLng.lng);
+
+                            moveCar();
+
+                            if (data.status === "delivering") {
+                                clearInterval(AR);
+                                initMap();
+                            }
+                        })
+                        .catch(error => console.error('Error fetching live location:', error, error.responseText));
+                }, 10000); // Adjust the interval time as needed
+            }
+            function moveCar() {
+                // Check if the driver's location has changed
+                if (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng()) {
+
+                    var liveLatLng = new google.maps.LatLng(liveLocation[0], liveLocation[1]);
+                    // Calculate the bearing between the previous location and the current location
+                    bearing = google.maps.geometry.spherical.computeHeading(marker.getPosition(), liveLatLng);
+
+                    // Calculate the step size for interpolation
+                    var numSteps = 100;
+                    var step = 0;
+
+                    // Use setInterval for interpolation and smooth sliding
+                    var interval = setInterval(function () {
+                        step += 1;
+
+                        // Calculate the interpolated position
+                        var interpolatedPosition = google.maps.geometry.spherical.interpolate(marker.getPosition(), liveLatLng, step / numSteps);
+
+                        // Set the marker position
+                        marker.setPosition(interpolatedPosition);
+
+                        // Set the marker icon with rotation
+                        marker.setIcon({
+                            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                            scale: 4,
+                            rotation: bearing,
+                        });
+
+                        // Check if reached the final position
+                        if (step == numSteps) {
+                            clearInterval(interval);
+                            marker.setPosition(liveLatLng);
+                            map.setCenter(marker.getPosition());
+                        }
+                    }, 70);
+                }
+            }
         }
     </script>
 </div>

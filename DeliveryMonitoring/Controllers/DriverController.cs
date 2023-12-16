@@ -211,7 +211,7 @@ namespace DeliveryMonitoring.Controllers
                     string data = await response.Content.ReadAsStringAsync();
                     driver = JsonConvert.DeserializeObject<Driver>(data);
 
-                    //if (driver.phoneNumber == "0912918305")
+                    //if (driver.phoneNumber == "0918539962")
                     //{
                     //    //driver.status = "delivering";
                     //    driver.latLng.lat = 9.0166004;
