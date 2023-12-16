@@ -24,16 +24,6 @@
                                 if (Model.Drivers.status == "offline")
                                 {
                                     <div style="background-color: red;
-                                                                                                                                        border-radius: 20px;
-                                                                                                                                        color: black;
-                                                                                                                                        display: inline-block;
-                                                                                                                                        padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                                else if (Model.Drivers.status == "ready")
-                                {
-                                    <div style="background-color: orange;
                                                                                                                                             border-radius: 20px;
                                                                                                                                             color: black;
                                                                                                                                             display: inline-block;
@@ -41,9 +31,9 @@
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
-                                else if (Model.Drivers.status == "accepted")
+                                else if (Model.Drivers.status == "ready")
                                 {
-                                    <div style="background-color: yellow;
+                                    <div style="background-color: orange;
                                                                                                                                                 border-radius: 20px;
                                                                                                                                                 color: black;
                                                                                                                                                 display: inline-block;
@@ -51,9 +41,9 @@
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
-                                else if (Model.Drivers.status == "delivering")
+                                else if (Model.Drivers.status == "accepted")
                                 {
-                                    <div style="background-color: deepskyblue;
+                                    <div style="background-color: yellow;
                                                                                                                                                     border-radius: 20px;
                                                                                                                                                     color: black;
                                                                                                                                                     display: inline-block;
@@ -61,13 +51,23 @@
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
-                                else if (Model.Drivers.status == "completed")
+                                else if (Model.Drivers.status == "delivering")
                                 {
-                                    <div style="background-color: lawngreen;
+                                    <div style="background-color: deepskyblue;
                                                                                                                                                         border-radius: 20px;
                                                                                                                                                         color: black;
                                                                                                                                                         display: inline-block;
                                                                                                                                                         padding: 5px 5px;">
+                                        @Html.DisplayFor(model => model.Drivers.status)
+                                    </div>
+                                }
+                                else if (Model.Drivers.status == "completed")
+                                {
+                                    <div style="background-color: lawngreen;
+                                                                                                                                                            border-radius: 20px;
+                                                                                                                                                            color: black;
+                                                                                                                                                            display: inline-block;
+                                                                                                                                                            padding: 5px 5px;">
                                         @Html.DisplayFor(model => model.Drivers.status)
                                     </div>
                                 }
@@ -163,7 +163,7 @@
     </script>
 
     <script>
-        function initMap() {           
+        function initMap() {
             var map;
             var orderAssigned = false;
             var marker;
@@ -291,17 +291,17 @@
                             // Fetch the updated location from the API
                             fetch(`/Driver/LiveLocation/${places[0].Phone}`)
                                 .then(response => response.json())
-                                .then(data => {                                    
+                                .then(data => {
 
                                     liveLocation.push(data.latLng.lat);
                                     liveLocation.push(data.latLng.lng);
-                                  
+
                                     moveCar();
 
                                     if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status === "completed") {
                                         clearInterval(apiResponseInterval);
+                                        marker2.setMap(null);
                                         directionsRenderer.setMap(null); // Hide the directions
-                                        map.setCenter(marker.getPosition());
                                         initMap();
                                     }
                                 })
@@ -312,7 +312,7 @@
 
                     } else {
                         // Set an interval to fetch the updated location from the API and call moveCar
-                        var apiResponse = setInterval(function () {                           
+                        var apiResponse = setInterval(function () {
                             if (liveLocation.length > 0) {
                                 liveLocation.pop();
                                 liveLocation.pop();
@@ -321,7 +321,7 @@
                             fetch(`/Driver/LiveLocation/${places[0].Phone}`)
                                 .then(response => response.json())
                                 .then(data => {
-                                    
+
                                     liveLocation.push(data.latLng.lat);
                                     liveLocation.push(data.latLng.lng);
 
@@ -331,18 +331,18 @@
                                         clearInterval(apiResponse);
                                         marker2.setMap(null);
                                         initMap();
-                                       
+
                                     }
                                 })
                                 .catch(error => console.error('Error fetching live location:', error, error.responseText));
                         }, 10000); // Adjust the interval time as needed
                     }
-                });               
+                });
             }
             //this one moves the driver if order is assigned - ends here
             else {
                 // Set an interval to fetch the updated location from the API and call moveCar
-                var AR = setInterval(function () {                    
+                var AR = setInterval(function () {
                     if (liveLocation.length > 0) {
                         liveLocation.pop();
                         liveLocation.pop();
