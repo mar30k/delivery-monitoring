@@ -193,7 +193,7 @@ namespace DeliveryMonitoring.Controllers
 
                 //foreach (var order in orders)
                 //{
-                //    order.assignedDriverPhoneNumber = "0918539962";
+                //    order.assignedDriverPhoneNumber = "0912918305";
                 //    order.customer.latLng.lat = 9.01123;
                 //    order.customer.latLng.lng = 38.76264;
                 //}
