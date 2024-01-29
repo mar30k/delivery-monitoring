@@ -31,7 +31,6 @@ namespace DeliveryMonitoring.Controllers
                 return RedirectToAction("Index", "Home");
             }
             return View("Login");
-
         }
 
 
