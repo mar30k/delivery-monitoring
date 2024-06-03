@@ -19,7 +19,6 @@ namespace DeliveryMonitoring.Controllers
             _httpClientFactory = httpClientFactory;
         }
         
-
         //Driver Index Page - starts here
         [HttpGet]
         public async Task<IActionResult> Index()

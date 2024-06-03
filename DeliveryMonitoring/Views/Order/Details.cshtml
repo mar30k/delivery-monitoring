@@ -9,7 +9,7 @@
 
     <h3>Order Details</h3>
 
-    <div class="card border-0" style="border-radius: 0px;" id="orderCard">
+    <div class="card" id="orderCard">
         <br />
         <div class="row">
             <div class="col-11 col-md-6" id="orderDetail">
@@ -118,6 +118,10 @@
                     <span id="outputs">@Html.DisplayFor(model => model.branchName)</span>
                 </div>
                 <div>
+                    <span id="letters">Company Name:</span>
+                    <span id="outputs">@Html.DisplayFor(model => model.companyName)</span>
+                </div>
+                <div>
                     <span id="letters">TIN:</span>
                     <span id="outputs">
                         <a asp-controller="Company" asp-action="Details" asp-route-id="@Model.companyTin">@Html.DisplayFor(model => model.companyTin)</a>
@@ -151,106 +155,70 @@
                             Item Name
                         </th>
                         <th>
-                            Note
-                        </th>
-                        <th>
                             Quantity
                         </th>
                         <th>
                             Unit Amount
                         </th>
                         <th>
-                            Total Amount
-                        </th>
-                        <th>
-                            Tax Value
+                            Taxable Amount
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.LineItems)
+                    @foreach (var item in Model.lineItemsDetail.lineItems)
                     {
-                        double multiplicaitonValue = (100 + item.taxValue) / 100;
-                        double beforeTax = item.unitAmount * multiplicaitonValue;
-                        beforeTax = Math.Round(beforeTax, 2);
                         <tr>
-
                             <td>
-                                @Html.DisplayFor(modelItem => item.articleName)
-                            </td>
-                            <td>
-                                @{
-                                    if (item.lineItemNote.Length == 0)
-                                    {
-                                        <span>Empty Note</span>
-                                    }
-                                    else
-                                    {
-                                        @Html.DisplayFor(modelItem => item.lineItemNote)
-                                    }
-                                }
-
+                                @Html.DisplayFor(modelItem => item.name)
                             </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.quantity)
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.unitAmount) ETB
+                                @String.Format("{0:F2} ETB", item.unitAmount)
                             </td>
                             <td>
-                                @beforeTax ETB
-                            </td>
-
-                            <td>
-                                @Html.DisplayFor(modelItem => item.taxValue)%
+                                @String.Format("{0:F2} ETB", item.taxableAmount)
                             </td>
                         </tr>
                     }
                     <tr>
-
+                        <td>
+                            TXBL 1
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            
+                        </td>
+                        <td>
+                            @Model.lineItemsDetail.extraCharge.TXBL1
+                        </td>                 
+                    </tr>
+                    <tr>
+                        <td>
+                            TAX1 15%
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            @Model.lineItemsDetail.extraCharge.TAX115
+                        </td>
+                    </tr>
+                    <tr>
                         <td>
                             Total
                         </td>
                         <td>
-                            -
                         </td>
-                        @{
-                            int sum = 0;
-                            foreach (var item in Model.LineItems)
-                            {
-                                sum += item.quantity;
-                            }
-                        }
                         <td>
-                            @sum
                         </td>
-                        @{
-                            double Amount = 0;
-                            foreach (var item in Model.LineItems)
-                            {
-                                Amount += item.unitAmount;
-                            }
-                        }
                         <td>
-                            @Amount ETB
-                        </td>
-                        @{
-                            double totalAmount = 0;
-                            foreach (var item in Model.LineItems)
-                            {
-                                double multiplicaitonValue = (100 + item.taxValue) / 100;
-                                double beforeTax1 = item.unitAmount * multiplicaitonValue;
-                                beforeTax1 = Math.Round(beforeTax1, 2);
-                                totalAmount += beforeTax1;
-                                totalAmount = Math.Round(totalAmount, 2);
-                            }
-                        }
-                        <td>
-                            @totalAmount ETB
-                        </td>
-
-                        <td>
-                            -
+                            @String.Format("{0:F2} ETB", Model.lineItemsDetail.grandTotal)                      
                         </td>
                     </tr>
                 </tbody>
