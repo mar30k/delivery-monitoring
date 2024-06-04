@@ -200,15 +200,18 @@ namespace DeliveryMonitoring.Controllers
 
             // Fetch driver data
             Driver driver = null;
+            List<Driver> drivers = new List<Driver>();
 
             try
             {
-                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers/{phoneNumber}");
+                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers");
 
                 if (response.IsSuccessStatusCode)
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    driver = JsonConvert.DeserializeObject<Driver>(data);
+                    drivers = JsonConvert.DeserializeObject<List<Driver>>(data);
+
+                    driver = drivers.FirstOrDefault(d => d.phoneNumber == phoneNumber);
 
                     //if (driver.phoneNumber == "0912918305")
                     //{
@@ -229,14 +232,8 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
 
-            // Create HomeViewModel
-            var viewModel = new DriverDetailsViewModel
-            {
-                Drivers = driver,
-                Orders = orders
-            };
-
-            return View(viewModel);
+            ViewData["Orders"] = orders;
+            return View(driver);
         }
         //Driver Details -- Ends Here
 

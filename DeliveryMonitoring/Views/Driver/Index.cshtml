@@ -69,9 +69,9 @@
                             <th>
                                 @Html.DisplayNameFor(model => model.status)
                             </th>
-                            <th>
+                            @* <th>
                                 @Html.DisplayNameFor(model => model.isDisabled)
-                            </th>
+                            </th> *@
 
                             <th>
                                 Driver Details
@@ -96,7 +96,7 @@
                                 <td>
                                     @Html.DisplayFor(modelItem => item.status)
                                 </td>
-                                <td>
+                                @* <td>
                                     @{
                                         if (item.isDisabled == true || item.isDisabled == false)
                                         {
@@ -117,7 +117,7 @@
                                             <text>Eligible</text>
                                         }
                                     }
-                                </td>
+                                </td> *@
 
                                 <td>
                                     <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>

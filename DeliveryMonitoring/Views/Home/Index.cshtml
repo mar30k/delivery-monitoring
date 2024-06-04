@@ -7,7 +7,7 @@
 <div class="container-fluid col-11 mt-3">
     <div class="row">
         <div class="col-12 col-md-4 mb-3">
-            <div class="card border-0" style="border-radius:5px;" id="orderCard">                
+            <div class="card border-1" id="orderCard">                
                     <div class="row">
                         <div class="col-3" id="dashboardIcon">
                             <i class="bi bi-truck"></i>
@@ -21,7 +21,7 @@
         </div>
 
         <div class="col-12 col-md-4 mb-3">
-            <div class="card border-0" style="border-radius: 5px;" id="orderCard">
+            <div class="card border-1" id="orderCard">
                 <div class="row">
                     <div class="col-3" id="dashboardIcon">
                         <i class="bi bi-cart2"></i>
@@ -35,7 +35,7 @@
         </div>
 
         <div class="col-12 col-md-4 mb-3">
-            <div class="card border-0" style="border-radius: 5px;" id="orderCard">
+            <div class="card border-1" id="orderCard">
                 <div class="row">
                     <div class="col-3" id="dashboardIcon">
                         <i class="bi bi-building"></i>
@@ -53,7 +53,7 @@
     <div class="row mt-3">
         <!--The Donut Chart and the Map Starts Here-->
         <div class="col-12 col-md-6 mb-3">
-            <div class="card border-0" style="border-radius: 5px;" id="orderCard">
+            <div class="card border-1" id="orderCard">
                 <div class="" id="donut">
                     <h4 style="margin-left: 30px; margin-top: 10px;">Drivers Status</h4>                                       
                 </div>
@@ -68,7 +68,7 @@
 
         <!--The Bar Chart and the Map Starts Here-->
         <div class="col-12 col-md-6">
-            <div class="card border-0" style="border-radius: 5px;" id="orderCard">
+            <div class="card border-1" id="orderCard">
                 <div class="" id="donut">
                     <h4 style="margin-left: 30px; margin-top: 10px;">Work Eligibility</h4>
                 </div>
@@ -118,14 +118,14 @@
                 {
                     completedCount++;
                 }
-                if(access.isDisabled == true)
-                {
-                    ineligibleCount++;
-                }
-                if (access.isDisabled == false)
-                {
-                    eligibleCount++;
-                }
+                // if(access.isDisabled == true)
+                // {
+                //     ineligibleCount++;
+                // }
+                // if (access.isDisabled == false)
+                // {
+                //     eligibleCount++;
+                // }
             }
         }
         const ctx = document.getElementById('myChart');

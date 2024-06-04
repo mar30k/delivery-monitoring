@@ -1,6 +1,35 @@
-﻿@model DeliveryMonitoring.Models.DriverDetailsViewModel
+﻿@using System.Text
+@model DeliveryMonitoring.Models.Driver
 @{
     ViewData["Title"] = "Driver Details";
+    var Orders = ViewData["Orders"] as List<Order>;
+
+    double totalRating = Model.review.totalRating;
+    double totalReviews = Model.review.totalReviews;
+    double rating = totalRating / totalReviews;
+
+    string GetStarRating(double rating)
+    {
+        int fullStars = (int)rating;
+        bool hasHalfStar = rating - fullStars >= 0.5;
+        StringBuilder stars = new StringBuilder();
+        for (int i = 1; i <= 5; i++)
+        {
+            if (i <= fullStars)
+            {
+                stars.Append("<i class='bi bi-star-fill'></i>"); // Assuming you're using Bootstrap Icons
+            }
+            else if (i == fullStars + 1 && hasHalfStar)
+            {
+                stars.Append("<i class='bi bi-star-half'></i>");
+            }
+            else
+            {
+                stars.Append("<i class='bi bi-star'></i>");
+            }
+        }
+        return stars.ToString();
+    }
 }
 <div class="container-fluid">
 
@@ -11,144 +40,154 @@
 
     <div class="container-fluid col-11 col-lg-7 pt-3">
         <div class="card border-1" id="orderCard">
-            <div class="row">
-
-                <!--Driver Details-->
-                <div class="col-12 col-md-7 detail pt-3" id="orderDetail">
+            <div class="row pt-3" id="orderDetail">
+                <div class="col-6">
                     <h4><i class="bi bi-car-front icon"></i>Driver</h4>
+                </div>
+                
+                <div class="col-6">
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.firstName):</span>
-                        <span id="outputs">@Model.Drivers.firstName</span>
-                        <a id="outputs">
-                            @{
-                                if (Model.Drivers.status == "offline")
-                                {
-                                    <div style="background-color: red;
-                                                                                                                                                                                border-radius: 20px;
-                                                                                                                                                                                color: black;
-                                                                                                                                                                                display: inline-block;
-                                                                                                                                                                                padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                                else if (Model.Drivers.status == "ready")
-                                {
-                                    <div style="background-color: orange;
-                                                                                                                                                                                    border-radius: 20px;
-                                                                                                                                                                                    color: black;
-                                                                                                                                                                                    display: inline-block;
-                                                                                                                                                                                    padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                                else if (Model.Drivers.status == "accepted")
-                                {
-                                    <div style="background-color: yellow;
-                                                                                                                                                                                        border-radius: 20px;
-                                                                                                                                                                                        color: black;
-                                                                                                                                                                                        display: inline-block;
-                                                                                                                                                                                        padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                                else if (Model.Drivers.status == "delivering")
-                                {
-                                    <div style="background-color: deepskyblue;
-                                                                                                                                                                                            border-radius: 20px;
-                                                                                                                                                                                            color: black;
-                                                                                                                                                                                            display: inline-block;
-                                                                                                                                                                                            padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                                else if (Model.Drivers.status == "completed")
-                                {
-                                    <div style="background-color: lawngreen;
-                                                                                                                                                                                                border-radius: 20px;
-                                                                                                                                                                                                color: black;
-                                                                                                                                                                                                display: inline-block;
-                                                                                                                                                                                                padding: 5px 5px;">
-                                        @Html.DisplayFor(model => model.Drivers.status)
-                                    </div>
-                                }
-                            }
-                        </a>
+                        <a class="btn btn-success" asp-controller="Driver" asp-action="Update" asp-route-id="@Model.phoneNumber"><i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info</a>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="orderDetail">
+                
+                <div class="col-6">
+                    <img src="@Model.detail.profilePicture" alt="Girl in a jacket" width="300" height="270">
+                </div>
+                <div class="col-6">
+                    <span id="letters">@Html.DisplayNameFor(model => model.detail.fullName):</span>
+                    <span id="outputs">@Model.detail.fullName</span>
+                    <a id="outputs">
                         @{
-                            foreach (var item in Model.Orders)
+                            if (Model.status == "offline")
                             {
-                                if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
-                                {
-                                    var voucher = item.voucherCode;
-                                    <a class="" asp-controller="Order" asp-action="Details" asp-route-id="@voucher" style="margin-left: 0px; text-decoration: none;">- Order Details</a>
-                                }
+                                <div style="background-color: red; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
+                                    @Html.DisplayFor(model => model.status)
+                                </div>
+                            }
+                            else if (Model.status == "ready")
+                            {
+                                <div style="background-color: orange; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
+                                    @Html.DisplayFor(model => model.status)
+                                </div>
+                            }
+                            else if (Model.status == "accepted")
+                            {
+                                <div style="background-color: yellow; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
+                                    @Html.DisplayFor(model => model.status)
+                                </div>
+                            }
+                            else if (Model.status == "delivering")
+                            {
+                                <div style="background-color: deepskyblue; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
+                                    @Html.DisplayFor(model => model.status)
+                                </div>
+                            }
+                            else if (Model.status == "completed")
+                            {
+                                <div style="background-color: lawngreen; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
+                                    @Html.DisplayFor(model => model.status)
+                                </div>
                             }
                         }
-                    </div>
+                    </a>
+                    @{
+                        foreach (var item in Orders)
+                        {
+                            if (@item.assignedDriverPhoneNumber == @Model.phoneNumber)
+                            {
+                                var voucher = item.voucherCode;
+                                <a class="" asp-controller="Order" asp-action="Details" asp-route-id="@voucher" style="margin-left: 0px; text-decoration: none;">- Order Details</a>
+                            }
+                        }
+                    }
+
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.lastUpdatedAt):</span>
+                        <span id="letters">@Html.DisplayNameFor(model => model.lastUpdatedAt):</span>
                         <span id="outputs">
                             @{
-                                long unixtimestamp = Model.Drivers.lastUpdatedAt;
+                                long unixtimestamp = Model.lastUpdatedAt;
                             }
                             @DateTimeOffset.FromUnixTimeMilliseconds(unixtimestamp).DateTime.ToString("HH:mm:ss - ddd, MMMM dd, yyyy")
                         </span>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.companyTin):</span>
-                        <span id="outputs"><a asp-controller="Company" asp-action="Details" asp-route-id="@Model.Drivers.companyTin">@Html.DisplayFor(model => model.Drivers.companyTin)</a></span>
+                        <span id="letters">@Html.DisplayNameFor(model => model.companyTin):</span>
+                        <span id="outputs"><a asp-controller="Company" asp-action="Details" asp-route-id="@Model.companyTin">@Html.DisplayFor(model => model.companyTin)</a></span>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.phoneNumber):</span>
-                        <span id="outputs">@Html.DisplayFor(model => model.Drivers.phoneNumber)</span>
+                        <span id="letters">@Html.DisplayNameFor(model => model.phoneNumber):</span>
+                        <span id="outputs">@Html.DisplayFor(model => model.phoneNumber)</span>
                     </div>
-
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.Drivers.isDisabled):</span>
-                        <span id="outputs">
-                            @{
-                                if (Model?.Drivers?.isDisabled != null)
-                                {
-                                    if (Model.Drivers.isDisabled == true)
-                                    {
-                                    // isDisabled exists and is true
-                                        <text>Not Eligible</text>
-                                    }
-                                    else
-                                    {
-                                    // isDisabled exists and is false
-                                        <text>Eligible</text>
-                                    }
-                                }
-                                else
-                                {
-                                // isDisabled does not exist in the API response
-                                    <text>Eligible</text>
-                                }
-                            }
-                        </span>
+                        <span id="letters">@Html.DisplayNameFor(model => model.detail.email):</span>
+                        <a id="outputs" href="mailto: @Model.detail.email">@Html.DisplayFor(model => model.detail.email)</a>
                     </div>
-                    <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-                        Additional Info
-                    </a>
-                </div>
-                <div class="pt-3 col-12 col-md-4 d-flex justify-content-end">
                     <div>
-                        <a class="btn btn-success" asp-controller="Driver" asp-action="Update" asp-route-id="@Model.Drivers.phoneNumber"><i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info</a>
+                        <span id="letters">@Html.DisplayNameFor(model => model.detail.gender):</span>
+                        <a id="outputs">@Html.DisplayFor(model => model.detail.gender)</a>
                     </div>
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.detail.dob):</span>
+                        <a id="outputs">@Html.DisplayFor(model => model.detail.dob)</a>
+                    </div>
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.numberOfAcceptedOrders):</span>
+                        <span id="outputs">@Html.DisplayFor(model => model.numberOfAcceptedOrders)</span>
+                    </div>
+                    <div>
+                        <span id="letters">Rating:</span>
+                        <span id="outputs">@Html.Raw(GetStarRating(rating)) / @totalReviews reviews</span>
+                    </div>
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.traveledDistance):</span>
+                        <span id="outputs">@Html.DisplayFor(model => model.traveledDistance) km</span>
+                    </div>
+                    <br />
+                    @* <div>
+                    <span id="letters">@Html.DisplayNameFor(model => model.isDisabled):</span>
+                    <span id="outputs">
+                    @{
+                    if (Model?.isDisabled != null)
+                    {
+                    if (Model.isDisabled == true)
+                    {
+                    // isDisabled exists and is true
+                    <text>Not Eligible</text>
+                    }
+                    else
+                    {
+                    // isDisabled exists and is false
+                    <text>Eligible</text>
+                    }
+                    }
+                    else
+                    {
+                    // isDisabled does not exist in the API response
+                    <text>Eligible</text>
+                    }
+                    }
+                    </span>
+                    </div> *@
+                    @* <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    Additional Info
+                    </a> *@
                 </div>
                 <!--Driver Details Ending-->
             </div>
-            <div class="collapse pt-3 row" id="collapseExample">
-                <div class="col-11" id="orderDetail">
-                    <span id="letters">@Html.DisplayNameFor(model => model.Drivers.deviceID):</span>
-                    <span id="" style="font-weight: 600; font-size: 16px;">@Html.DisplayFor(model => model.Drivers.deviceID)</span>
-                </div>
+            @* <div class="collapse pt-3 row" id="collapseExample">
+            <div class="col-11" id="orderDetail">
+            <span id="letters">@Html.DisplayNameFor(model => model.deviceID):</span>
+            <span id="" style="font-weight: 600; font-size: 16px;">@Html.DisplayFor(model => model.deviceID)</span>
             </div>
-            <div class="row">
-                <div class="pt-3 pb-3 col-12 col-md-6">
-                    <a class="btn btn-danger" asp-action="Index" style="margin-left: 40px;">Back to List</a>
-                </div>
+            </div> *@
+            @* <div class="row">
+            <div class="pt-3 pb-3 col-12 col-md-6">
+            <a class="btn btn-danger" asp-action="Index" style="margin-left: 40px;">Back to List</a>
             </div>
+            </div> *@
         </div>
     </div>
 
@@ -190,32 +229,32 @@
                 // let index = 0;
                 //this takes all the information from the api response and save it in a places array
         @{
-            if (Model.Drivers != null)
+            if (Model != null)
             {
                 <text>
                             places =[{
-                                Name: '@Model.Drivers.firstName',
-                                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                Phone: '@Model.Drivers.phoneNumber',
-                                Status: '@Model.Drivers.status',
-                                lat: @Model.Drivers.latLng.lat,
-                                lng: @Model.Drivers.latLng.lng}];
+                                Name: '@Model.firstName',
+                                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                Phone: '@Model.phoneNumber',
+                                Status: '@Model.status',
+                                lat: @Model.latLng.lat,
+                                lng: @Model.latLng.lng}];
                 </text>
-                if (Model.Orders != null)
+                if (Orders != null)
                 {
-                    foreach (var item in Model.Orders)
+                    foreach (var item in Orders)
                     {
-                        if (@item.assignedDriverPhoneNumber == @Model.Drivers.phoneNumber)
+                        if (@item.assignedDriverPhoneNumber == @Model.phoneNumber)
                         {
                             <text>
                                         orderAssigned = true;
                                     places = [{
-                                        Name: '@Model.Drivers.firstName',
-                                        LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.Drivers.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                        Phone: '@Model.Drivers.phoneNumber',
-                                        Status: '@Model.Drivers.status',
-                                        lat: @Model.Drivers.latLng.lat,
-                                        lng: @Model.Drivers.latLng.lng,
+                                        Name: '@Model.firstName',
+                                        LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                        Phone: '@Model.phoneNumber',
+                                        Status: '@Model.status',
+                                        lat: @Model.latLng.lat,
+                                        lng: @Model.latLng.lng,
                                         DestLat: @item.customer.latLng.lat,
                                         DestLng: @item.customer.latLng.lng}];
                             </text>
