@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Humanizer;
 
 namespace DeliveryMonitoring.Models
 {
@@ -13,6 +14,9 @@ namespace DeliveryMonitoring.Models
 
         [Display(Name = "Branch Name")]
         public string branchName { get; set; }
+
+        [Display(Name = "Company Code")]
+        public long companyCode { get; set; }
 
         [Display(Name = "Company Name")]
         public string companyName { get; set; }
@@ -48,6 +52,9 @@ namespace DeliveryMonitoring.Models
 
         [Display(Name = "Item Name")]
         public LineItemsDetail lineItemsDetail { get; set; }
+
+        [Display(Name = "Item Name")]
+        public List<Activities> activities { get; set; }
     }
 
     public class LineItemsDetail
@@ -90,5 +97,10 @@ namespace DeliveryMonitoring.Models
     {
         public int voucherId { get; set; }
         public string tin { get; set; }
+    }
+    public class Activities
+    {
+        public string name { get; set; }
+        public DateTime time { get; set; }
     }
 }

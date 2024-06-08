@@ -54,7 +54,7 @@
             <div class="row" id="orderDetail">
                 
                 <div class="col-6">
-                    <img src="@Model.detail.profilePicture" alt="Girl in a jacket" width="300" height="270">
+                    <img src="@Model.detail.profilePicture" alt="" width="300" height="270">
                 </div>
                 <div class="col-6">
                     <span id="letters">@Html.DisplayNameFor(model => model.detail.fullName):</span>
@@ -136,6 +136,10 @@
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.numberOfAcceptedOrders):</span>
                         <span id="outputs">@Html.DisplayFor(model => model.numberOfAcceptedOrders)</span>
+                    </div>
+                    <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.numberOfRejectedOrders):</span>
+                        <span id="outputs">@Html.DisplayFor(model => model.numberOfRejectedOrders)</span>
                     </div>
                     <div>
                         <span id="letters">Rating:</span>

@@ -22,10 +22,10 @@
         text-decoration: none;
     }
 
-ol,
+/*ol,
 ul {
     padding-left: 0px !important;
-}
+}*/
 
     ul li:hover a {
         padding-left: 20px;
@@ -127,6 +127,7 @@ button.accept-policy {
     /*border-radius: 0.25rem;*/
     /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
     transition: box-shadow 0.3s;
+    /*flex-direction: row;*/ /* Override the column direction */
 }
 
 #orderCard {
@@ -354,3 +355,76 @@ img {
 .modal-header, .modal-body, .modal-footer {
     border: 0;
 }
+
+/*Time Line CSS*/
+
+.timeline-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 10px 0;
+}
+
+.timeline {
+    display: inline-block;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    position: relative;
+}
+
+    .timeline .event {
+        display: inline-block;
+        position: relative;
+        padding: 20px 10px;
+        text-align: center;
+        white-space: normal;
+        vertical-align: top;
+    }
+
+        .timeline .event:before,
+        .timeline .event:after {
+            position: absolute;
+            display: block;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .timeline .event:before {
+            content: attr(data-date);
+            margin-top: 10px;
+            bottom: -1.5em;
+            font-size: 0.9em;
+            font-weight: 100;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .timeline .event:after {
+            content: "";
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px #808080;
+            height: 9px;
+            width: 9px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .timeline .event h3 {
+            margin-top: 0px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+@media (max-width: 767px) {
+    .timeline-container {
+        padding: 0 10px;
+    }
+
+    .timeline .event {
+        padding: 10px 5px;
+    }
+}
+
+/*Time Line CSS*/

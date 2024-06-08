@@ -21,6 +21,9 @@ namespace DeliveryMonitoring.Models
 
         [Display(Name = "Accepted Orders")]
         public int numberOfAcceptedOrders { get; set; }
+        
+        [Display(Name = "Rejected Orders")]
+        public int numberOfRejectedOrders { get; set; }
 
         [Display(Name = "Phone Number")]
         public string phoneNumber { get; set; }

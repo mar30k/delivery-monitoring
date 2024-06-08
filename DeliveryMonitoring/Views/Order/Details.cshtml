@@ -10,7 +10,7 @@
     <h3>Order Details</h3>
 
     <div class="card" id="orderCard">
-        <br />
+        <br />      
         <div class="row">
             <div class="col-11 col-md-6" id="orderDetail">
                 <div>
@@ -26,35 +26,34 @@
                             if (Model.status == "requested")
                             {
                                 <div style="background-color: deepskyblue;
-                                                                        border-radius: 20px;
-                                                                        color: black;
-                                                                        display: inline-block;
-                                                                        padding: 5px 5px;">
+                                                                                                        border-radius: 20px;
+                                                                                                        color: black;
+                                                                                                        display: inline-block;
+                                                                                                        padding: 5px 5px;">
                                     <strong>@Html.DisplayFor(model => model.status)</strong>
                                 </div>
                             }
                             else if (Model.status == "assigned")
                             {
                                 <div style="background-color: lawngreen;
-                                                                            border-radius: 20px;
-                                                                            color: black;
-                                                                            display: inline-block;
-                                                                            padding: 5px 5px;">
+                                                                                                            border-radius: 20px;
+                                                                                                            color: black;
+                                                                                                            display: inline-block;
+                                                                                                            padding: 5px 5px;">
                                     <strong>@Html.DisplayFor(model => model.status)</strong>
                                 </div>
                             }
                             else
                             {
                                 <div style="background-color: yellow;
-                                                                                border-radius: 20px;
-                                                                                color: black;
-                                                                                display: inline-block;
-                                                                                padding: 5px 5px;">
+                                                                                                                border-radius: 20px;
+                                                                                                                color: black;
+                                                                                                                display: inline-block;
+                                                                                                                padding: 5px 5px;">
                                     <strong>@Html.DisplayFor(model => model.status)</strong>
                                 </div>
                             }
                         }
-
                     </div>
                 </div>
             </div>
@@ -65,10 +64,10 @@
                         if (phoneNumber != null && phoneNumber.Length < 10)
                         {
                             <div style="background-color: red;
-                                                                    border-radius: 20px;
-                                                                    color: black;
-                                                                    display: inline-block;
-                                                                    padding: 5px 5px;">
+                                                                                                    border-radius: 20px;
+                                                                                                    color: black;
+                                                                                                    display: inline-block;
+                                                                                                    padding: 5px 5px;">
                                 <strong>Driver Not Assigned</strong>
                             </div>
                         }
@@ -103,22 +102,21 @@
                     <span id="letters">Phone:</span>
                     <span id="outputs">@Html.DisplayFor(model => model.customer.phoneNumber)</span>
                 </div>
-                <div>
-                    <span id="letters">Device ID:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.customer.deviceId)</span>
-                </div>
+                @* <div>
+                <span id="letters">Device ID:</span>
+                <span id="outputs">@Html.DisplayFor(model => model.customer.deviceId)</span>
+                </div> *@
             </div>
             <!--Customer Details Ends Here-->
-
             <!--Company Details-->
             <div class="col-12 col-md-4 detail">
                 <h4><i class="bi bi-building icon"></i>Company</h4>
                 <div>
-                    <span id="letters">Branch Name:</span>
+                    <span id="letters">Branch:</span>
                     <span id="outputs">@Html.DisplayFor(model => model.branchName)</span>
                 </div>
                 <div>
-                    <span id="letters">Company Name:</span>
+                    <span id="letters">Name:</span>
                     <span id="outputs">@Html.DisplayFor(model => model.companyName)</span>
                 </div>
                 <div>
@@ -129,7 +127,6 @@
                 </div>
             </div>
             <!--Company Details Ends Here-->
-
             <!--Driver Details-->
             <div class="col-12 col-md-3">
                 <h4><i class="bi bi-car-front icon"></i>Driver</h4>
@@ -188,14 +185,12 @@
                             TXBL 1
                         </td>
                         <td>
-                            
                         </td>
                         <td>
-                            
                         </td>
                         <td>
                             @Model.lineItemsDetail.extraCharge.TXBL1
-                        </td>                 
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -218,107 +213,25 @@
                         <td>
                         </td>
                         <td>
-                            @String.Format("{0:F2} ETB", Model.lineItemsDetail.grandTotal)                      
+                            @String.Format("{0:F2} ETB", Model.lineItemsDetail.grandTotal)
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <br />
-        <br />
-        <!--Order Items Table Ends Here-->
-        <!--Activity Timeline-->
-        <h4 id="orderDetail">Activity</h4>
-        <div class="col-11 table-responsive table-bordered" id="orderDetail">
-            <table class="table pt-3" id="orderTable">
-                <tr>
-                    <td class="table-secondary col-6">
-                        @Html.DisplayNameFor(model => model.isAssignedAck)
-                    </td>
-                    <td>
-                        @if (Model.isAssignedAck == true)
-                        {
-                            <span style="color:green;"><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
-                        }
-                        else
-                        {
-                            <span style="color:red;"><i class="bi bi-x-circle"></i>&nbsp;No</span>
-                        }
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="table-secondary col-6">
-                        @Html.DisplayNameFor(model => model.isNoDriversAck)
-                    </td>
-                    <td>
-                        @if (Model.isNoDriversAck == true)
-                        {
-                            <span style="color:green;"><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
-                        }
-                        else
-                        {
-                            <span style="color:red;"><i class="bi bi-x-circle"></i>&nbsp;No</span>
-                        }
-                    </td>
-                </tr>
-                <tr>
-                    <td class="table-secondary col-6">
-                        @Html.DisplayNameFor(model => model.orderArrivedAckByCustomer)
-                    </td>
-                    <td>
-                        @if (Model.orderArrivedAckByCustomer == true)
-                        {
-                            <span style="color:green;"><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
-                        }
-                        else
-                        {
-                            <span style="color:red;"><i class="bi bi-x-circle"></i>&nbsp;No</span>
-                        }
-                    </td>
-
-                </tr>
-
-
-                <tr>
-                    <td class="table-secondary col-6">
-                        @Html.DisplayNameFor(model => model.orderArrivedAckByDriver)
-                    </td>
-
-
-                    <td>
-                        @if (Model.orderArrivedAckByDriver == true)
-                        {
-                            <span style="color:green;"><i class="bi bi-check2-circle"></i>&nbsp;Yes</span>
-                        }
-                        else
-                        {
-                            <span style="color:red;"><i class="bi bi-x-circle"></i>&nbsp;No</span>
-                        }
-                    </td>
-                </tr>
-
-            </table>
+        <div id="content">
+            <div class="timeline-container">
+                <ul class="timeline">
+                    @foreach (var item in Model.activities)
+                    {
+                        <li class="event" data-date="@Html.DisplayFor(modelItem => item.time)">
+                            <h3>@Html.DisplayFor(modelItem => item.name)</h3>
+                        </li>
+                    }
+                </ul>
+            </div>
         </div>
-        <!--Activity Timeline-->
-
-        <div id="orderDetail">
-            <a class="btn btn-dark" asp-action="Index">Back to List</a>
-        </div>
-
+        <br />        
         <br />
     </div>
-
 </div>
-
-@* <script src="~/lib/jquery/dist/jquery.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
-<script>
-    var js = jQuery.noConflict(true);
-    js(document).ready(function () {
-        js('#orderTable').DataTable({
-            responsive: true
-        });
-    });
-</script> *@
