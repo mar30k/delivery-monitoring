@@ -54,7 +54,8 @@
             <div class="row" id="orderDetail">
                 
                 <div class="col-6">
-                    <img src="@Model.detail.profilePicture" alt="" width="300" height="270">
+                    @* <img src="@Model.detail.profilePicture" alt="" width="300" height="270"> *@
+                    <img src="@Model.detail.profilePicture" alt="">
                 </div>
                 <div class="col-6">
                     <span id="letters">@Html.DisplayNameFor(model => model.detail.fullName):</span>
