@@ -51,11 +51,10 @@
                     </div>
                 </div>
             </div>
-            <div class="row" id="orderDetail">
-                
+
+            <div class="row" id="orderDetail">               
                 <div class="col-6">
-                    @* <img src="@Model.detail.profilePicture" alt="" width="300" height="270"> *@
-                    <img src="@Model.detail.profilePicture" alt="">
+                    <img src="@Model.detail.profilePicture" alt="" class="half-size-img">
                 </div>
                 <div class="col-6">
                     <span id="letters">@Html.DisplayNameFor(model => model.detail.fullName):</span>
@@ -150,49 +149,8 @@
                         <span id="letters">@Html.DisplayNameFor(model => model.traveledDistance):</span>
                         <span id="outputs">@Html.DisplayFor(model => model.traveledDistance) km</span>
                     </div>
-                    <br />
-                    @* <div>
-                    <span id="letters">@Html.DisplayNameFor(model => model.isDisabled):</span>
-                    <span id="outputs">
-                    @{
-                    if (Model?.isDisabled != null)
-                    {
-                    if (Model.isDisabled == true)
-                    {
-                    // isDisabled exists and is true
-                    <text>Not Eligible</text>
-                    }
-                    else
-                    {
-                    // isDisabled exists and is false
-                    <text>Eligible</text>
-                    }
-                    }
-                    else
-                    {
-                    // isDisabled does not exist in the API response
-                    <text>Eligible</text>
-                    }
-                    }
-                    </span>
-                    </div> *@
-                    @* <a data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-                    Additional Info
-                    </a> *@
                 </div>
-                <!--Driver Details Ending-->
             </div>
-            @* <div class="collapse pt-3 row" id="collapseExample">
-            <div class="col-11" id="orderDetail">
-            <span id="letters">@Html.DisplayNameFor(model => model.deviceID):</span>
-            <span id="" style="font-weight: 600; font-size: 16px;">@Html.DisplayFor(model => model.deviceID)</span>
-            </div>
-            </div> *@
-            @* <div class="row">
-            <div class="pt-3 pb-3 col-12 col-md-6">
-            <a class="btn btn-danger" asp-action="Index" style="margin-left: 40px;">Back to List</a>
-            </div>
-            </div> *@
         </div>
     </div>
 

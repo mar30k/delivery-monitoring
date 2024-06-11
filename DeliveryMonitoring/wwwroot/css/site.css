@@ -75,7 +75,6 @@ a.navbar-brand {
 
 a {
     color: #0077cc;
-
 }
 
 .btn-primary {
@@ -98,9 +97,9 @@ a {
     border-bottom: 1px solid #e5e5e5;
 }
 
-.box-shadow {
+/*.box-shadow {
     box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
-}
+}*/
 
 button.accept-policy {
     font-size: 1rem;
@@ -132,7 +131,9 @@ button.accept-policy {
 
 #orderCard {
     background-color: white;
-    /*background-color: #f7f7f7;*/
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
 }
     /* Hover effect */
     /*.card:hover {
@@ -318,7 +319,7 @@ img {
 @media screen and (min-width: 768px) {
     /* This style will override the previous one for screens 768px and below */
     #orderDetail {
-        margin-left: 40px; /* Resetting the margin for smaller screens */
+        margin-left: 40px; /* Resetting the margin for smaller screens */       
     }
 }
 
@@ -356,75 +357,7 @@ img {
     border: 0;
 }
 
-/*Time Line CSS*/
-
-.timeline-container {
-    overflow-x: auto;
-    white-space: nowrap;
-    padding: 10px 0;
+.half-size-img {
+    width: 70%;
+    height: 70%;
 }
-
-.timeline {
-    display: inline-block;
-    white-space: nowrap;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    position: relative;
-}
-
-    .timeline .event {
-        display: inline-block;
-        position: relative;
-        padding: 20px 10px;
-        text-align: center;
-        white-space: normal;
-        vertical-align: top;
-    }
-
-        .timeline .event:before,
-        .timeline .event:after {
-            position: absolute;
-            display: block;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .timeline .event:before {
-            content: attr(data-date);
-            margin-top: 10px;
-            bottom: -1.5em;
-            font-size: 0.9em;
-            font-weight: 100;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .timeline .event:after {
-            content: "";
-            background: #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 0 3px #808080;
-            height: 9px;
-            width: 9px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .timeline .event h3 {
-            margin-top: 0px;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-@media (max-width: 767px) {
-    .timeline-container {
-        padding: 0 10px;
-    }
-
-    .timeline .event {
-        padding: 10px 5px;
-    }
-}
-
-/*Time Line CSS*/

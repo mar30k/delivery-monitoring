@@ -4,7 +4,8 @@
     ViewData["Title"] = "Order Details";
     var phoneNumber = Model.assignedDriverPhoneNumber;
 }
-
+<!-- Add this line to include the custom CSS -->
+<link rel="stylesheet" href="~/css/orderDetail.css" />
 <div class="container-fluid col-11 pt-5">
 
     <h3>Order Details</h3>
@@ -139,9 +140,6 @@
             </div>
             <!--Driver Details Ends Here-->
         </div>
-
-        <br />
-        <br />
         <!--Order Items Table-->
         <h4 id="orderDetail">Products</h4>
         <div class="col-11 table-responsive table-bordered" id="orderDetail">
@@ -218,20 +216,30 @@
                     </tr>
                 </tbody>
             </table>
+            <br/>
         </div>
-        <div id="content">
-            <div class="timeline-container">
-                <ul class="timeline">
-                    @foreach (var item in Model.activities)
-                    {
-                        <li class="event" data-date="@Html.DisplayFor(modelItem => item.time)">
-                            <h3>@Html.DisplayFor(modelItem => item.name)</h3>
-                        </li>
-                    }
-                </ul>
-            </div>
-        </div>
-        <br />        
-        <br />
     </div>
 </div>
+<div class="uk-container uk-padding">
+    <div class="uk-timeline">
+        @foreach (var activity in Model.activities)
+        {
+            <div class="uk-timeline-item">
+                <div class="uk-timeline-icon">
+                    <span class="uk-badge"><span uk-icon="check"></span></span>
+                </div>
+                <div class="uk-timeline-content">
+                    <div class="uk-card uk-card-default uk-margin-medium-bottom uk-overflow-auto">
+                        <div class="uk-card-header">
+                            <div class="uk-grid-small uk-flex-middle" uk-grid>
+                                <p class="uk-card-title"><time datetime="2020-07-08">@activity.time</time></p>
+                                <span class="uk-label uk-label-success uk-margin-auto-left">@activity.name</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }    
+    </div>
+</div>
+
