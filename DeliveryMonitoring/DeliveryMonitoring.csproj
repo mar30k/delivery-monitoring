@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\css\driverDetail.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\css\driverDetail.cs" />
     <_ContentIncludedByDefault Remove="wwwroot\css\orderDetail.css" />
   </ItemGroup>
 

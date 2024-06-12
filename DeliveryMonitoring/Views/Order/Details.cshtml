@@ -178,40 +178,31 @@
                             </td>
                         </tr>
                     }
-                    <tr>
+                    @foreach (var charge in Model.lineItemsDetail.extraCharge)
+                    {
+                        <tr>
+                            <td>
+                                @charge.Key
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                                @String.Format("{0:F2} ETB", @charge.Value)
+                            </td>
+                        </tr>
+                    }
+                    <tr class="table-secondary bold-borders">
                         <td>
-                            TXBL 1
+                            <h4><b>TOTAL</b></h4>
                         </td>
                         <td>
                         </td>
                         <td>
                         </td>
                         <td>
-                            @Model.lineItemsDetail.extraCharge.TXBL1
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            TAX1 15%
-                        </td>
-                        <td>
-                        </td>
-                        <td>
-                        </td>
-                        <td>
-                            @Model.lineItemsDetail.extraCharge.TAX115
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Total
-                        </td>
-                        <td>
-                        </td>
-                        <td>
-                        </td>
-                        <td>
-                            @String.Format("{0:F2} ETB", Model.lineItemsDetail.grandTotal)
+                            <h4><b>@String.Format("{0:F2} ETB", Model.lineItemsDetail.grandTotal)</b></h4>
                         </td>
                     </tr>
                 </tbody>

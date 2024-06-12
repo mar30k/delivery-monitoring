@@ -27,6 +27,9 @@ namespace DeliveryMonitoring.Models
         [Display(Name = "Customer")]
         public Customer customer { get; set; }
 
+        [Display(Name = "Except Drivers")]
+        public List<string> exceptDrivers { get; set; }
+
         [Display(Name = "Driver Assigned Acknowledged")]
         public bool isAssignedAck { get; set; }
 
@@ -60,7 +63,7 @@ namespace DeliveryMonitoring.Models
     public class LineItemsDetail
     {
         public List<LineItems> lineItems { get; set; }
-        public ExtraCharge extraCharge { get; set; }
+        public Dictionary<string, double> extraCharge { get; set; }
         public double grandTotal { get; set; }
         public ExtraInformation extraInformation { get; set; }
         public ExtraData extraData { get; set; }
@@ -82,13 +85,13 @@ namespace DeliveryMonitoring.Models
         [Display(Name = "Taxable Amount")]
         public double taxableAmount { get; set; }
     }
-    public class ExtraCharge
-    {
-        [JsonPropertyName("TXBL 1")]
-        public double TXBL1 { get; set; }
-        [JsonPropertyName("TAX1 15%")]
-        public double TAX115 { get; set; }
-    }
+    //public class ExtraCharge
+    //{
+    //    [JsonPropertyName("TXBL 1")]
+    //    public double TXBL1 { get; set; }
+    //    [JsonPropertyName("TAX1 15%")]
+    //    public double TAX115 { get; set; }
+    //}
     public class ExtraInformation
     {
 
