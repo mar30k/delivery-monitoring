@@ -9,16 +9,22 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
+var configuration = new ConfigurationBuilder()
+       .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+       .Build();
+var deliveryUri = configuration.GetValue<string>("Delivery");
+var deliveryLoginUri = configuration.GetValue<string>("DeliveryLogin");
+
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient("Delivery", httpClient =>
 {
-    httpClient.BaseAddress = new Uri("http://196.189.21.67:8084/api");
+    httpClient.BaseAddress = new Uri(deliveryUri);
     httpClient.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
 });
 builder.Services.AddHttpClient("DeliveryLogin", httpClient =>
 {
-    httpClient.BaseAddress = new Uri("http://196.191.244.136:7012/api");
+    httpClient.BaseAddress = new Uri(deliveryLoginUri);
 });
 
 builder.Services.AddAuthentication(CNET_WebConstantes.CookieScheme)
