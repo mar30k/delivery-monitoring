@@ -31,7 +31,7 @@ namespace DeliveryMonitoring.Controllers
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();
-                drivers = JsonConvert.DeserializeObject<List<Driver>>(data);
+                drivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
             }
             return View(drivers);         
         }
@@ -89,7 +89,7 @@ namespace DeliveryMonitoring.Controllers
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();
-                filteredDrivers = JsonConvert.DeserializeObject<List<Driver>>(data);
+                filteredDrivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
             }
 
             return View(filteredDrivers);
@@ -151,7 +151,7 @@ namespace DeliveryMonitoring.Controllers
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();
-                filteredDrivers = JsonConvert.DeserializeObject<List<Driver>>(data);
+                filteredDrivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
             }
             return View(filteredDrivers);
         }
@@ -188,7 +188,7 @@ namespace DeliveryMonitoring.Controllers
             if (orderResponse.IsSuccessStatusCode)
             {
                 string orderData = await orderResponse.Content.ReadAsStringAsync();
-                orders = JsonConvert.DeserializeObject<List<Order>>(orderData);
+                orders = JsonConvert.DeserializeObject<List<Order>>(orderData) ?? new List<Order>();
 
                 //foreach (var order in orders)
                 //{
@@ -199,7 +199,7 @@ namespace DeliveryMonitoring.Controllers
             }
 
             // Fetch driver data
-            Driver driver = null;
+            Driver? driver = new ();
             List<Driver> drivers = new List<Driver>();
 
             try
@@ -209,7 +209,7 @@ namespace DeliveryMonitoring.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    drivers = JsonConvert.DeserializeObject<List<Driver>>(data);
+                    drivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
 
                     driver = drivers.FirstOrDefault(d => d.phoneNumber == phoneNumber);
 
@@ -242,7 +242,7 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> LiveLocation(string phoneNumber)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-            string data = null;
+            string? data = null;
 
             HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers/{phoneNumber}");
            
@@ -260,7 +260,7 @@ namespace DeliveryMonitoring.Controllers
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
             // Fetch driver data
-            UpdateDriverModel driver = null;
+            UpdateDriverModel? driver = new();
 
             try
             {
