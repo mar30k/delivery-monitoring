@@ -23,14 +23,14 @@ namespace DeliveryMonitoring.Controllers
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
             // Fetch driver data
-            List<Driver> drivers = new List<Driver>();
+            List<Driver> drivers = new();
 
             HttpResponseMessage driverResponse = await _client.GetAsync(_client.BaseAddress + "/drivers");
 
             if (driverResponse.IsSuccessStatusCode)
             {
                 string driverData = await driverResponse.Content.ReadAsStringAsync();
-                drivers = JsonConvert.DeserializeObject<List<Driver>>(driverData);
+                drivers = JsonConvert.DeserializeObject<List<Driver>>(driverData) ?? new List<Driver>();
                 
             }
 
@@ -42,7 +42,7 @@ namespace DeliveryMonitoring.Controllers
             if (orderResponse.IsSuccessStatusCode)
             {
                 string orderData = await orderResponse.Content.ReadAsStringAsync();
-                orders = JsonConvert.DeserializeObject<List<Order>>(orderData);
+                orders = JsonConvert.DeserializeObject<List<Order>>(orderData) ?? new List<Order>();
             }
 
             Companies company = null;
@@ -54,7 +54,7 @@ namespace DeliveryMonitoring.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    company = JsonConvert.DeserializeObject<Companies>(data);
+                    company = JsonConvert.DeserializeObject<Companies>(data) ?? new Companies();
                 }
 
                 if (company == null)
