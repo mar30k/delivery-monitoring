@@ -79,22 +79,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model)
+                        @foreach (var driver in Model)
                         {
 
                             <tr>
 
                                 <td>
-                                    @Html.DisplayFor(modelItem => item.firstName)
+                                    @Html.DisplayFor(modelItem => driver.firstName)
                                 </td>
                                 <td>
-                                    @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("HH:mm:ss - ddd, MMMM dd, yyyy")
+                                    @DateTimeOffset.FromUnixTimeMilliseconds(driver.lastUpdatedAt).DateTime.ToString("HH:mm:ss - ddd, MMMM dd, yyyy")
                                 </td>
                                 <td>
-                                    @Html.DisplayFor(modelItem => item.phoneNumber)
+                                    @Html.DisplayFor(modelItem => driver.phoneNumber)
                                 </td>
                                 <td>
-                                    @Html.DisplayFor(modelItem => item.status)
+                                    @Html.DisplayFor(modelItem => driver.status)
                                 </td>
                                 @* <td>
                                     @{
@@ -120,7 +120,7 @@
                                 </td> *@
 
                                 <td>
-                                    <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>
+                                    <a class="btn btn-outline-dark" href="/driver/@driver.phoneNumber" >Details</a>
                                 </td>
                             </tr>
                         }
