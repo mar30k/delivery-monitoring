@@ -46,24 +46,25 @@
                             </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.assignedDriverPhoneNumber)
-                            </td>                                                        
-                            <td>
-                                @item.customer.firstName
                             </td>
                             <td>
-                                @item.customer.geocodeAddress - @item.customer.specificAddress
+                                @(item.customer?.firstName ?? "N/A")
                             </td>
                             <td>
-                                @item.customer.phoneNumber
-                            </td>                                                                                  
+                                @(item.customer != null ? $"{item.customer.geocodeAddress} - {item.customer.specificAddress}" : "N/A")
+                            </td>
+                            <td>
+                                @(item.customer?.phoneNumber ?? "N/A")
+                            </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.voucherCode)
                             </td>
                             <td>
-                                <a class="btn btn-outline-dark" asp-controller="Order" asp-action="Details" asp-route-id="@item.voucherCode">Details</a>
+                                <a class="btn btn-outline-dark" href="/order/@item.voucherCode">Details</a>
                             </td>
                         </tr>
                     }
+
                 </tbody>
             </table>
         </div>

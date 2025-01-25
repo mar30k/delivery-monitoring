@@ -74,7 +74,7 @@
                         }
                         else
                         {
-                            <a class="btn btn-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@phoneNumber">Check Order Status</a>
+                            <a class="btn btn-dark" href="/driver/@phoneNumber">Check Order Status</a>
                         }
                     }
                 </div>
@@ -123,7 +123,8 @@
                 <div>
                     <span id="letters">TIN:</span>
                     <span id="outputs">
-                        <a asp-controller="Company" asp-action="Details" asp-route-id="@Model.companyTin">@Html.DisplayFor(model => model.companyTin)</a>
+                        @* <a asp-controller="Company" asp-action="Details" asp-route-id="@Model.companyTin">@Html.DisplayFor(model => model.companyTin)</a> *@
+                        <a>@Html.DisplayFor(model => model.companyTin)</a>
                     </span>
                 </div>
             </div>
