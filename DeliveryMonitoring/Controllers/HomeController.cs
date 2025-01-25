@@ -18,7 +18,8 @@ namespace DeliveryMonitoring.Controllers
         }
         //HttpClient Setup ends here
 
-        //This returns the view for Home/Index Page
+        //This returns the view for Home/Index
+        [Route("/")]
         public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");

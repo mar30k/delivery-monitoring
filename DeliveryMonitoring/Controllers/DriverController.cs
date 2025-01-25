@@ -21,6 +21,7 @@ namespace DeliveryMonitoring.Controllers
         
         //Driver Index Page - starts here
         [HttpGet]
+        [Route("/drivers")]
         public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
@@ -175,7 +176,7 @@ namespace DeliveryMonitoring.Controllers
         //Used for fetching the driver's location regularly - ends here
 
         //Driver Details-- Starts Here
-        [HttpGet("/Driver/Details/{phoneNumber}")]
+        [HttpGet("/Driver/{phoneNumber}")]
         public async Task<IActionResult> Details(string phoneNumber)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
@@ -255,7 +256,7 @@ namespace DeliveryMonitoring.Controllers
         //Used for fetching the driver's location regularly - ends here
 
         //Driver Update Page - starts here
-        [HttpGet("/Driver/Update/{phoneNumber}")]
+        [HttpGet("/updatedriverinfo/{phoneNumber}")]
         public async Task<IActionResult> Update(string phoneNumber)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");

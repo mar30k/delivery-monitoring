@@ -21,6 +21,7 @@ namespace DeliveryMonitoring.Controllers
 
         //List of Orders Page -- Starts Here
         [HttpGet]
+        [Route("/orders")]
         public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
@@ -38,9 +39,9 @@ namespace DeliveryMonitoring.Controllers
         //List of Orders Page -- Ends Here
 
         //Order Details Page -- Starts Here
-        [HttpGet("/Order/Details/{voucherCode}")]
+        [HttpGet("/Order/{voucherCode}")]
         public async Task<IActionResult> Details(string voucherCode)
-        {
+        { 
             var _client = _httpClientFactory.CreateClient("Delivery");
             OrderDetail order = null;
 

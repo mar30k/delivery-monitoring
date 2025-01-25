@@ -47,7 +47,7 @@ namespace DeliveryMonitoring.Controllers
         }
 
         
-        [HttpGet("/Company/Details/{companyTins}")]
+        [HttpGet("/Company/{companyTins}")]
         public async Task<IActionResult> Details(string companyTins)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");

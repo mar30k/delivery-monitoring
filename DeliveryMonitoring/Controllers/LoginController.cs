@@ -21,8 +21,8 @@ namespace DeliveryMonitoring.Controllers
             _authenticationManager = authenticationManager;
             _httpClientFactory = httpClientFactory;
         }
-
-        public async Task<IActionResult> Login()
+        [Route("/login")]
+        public async Task<IActionResult> index()
         {
             var identificationResult = await _authenticationManager.identificationValid();
 
@@ -35,6 +35,7 @@ namespace DeliveryMonitoring.Controllers
 
 
         [HttpPost]
+        [Route("Login/Authenticate")]
         public async Task<IActionResult> Login(Login model)
         {
             if (ModelState.IsValid)
@@ -56,11 +57,10 @@ namespace DeliveryMonitoring.Controllers
 
             return View("Login", model);
         }
-
         public async Task<IActionResult> Logout()
         {
             _authenticationManager.SignOut();
-            return RedirectToAction("Login");
+            return RedirectToAction("index","Login");
         }
         public virtual async Task<UserDTO?> GetUserByUserName(string _userName)
         {
