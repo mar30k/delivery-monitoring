@@ -4,8 +4,8 @@
     ViewData["Title"] = "Driver Details";
     var Orders = ViewData["Orders"] as List<Order>;
 
-    double totalRating = Model.review.totalRating;
-    double totalReviews = Model.review.totalReviews;
+    double totalRating = Model?.review?.totalRating ?? 0.0;
+    double totalReviews = Model?.review?.totalReviews ?? 0;
     double rating = totalRating / totalReviews;
 
     string GetStarRating(double rating)
@@ -51,45 +51,45 @@
                 
                 <div class="col-6">
                     <div>
-                        <a class="btn btn-success" asp-controller="Driver" asp-action="Update" asp-route-id="@Model.phoneNumber"><i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info</a>
+                        <a class="btn btn-success" href="/updatedriverinfo/@Model?.phoneNumber" ><i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info</a>
                     </div>
                 </div>
             </div>
 
             <div class="row" id="orderDetail">               
                 <div class="col-6">
-                    <img src="@Model.detail.profilePicture" alt="" class="half-size-img">
+                    <img src="@Model?.detail?.profilePicture" alt="" class="half-size-img">
                 </div>
                 <div class="col-6">
                     <span id="letters">@Html.DisplayNameFor(model => model.detail.fullName):</span>
-                    <span id="outputs">@Model.detail.fullName</span>
+                    <span id="outputs">@Model?.detail.fullName</span>
                     <a id="outputs">
                         @{
-                            if (Model.status == "offline")
+                            if (Model?.status == "offline")
                             {
                                 <div style="background-color: red; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
                                     @Html.DisplayFor(model => model.status)
                                 </div>
                             }
-                            else if (Model.status == "ready")
+                            else if (Model?.status == "ready")
                             {
                                 <div style="background-color: orange; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
                                     @Html.DisplayFor(model => model.status)
                                 </div>
                             }
-                            else if (Model.status == "accepted")
+                            else if (Model?.status == "accepted")
                             {
                                 <div style="background-color: yellow; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
                                     @Html.DisplayFor(model => model.status)
                                 </div>
                             }
-                            else if (Model.status == "delivering")
+                            else if (Model?.status == "delivering")
                             {
                                 <div style="background-color: deepskyblue; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
                                     @Html.DisplayFor(model => model.status)
                                 </div>
                             }
-                            else if (Model.status == "completed")
+                            else if (Model?.status == "completed")
                             {
                                 <div style="background-color: lawngreen; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
                                     @Html.DisplayFor(model => model.status)
@@ -98,13 +98,10 @@
                         }
                     </a>
                     @{
-                        foreach (var item in Orders)
+                        foreach (var item in (Orders ?? new List<Order>()).Where(o => o.assignedDriverPhoneNumber == @Model?.phoneNumber))
                         {
-                            if (@item.assignedDriverPhoneNumber == @Model.phoneNumber)
-                            {
-                                var voucher = item.voucherCode;
-                                <a class="" asp-controller="Order" asp-action="Details" asp-route-id="@voucher" style="margin-left: 0px; text-decoration: none;">- Order Details</a>
-                            }
+                            var voucher = item.voucherCode;
+                            <a class=""href="/order/@voucher" style="margin-left: 0px; text-decoration: none;">- Order Details</a>
                         }
                     }
 
@@ -119,7 +116,7 @@
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.companyTin):</span>
-                        <span id="outputs"><a asp-controller="Company" asp-action="Details" asp-route-id="@Model.companyTin">@Html.DisplayFor(model => model.companyTin)</a></span>
+                        <span id="outputs"><a href="/company/@Model?.companyTin"">@Html.DisplayFor(model => model.companyTin)</a></span>
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.phoneNumber):</span>
@@ -211,34 +208,34 @@
                 {
                     foreach (var item in Orders)
                     {
-                        if (@item.assignedDriverPhoneNumber == @Model.phoneNumber)
+                        if (@item.assignedDriverPhoneNumber == @Model?.phoneNumber)
                         {
                             <text>
-                                        orderAssigned = true;
-                                    places = [{
-                                        Name: '@Model.firstName',
-                                        LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                        Phone: '@Model.phoneNumber',
-                                        Status: '@Model.status',
-                                        lat: @Model.latLng.lat,
-                                        lng: @Model.latLng.lng,
-                                        DestLat: @item.customer.latLng.lat,
-                                        DestLng: @item.customer.latLng.lng}];
+                                places = [{
+                                    Name: '@Model?.firstName',
+                                    LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                    Phone: '@Model?.phoneNumber',
+                                    Status: '@Model?.status',
+                                    lat: @Model?.latLng?.lat,
+                                    lng: @Model?.latLng?.lng,
+                                    DestLat: @(item?.customer?.latLng?.lat ?? 0.0),
+                                    DestLng: @(item?.customer?.latLng?.lng ?? 0.0)
+                                }];
                             </text>
                         }
                     }
                 }
             }
         }
-                    marker = new google.maps.Marker({
-                        position: { lat: places[0].lat, lng: places[0].lng },
-                        title: places[i].Name,
-                        map: map,
-                        icon: {
-                            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                            scale: 4,
-                        },
-                    });
+                marker = new google.maps.Marker({
+                    position: { lat: places[0].lat, lng: places[0].lng },
+                    title: places[i].Name,
+                    map: map,
+                    icon: {
+                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                        scale: 4,
+                    },
+                });
 
                 map.setCenter(marker.getPosition());
                 //sets the marker in the specified position - ends here
