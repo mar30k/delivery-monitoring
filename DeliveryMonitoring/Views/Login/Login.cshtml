@@ -62,7 +62,7 @@
         <!-- /.login-logo -->
         <div class="login-box-body div1">
             <p class="login-box-msg">Login to start your session</p>
-            <form asp-action="Login" asp-controller="Login" method="post" autocomplete="off">
+            <form action="/Login/Authenticate" method="post" autocomplete="off">
                 <div class="form-group has-feedback">
                     <input asp-for="Username" class="form-control" autofocus="autofocus" placeholder="Username" autocomplete="off" />
                     <span class="glyphicon glyphicon-user form-control-feedback"></span>
@@ -74,21 +74,19 @@
                     <span asp-validation-for="Password"></span>
                 </div>
 
-                @{
-                    var errors = ViewData.ModelState.Where(s => s.Value?.Errors.Count > 0).ToList();
-                    if (errors != null && errors.Count > 0)
+                @if (ViewData.ModelState.Any(s => s.Value?.Errors.Count > 0))
+                {
+                    foreach (var item in ViewData.ModelState.Where(s => s.Value?.Errors.Count > 0))
                     {
-                        foreach (var item in errors)
-                        {
-                            <p class="text-red">@item.Value?.Errors?.FirstOrDefault()?.ErrorMessage</p>
-                        }
+                        <p class="text-red">@item.Value?.Errors?.FirstOrDefault()?.ErrorMessage</p>
                     }
                 }
+
                 <div class="row">
                     <div class="col-xs-8">
                         <div class="checkbox icheck">
                             <input asp-for="RememberMe" />
-                            <label asp-for="RememberMe"></label>
+                            <label asp-for="RememberMe"> Remember Me</label>
                         </div>
                     </div>
                     <!-- /.col -->
@@ -98,7 +96,6 @@
                     <!-- /.col -->
                 </div>
             </form>
-
         </div>
         <!-- /.login-box-body -->
      
