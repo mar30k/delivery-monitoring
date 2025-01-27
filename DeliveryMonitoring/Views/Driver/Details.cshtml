@@ -65,33 +65,18 @@
                     <span id="outputs">@Model?.detail.fullName</span>
                     <a id="outputs">
                         @{
-                            if (Model?.status == "offline")
+                            var statusColors = new Dictionary<string, string>
+                                {
+                                    { "offline", "red" },
+                                    { "ready", "orange" },
+                                    { "accepted", "yellow" },
+                                    { "delivering", "deepskyblue" },
+                                    { "completed", "lawngreen" }
+                                };
+
+                            if (Model?.status != null && statusColors.ContainsKey(Model.status))
                             {
-                                <div style="background-color: red; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
-                                    @Html.DisplayFor(model => model.status)
-                                </div>
-                            }
-                            else if (Model?.status == "ready")
-                            {
-                                <div style="background-color: orange; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
-                                    @Html.DisplayFor(model => model.status)
-                                </div>
-                            }
-                            else if (Model?.status == "accepted")
-                            {
-                                <div style="background-color: yellow; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
-                                    @Html.DisplayFor(model => model.status)
-                                </div>
-                            }
-                            else if (Model?.status == "delivering")
-                            {
-                                <div style="background-color: deepskyblue; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
-                                    @Html.DisplayFor(model => model.status)
-                                </div>
-                            }
-                            else if (Model?.status == "completed")
-                            {
-                                <div style="background-color: lawngreen; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
+                                <div style="background-color: @statusColors[Model.status]; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
                                     @Html.DisplayFor(model => model.status)
                                 </div>
                             }
