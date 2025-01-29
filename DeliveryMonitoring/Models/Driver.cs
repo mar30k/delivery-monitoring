@@ -12,6 +12,9 @@ namespace DeliveryMonitoring.Models
     {
         public string fullName { get; set; }
         public string email { get; set; }
+        public string idNumber { get; set; }
+        public string idType { get; set; }
+        public string plateNumber { get; set; }
         public string gender { get; set; }
         public string occupation { get; set; }
         public DateTime? dob { get; set; }

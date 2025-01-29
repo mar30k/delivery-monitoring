@@ -201,18 +201,16 @@ namespace DeliveryMonitoring.Controllers
 
             // Fetch driver data
             Driver? driver = new ();
-            List<Driver> drivers = new List<Driver>();
 
             try
             {
-                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers");
+                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers/{phoneNumber}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    drivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
+                    driver = JsonConvert.DeserializeObject<Driver>(data) ?? new Driver();
 
-                    driver = drivers.FirstOrDefault(d => d.phoneNumber == phoneNumber);
 
                     //if (driver.phoneNumber == "0912918305")
                     //{
