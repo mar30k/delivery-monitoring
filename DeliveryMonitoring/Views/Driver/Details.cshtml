@@ -108,8 +108,12 @@
                         <span id="outputs">@Html.DisplayFor(model => model.phoneNumber)</span>
                     </div>
                     <div>
+                        <span id="letters">@Html.DisplayNameFor(model => model.detail.plateNumber):</span>
+                        <span id="outputs">@(Model?.detail?.plateNumber ?? "N/A")</span>
+                    </div>
+                    <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.detail.email):</span>
-                        <a id="outputs" href="mailto: @Model.detail.email">@Html.DisplayFor(model => model.detail.email)</a>
+                        <a id="outputs" href="mailto: @Model?.detail.email">@Html.DisplayFor(model => model.detail.email)</a>
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.detail.gender):</span>
