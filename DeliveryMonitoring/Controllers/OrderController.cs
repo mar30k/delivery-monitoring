@@ -25,7 +25,7 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-            List<Order> orders = new List<Order>();
+            List<Order>? orders = new ();
 
             HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "/orderRequests");
 
@@ -43,7 +43,7 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Details(string voucherCode)
         { 
             var _client = _httpClientFactory.CreateClient("Delivery");
-            OrderDetail order = null;
+            OrderDetail? order = null;
 
             try
             {
