@@ -1,0 +1,174 @@
+﻿@model DeliveryMonitoring.Models.CompletedOrdersViewModel
+@{
+    ViewData["Title"] = "Completed Orders";
+    var disTinctSupervisors = Model?.CompletedOrders?.Data?.DistinctBy(x => x.SupervisorPhoneNumber).Where(x => x.SupervisorPhoneNumber != null).ToList();
+}
+
+<div class="container-fluid col-11 pt-5">
+    <h3>Completed Orders List</h3>
+    <div class="row card">
+        <div class="table-responsive pt-3 pb-3">
+            <table class="table compact stripe hover pt-3" id="tablelist">
+                <thead class="">
+                    <tr style="font-size: 13px;">
+                        <th class="text-center">
+                            Order Number
+                        </th>
+                        <th class="text-center">
+                            Company
+                        </th>
+                        <th class="text-center">
+                            Branch
+                        </th>
+                        <th class="text-center">
+                            Customer
+                        </th>
+                        <th class="text-center">
+                            Phone
+                        </th>
+                        <th class="text-center">
+                            Order DateTime
+                        </th>
+                        <th class="text-center">
+                            Distance
+                        </th>
+                        <th class="text-center">
+                            Duration
+                        </th>
+                        <th class="text-center">
+                            Eta
+                        </th>
+                       
+                        <th class ="text-center">
+                            Driver
+                        </th>
+                        <th class ="text-center">
+                            Supervisor
+                        </th>
+                        
+                        <th class="text-center">
+                            Review
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        foreach (var order in Model?.CompletedOrders?.Data ?? new List<CompletedOrders>())
+                        {
+
+
+                            <tr data-voucher="@order?.VoucherCode" style="font-size: 13px">
+                                <td>
+                                    @(order?.VoucherCode ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.CompanyName ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.BranchName ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.FirstName ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.PhoneNumber)
+                                </td>
+                                <td data-order="@order?.RequestCreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")" data-iso="@order?.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss")" class="text-center">
+                                    @order?.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss")
+                                </td>
+                                <td data-order="@order?.Distance" class="text-center">
+                                    @(order?.Distance) K.M
+                                </td>
+                                <td data-order="@order?.Duration" class="text-center">
+                                    @(order?.Duration) Min
+                                </td>
+                                <td data-order="@order?.Eta" class="text-center">
+                                    @(order?.Eta) Min
+                                </td>
+                                <td class="driver-cell text-center">
+                                    <a href="tel:@order?.DriverPhoneNumber">
+                                        @order?.DriverPhoneNumber
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    @(order?.SupervisorName ?? "N/A")
+                                </td>
+                                
+                                <td class="text-center">
+                                    @if (order?.Purpose != null)
+                                    {
+                                        <button class="btn btn-outline-secondary"
+                                                data-note="@order.Note"
+                                                data-purpose="@order.Purpose"
+                                                onclick="showDetailsModal(this)">Show</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-outline-secondary"
+                                                data-order-id="@order?.VoucherCode"
+                                                onclick="showReviewModal(this)">Review</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Order Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Purpose:</strong> <span id="modalPurpose"></span></p>
+                <p><strong>Note:</strong> <span id="modalNote"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Review Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reviewForm">
+                <div class="modal-body">
+                    <input type="hidden" name="VoucherCode" id="reviewOrderId" />
+
+                    <div class="mb-3">
+                        <label for="reviewPurpose" class="form-label fw-bold">Purpose</label>
+                        <select class="form-select" id="reviewPurpose" name="Purpose" required>
+                            <option value="" selected disabled>-- Select Purpose --</option>
+                            @foreach(var purpose in Model?.PurposeOptions ?? new Dictionary<int, string>())
+                            {
+                                <option value="@purpose.Key">@purpose.Value</option>
+                            })
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reviewNote" class="form-label fw-bold">Note</label>
+                        <textarea class="form-control" id="reviewNote" name="Note" rows="3" placeholder="Enter note..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+    <script src="~/js/completed-orders.js"></script>
+}
+
