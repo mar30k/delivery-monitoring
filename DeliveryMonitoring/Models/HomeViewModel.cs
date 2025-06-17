@@ -2,8 +2,10 @@
 {
     public class HomeViewModel
     {
-        public List<Driver> Drivers { get; set; }
-        public List<Order> Orders { get; set; }
-        public Companies Comps { get; set; }
+        public List<Driver>? Drivers { get; set; }
+        public List<OrderDetail>? Orders { get; set; }
+        public List<DeviceControl>? DeviceControl { get; set; }
+        public Companies? Comps { get; set; }
+        public string? CompanyTin { get; set; }
     }
 }
