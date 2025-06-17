@@ -3,3 +3,19 @@
     margin-left: 40px;
     font-size: 4em; /* Adjust the font size as needed */
 }
+.firstRow, .secondRow {
+    transition: opacity 1s ease-in-out;
+}
+
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+}
+
+.visible {
+    opacity: 1;
+    pointer-events: auto;
+    position: relative;
+}
