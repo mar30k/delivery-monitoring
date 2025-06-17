@@ -46,7 +46,7 @@
                                 <td>
                                     @Html.DisplayFor(modelItem => item.firstName)
                                 </td>
-                                <td>
+                                <td data-order="@item.lastUpdatedAt">
                                     @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
 
                                 </td>
@@ -57,7 +57,7 @@
                                     @Html.DisplayFor(modelItem => item.status)
                                 </td>
                                 <td>
-                                    <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>
+                                    <a class="btn btn-outline-dark" href="/driverdetail/@item.phoneNumber">Details</a>
                                 </td>
                             </tr>
                         }
@@ -213,7 +213,10 @@
         var js = jQuery.noConflict(true);
         js(document).ready(function () {
             js('#tablelist').DataTable({
-                responsive: true
+                responsive: true,
+                columnDefs: [
+                    { orderable: false, targets: [2, 3, 4] } // Disable sorting on all columns except index 0 (firstName)
+                ]
             });
         });
     </script>

@@ -2,7 +2,7 @@
 @model DeliveryMonitoring.Models.Driver
 @{
     ViewData["Title"] = "Driver Details";
-    var Orders = ViewData["Orders"] as List<Order>;
+    var Orders = ViewData["Orders"] as List<OrderDetail>;
 
     double totalRating = Model?.review?.totalRating ?? 0.0;
     double totalReviews = Model?.review?.totalReviews ?? 0;
@@ -45,13 +45,20 @@
     <div class="container-fluid col-11 col-lg-7 pt-3">
         <div class="card border-1" id="orderCard">
             <div class="row pt-3" id="orderDetail">
-                <div class="col-6">
+                <div class="col-4">
                     <h4><i class="bi bi-car-front icon"></i>Driver</h4>
                 </div>
                 
-                <div class="col-6">
+                <div class="col-8 d-flex justify-content-center gap-2">
                     <div>
-                        <a class="btn btn-success" href="/updatedriverinfo/@Model?.phoneNumber" ><i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info</a>
+                        <a class="btn btn-success" href="/updatedriverinfo/@Model?.phoneNumber">
+                            <i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info
+                        </a>
+                    </div>
+                    <div>
+                        <a class="btn btn-primary" href="/review/@Model?.phoneNumber">
+                            <i class="bi bi-chat-left-text"></i>&nbsp;Reviews
+                        </a>
                     </div>
                 </div>
             </div>
@@ -62,7 +69,7 @@
                 </div>
                 <div class="col-6">
                     <span id="letters">@Html.DisplayNameFor(model => model.detail.fullName):</span>
-                    <span id="outputs">@Model?.detail.fullName</span>
+                    <span id="outputs">@Model?.firstName</span>
                     <a id="outputs">
                         @{
                             var statusColors = new Dictionary<string, string>
@@ -83,9 +90,9 @@
                         }
                     </a>
                     @{
-                        foreach (var item in (Orders ?? new List<Order>()).Where(o => o.assignedDriverPhoneNumber == @Model?.phoneNumber))
+                        foreach (var item in (Orders ?? new List<OrderDetail>()).Where(o => o.AssignedDriverPhoneNumber == @Model?.phoneNumber))
                         {
-                            var voucher = item.voucherCode;
+                            var voucher = item.VoucherCode;
                             <a class=""href="/order/@voucher" style="margin-left: 0px; text-decoration: none;">- Order Details</a>
                         }
                     }
@@ -105,7 +112,9 @@
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.phoneNumber):</span>
-                        <span id="outputs">@Html.DisplayFor(model => model.phoneNumber)</span>
+                        <span id="outputs">
+                            <a href="tel:@Model?.phoneNumber">@Model?.phoneNumber</a>
+                        </span>
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.detail.plateNumber):</span>
@@ -113,7 +122,7 @@
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.detail.email):</span>
-                        <a id="outputs" href="mailto: @Model?.detail.email">@Html.DisplayFor(model => model.detail.email)</a>
+                        <a id="outputs" href="mailto: @Model?.detail?.email">@Html.DisplayFor(model => model.detail.email)</a>
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.detail.gender):</span>
@@ -132,12 +141,8 @@
                         <span id="outputs">@Html.DisplayFor(model => model.numberOfRejectedOrders)</span>
                     </div>
                     <div>
-                        <span id="letters">Rating:</span>
-                        <span id="outputs">@Html.Raw(GetStarRating(rating)) / @totalReviews reviews</span>
-                    </div>
-                    <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.traveledDistance):</span>
-                        <span id="outputs">@Html.DisplayFor(model => model.traveledDistance) km</span>
+                        <span id="outputs">@(Model?.traveledDistance != null ? Model?.traveledDistance + " km" : "N/A")</span>
                     </div>
                 </div>
             </div>
@@ -181,48 +186,48 @@
             function details() {
                 // let index = 0;
                 //this takes all the information from the api response and save it in a places array
-        @{
-            if (Model != null)
-            {
-                <text>
-                            places =[{
-                                Name: '@Model.firstName',
-                                LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                Phone: '@Model.phoneNumber',
-                                Status: '@Model.status',
-                                lat: @Model.latLng.lat,
-                                lng: @Model.latLng.lng}];
-                </text>
-                if (Orders != null)
-                {
-                    foreach (var item in Orders)
+                @{
+                    if (Model != null)
                     {
-                        if (@item.assignedDriverPhoneNumber == @Model?.phoneNumber)
+                        <text>
+                                    places =[{
+                                        Name: '@Model.firstName',
+                                        LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                        Phone: '@Model.phoneNumber',
+                                        Status: '@Model.status',
+                                        lat: @Model?.latLng?.Lat,
+                                        lng: @Model?.latLng?.Lng}];
+                        </text>
+                        if (Orders != null)
                         {
-                            <text>
-                                places = [{
-                                    Name: '@Model?.firstName',
-                                    LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                    Phone: '@Model?.phoneNumber',
-                                    Status: '@Model?.status',
-                                    lat: @Model?.latLng?.lat,
-                                    lng: @Model?.latLng?.lng,
-                                    DestLat: @(item?.customer?.latLng?.lat ?? 0.0),
-                                    DestLng: @(item?.customer?.latLng?.lng ?? 0.0)
-                                }];
-                            </text>
+                            foreach (var item in Orders ?? new List<OrderDetail>())
+                            {
+                                if (@item.AssignedDriverPhoneNumber == @Model?.phoneNumber)
+                                {
+                                    <text>
+                                        places = [{
+                                            Name: '@Model?.firstName',
+                                            LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
+                                            Phone: '@Model?.phoneNumber',
+                                            Status: '@Model?.status',
+                                            lat: @Model?.latLng?.Lat,
+                                            lng: @Model?.latLng?.Lng,
+                                            DestLat: @(item?.Customer?.LatLng?.Lat ?? 0.0),
+                                            DestLng: @(item?.Customer?.LatLng?.Lng ?? 0.0)
+                                        }];
+                                    </text>
+                                }
+                            }
                         }
                     }
                 }
-            }
-        }
                 marker = new google.maps.Marker({
                     position: { lat: places[0].lat, lng: places[0].lng },
                     title: places[i].Name,
                     map: map,
                     icon: {
-                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                        scale: 4,
+                        url: '/images/motor.png',
+                        scale: 3,
                     },
                 });
 

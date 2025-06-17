@@ -2,11 +2,6 @@
 
 namespace DeliveryMonitoring.Models
 {
-    public class LatLng
-    {
-        public double lat { get; set; }
-        public double lng { get; set; }
-    }
 
     public class Detail
     {
@@ -32,8 +27,10 @@ namespace DeliveryMonitoring.Models
         public string companyTin { get; set; }
         public string deviceID { get; set; }
         public string firstName { get; set; }
+        public bool isDisabled { get; set; }
         public long lastUpdatedAt { get; set; }
-        public LatLng latLng { get; set; }
+        public string lastUpdatedAtIso { get; set; }
+        public Location latLng { get; set; }
         public string phoneNumber { get; set; }
         public string status { get; set; }
         public Detail detail { get; set; }

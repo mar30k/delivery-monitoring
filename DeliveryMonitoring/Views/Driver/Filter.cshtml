@@ -44,7 +44,7 @@
                                 <td>
                                     @Html.DisplayFor(modelItem => item.firstName)
                                 </td>
-                                <td>
+                                <td data-order="@item.lastUpdatedAt">
                                     @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
 
                                 </td>
@@ -55,7 +55,7 @@
                                     @Html.DisplayFor(modelItem => item.status)
                                 </td>
                                 <td>
-                                    <a class="btn btn-outline-dark" asp-controller="Driver" asp-action="Details" asp-route-id="@item.phoneNumber">Details</a>
+                                    <a class="btn btn-outline-dark" href="/driverdetail/@item.phoneNumber">Details</a>
                                 </td>
                             </tr>
                         }
@@ -85,21 +85,22 @@
         // var index = -1;
         const urlParams = new URLSearchParams(window.location.search);
         let status = urlParams.get('status');
-        const companyTin = urlParams.get('companyTin');
+        let companyTin = urlParams.get('companyTin');
 
-        // Construct the URL conditionally based on whether the parameters are not empty
-        let fetchUrl = `/Driver/LiveFilter`;
-        if (status) {
+        let fetchUrl = "/Driver/LiveFilter";
+
+        // Append based on what exists
+        if (status && companyTin) {
+            fetchUrl += `/${status}/${companyTin}`;
+        } else if (status) {
             fetchUrl += `/${status}`;
-            if (companyTin) {
-                fetchUrl += `/${companyTin}`;
-            }
+        } else if (companyTin) {
+            fetchUrl += `/all/${companyTin}`; // optional: replace missing status with a default value
         }
-        else if(!status && companyTin) {
-            status = null;
-            fetchUrl = `/Driver/LiveFilter/${status}/${companyTin}`;
-        }
-        
+
+        console.log(fetchUrl);
+
+
         var map;
         var marker;
         var markers = [];
@@ -171,8 +172,8 @@
                                 title: place.Name,
                                 map: map,
                                 icon: {
-                                    url: '/images/motor.png',
-                                    scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
+                                    url: place.Status!== "offline"? '/images/motor.png' : '/images/offline_motors.png',
+                                    scaledSize: new google.maps.Size(51, 61) // Adjust the size as needed
                                 }
                             });
 
@@ -204,7 +205,7 @@
             }
             // Call the function immediately to show the initial view
             fetchDataAndUpdateMarkers();
-            setInterval(fetchDataAndUpdateMarkers, 3000000);
+            setInterval(fetchDataAndUpdateMarkers, 60000);
         }
     </script>
     <!--Map JavaScript Implementation Ends Here-->
@@ -217,7 +218,10 @@
         var js = jQuery.noConflict(true);
         js(document).ready(function () {
             js('#tablelist').DataTable({
-                responsive: true
+                responsive: true,
+                columnDefs: [
+                    { orderable: false, targets: [2, 3, 4] } // Disable sorting on all columns except index 0 (firstName)
+                ]
             });
         });
     </script>

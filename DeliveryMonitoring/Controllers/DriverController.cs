@@ -1,8 +1,10 @@
-﻿using DeliveryMonitoring.Models;
+﻿using CNET_ERP_V7.WebConstants;
+using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
@@ -13,22 +15,26 @@ namespace DeliveryMonitoring.Controllers
     [Authorize]
     public class DriverController : Controller
     {
+        private IHttpContextAccessor _httpContextAccessor;
         private readonly IHttpClientFactory _httpClientFactory;
-        public DriverController(IHttpClientFactory httpClientFactory)
+        public DriverController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _httpClientFactory = httpClientFactory;
+            _httpContextAccessor = httpContextAccessor;
         }
-        
+
         //Driver Index Page - starts here
         [HttpGet]
         [Route("/drivers")]
         public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-            List<Driver> drivers = new List<Driver>();            
+            List<Driver> drivers = new();
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            string uri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
 
-            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "/drivers");
-
+            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + uri);
+            ViewBag.CompanyTin = companyTin;
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();
@@ -43,13 +49,20 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> LiveLocation()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-            string data = null;
-
-            HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers");
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            string uri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
+            var data = new List<Driver>();
+            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + uri);
 
             if (response.IsSuccessStatusCode)
             {
-                data = await response.Content.ReadAsStringAsync();
+                string responseString = await response.Content.ReadAsStringAsync();
+                data = JsonConvert.DeserializeObject<List<Driver>>(responseString);
+                foreach (var item in data ?? new List<Driver>())
+                {
+                    item.lastUpdatedAtIso = @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).ToOffset(TimeSpan.FromHours(3)).DateTime.ToString("yyyy-MM-dd hh:mm:ss");
+                }
+
             }
             return Ok(data);
         }
@@ -60,27 +73,36 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet]
         public async Task<IActionResult> Filter(string status, string companyTin)
         {
+            var cookieCompanyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+
             var _client = _httpClientFactory.CreateClient("Delivery");
             if (string.IsNullOrEmpty(status) && string.IsNullOrEmpty(companyTin))
             {
                 return RedirectToAction("Index");
             }
 
-            List<Driver> filteredDrivers = new List<Driver>();
+            List<Driver> filteredDrivers = new();
 
             // Build the endpoint based on the provided filters
-            StringBuilder endpoint = new StringBuilder($"{_client.BaseAddress}/drivers?");
-
+            StringBuilder endpoint = new($"{_client.BaseAddress}/drivers?");
             if (!string.IsNullOrEmpty(status))
             {
                 endpoint.Append($"status={status}");
             }
+            if(cookieCompanyTin != "0076217301" && companyTin==null)
+            {
+                if (endpoint.Length > 0 && status != null)
+                {
+                    endpoint.Append('&');
+                }
+                endpoint.Append($"companyTin={cookieCompanyTin}");
+            }
 
             if (!string.IsNullOrEmpty(companyTin))
             {
-                if (endpoint.Length > 0)
+                if (endpoint.Length > 0 && status != null)
                 {
-                    endpoint.Append("&");
+                    endpoint.Append('&');
                 }
                 endpoint.Append($"companyTin={companyTin}");
             }
@@ -100,29 +122,27 @@ namespace DeliveryMonitoring.Controllers
         //Used for filtering Drivers Live Location based on their status & company TIN - starts here
         [HttpGet("/Driver/LiveFilter/{status?}/{companyTin?}")]
         public async Task<IActionResult> LiveFilter(string? status, string companyTin)
-        {
-            string data = null;
+         {
+            string? data = null;
             var _client = _httpClientFactory.CreateClient("Delivery");
             if (string.IsNullOrEmpty(status) && string.IsNullOrEmpty(companyTin))
             {
                 return RedirectToAction("Index");
             }
 
-            List<Driver> filteredDrivers = new List<Driver>();
-
             // Build the endpoint based on the provided filters
-            StringBuilder endpoint = new StringBuilder($"{_client.BaseAddress}/drivers?");
+            var endpoint = new StringBuilder($"{_client.BaseAddress}/drivers?");
 
-            if (status != "null")
+            if (status != null && status!="all")
             {
                 endpoint.Append($"status={status}");
             }
 
             if (!string.IsNullOrEmpty(companyTin))
             {
-                if (endpoint.Length > 0)
+                if (endpoint.Length > 0 && status!=null)
                 {
-                    endpoint.Append("&");
+                    endpoint.Append('&');
                 }
                 endpoint.Append($"companyTin={companyTin}");
             }
@@ -140,12 +160,12 @@ namespace DeliveryMonitoring.Controllers
 
 
         //Used for filtering Drivers based on their CompanyTIN - starts here
-        [HttpGet("/Driver/FilterCompany/{companyTin}")]
-        public async Task<IActionResult> FilterCompany(string companyTin)
+        [HttpGet("/Drivers/FilterCompany/{companyTin}")]
+        public async Task<IActionResult> FilterCompany(string? companyTin)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
             
-            List<Driver> filteredDrivers = new List<Driver>();
+            List<Driver> filteredDrivers = new ();
 
             HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers?companyTin={companyTin}");
 
@@ -163,7 +183,7 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> LiveLocationByCompany(string companyTin)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-            string data = null;
+            string? data = null;
 
             HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers?companyTin={companyTin}");
 
@@ -176,27 +196,25 @@ namespace DeliveryMonitoring.Controllers
         //Used for fetching the driver's location regularly - ends here
 
         //Driver Details-- Starts Here
-        [HttpGet("/Driver/{phoneNumber}")]
+        [HttpGet("/driverdetail/{phoneNumber}")]
         public async Task<IActionResult> Details(string phoneNumber)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
+            {
+                return RedirectToAction("Logout", "Login");
+            }
             // Fetch order data
-            List<Order> orders = new List<Order>();
+            List<OrderDetail> orders = new ();
 
-            HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + "/orderRequests");
+            HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
 
             if (orderResponse.IsSuccessStatusCode)
             {
                 string orderData = await orderResponse.Content.ReadAsStringAsync();
-                orders = JsonConvert.DeserializeObject<List<Order>>(orderData) ?? new List<Order>();
+                orders = JsonConvert.DeserializeObject<List<OrderDetail>>(orderData) ?? new List<OrderDetail>();
 
-                //foreach (var order in orders)
-                //{
-                //    order.assignedDriverPhoneNumber = "0912918305";
-                //    order.customer.latLng.lat = 9.01123;
-                //    order.customer.latLng.lng = 38.76264;
-                //}
             }
 
             // Fetch driver data
@@ -211,13 +229,10 @@ namespace DeliveryMonitoring.Controllers
                     string data = await response.Content.ReadAsStringAsync();
                     driver = JsonConvert.DeserializeObject<Driver>(data) ?? new Driver();
 
-
-                    //if (driver.phoneNumber == "0912918305")
-                    //{
-                    //    //driver.status = "delivering";
-                    //    driver.latLng.lat = 9.0166004;
-                    //    driver.latLng.lng = 38.7631881;
-                    //}
+                    if(companyTin!= "0076217301" && companyTin!= driver.companyTin)
+                    {
+                        return NotFound();
+                    }
 
                     if (driver == null)
                     {
@@ -312,7 +327,77 @@ namespace DeliveryMonitoring.Controllers
             }
             return View(update);
         }
-        //Used for updating driver's information - ends here
+        [HttpGet("getDrivers")]
+        public async Task<IActionResult> GetAvailableDrivers()
+        {
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            string uri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
+            var _client = _httpClientFactory.CreateClient("Delivery");
+            List<Driver> drivers = new();
 
+            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress +  uri);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                drivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
+            }
+            return Ok(drivers);
+        }
+
+        //Used for updating driver's information - ends here
+        [HttpGet("/Review/{phoneNumber}")]
+        public async Task<IActionResult> DriverReview(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.Length < 2)
+                return BadRequest("Invalid phone number.");
+
+            string trimmedPhone = phoneNumber.Substring(1); // Remove first character
+
+            var reviewData = await FetchDriverReviewsAsync(1, trimmedPhone);
+
+            if (reviewData == null)
+            {
+                ViewBag.Error = "Unable to load driver reviews.";
+                return View("review",null);
+            }
+
+            return View("review",reviewData);
+        }
+
+        private async Task<DriverReview?> FetchDriverReviewsAsync(int page, string phoneNumber)
+        {
+            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+
+            var requestPayload = new
+            {
+                article = phoneNumber,
+                page
+            };
+
+            var content = new StringContent(JsonConvert.SerializeObject(requestPayload), Encoding.UTF8, "application/json");
+
+            try
+            {
+                var response = await client.PostAsync("review/get", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    // TODO: log errorContent
+                    return null;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var apiResponse = JsonConvert.DeserializeObject<HulubejeResponse<DriverReview>>(json);
+
+                return apiResponse?.Data;
+            }
+            catch (Exception ex)
+            {
+                // TODO: log ex
+                return null;
+            }
+        }
     }
 }
