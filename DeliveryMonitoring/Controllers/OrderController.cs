@@ -1,8 +1,10 @@
-﻿using DeliveryMonitoring.Models;
+﻿using CNET_ERP_V7.WebConstants;
+using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
+using System.Text;
 using static NuGet.Packaging.PackagingConstants;
 
 namespace DeliveryMonitoring.Controllers
@@ -10,12 +12,13 @@ namespace DeliveryMonitoring.Controllers
     [Authorize]
     public class OrderController : Controller
     {
+        private IHttpContextAccessor _httpContextAccessor;
         //HttpClient Setup starts here
         private readonly IHttpClientFactory _httpClientFactory;
-        public OrderController(IHttpClientFactory httpClientFactory)
+        public OrderController(IHttpClientFactory httpClientFactory , IHttpContextAccessor httpContextAccessor)
         {
             _httpClientFactory = httpClientFactory;
-            
+            _httpContextAccessor = httpContextAccessor;
         }
         //HttpClient Setup ends here
 
@@ -25,14 +28,19 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-            List<Order>? orders = new ();
+            List<OrderDetail>? orders = new ();
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
+            {
+                return RedirectToAction("Logout", "Login");
+            }
 
-            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "/orderRequests");
+            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
 
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();
-                orders = JsonConvert.DeserializeObject<List<Order>>(data);
+                orders = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
             }
             return View(orders);
         }
@@ -69,5 +77,100 @@ namespace DeliveryMonitoring.Controllers
             }
         }
         //Order Details Page -- Ends Here
+        [HttpPost]
+        public async Task<IActionResult> Dispatch([FromBody] OrderDetail order)
+        {
+            order.IsAssignedAck = false;
+            order.IsNoDriversAck = false;
+            order.OrderArrivedAckByCustomer = false;
+            order.OrderArrivedAckByDriver = false;
+            order.OrderReceiveNotification = null;
+            order.Alert = null;
+            order.DriverAssignedAt = 0;
+            if (order == null)
+                return BadRequest("Invalid order data.");
+
+            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            var jsonBody = JsonConvert.SerializeObject(order);
+            var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+            try
+            {
+                var response = await client.PostAsync("driver/dispatch", content); // dispatch
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"Redispatch failed: {error}");
+                }
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<Boolean>(responseData);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Exception: {ex.Message}");
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> AssignSupervisor([FromBody] string Vouchercode)
+        {
+            if (Vouchercode == null)
+                return BadRequest("Invalid voucher data.");
+
+            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+
+            try
+            {
+                var response = await client.GetAsync($"auth/assign?voucherCode={Vouchercode}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"Redispatch failed: {error}");
+                }
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<Boolean>(responseData);
+                return result?  Ok(result) : BadRequest("Unable To Assign Supervisor!");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Exception: {ex.Message}");
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> OrderDetails([FromBody] Order order)
+        {
+            if (order.voucherCode == null)
+                return BadRequest("Invalid voucher code.");
+
+            var _client = _httpClientFactory.CreateClient("Delivery");
+            try
+            {
+
+                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/orderRequests/{order.voucherCode?.ToString()}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"Getting Order Detail Failed!: {error}");
+                }
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<OrderDetail>(responseData);
+                var isRedespatchAble = new[] { "drivernotfound", "declined", "requested" ,"sos"}
+                    .Contains(result?.Status, StringComparer.OrdinalIgnoreCase);
+                
+                return isRedespatchAble ? Ok(isRedespatchAble) : StatusCode(500, $"Can't Redispatch");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Exception: {ex.Message}");
+            }
+        }
     }
 }
