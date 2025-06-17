@@ -1,4 +1,5 @@
-﻿using DeliveryMonitoring.Models;
+﻿using CNET_ERP_V7.WebConstants;
+using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -12,9 +13,12 @@ namespace DeliveryMonitoring.Controllers
     {
         //HttpClient Setup starts here
         private readonly IHttpClientFactory _httpClientFactory;
-        public HomeController(IHttpClientFactory httpClientFactory)
+        private IHttpContextAccessor _httpContextAccessor;
+
+        public HomeController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _httpClientFactory = httpClientFactory;
+            _httpContextAccessor = httpContextAccessor;
         }
         //HttpClient Setup ends here
 
@@ -23,6 +27,8 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
+            var _httpClient = _httpClientFactory.CreateClient("ApiBaseUrl");
+
             // Fetch driver data
             List<Driver> drivers = new();
 
@@ -36,21 +42,30 @@ namespace DeliveryMonitoring.Controllers
             }
 
             // Fetch order data
-            List<Order> orders = new List<Order>();
+            List<OrderDetail> orders = new ();
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin)) {
+                return RedirectToAction("Logout", "Login");
+            }
 
-            HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + "/orderRequests");
+            HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
 
             if (orderResponse.IsSuccessStatusCode)
             {
                 string orderData = await orderResponse.Content.ReadAsStringAsync();
-                orders = JsonConvert.DeserializeObject<List<Order>>(orderData) ?? new List<Order>();
+                orders = JsonConvert.DeserializeObject<List<OrderDetail>>(orderData) ?? new List<OrderDetail>();
             }
 
-            Companies company = null;
+            Companies company = new ();
+            var deviceControl = new List<DeviceControl>();
 
             try
             {
+                var startDate = DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd");
+                var endDate = DateTime.Today.ToString("yyyy-MM-dd");
+
                 HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/companies");
+
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -58,14 +73,26 @@ namespace DeliveryMonitoring.Controllers
                     company = JsonConvert.DeserializeObject<Companies>(data) ?? new Companies();
                 }
 
-                if (company == null)
+
+                if (companyTin!= "0076217301" && company?.companyTins?.Contains(companyTin) == true)
                 {
-                    return NotFound(); // Return a 404 Not Found response if no driver is found.
+                    company.companyTins = new List<string> { companyTin };
                 }
+                HttpResponseMessage deviceControlResponse = await _httpClient.GetAsync($"deviceControl?StartDate={startDate}&EndDate={endDate}");
+
+                if (deviceControlResponse.IsSuccessStatusCode)
+                {
+                    string data = await deviceControlResponse.Content.ReadAsStringAsync();
+                    deviceControl = JsonConvert.DeserializeObject<List<DeviceControl>>(data) ?? new List<DeviceControl>();
+                }
+                if (companyTin != "0076217301")
+                {
+                    deviceControl = deviceControl.Where(x => x.Tin.ToString() == companyTin.Trim()).ToList();
+                }
+                
             }
             catch (HttpRequestException)
             {
-                return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
 
             // Create HomeViewModel
@@ -73,7 +100,9 @@ namespace DeliveryMonitoring.Controllers
             {
                 Drivers = drivers,
                 Orders = orders,
-                Comps = company
+                Comps = company,
+                CompanyTin = companyTin,
+                DeviceControl = deviceControl
             };
 
             return View(viewModel);
