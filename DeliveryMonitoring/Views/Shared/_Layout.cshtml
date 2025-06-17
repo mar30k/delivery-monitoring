@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using CNET_ERP_V7.WebConstants
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var companyTin = HttpContextAccessor.HttpContext?.Request.Cookies["cnet.erp.v6.myId"];
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -13,8 +18,210 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <style>
+        .floating-alert {
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 700px;
+            background: rgba(255, 0, 0, 0.9); /* Semi-transparent red */
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            display: none; /* Hidden by default */
+            z-index: 1000; /* Ensures it stays on top */
+        }
+
+            .floating-alert .alert-content {
+                position: relative;
+            }
+
+            .floating-alert ul {
+                list-style: none;
+                padding: 0;
+                margin: 10px 0 0 0;
+                text-align: left;
+            }
+
+                .floating-alert ul li {
+                    margin: 5px 0;
+                    font-size: 14px;
+                }
+
+            .floating-alert a {
+                color: white;
+                font-weight: bold;
+                text-decoration: underline;
+            }
+
+            .floating-alert .close-btn {
+                position: absolute;
+                top: 5px;
+                right: 10px;
+                border: none;
+                background: transparent;
+                color: white;
+                font-size: 20px;
+                cursor: pointer;
+            }
+
+        .alerts {
+            text-decoration: none !important; /* No underline */
+            color: inherit !important; /* No color change */
+            font-weight: inherit !important; /* No font weight change */
+            background: transparent !important; /* No background change */
+            border: none !important; /* No border */
+            outline: none !important; /* No outline */
+            box-shadow: none !important; /* No shadow */
+            padding: inherit !important; /* No padding change */
+            margin: inherit !important; /* No margin change */
+        }
+
+            .alerts:hover,
+            .alerts:focus,
+            .alerts:active {
+                text-decoration: none !important;
+                color: inherit !important;
+                font-weight: inherit !important;
+                background: transparent !important;
+                border: none !important;
+                outline: none !important;
+                box-shadow: none !important;
+                padding: inherit !important;
+                margin: inherit !important;
+            }
+
+    </style>
 </head>
+
 <body>
+    <script>
+        $(document).ready(function () {
+            $('#logoutButton').click(function () {
+                // Handle logout logic here, e.g., redirect to the logout action
+                window.location.href = '/Login/Logout';
+            });
+            closeAlert();
+            fetchAlerts();
+            // Refresh alerts every 10 seconds
+            setInterval(fetchAlerts, 10000);
+        });
+                // Mock sessionStorage for testing purposes
+        // sessionStorage.setItem("displayedAlerts", JSON.stringify({
+        //     "0912492953-15478-219": "Alert 1",
+        //     "0912492953-84835-4": "Alert 2"
+        // }));
+
+        // // Simulate the fetch function to mock the API response
+        // window.fetch = function() {
+        //     return Promise.resolve({
+        //         json: function() {
+        //             return Promise.resolve([
+        //                 { voucherCode: "0912492953-15478-219", alert: "New Alert 1" },
+        //                 { voucherCode: "0912492953-84835-4", alert: "New Alert 3" },
+        //                 { voucherCode: "JKL012", alert: "" }
+        //             ]);
+        //         }
+        //     });
+        // };
+
+        var data = {};
+        async function fetchAlerts() {
+            try {
+                const response = await fetch('/getorders');
+                data = await response.json();
+                const orderCount =  document.getElementById("orderCount");
+                if(orderCount){
+                    orderCount.textContent = data.length;
+                }
+                const alertBox = document.getElementById("floating-alert");
+                const alertList = document.getElementById("alert-list");
+
+                // Retrieve previously displayed alerts from sessionStorage
+                let storedAlerts = JSON.parse(sessionStorage.getItem("displayedAlerts")) || {};
+
+                // Filter orders that have non-empty alerts
+                const filteredOrders = data.filter(order => order.alert && order.alert.trim() !== "");
+
+                // Track alerts that need to be displayed in this refresh
+                let newAlerts = {};
+                let hasNewAlerts = false;
+                filteredOrders.forEach(order => {
+                    const { voucherCode, alert } = order;
+                    // Only add if it's a completely new alert or the alert message has changed
+                    if (!storedAlerts[voucherCode] || storedAlerts[voucherCode] !== alert) {
+                        hasNewAlerts = true;
+                        newAlerts[voucherCode] = alert;
+                    }
+                });
+
+                // If there are new alerts, update the UI
+                if (hasNewAlerts) {
+                    alertList.innerHTML = ""; // Clear alert container
+
+                    for (const voucherCode in newAlerts) {
+                        const listItem = document.createElement("li");
+                        listItem.innerHTML = `<a class="alerts" style="text-decoration: none;" target="_blank" href="/order/${voucherCode}">Order ${voucherCode}: ${newAlerts[voucherCode]}</a>`;
+                        alertList.appendChild(listItem);
+                    }
+
+                    // Show the floating alert box only if there are new alerts
+                    alertBox.style.display = "block";
+                    // playAlertSound();
+
+                    // Update sessionStorage to track displayed alerts
+                    sessionStorage.setItem("displayedAlerts", JSON.stringify({ ...storedAlerts, ...newAlerts }));
+                }
+
+            } catch (error) {
+                console.error("Error fetching alerts:", error);
+            }
+        }
+
+        let alertAudio = null;
+
+        function playAlertSound(times = 4) {
+            if (alertAudio) {
+                alertAudio.pause(); // Stop any currently playing audio
+                alertAudio.currentTime = 0;
+            }
+
+            alertAudio = new Audio('/images/alarm2.mp3');
+            let count = 0;
+
+            alertAudio.addEventListener("ended", function () {
+                count++;
+                if (count < times) {
+                    alertAudio.currentTime = 0;
+                    alertAudio.play();
+                }
+            });
+
+            alertAudio.play().catch(error => console.error("Audio play failed:", error));
+        }
+
+        function closeAlert() {
+            document.getElementById("floating-alert").style.display = "none";
+
+            // Stop the audio
+            if (alertAudio) {
+                alertAudio.pause();
+                alertAudio.currentTime = 0;
+            }
+        }
+
+    </script>
+<!-- Floating Alert Box -->
+<div id="floating-alert" class="floating-alert">
+    <div class="alert-content">
+        <button type="button" class="close-btn" onclick="closeAlert()">×</button>
+        <p><i class="bi bi-exclamation-triangle-fill"></i> New Alerts</p>
+        <ul id="alert-list"></ul>
+    </div>
+</div>
 
     <!--sidebar starts here-->
     <div class="sidebar" id="mySidebar">
@@ -23,14 +230,18 @@
             <li><a href="/"><i class="bi bi-house"></i><span>Home</span></a></li>
             <li><a href="/drivers"><i class="bi bi-truck"></i><span>Drivers</span></a></li>
             <li><a href="/orders"><i class="bi bi-cart2"></i><span>Orders</span></a></li>
-            @* <li><a href="/Company/Index"><i class="bi bi-building"></i><span>Companies</span></a></li> *@            
+            <li><a href="/completedorders"><i class="bi bi-clock-history"></i><span>History</span></a></li>
+            @if (companyTin == "0076217301")
+            {
+                <li><a href="/companies"><i class="bi bi-building"></i><span>Companies</span></a></li>
+            }
+            else
+            {
+                <li><a href="/companies"><i class="bi bi-building"></i><span>Company</span></a></li>
+            }
         </ul>
     </div>
-    <!--sidebar ends here-->
-
-    <!--Main container starts here all components without the sidebar-->
     <div id="main">
-        <!--Navbar starts here-->
         <header>
             <nav class="navbar navbar-expand navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
                 <div class="container-fluid">
@@ -93,12 +304,10 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     
-    <!--this makes the sidebar responsive-->
     <script>
         var screenSize = screen.width;
         var main = document.getElementById("main");
         var sidebar = document.getElementById("mySidebar");
-        
         if (screenSize > 767) {
             sidebar.style.display = "block";
             sidebar.style.width = "15%";
@@ -122,15 +331,7 @@
             }
         }
     </script>
-    <!--sidebar responsiveness ends here-->
     
-    <script>
-        $(document).ready(function () {
-            $('#logoutButton').click(function () {
-                // Handle logout logic here, e.g., redirect to the logout action
-                window.location.href = '/Login/Logout';
-            });
-        });
-    </script>
+    
 </body>
 </html>
