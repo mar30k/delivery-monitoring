@@ -33,37 +33,139 @@
 }
 <body>
     <div class="container-fluid pt-5 col-9">
-        <div class="card row">
-            <div class="row pt-3 pb-3">
-                @* <h4><i class="bi bi-building icon"></i>Company</h4> *@
-                <div class="col-12 col-lg-6">
-                    <img src="@Model.attachments[0]" alt="company logo">
+        <div class="card">
+            <div class="card-header bg-dark pb-0">
+                <h4 class="text-white"><i class="bi bi-building icon "></i> Company Profile</h4>
+            </div>
+            <div class="row p-4">
+                <div class="col-12 col-lg-4 d-flex justify-content-center align-items-center">
+                    <img src="@Model?.Logo" alt="Company Logo" class="img-fluid rounded shadow-sm" style="max-height: 150px;">
                 </div>
-                <div class="col-12 col-lg-6 d-flex flex-column justify-content-center">
-                    <div>
-                        <span id="letters">Name:</span>
-                        <span id="outputs">@Html.DisplayFor(model => model.brandName)</span>
-                    </div>                    
-                    <div>
-                        <span id="letters">Rating:</span>
-                        <span id="outputs">
-                            @Html.Raw(GetStarRating(Model.rating))
-                        </span>
+                <div class="col-12 col-lg-8">
+                    <div class="mb-2">
+                        <span class="fw-bold">Name:</span>
+                        <span>@Html.DisplayFor(model => model.BrandName)</span>
                     </div>
-                    <div>
-                        <span id="letters">Reviews:</span>
-                        <span id="outputs">@Html.DisplayFor(model => model.ratingCount)</span>
+                    <div class="mb-2">
+                        <span class="fw-bold">Description:</span>
+                        <p>@Html.DisplayFor(model => model.Description)</p>
                     </div>
-                    <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.tin):</span>
-                        <span id="outputs">@Html.DisplayFor(model => model.tin)</span>
-                    </div>                   
-                </div>               
-            </div>                       
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="mb-2">
+                                <span class="fw-bold">Rating:</span>
+                                <span class="text-warning">@Html.Raw(GetStarRating(Model.Rating))</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-2">
+                                <span class="fw-bold">@Html.DisplayNameFor(model => model.Tin):</span>
+                                <span>@Html.DisplayFor(model => model.Tin)</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="mb-2">
+                                <span class="fw-bold">Number of Branches:</span>
+                                <span>@Model?.Branches?.Count()</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+        @if (Model?.Branches != null && Model.Branches.Any())
+        {
+            <div class="mt-4">
+                <h4><i class="bi bi-geo-alt icon"></i> Branches</h4>
+                <div class="row">
+                    @foreach (var branch in Model.Branches)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card mb-3 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">@branch.Name</h5>
+                                    @if (!string.IsNullOrEmpty(branch.City))
+                                    {
+                                        <strong>City:</strong> @branch.City <br>
+                                    }
+                                    <strong>Star Rating:</strong>
+                                    <span class="text-warning">@Html.Raw(GetStarRating(branch.StarRating))</span> <br>
+                                    @if (!string.IsNullOrEmpty(branch.Description))
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#descriptionModal">
+                                            View Description
+                                        </button>
+                                    }
+                                    <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="descriptionModalLabel">Description</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                                                    @if (!string.IsNullOrEmpty(branch.Description))
+                                                    {
+                                                        <strong>Description:</strong>
+                                                        @Html.Raw(branch.Description?.Replace("\r\n", "<br>").Replace("\n", "<br>"))
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @if (branch.Latitude != 0 && branch.Longitude != 0)
+                                    {
+                                        <a href="https://www.google.com/maps?q=@branch.Latitude,@branch.Longitude" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            View on Map
+                                        </a>
+                                    }
+                                    <hr>
+                                    @if (!string.IsNullOrEmpty(branch.Phone1) || !string.IsNullOrEmpty(branch.Phone2))
+                                    {
+                                        <p><strong>Phone:</strong> @branch.Phone1 @if (!string.IsNullOrEmpty(branch.Phone2))
+                                            {
+                                                <span> | @branch.Phone2</span>
+                                            }</p>
+                                    }
+                                    @if (!string.IsNullOrEmpty(branch.Email))
+                                    {
+                                        <p><strong>Email:</strong> <a href="mailto:@branch.Email">@branch.Email</a></p>
+                                    }
+                                    @if (!string.IsNullOrEmpty(branch.Website))
+                                    {
+                                        <p><strong>Website:</strong> <a href="@branch.Website" target="_blank">@branch.Website</a></p>
+                                    }
+                                    @if (!string.IsNullOrEmpty(branch.TermsAndConditionsUrl))
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#termsModal">
+                                            Terms & Conditions
+                                        </button>
+                                    }
+                                    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <!-- "modal-lg" makes it wider -->
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Terms & Conditions</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                                                    @Html.Raw(branch.TermsAndConditionsUrl?.Replace("\r\n", "<br>").Replace("\n", "<br>"))
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
         <div class="pt-3">
             <a class="btn btn-outline-dark" asp-action="Index">Back to List</a>
         </div>
+        <!-- Modal for Terms & Conditions (Centered & Wider) -->
         
     </div>
 </body>
