@@ -1,89 +1,253 @@
-﻿@model IEnumerable<DeliveryMonitoring.Models.Order>
+﻿@model List<DeliveryMonitoring.Models.OrderDetail>
 
 @{
     ViewData["Title"] = "List of Orders";
+    var disTinctSupervisors = Model.DistinctBy(x => x.SupervisedBy).Where(x=> x.SupervisedBy!= null).ToList();
 }
 <div class="container-fluid col-11 pt-5">
-    <h3>List of Orders</h3>
+    <div id="alertContainer" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1050; width: auto;"></div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">List of Orders</h3>
+        <div class="d-flex align-items-center">
+            <label for="supervisorSelect" class="form-label mb-0 me-2 fw-semibold">Supervisor:</label>
+            <select id="supervisorSelect" class="form-select form-select-sm" style="width: auto; min-width: 200px;">
+                <option value="" selected>All Supervisors</option>
+                @foreach (var supervisor in disTinctSupervisors)
+                {
+                    <option value="@supervisor.SupervisedBy">@supervisor.SupervisedBy</option>
+                }
+            </select>
+        </div>
+    </div>
+
     <div class="row card">
         <div class="table-responsive pt-3 pb-3">
             <table class="table compact stripe hover pt-3" id="tablelist">
                 <thead class="">
-                    <tr>
+                    <tr style="font-size: 13px;">
                         <th>
-                            @Html.DisplayNameFor(model => model.requestCreatedAt)
+                            Order Number
                         </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.status)
+                        <th class="text-center">
+                            Customer
                         </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.assignedDriverPhoneNumber)
+                        <th class="text-center">
+                            Phone Number
                         </th>                       
-                        <th>
-                            @Html.DisplayNameFor(model => model.customer.firstName)
+                        <th class="text-center">
+                            Specific Adresss
                         </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.customer.geocodeAddress)
+                        <th class="text-center">
+                            Order DateTime
                         </th>
-                        <th>
-                            @Html.DisplayNameFor(model => model.customer.phoneNumber)
+                        <th class="text-center">
+                            Status
                         </th>                                                                 
-                        <th>
-                            @Html.DisplayNameFor(model => model.voucherCode)
+                        <th class="text-center">
+                            Driver
                         </th>
-                        <th>Order Details</th>
+                        <th class="text-center">
+                            Supervisor
+                        </th>
+                        <th class="text-center">
+                            Total
+                        </th>
+                        <th style="text-align: center;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td>
-                                @DateTimeOffset.FromUnixTimeMilliseconds(item.requestCreatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.status)
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.assignedDriverPhoneNumber)
-                            </td>
-                            <td>
-                                @(item.customer?.firstName ?? "N/A")
-                            </td>
-                            <td>
-                                @(item.customer != null ? $"{item.customer.geocodeAddress} - {item.customer.specificAddress}" : "N/A")
-                            </td>
-                            <td>
-                                @(item.customer?.phoneNumber ?? "N/A")
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.voucherCode)
-                            </td>
-                            <td>
-                                <a class="btn btn-outline-dark" href="/order/@item.voucherCode">Details</a>
-                            </td>
-                        </tr>
-                    }
+                    @{
 
+                        var statusColors = new Dictionary<string, string>
+                        {
+                            { "requested", "deepskyblue" },
+                            { "assigned", "lawngreen" },
+                            { "declined", "red" },
+                            { "accepted", "seagreen" },
+                            { "arrived", "coral" },
+                            { "ontheway", "darkorange" },
+                            { "drivernotfound", "red" },
+                            { "sos", "darkred" },
+                            { "default", "yellow" }
+                        };
+                        var voucher = "0939977886-111428-646";
+                        var testOrder = new OrderDetail
+                        {
+                            AssignedDriverPhoneNumber = "0912345678",
+                            BranchName = "Main Branch",
+                            CompanyCode = 101,
+                            CompanyName = "Test Company",
+                            CompanyTin = "123456789",
+                            SosReason = "",
+                            Customer = new CustomerDetail
+                            {
+                                FirstName = "John",
+                                PhoneNumber = "0910000000",
+                                GeocodeAddress = "123 Test St",
+                                SpecificAddress = "Apt 5B",
+                                DeviceID = "DEVICE123",
+                                LatLng = new Location
+                                {
+                                    Lat = 9.145,
+                                    Lng = 40.4897
+                                }
+                            },
+                            DriverAssignedAt = DateTimeOffset.Now.ToUnixTimeMilliseconds(),
+                            IsAssignedAck = false,
+                            IsNoDriversAck = false,
+                            OrderArrivedAckByCustomer = false,
+                            OrderArrivedAckByDriver = false,
+                            RequestCreatedAt = DateTimeOffset.Now.ToUnixTimeMilliseconds(),
+                            RequestCreatedAtIso = DateTime.Now,
+                            Status = "DriverNotFound",
+                            VoucherCode = "TEST123",
+                            Platform = "Web",
+                            TargetBranchLocation = new Location
+                            {
+                                Lat = 9.034,
+                                Lng = 38.746
+                            }
+                        };
+
+                        var testJsonOrder = System.Text.Json.JsonSerializer.Serialize(testOrder, new System.Text.Json.JsonSerializerOptions
+                        {
+                            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                            WriteIndented = false
+                        });
+                        foreach (var order in Model)
+                        {
+                            var statusKey = order?.Status?.ToLower() ?? "default"; 
+                            var bgColor = statusColors.ContainsKey(statusKey)?  statusColors[statusKey] : statusColors["default"];
+
+                            <tr data-voucher="@order?.VoucherCode" data-supervisor="@order?.SupervisedBy" style="font-size: 13px;">
+                                <td>
+                                    @order?.VoucherCode
+                                </td>
+                                <td class="text-center">
+                                    @(order?.Customer?.FirstName ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    <a href="tel:@order?.Customer?.PhoneNumber">
+                                        @(order?.Customer?.PhoneNumber ?? "N/A")
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    @(order?.Customer != null ? $"{order.Customer.GeocodeAddress} - {order.Customer.SpecificAddress}" : "N/A")
+                                </td>
+
+                                <td data-order="@order?.RequestCreatedAt" data-iso="@order?.RequestCreatedAtIso.ToString("yyyy-MM-dd hh:mm:ss")" class="text-center" >
+                                    @order?.RequestCreatedAtIso.ToString("yyyy-MM-dd hh:mm:ss")
+                                </td>
+                                <td class="status-cell text-center @(bgColor == "lawngreen" || bgColor == "yellow" ? "text-black" : "text-white")" style="background: @bgColor">
+                                    @order?.Status
+                                </td>
+                                <td class="driver-cell text-center" >
+                                    @if (!string.IsNullOrWhiteSpace(order?.AssignedDriverPhoneNumber))
+                                    {
+                                        <a href="tel:@order.AssignedDriverPhoneNumber">@order.AssignedDriverPhoneNumber</a>
+                                    }
+                                    else
+                                    {
+                                        @:N/A
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (order?.SupervisedBy == null)
+                                    {
+                                        <a class="btn btn-outline-dark btn-sm" onclick="assiignSupervisor('@order?.VoucherCode')">Assign</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="tel: @order?.SupervisedBy">@order?.SupervisedBy</a>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @order?.GrandTotal
+                                </td>
+
+
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <div style="display: inline-block;">
+                                        <a class="btn btn-outline-dark btn-sm" href="/order/@order?.VoucherCode">Details</a>
+
+                                        @if (order?.Status?.ToLower() == "drivernotfound" || order?.Status?.ToLower() == "declined" || order?.Status?.ToLower() == "requested" || order?.Status?.ToLower() == "sos")
+                                        {
+                                            order.Status = "requested";
+                                            order.IsAssignedAck = false;
+                                            order.IsNoDriversAck = false;
+                                            order.OrderArrivedAckByCustomer = false;
+                                            order.OrderArrivedAckByDriver = false;
+                                            order.OrderReceiveNotification = null;
+                                            order.Alert = null;
+                                            order.DriverAssignedAt = 0;
+                                            var jsonOrder = System.Text.Json.JsonSerializer.Serialize(order, new System.Text.Json.JsonSerializerOptions
+                                            {
+                                                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                                                WriteIndented = false
+                                            });
+                                            <a class="btn btn-outline-dark btn-sm"
+                                               data-order='@Html.Raw(jsonOrder)'
+                                               onclick="openRedispatchModal(this)">
+                                                Redispatch
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                                
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
+@*             <a class="btn btn-outline-dark"
+               data-order='@Html.Raw(testJsonOrder)'
+               onclick="openRedispatchModal(this)">
+                Redispatch
+                </a>  <a class="btn btn-outline-dark btn-sm" onclick="assiignSupervisor('@voucher')">Assign</a> *@
+           
         </div>
-        
-        
-    </div>
-    
 
+        <!-- Re-dispatch Modal -->
+        <div class="modal fade" id="reDispatchModal" tabindex="-1" aria-labelledby="reDispatchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content shadow">
+                    <div class="modal-header bg-secondary text-white">
+                        <h5 class="modal-title" id="reDispatchModalLabel">Re-dispatch Order <span id="voucherCodeLabel" class="text-warning fw-normal"></span></h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p class="mb-3 text-muted">Choose how you want to re-dispatch the order:</p>
+
+                        <button class="btn btn-outline-primary w-100 mb-3" onclick="confirmRedispatchToAll()">
+                            🔄 Re-dispatch to All Available Drivers
+                        </button>
+
+                        <hr class="my-3">
+
+                        <label for="driverSelect" class="form-label fw-bold">Or select a specific driver:</label>
+                        <select id="driverSelect" class="form-select mb-3">
+                            <option value="" selected disabled>Loading drivers...</option>
+                        </select>
+
+                        <button class="btn btn-outline-success w-100 mt-2" onclick="confirmRedispatchToDriver()">
+                            ✅ Dispatch to Selected Driver
+                        </button>
+                        <div id="dispatchLoading" class="text-center mt-4 d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Dispatching...</span>
+                            </div>
+                            <p class="text-muted mt-2">Processing dispatch...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
-    <script>
-        var js = jQuery.noConflict(true);
-        js(document).ready(function () {
-            js('#tablelist').DataTable({
-                responsive: true
-            });
-        });
-    </script>
-
-</div>
-
+    <script src="~/js/orders.js"></script>
+}
