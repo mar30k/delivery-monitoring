@@ -1,11 +1,13 @@
-﻿using System.Security.Claims;
-using CNET_ERP_V7.WebConstants;
+﻿using CNET_ERP_V7.WebConstants;
 using CNET_V7_Domain.Domain.SecuritySchema;
 using CNET_V7_Domain.Misc;
 using DeliveryMonitoring.Models;
+using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NuGet.Protocol.Plugins;
+using System.Security.Claims;
 
 
 namespace DeliveryMonitoring.Controllers
@@ -28,7 +30,13 @@ namespace DeliveryMonitoring.Controllers
 
         public async Task<ResponseModel<LoginResponse>> AuthenticateUser(string userName, string password)
         {
-            var _client = _httpClientFactory.CreateClient("DeliveryLogin");
+            var apibaseAddress = _httpContextAccessor.HttpContext?.Request.Cookies["apibaseAddress"];
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+
+            var _client = new HttpClient
+            {
+                BaseAddress = new Uri(apibaseAddress)
+            };
             var _s = new ResponseModel<LoginResponse>();
             if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
             {
@@ -38,7 +46,7 @@ namespace DeliveryMonitoring.Controllers
             else
             {
                 var endpoint = "/SysInitialize/authenticate";
-                string queryString = $"?userName={userName}&password={password}&tin=0076217301";
+                string queryString = $"?userName={userName}&password={password}&tin={companyTin}";
                 string requestUrl = $"{endpoint}{queryString}";
 
                 HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + requestUrl);
@@ -54,6 +62,21 @@ namespace DeliveryMonitoring.Controllers
                 else
                     return userValidation;
             }
+        }
+        public async Task<List<EntityModel>> CheckMyId()
+        {
+            var _client = _httpClientFactory.CreateClient("DeliveryLogin");
+            string requestUrl = $"/Consignee/filter?gslType=1";
+
+            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + requestUrl);
+            var userValidation = new List<EntityModel>();
+
+            if (response.IsSuccessStatusCode)
+            {
+                string juservalidation = await response.Content.ReadAsStringAsync();
+                userValidation = JsonConvert.DeserializeObject<List<EntityModel>>(juservalidation);
+            }
+            return userValidation ?? new List<EntityModel>();
         }
 
         public virtual async void SignIn(UserDTO user, bool isPersistent)
@@ -110,8 +133,34 @@ namespace DeliveryMonitoring.Controllers
         {
             //reset cached customer
             _cachedUser = null;
+            var context = _httpContextAccessor.HttpContext;
             //and sign out from the current authentication scheme
-            await _httpContextAccessor.HttpContext.SignOutAsync(CNET_WebConstantes.CookieScheme);
+            await context.SignOutAsync(CNET_WebConstantes.CookieScheme);
+            context.Response.Cookies.Delete(CNET_WebConstantes.IdentificationCookie);
+            context.Response.Cookies.Delete("apibaseAddress");
+            var user = _httpContextAccessor.HttpContext?.User;
+            OnlineStatus(false, user?.Identity?.Name);
+        }
+
+        public async void OnlineStatus(bool isOnline, string phoneNumber)
+        {
+            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+
+            try
+            {
+                var response = await client.GetAsync($"auth/status?code={phoneNumber}&online={isOnline}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                }
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<Boolean>(responseData);
+            }
+            catch (Exception ex)
+            {
+            }
         }
     }
 }
