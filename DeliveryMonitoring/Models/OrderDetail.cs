@@ -4,106 +4,197 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Humanizer;
+using System.ComponentModel;
 
 namespace DeliveryMonitoring.Models
 {
+
     public class OrderDetail
     {
-        [Display(Name = "Driver Phone Number")]
-        public string assignedDriverPhoneNumber { get; set; } = string.Empty;
+        [DisplayName("Driver Phone Number")]
+        public string? AssignedDriverPhoneNumber { get; set; }
 
-        [Display(Name = "Branch Name")]
-        public string branchName { get; set; }
+        [DisplayName("Branch Name")]
+        public string? BranchName { get; set; }
 
-        [Display(Name = "Company Code")]
-        public long companyCode { get; set; }
+        [DisplayName("Company Code")]
+        public int? CompanyCode { get; set; }
 
-        [Display(Name = "Company Name")]
-        public string companyName { get; set; }
+        [DisplayName("Company Name")]
+        public string? CompanyName { get; set; }
 
-        [Display(Name = "Company TIN")]
-        public string companyTin { get; set; }
+        [DisplayName("Company TIN")]
+        public string? CompanyTin { get; set; }
+        [DisplayName("Delivery TIN")]
+        public string? DeliveryTin { get; set; }
+        public string? SupervisedBy { get; set; }
+        public string? SosReason { get; set; }
+        public string? GrandTotal { get; set; }
 
-        [Display(Name = "Customer")]
-        public Customer customer { get; set; }
+        [DisplayName("Customer")]
+        public CustomerDetail? Customer { get; set; }
 
-        [Display(Name = "Except Drivers")]
-        public List<string> exceptDrivers { get; set; }
+        [DisplayName("Driver Assigned At")]
+        public long? DriverAssignedAt { get; set; }
 
-        [Display(Name = "Driver Assigned Acknowledged")]
-        public bool isAssignedAck { get; set; }
+        [DisplayName("Is Assigned Acknowledged")]
+        public bool? IsAssignedAck { get; set; }
 
-        [Display(Name = "No Driver Acknowledged")]
-        public bool isNoDriversAck { get; set; }
+        [DisplayName("Is No Drivers Acknowledged")]
+        public bool? IsNoDriversAck { get; set; }
 
-        [Display(Name = "Order Arrived Acknowledged by Customer")]
-        public bool orderArrivedAckByCustomer { get; set; }
+        [DisplayName("Order Arrived Ack by Customer")]
+        public bool? OrderArrivedAckByCustomer { get; set; }
 
-        [Display(Name = "Order Arrived Acknowledged by Driver")]
-        public bool orderArrivedAckByDriver { get; set; }
+        [DisplayName("Order Arrived Ack by Driver")]
+        public bool? OrderArrivedAckByDriver { get; set; }
+        public string? Platform { get; set; }
 
-        [Display(Name = "Request Created At")]
-        public long requestCreatedAt { get; set; }
+        [DisplayName("Request Created At")]
+        public long RequestCreatedAt { get; set; }
+        public DateTime RequestCreatedAtIso { get; set; }
 
-        [Display(Name = "Status")]
-        public string status { get; set; }
+        [DisplayName("Status")]
+        public string? Status { get; set; }
 
-        public latLng targetBranchLocation { get; set; }
+        [DisplayName("Target Branch Location")]
+        public Location? TargetBranchLocation { get; set; }
 
-        [Display(Name = "Voucher Code")]
-        public string voucherCode { get; set; }
+        [DisplayName("Voucher Code")]
+        public string? VoucherCode { get; set; }
+        public string? Alert { get; set; }
 
-        [Display(Name = "Item Name")]
-        public LineItemsDetail lineItemsDetail { get; set; }
+        [DisplayName("Line Items Detail")]
+        public LineItemsDetail? LineItemsDetail { get; set; }
 
-        [Display(Name = "Item Name")]
-        public List<Activities> activities { get; set; }
+        [DisplayName("Activities")]
+        public Activities? Activities { get; set; }
+        public DateTime? OrderAcceptedNotification { get; set; }
+        public DateTime? OrderReceiveNotification { get; set; }
+        public string[]? ExceptDrivers { get; set; } = Array.Empty<string>();
+    }
+
+    public class CustomerDetail
+    {
+        [DisplayName("Device ID")]
+        public string? DeviceID { get; set; }
+
+        [DisplayName("First Name")]
+        public string? FirstName { get; set; }
+
+        [DisplayName("Geocode Address")]
+        public string? GeocodeAddress { get; set; }
+
+        [DisplayName("LatLng")]
+        public Location? LatLng { get; set; }
+
+        [DisplayName("Phone Number")]
+        public string? PhoneNumber { get; set; }
+
+        [DisplayName("Specific Address")]
+        public string? SpecificAddress { get; set; }
+    }
+
+    public class Location
+    {
+        [DisplayName("Latitude")]
+        public double? Lat { get; set; }
+
+        [DisplayName("Longitude")]
+        public double? Lng { get; set; }
     }
 
     public class LineItemsDetail
     {
-        public List<LineItems> lineItems { get; set; }
-        public Dictionary<string, double> extraCharge { get; set; }
-        public double grandTotal { get; set; }
-        public ExtraInformation extraInformation { get; set; }
-        public ExtraData extraData { get; set; }
+        [DisplayName("Line Items")]
+        public List<LineItem>? LineItems { get; set; }
+
+        [DisplayName("Extra Charge")]
+        public Dictionary<string, decimal>? ExtraCharge { get; set; }
+
+        [DisplayName("Grand Total")]
+        public decimal? GrandTotal { get; set; }
+
+        [DisplayName("Extra Information")]
+        public Dictionary<string, object>? ExtraInformation { get; set; }
+
+        [DisplayName("Extra Data")]
+        public ExtraData? ExtraData { get; set; }
+
+        [DisplayName("Issued Date")]
+        public DateTime? IssuedDate { get; set; }
+
+        [DisplayName("Branch Code")]
+        public int? BranchCode { get; set; }
+
+        [DisplayName("Promo Detail")]
+        public string? PromoDetail { get; set; }
+
+        [DisplayName("Phone Number")]
+        public string? PhoneNumber { get; set; }
+
+        [DisplayName("Company Name")]
+        public string? CompanyName { get; set; }
+
+        [DisplayName("Voucher Code")]
+        public string? VoucherCode { get; set; }
     }
-    public class LineItems
+
+    public class LineItem
     {
-        [Display(Name = "Article")]
-        public int article { get; set; }
+        [DisplayName("Article")]
+        public int? Article { get; set; }
 
-        [Display(Name = "Name")]
-        public string name { get; set; }
+        [DisplayName("Name")]
+        public string? Name { get; set; }
 
-        [Display(Name = "Unit Amount")]
-        public double unitAmount { get; set; }
+        [DisplayName("Unit Amount")]
+        public decimal? UnitAmount { get; set; }
 
-        [Display(Name = "Quantity")]
-        public int quantity { get; set; }
+        [DisplayName("Quantity")]
+        public int? Quantity { get; set; }
 
-        [Display(Name = "Taxable Amount")]
-        public double taxableAmount { get; set; }
+        [DisplayName("Taxable Amount")]
+        public decimal? TaxableAmount { get; set; }
     }
-    //public class ExtraCharge
-    //{
-    //    [JsonPropertyName("TXBL 1")]
-    //    public double TXBL1 { get; set; }
-    //    [JsonPropertyName("TAX1 15%")]
-    //    public double TAX115 { get; set; }
-    //}
-    public class ExtraInformation
-    {
 
-    }
     public class ExtraData
     {
-        public int voucherId { get; set; }
-        public string tin { get; set; }
+        [DisplayName("Voucher ID")]
+        public int? VoucherId { get; set; }
+
+        [DisplayName("TIN")]
+        public string? Tin { get; set; }
     }
+
     public class Activities
     {
-        public string name { get; set; }
-        public DateTime time { get; set; }
+        [DisplayName("Start Time")]
+        public DateTime? StartTime { get; set; }
+
+        [DisplayName("Current Time")]
+        public DateTime? CurrentTime { get; set; }
+
+        [DisplayName("Expected Time Of Arrival")]
+        public DateTime? Eta { get; set; }
+
+        [DisplayName("Actual Arrival Time")]
+        public DateTime? ActualArrival { get; set; }
+
+        [DisplayName("Alert")]
+        public string? Alert { get; set; }
+
+        [DisplayName("Activity Response")]
+        public List<ActivityResponse>? ActivityResponse { get; set; }
+    }
+
+    public class ActivityResponse
+    {
+        [DisplayName("Name")]
+        public string? Name { get; set; }
+
+        [DisplayName("Time")]
+        public DateTime? Time { get; set; }
+        public string? TimeElapsed { get; set; }
     }
 }
