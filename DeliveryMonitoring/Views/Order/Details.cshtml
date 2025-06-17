@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Order Details";
-    var phoneNumber = Model.assignedDriverPhoneNumber;
+    var phoneNumber = Model.AssignedDriverPhoneNumber;
 }
 <!-- Add this line to include the custom CSS -->
 <link rel="stylesheet" href="~/css/orderDetail.css" />
@@ -15,72 +15,74 @@
         <div class="row">
             <div class="col-11 col-md-6" id="orderDetail">
                 <div>
-                    <span><strong>@Html.DisplayNameFor(model => model.voucherCode):</strong></span>
-                    <span><strong>@Html.DisplayFor(model => model.voucherCode)</strong></span>
+                    <span><strong>@Html.DisplayNameFor(model => model.VoucherCode):</strong></span>
+                    <span>@Html.DisplayFor(model => model.VoucherCode)</span>
                 </div>
                 <div>
-                    @DateTimeOffset.FromUnixTimeMilliseconds(Model.requestCreatedAt).DateTime.ToString("HH:mm:ss - ddd, MMMM dd, yyyy")
+                    <span><strong>@Html.DisplayNameFor(model => model.Activities.Eta):</strong></span>
+                    <span>@(Model?.Activities?.Eta?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
                 </div>
+                <div>
+                    <span><strong>@Html.DisplayNameFor(model => model.Activities.ActualArrival):</strong></span>
+                    <span>@(Model?.Activities?.ActualArrival?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
+                </div>
+                
                 <div class="d-flex d-inline-block">
                     <div>
                         @{
-                            if (Model.status == "requested")
+                            var statusColors = new Dictionary<string, string>
                             {
-                                <div style="background-color: deepskyblue;
-                                                                                                        border-radius: 20px;
-                                                                                                        color: black;
-                                                                                                        display: inline-block;
-                                                                                                        padding: 5px 5px;">
-                                    <strong>@Html.DisplayFor(model => model.status)</strong>
-                                </div>
-                            }
-                            else if (Model.status == "assigned")
+                                { "requested", "deepskyblue" },
+                                { "assigned", "lawngreen" },
+                                { "declined", "red" },
+                                { "accepted", "seagreen" },
+                                { "arrived", "coral" },
+                                { "ontheway", "darkorange" },
+                                { "driverNotFound", "red" },
+                                { "sos", "darkred" },
+                                { "default", "yellow" }
+                            };
+                            var bgColor = statusColors.ContainsKey(Model?.Status ?? "") ? statusColors[Model?.Status ?? ""] : statusColors["default"];
+                        }
+                        <div>
+                            <div style="background-color: @bgColor;
+                                border-radius: 10px;
+                                color: @(bgColor == "red" || bgColor == "green" ? "white" : "black");
+                                display: inline-block;
+                                padding: 5px 5px;">
+                                <strong>@Html.DisplayFor(model => model.Status) </strong>
+                            </div>
+                            <span class="text-info bg-aqua">@(Model?.Status == "sos" && Model.SosReason != null ? $"{Model.SosReason}" : "")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-5 d-flex justify-content-end">
+                <div class="d-flex align-items-end flex-column">
+                    <div class="mb-1"> 
+                        <span><strong>@DateTimeOffset.FromUnixTimeMilliseconds(Model.RequestCreatedAt).LocalDateTime.ToString(" ddd, MMMM dd, yyyy- hh:mm:ss tt")</strong></span>
+                    </div>
+                    <div>
+                        @{
+                            if (phoneNumber != null && phoneNumber.Length < 10)
                             {
-                                <div style="background-color: lawngreen;
-                                                                                                            border-radius: 20px;
-                                                                                                            color: black;
-                                                                                                            display: inline-block;
-                                                                                                            padding: 5px 5px;">
-                                    <strong>@Html.DisplayFor(model => model.status)</strong>
+                                <div style="background-color: red;
+                                    border-radius: 20px;
+                                    color: black;
+                                    display: inline-block;
+                                    padding: 5px 5px;">
+                                    <strong>Driver Phone Not Available</strong>
                                 </div>
                             }
                             else
                             {
-                                <div style="background-color: yellow;
-                                                                                                                border-radius: 20px;
-                                                                                                                color: black;
-                                                                                                                display: inline-block;
-                                                                                                                padding: 5px 5px;">
-                                    <strong>@Html.DisplayFor(model => model.status)</strong>
-                                </div>
+                                <a class="btn btn-dark" href="/driverdetail/@phoneNumber">Check Order Status</a>
                             }
                         }
                     </div>
                 </div>
             </div>
-
-            <div class="pt-3 col-12 col-md-5 d-flex justify-content-end">
-                <div>
-                    @{
-                        if (phoneNumber != null && phoneNumber.Length < 10)
-                        {
-                            <div style="background-color: red;
-                                                                                                    border-radius: 20px;
-                                                                                                    color: black;
-                                                                                                    display: inline-block;
-                                                                                                    padding: 5px 5px;">
-                                <strong>Driver Not Assigned</strong>
-                            </div>
-                        }
-                        else
-                        {
-                            <a class="btn btn-dark" href="/driver/@phoneNumber">Check Order Status</a>
-                        }
-                    }
-                </div>
-            </div>
         </div>
-        <br />
         <br />
 
         <div class="row">
@@ -90,18 +92,18 @@
                 <h4><i class="bi bi-person-circle icon"></i>Customer</h4>
                 <div>
                     <span id="letters">Name:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.customer.firstName)</span>
+                    <span id="outputs">@Html.DisplayFor(model => model.Customer.FirstName)</span>
                 </div>
                 <div>
                     <span id="letters">Address:</span>
                     <span id="outputs">
-                        @Html.DisplayFor(model => model.customer.geocodeAddress) -
-                        @Html.DisplayFor(model => model.customer.specificAddress)
+                        @Html.DisplayFor(model => model.Customer.GeocodeAddress) -
+                        @Html.DisplayFor(model => model.Customer.SpecificAddress)
                     </span>
                 </div>
                 <div>
                     <span id="letters">Phone:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.customer.phoneNumber)</span>
+                    <span id="outputs">@Html.DisplayFor(model => model.Customer.PhoneNumber)</span>
                 </div>
                 @* <div>
                 <span id="letters">Device ID:</span>
@@ -114,17 +116,17 @@
                 <h4><i class="bi bi-building icon"></i>Company</h4>
                 <div>
                     <span id="letters">Branch:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.branchName)</span>
+                    <span id="outputs">@Html.DisplayFor(model => model.BranchName)</span>
                 </div>
                 <div>
                     <span id="letters">Name:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.companyName)</span>
+                    <span id="outputs">@Html.DisplayFor(model => model.CompanyName)</span>
                 </div>
                 <div>
                     <span id="letters">TIN:</span>
                     <span id="outputs">
                         @* <a asp-controller="Company" asp-action="Details" asp-route-id="@Model.companyTin">@Html.DisplayFor(model => model.companyTin)</a> *@
-                        <a>@Html.DisplayFor(model => model.companyTin)</a>
+                        <a>@Html.DisplayFor(model => model.CompanyTin)</a>
                     </span>
                 </div>
             </div>
@@ -135,7 +137,7 @@
                 <div>
                     <span id="letters">Phone:</span>
                     <span id="outputs">
-                        @Html.DisplayFor(model => model.assignedDriverPhoneNumber)
+                        @Html.DisplayFor(model => model.AssignedDriverPhoneNumber)
                     </span>
                 </div>
             </div>
@@ -162,24 +164,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.lineItemsDetail.lineItems)
+                    @foreach (var item in Model?.LineItemsDetail?.LineItems ?? new List<LineItem>())
                     {
                         <tr>
                             <td>
-                                @Html.DisplayFor(modelItem => item.name)
+                                @Html.DisplayFor(modelItem => item.Name)
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.quantity)
+                                @Html.DisplayFor(modelItem => item.Quantity)
                             </td>
                             <td>
-                                @String.Format("{0:F2} ETB", item.unitAmount)
+                                @String.Format("{0:F2} ETB", item.UnitAmount)
                             </td>
                             <td>
-                                @String.Format("{0:F2} ETB", item.taxableAmount)
+                                @String.Format("{0:F2} ETB", item.TaxableAmount)
                             </td>
                         </tr>
                     }
-                    @foreach (var charge in Model.lineItemsDetail.extraCharge)
+                    @foreach (var charge in Model?.LineItemsDetail?.ExtraCharge ?? new Dictionary<string, decimal>())
                     {
                         <tr>
                             <td>
@@ -203,7 +205,7 @@
                         <td>
                         </td>
                         <td>
-                            <h4><b>@String.Format("{0:F2} ETB", Model.lineItemsDetail.grandTotal)</b></h4>
+                            <h4><b>@String.Format("{0:F2} ETB", Model?.LineItemsDetail?.GrandTotal)</b></h4>
                         </td>
                     </tr>
                 </tbody>
@@ -214,7 +216,7 @@
 </div>
 <div class="uk-container uk-padding">
     <div class="uk-timeline">
-        @foreach (var activity in Model.activities)
+        @foreach (var activity in Model?.Activities?.ActivityResponse ?? new List<ActivityResponse>())
         {
             <div class="uk-timeline-item">
                 <div class="uk-timeline-icon">
@@ -224,14 +226,67 @@
                     <div class="uk-card uk-card-default uk-margin-medium-bottom uk-overflow-auto">
                         <div class="uk-card-header">
                             <div class="uk-grid-small uk-flex-middle" uk-grid>
-                                <p class="uk-card-title"><time datetime="2020-07-08">@activity.time</time></p>
-                                <span class="uk-label uk-label-success uk-margin-auto-left">@activity.name</span>
+
+                                <!-- Column 1: Date and Time -->
+                                <div class="uk-width-1-3">
+                                    <p class="uk-card-title uk-margin-remove-bottom">
+                                        <time datetime="@activity?.Time?.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                            @activity?.Time?.ToString("ddd MMM, dd yyyy hh:mm:ss tt")
+                                        </time>
+                                    </p>
+                                </div>
+
+                                <!-- Column 2: Elapsed Time -->
+                                <div class="uk-width-1-3 uk-text-center">
+                                    @if (!string.IsNullOrEmpty(activity?.TimeElapsed))
+                                    {
+@*                                         <span class="uk-label uk-label-warning">@FormatElapsedTime(activity.TimeElapsed)</span>
+ *@                                        <span class="uk-label uk-label-warning">@activity.TimeElapsed</span>
+                                    }
+                                </div>
+
+                                <!-- Column 3: Activity Name -->
+                                <div class="uk-width-1-3 uk-text-right">
+                                    <span class="uk-label uk-label-success">@activity?.Name</span>
+                                </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        }    
+        }
     </div>
 </div>
+@functions {
+    public string FormatElapsedTime(string timeElapsed)
+    {
+        if (string.IsNullOrWhiteSpace(timeElapsed)) return "N/A";
 
+        // Remove "Minutes" and trim spaces
+        var cleaned = timeElapsed.Replace("Minutes", "").Trim();
+
+        // Parse the number of minutes
+        if (!double.TryParse(cleaned, out double minutes))
+        {
+            return "Invalid Time";
+        }
+
+        // Convert total minutes to total seconds and round up to the nearest whole second
+        var totalSeconds = (int)Math.Ceiling(minutes * 60);
+
+        // Calculate hours, minutes, and seconds
+        int hours = totalSeconds / 3600;
+        int mins = (totalSeconds % 3600) / 60;
+        int secs = totalSeconds % 60;
+
+        // Build readable string
+        var parts = new List<string>();
+        if (hours > 0) parts.Add($"{hours}h");
+        if (mins > 0) parts.Add($"{mins}m");
+        if (secs > 0) parts.Add($"{secs}s");
+
+        // If all parts are zero (unlikely, but for safety), return "0s"
+        return parts.Count > 0 ? string.Join(" ", parts) : "0s";
+    }
+}
