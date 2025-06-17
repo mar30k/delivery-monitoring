@@ -1,0 +1,127 @@
+﻿@model VerifyIdModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html style="background:white;">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Verify ID</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="/Styles&Script/bootstrap/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/Styles&Script/font-awesome/css/fontawesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="/Styles&Script/Ionicons/css/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/Styles&Script/dist/css/AdminLTE.min.css">
+    <!-- iCheck -->
+    <link rel="stylesheet" href="/Styles&Script/plugins/iCheck/square/blue.css">
+    <link rel="stylesheet" href="/Styles&Script/select2/dist/css/select2.min.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/images/hulubeje.png">
+    <!-- iCheck -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+
+    <style>
+        .btn-primary,
+        .btn-primary:hover,
+        .btn-primary:active,
+        .btn-primary:visited,
+        .btn-primary:focus {
+             background-color: #ef5b25 !important;
+             border-color: #ef5b25 !important;
+        }
+
+        .div1 {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            border-radius: 4px !important;
+        }
+    </style>
+</head>
+<body class="hold-transition login-page " style="background:white;">
+    <div class="login-box">
+        <div class="login-logo">
+            <a><b>Admin</b> Dashboard</a>
+        </div>
+        <!-- /.login-logo -->
+        <div class="login-box-body div1">
+            <p class="login-box-msg">Please verify your identification no. to continue</p>
+            <form asp-action="Login" asp-controller="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off" id="idVerifyForm">
+                <div class="form-group has-feedback">
+                    <input asp-for="myId" class="form-control" autofocus="autofocus" placeholder="Identification No." />
+                    <span class="glyphicon glyphicon-cloud form-control-feedback"></span>
+                </div>
+                <p class="text-red" id="errorMessage"></p>
+                <div class="row">
+                    <div class="col-xs-4">
+                        <button type="button" id="verifyId"  class="btn btn-primary btn-block btn-flat" data-loading-text="Verifing...">Verify</button>
+                    </div>
+                    <!-- /.col -->
+                </div>
+            </form>
+
+        </div>
+        <!-- /.login-box-body -->
+    </div>
+    <!-- /.login-box -->
+    <script src="/Styles&Script/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap 3.3.7 -->
+    <script src="/Styles&Script/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- iCheck -->
+    <script src="/Styles&Script/plugins/iCheck/icheck.min.js"></script>
+
+    <script src="/Styles&Script/select2/dist/js/select2.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/icheck/skins/square/red.css">
+    <script src="https://cdn.jsdelivr.net/npm/icheck/icheck.min.js"></script>
+    <script>
+
+        $('#verifyId').on('click', function (e) {
+            
+            var $btn = $(this).button('loading')
+            var givenId = $('#@nameof(Model.myId)').val();
+            if (givenId) {
+                $('#errorMessage').text("");
+                $.ajax({
+                    url: "@Url.Action("checkMyId", "Login")",
+                    method: 'POST',
+                    dataType: 'json',
+                    processData: false,
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        "@nameof(Model.myId)": $('#@nameof(Model.myId)').val()
+                    }),
+                    success: function (result) {
+                        if (result) {
+                            if (result.d === true) {
+                                console.log(result.m)
+                                window.location.href = "/Login/login";
+                            } else {
+                                $('#errorMessage').text(result.m);
+                                $btn.button('reset')
+                            }
+                        }
+                        //$("#div1").html(result);
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        $btn.button('reset')
+                    }
+                });
+            } else {
+                $('#errorMessage').text("Invalid Identification no.");
+                $btn.button('reset');
+            }
+
+
+        });
+
+        $('#idVerifyForm').submit(function (e) {
+            e.preventDefault();
+            $('#verifyId').trigger('click');
+        });
+    </script>
+</body>
+</html>
