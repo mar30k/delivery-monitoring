@@ -1,0 +1,96 @@
+﻿@model List<DeviceControl>
+@{
+    ViewData["title"] = "Restaurant Connectivity";
+}
+<div class="p-4 mt-2">
+    <h2 class="mb-4">Restaurant Connectivity</h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            No records found.
+        </div>
+    }
+    else
+    {
+        <div class="row card">
+            <div class="pt-3 pb-3 col-12 col-xl-12 table-responsive">
+                <table class="table compact stripe hover pt-3 mt-3" id="tablelist">
+                    <thead class="table-bordered">
+                        <tr>
+                            <th class="text-center">TIN</th>
+                            <th class="text-center">Company</th>
+                            <th class="text-center">Branch</th>
+                            <th class="text-center">Device</th>
+                            <th class="text-center">Host Device</th>
+                            <th class="text-center">Type</th>
+                            <th class="text-center">Machine No</th>
+                            <th>User</th>
+                            <th class="text-center">Note</th>
+                            <th class="text-center">Time Stamp</th>
+                            <th class="text-center">Seen</th>
+                            <th class="text-center">Version</th>
+                            <th class="text-center">Remark</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model ?? new List<DeviceControl>())
+                        {
+                            <tr>
+                                <td class="text-center" >@item.Tin</td>
+                                <td class="text-center">@item.CompanyName</td>
+                                <td class="text-center">@item.BranchName</td>
+                                <td class="text-center">@item.DeviceName</td>
+                                <td class="text-center">@(item.HostDevice ?? "N/A")</td>
+                                <td class="text-center">@item.DeviceType</td>
+                                <td class="text-center">@(item.MachineNo ?? "N/A")</td>
+                                <td class="text-center">@(item.UserName ?? "N/A")</td>
+                                <td class="text-center">@item.Note</td>
+                                <td class="text-center">@item.TimeStamp?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>
+                                    @if (item.Seen == true)
+                                    {
+                                        <span class="badge bg-success">Seen</span>
+                                    }
+                                    else if (item.Seen == false)
+                                    {
+                                        <span class="badge bg-warning text-dark">Unseen</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td class="text-center">@(item.Version ?? "N/A")</td>
+                                <td class="text-center">@(item.Remark ?? "N/A")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    
+</div>
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+    <script>
+        var js = jQuery.noConflict(true);
+        var tablelist;
+        js(document).ready(function () {
+            tablelist = js('#tablelist').DataTable({
+                responsive: true,
+                "order": [[1, "desc"]],
+                columnDefs: [
+                    { orderable: false, targets: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }
+                ],
+                language: {
+                    "emptyTable": "No orders to display at the moment."
+                }
+            });
+        });
+    </script>
+}
