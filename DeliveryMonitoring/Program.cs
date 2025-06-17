@@ -14,6 +14,8 @@ var configuration = new ConfigurationBuilder()
        .Build();
 var deliveryUri = configuration.GetValue<string>("Delivery");
 var deliveryLoginUri = configuration.GetValue<string>("DeliveryLogin");
+var CnetApiBaseUrl = configuration.GetValue<string>("CnetApiBaseUrl");
+var ApiBaseUrl = configuration.GetValue<string>("ApiBaseUrl");
 
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 builder.Services.AddHttpClient();
@@ -22,9 +24,18 @@ builder.Services.AddHttpClient("Delivery", httpClient =>
     httpClient.BaseAddress = new Uri(deliveryUri);
     httpClient.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
 });
+builder.Services.AddHttpClient("CnetApiBaseUrl", httpClient =>
+{
+    httpClient.BaseAddress = new Uri(CnetApiBaseUrl);
+    httpClient.DefaultRequestHeaders.Add("x-api-key", "5D5EAFF4-D29A-485B-BDB9-785EF86FFFAE");
+});
 builder.Services.AddHttpClient("DeliveryLogin", httpClient =>
 {
     httpClient.BaseAddress = new Uri(deliveryLoginUri);
+});
+builder.Services.AddHttpClient("ApiBaseUrl", httpClient =>
+{
+    httpClient.BaseAddress = new Uri(ApiBaseUrl);
 });
 
 builder.Services.AddAuthentication(CNET_WebConstantes.CookieScheme)
