@@ -13,6 +13,7 @@ using System.Text;
 namespace DeliveryMonitoring.Controllers
 {
     [Authorize]
+    [Route("Driver")]
     public class DriverController : Controller
     {
         private IHttpContextAccessor _httpContextAccessor;
@@ -364,6 +365,24 @@ namespace DeliveryMonitoring.Controllers
 
             return View("review",reviewData);
         }
+
+        [HttpGet("/Driver/fetchReview")]
+        public async Task<IActionResult> FetchReview([FromQuery] string phoneNumber, [FromQuery] int page)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.Length < 2)
+                return BadRequest("Invalid phone number.");
+
+            string trimmedPhone = phoneNumber.Substring(1); // Remove first character
+            var result = await FetchDriverReviewsAsync(page, trimmedPhone);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+
 
         private async Task<DriverReview?> FetchDriverReviewsAsync(int page, string phoneNumber)
         {

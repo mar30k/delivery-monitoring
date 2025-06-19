@@ -1,12 +1,12 @@
 ﻿var js = jQuery.noConflict(true);
 var tablelist;
-js(document).ready(function () {
+js( ()=> {
     tablelist = js('#tablelist').DataTable({
         responsive: true,
         "order": [[5, "desc"]],
         "pageLength": 15,
         columnDefs: [
-            { orderable: false, targets: [0, 4, 9, 11] } 
+            { orderable: false, targets: [0, 4, 9, 13, 12] } 
             //{
             //    targets: 5, // the column with the date
             //    type: 'html'
@@ -18,26 +18,114 @@ js(document).ready(function () {
     });
 });
 
-function showDetailsModal(button) {
+async function showDetailsModal(button) {
     const note = button.getAttribute('data-note');
     const purpose = button.getAttribute('data-purpose');
+    const voucherCode = button.getAttribute('data-voucher-code');
+    const phoneNumber = button.getAttribute('data-phone-number');
+
+    // Reset modal fields
     document.getElementById('modalNote').textContent = note || '—';
     document.getElementById('modalPurpose').textContent = purpose || '—';
+    document.getElementById('voucherCodeDetail').textContent = voucherCode ? `- ${voucherCode}` : '';
+    document.getElementById('reviewDetailsLoadingSpinner').style.display = 'block';
 
-    const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    // Show the modal immediately
+    const modal = new bootstrap.Modal(document.getElementById('reviewDetailsModal'));
     modal.show();
+
+    const reviewSection = document.getElementById('customerReview'); // new div for this modal
+    reviewSection.innerHTML = '';
+    try {
+        const foundReview = await fetchDriverReview(phoneNumber, voucherCode);
+
+        if (foundReview) {
+            reviewSection.innerHTML = `
+                <div class="alert alert-secondary">
+                    <h6 class="mb-1">${foundReview.fullName} <small class="text-muted float-end">${new Date(foundReview.date).toLocaleDateString()}</small></h6>
+                    <p class="mb-1">${foundReview.review}</p>
+                    <div class="text-warning">Rating: ${foundReview.rating.toFixed(1)} ⭐</div>
+                    ${foundReview.reply ? `<div class="alert alert-light mt-2"><strong>Reply:</strong> ${foundReview.reply}</div>` : ''}
+                </div>
+            `;
+        } else {
+            reviewSection.innerHTML = `
+                <div class="alert alert-warning mb-0" role="alert">
+                    No customer review found for this order.
+                </div>
+            `;
+        }
+
+        reviewSection.classList.remove('d-none');
+    } catch (err) {
+        console.error('Error fetching review:', err);
+        reviewSection.innerHTML = `
+            <div class="alert alert-danger" role="alert">Failed to load review.</div>
+        `;
+        reviewSection.classList.remove('d-none');
+    } finally {
+        document.getElementById('reviewDetailsLoadingSpinner').style.display = 'none';
+    }
 }
 
-function showReviewModal(button) {
+async function showReviewModal(button) {
     const note = button.getAttribute('data-note');
-    const orderId = button.getAttribute('data-order-id');
+    const voucherCode = button.getAttribute('data-voucher-code');
+    const phoneNumber = button.getAttribute('data-phone-number');
 
-    document.getElementById('reviewOrderId').value = orderId;
-    document.getElementById('reviewPurpose').value = ''; // blank by default
+    document.getElementById('reviewOrderId').value = voucherCode;
+    document.getElementById('reviewPurpose').value = '';
     document.getElementById('reviewNote').value = note || '';
+    document.getElementById('voucherCodeReview').textContent = voucherCode ? `- ${voucherCode}` : '';
 
     const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
     modal.show();
+    document.getElementById('reviewLoadingSpinner').style.display = 'block';
+
+    const reviewSection = document.getElementById('customerReviewSection'); // new div for this modal
+    reviewSection.innerHTML = '';
+    try {
+        const foundReview = await fetchDriverReview(phoneNumber, voucherCode);
+        if (foundReview) {
+            reviewSection.innerHTML = `
+                <div class="alert alert-info mt-3">
+                    <strong>${foundReview.fullName}</strong> rated this ${foundReview.rating.toFixed(1)} ⭐<br/>
+                    "${foundReview.review}"<br/>
+                    ${foundReview.reply ? `<div class="text-muted mt-2">Reply: ${foundReview.reply}</div>` : ''}
+                </div>
+            `;
+        } else {
+            reviewSection.innerHTML = `<div class="alert alert-warning mt-3">No customer review found for this order.</div>`;
+        }
+    } catch (err) {
+        reviewSection.innerHTML = `<div class="alert alert-danger mt-3">Failed to fetch customer review.</div>`;
+    } finally {
+        document.getElementById('reviewLoadingSpinner').style.display = 'none';
+    }
+}
+
+
+
+async function fetchDriverReview(phoneNumber, voucherCode) {
+    let page = 1;
+    let foundReview = null;
+
+    while (true) {
+        const response = await fetch(`/Driver/fetchReview?phoneNumber=${encodeURIComponent(phoneNumber)}&page=${page}`);
+        if (!response.ok) break;
+
+        const result = await response.json();
+        if (!result || !result.reviews || result.reviews.length === 0) break;
+        result.reviews.forEach(review => {
+            console.log(review.voucherCode)
+        });
+        foundReview = result.reviews.find(r => r.voucherCode === voucherCode);
+        if (foundReview) break;
+
+        page++;
+    }
+
+    return foundReview;
 }
 document.getElementById('reviewForm').addEventListener('submit', async function (e) {
     e.preventDefault(); 
