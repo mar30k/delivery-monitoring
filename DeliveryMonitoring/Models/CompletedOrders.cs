@@ -14,6 +14,7 @@ namespace DeliveryMonitoring.Models
         public string? VoucherCode { get; set; }
         public double Distance { get; set; }
         public double Eta { get; set; }
+        public double TotalAmount { get; set; }
         public double Duration { get; set; }
         public string? Note { get; set; }
         public string? Purpose { get; set; }

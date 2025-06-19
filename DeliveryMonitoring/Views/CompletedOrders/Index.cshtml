@@ -1,4 +1,4 @@
-ï»¿@model DeliveryMonitoring.Models.CompletedOrdersViewModel
+@model DeliveryMonitoring.Models.CompletedOrdersViewModel
 @{
     ViewData["Title"] = "Completed Orders";
     var disTinctSupervisors = Model?.CompletedOrders?.Data?.DistinctBy(x => x.SupervisorPhoneNumber).Where(x => x.SupervisorPhoneNumber != null).ToList();
@@ -39,14 +39,17 @@
                         <th class="text-center">
                             Eta
                         </th>
-                       
+
                         <th class ="text-center">
                             Driver
                         </th>
                         <th class ="text-center">
                             Supervisor
                         </th>
-                        
+                        <th class ="text-center">
+                            Total
+                        </th>
+
                         <th class="text-center">
                             Review
                         </th>
@@ -97,6 +100,9 @@
                                 <td class="text-center">
                                     @(order?.SupervisorName ?? "N/A")
                                 </td>
+                                <td class="text-center">
+                                    @(order?.TotalAmount)
+                                </td>
                                 
 
                                 <td class="text-center">
@@ -145,8 +151,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p><strong>Purpose:</strong> <span id="modalPurpose">â€”</span></p>
-                <p><strong>Note:</strong> <span id="modalNote">â€”</span></p>
+                <p><strong>Purpose:</strong> <span id="modalPurpose">—</span></p>
+                <p><strong>Note:</strong> <span id="modalNote">—</span></p>
 
                 <div id="reviewDetailsLoadingSpinner" class="text-center my-3">
                     <div class="spinner-border text-primary" role="status"></div>
@@ -176,7 +182,8 @@
                             @foreach (var purpose in Model?.PurposeOptions ?? new Dictionary<int, string>())
                             {
                                 <option value="@purpose.Key">@purpose.Value</option>
-                            })
+                            }
+)
                         </select>
                     </div>
 
