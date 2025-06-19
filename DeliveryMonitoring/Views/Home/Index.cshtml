@@ -66,7 +66,8 @@
                     </div>
                     <div class="card-body col-7">
                         <div>
-                            <a class="card-title" style="text-decoration: none" href="/connectivity?startDate=@DateTime.Today.ToString("yyyy-MM-dd")&endDate=@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")">Restaurant Connectivity </a> <br />
+                            <a class="card-title" style="text-decoration: none" 
+                            href="/connectivity?startDate=@DateTime.Today.ToString("yyyy-MM-dd")&endDate=@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")">KOT Status </a> <br />
                             <span class="text-sm">
                                 @DateTime.Today.ToString("yyyy-MM-dd") - @DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")
                             </span>
@@ -119,6 +120,7 @@
         int acceptedCount = Model.Drivers.Count(d => d.status == "accepted");
         int deliveringCount = Model.Drivers.Count(d => d.status == "delivering");
         int completedCount = Model.Drivers.Count(d => d.status == "completed");
+        int arrivedatbranchCount = Model.Drivers.Count(d => d.status.ToLower() == "arrivedatbranch");
         //counts related to orders
         int completedOrdersCount = Model.Orders.Count(d => d.Status == "completed");
         int requestedOrdersCount = Model.Orders.Count(d => d.Status == "requested");
@@ -132,13 +134,13 @@
     }
     <script>
         const ctx = document.getElementById('driversChart');
-        var driverDataSet = [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount];
+        var driverDataSet = [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount , @arrivedatbranchCount];
         var orderDataSet = [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
                             @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedOrdersCount,@sosOrdersCount ];
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed'],
+                labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch'],
                 datasets: [{
                     label: 'Drivers',
                     data: driverDataSet,
@@ -147,7 +149,8 @@
                         'rgb(255, 165, 0)',
                         'rgb(241, 196, 15)',
                         'rgb(3, 138, 255)',
-                        'rgb(60, 179, 113)'
+                        'rgb(60, 179, 113)',
+                        'rgb (32, 201, 151)'
                     ],
                     hoverOffset: 4
                 }]
