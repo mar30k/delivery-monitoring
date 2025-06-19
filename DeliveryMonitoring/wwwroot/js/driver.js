@@ -10,7 +10,7 @@
         var tablelist; // Define the variable globally
         var map;
         var markers = [];
-        js(document).ready(function () {
+        js( ()=> {
             if (!js.fn.DataTable.isDataTable('#tablelist')) {
                 tablelist = js('#tablelist').DataTable({
                     responsive: true,
@@ -24,11 +24,13 @@
             }
         });
         const statusColors = {
-            offline: { color: "#dc3545",     priority: "2" },
-            ready:     { color: "#43A047",   priority: "5" },
-            accepted: { color: "#0d6efd",    priority: "3" },
-            delivering: { color: "#fd7e14",      priority: "2" },
-            default: { color: "#ffc107",   priority: "1" }
+            offline: { color: "#dc3545", priority: "1" },  // Bootstrap danger - Offline
+            ready: { color: "#28a745", priority: "7" },  // Bootstrap success - Ready
+            accepted: { color: "#007bff", priority: "5" },  // Bootstrap primary - Accepted
+            delivering: { color: "#fd7e14", priority: "6" },  // Bootstrap orange - Delivering
+            arrivedatbranch: { color: "#17a2b8", priority: "4" },  // Bootstrap info - Arrived
+            completed: { color: "#20c997", priority: "3" },  // Bootstrap teal - Completed
+            default: { color: "#ffc107", priority: "2" }   // Bootstrap warning - Default
         };
 
 
@@ -89,7 +91,7 @@
                                 // Get the actual cell element
                                 const statuscell = tablelist.cell(rowIndex, 3).node();
 
-                                const driverStatus = driver.status || "default";
+                                const driverStatus = (driver.status || "default").toLowerCase();
                                 const statusInfo = statusColors[driverStatus] || statusColors.default;
 
                                 const bgColor = statusInfo.color;
