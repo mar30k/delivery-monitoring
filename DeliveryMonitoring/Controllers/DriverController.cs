@@ -352,18 +352,45 @@ namespace DeliveryMonitoring.Controllers
         {
             if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.Length < 2)
                 return BadRequest("Invalid phone number.");
-
+            int page = 1;
             string trimmedPhone = phoneNumber.Substring(1); // Remove first character
+            var allReviews = new DriverReview();
+            List<Reviews> allReviewItems = new();
 
-            var reviewData = await FetchDriverReviewsAsync(1, trimmedPhone);
-
-            if (reviewData == null)
+            try
             {
-                ViewBag.Error = "Unable to load driver reviews.";
-                return View("review",null);
+                while (true)
+                {
+                    var pageData = await FetchDriverReviewsAsync(page, trimmedPhone);
+
+                    if (pageData == null || pageData.Reviews == null || !pageData.Reviews.Any())
+                        break;
+
+                    if (page == 1)
+            {
+                        allReviews.Count = pageData.Count;
+                        allReviews.Rating = pageData.Rating;
             }
 
-            return View("review",reviewData);
+                    allReviewItems.AddRange(pageData.Reviews);
+                    page++;
+                }
+
+                allReviews.Reviews = allReviewItems;
+
+                if (!allReviewItems.Any())
+                {
+                    ViewBag.Error = "No reviews found for this driver.";
+                    return View("review", null);
+                }
+
+                return View("review", allReviews);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Error loading reviews. Please try again later.";
+                return View("review", null);
+            }
         }
 
         [HttpGet("/Driver/fetchReview")]
