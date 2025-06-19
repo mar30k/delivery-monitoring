@@ -5,6 +5,7 @@
 }
 
 <div class="container-fluid col-11 pt-5">
+    <div id="alertContainer"></div>
     <h3>Completed Orders List</h3>
     <div class="row card">
         <div class="table-responsive pt-3 pb-3">
@@ -48,6 +49,9 @@
                         
                         <th class="text-center">
                             Review
+                        </th>
+                        <th class="text-center">
+                            Activities
                         </th>
                     </tr>
                 </thead>
@@ -109,6 +113,14 @@
                                                 onclick="showReviewModal(this)">Review</button>
                                     }
                                 </td>
+                                <td class="text-center">
+                                    <button class="btn btn-outline-secondary activityBtn btn-sm"
+                                            data-voucher="@order?.VoucherCode"
+                                            data-company-code="@order?.CompanyCode"
+                                           >
+                                        Show
+                                    </button>
+                                </td>
                             </tr>
                         }
                     }
@@ -165,6 +177,40 @@
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="activityModalLabel">Delivery Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div id="activitySummary" class="mb-3">
+                    <!-- Summary content injected here -->
+                </div>
+
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Activity</th>
+                            <th>Time</th>
+                            <th>Elapsed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTimeline">
+                        <!-- Timeline rows injected here -->
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />

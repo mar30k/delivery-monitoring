@@ -67,3 +67,80 @@ document.getElementById('reviewForm').addEventListener('submit', async function 
         alert("An error occurred while submitting.");
     }
 });
+
+var activityButtons = document.getElementsByClassName('activityBtn');
+Array.from(activityButtons).forEach(button => {
+    button.addEventListener('click', async function (e) {
+        e.preventDefault();
+
+        const voucherCode = e.target.getAttribute('data-voucher');
+        const companyCode = e.target.getAttribute('data-company-code');
+
+        const url = `/CompletedOrders/getDeliveryActivity?voucherCode=${encodeURIComponent(voucherCode)}&companyCode=${encodeURIComponent(companyCode)}`;
+
+        try {
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (result.isSuccessful) {
+                const data = result.data;
+
+                // Fill Summary Section
+                document.getElementById('activitySummary').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Start Time:</strong> ${new Date(data.startTime).toLocaleString()}</p>
+                        <p><strong>ETA:</strong> ${new Date(data.eta).toLocaleString()}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Actual Arrival:</strong> ${new Date(data.actualArrival).toLocaleString()}</p>
+                        <p><strong>Current Time:</strong> ${new Date(data.currentTime).toLocaleString()}</p>
+                    </div>
+                </div>
+                
+                
+            `;
+
+                // Fill Activity Table
+                const timeline = document.getElementById('activityTimeline');
+                timeline.innerHTML = ''; // clear previous rows
+
+                data.activityResponse.forEach((activity, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${activity.name}</td>
+                    <td>${new Date(activity.time).toLocaleTimeString()}</td>
+                    <td>${activity.timeElapsed}</td>
+                `;
+                    timeline.appendChild(row);
+                });
+
+                // Show Modal (Bootstrap 5)
+                const modal = new bootstrap.Modal(document.getElementById('activityModal'));
+                modal.show();
+            } else {
+                showAlert("Failed to fetch activity.", "warning");
+            }
+        } catch (err) {
+            console.error(err);
+            showAlert("An error occurred while loading activity.", "danger");
+        }
+    });
+});
+
+
+
+
+
+function showAlert(message, type = 'danger') {
+    const container = document.getElementById('alertContainer');
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    container.innerHTML = alertHtml;
+}
+

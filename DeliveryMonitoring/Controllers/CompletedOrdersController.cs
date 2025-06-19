@@ -91,5 +91,31 @@ namespace DeliveryMonitoring.Controllers
                 return BadRequest(ex.Message[0]);
             }
         }
+        [HttpGet("getDeliveryActivity")]
+        public async Task<IActionResult> GetDeliveryActivity(string voucherCode, string companyCode)
+        {
+            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+
+            try
+            {
+                var response = await client.GetAsync($"driveractivity/get?companyCode={companyCode}&voucherCode={voucherCode}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return BadRequest(errorContent);
+                }
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<HulubejeResponse<Activities>>(responseData);
+
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message[0]);
+            }
+        }
     }
 }
