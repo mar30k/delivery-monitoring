@@ -3,6 +3,7 @@ var tablelist;
 var existingVouchers = []; // Track existing voucher codes in new data
 const statusColors = {
     requested: "deepskyblue",
+    arrivedatbranch: "orange",
     assigned: "lawngreen",
     declined: "red",
     accepted: "seagreen",
@@ -37,7 +38,7 @@ function loadAvailableDrivers() {
     });
 }
 
-js(document).ready(function () {
+js( ()=> {
     tablelist = js('#tablelist').DataTable({
         responsive: true,
         "order": [[4, "desc"]],
