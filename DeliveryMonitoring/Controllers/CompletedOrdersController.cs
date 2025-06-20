@@ -21,37 +21,33 @@ namespace DeliveryMonitoring.Controllers
         }
         public async Task<IActionResult> Index()
         {
-            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            var _client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             try
             {
-                var response = await client.GetAsync("voucher/getcompletedorders");
-                var purposeResponse = await client.GetAsync("delivery/getpurpose");
-                if (!response.IsSuccessStatusCode)
+                var result = await FetchCompletedOrders(_client);
+                if (result == null || result.Data == null)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
-                    return View(null); // Or an empty list, if the view expects a model
+                    ViewBag.ErrorMessage = "Failed to retrieve or parse completed orders.";
+                    return View(null);
                 }
+
+                if (companyTin != "0076217301")
+                {
+                    result.Data = result.Data.Where(order => order.Tin == companyTin).ToList();
+                }
+
+                var purposeResponse = await _client.GetAsync("delivery/getpurpose");
                 if (!purposeResponse.IsSuccessStatusCode)
                 {
                     var errorContent = await purposeResponse.Content.ReadAsStringAsync();
                     ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
                 }
 
-                var responseData = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(responseData);
-                if (companyTin != "0076217301" && result != null && result.Data != null && result.Data.Count > 0)
-                {
-                    result.Data = result.Data.Where(order => order.Tin == companyTin).ToList();
-                }
+                
                 var purposeResponseData = await purposeResponse.Content.ReadAsStringAsync();
                 var purposeResult = JsonConvert.DeserializeObject<Dictionary<int, string>>(purposeResponseData);
-                if (result == null)
-                {
-                    ViewBag.ErrorMessage = "Failed to parse completed orders response.";
-                    return View(null);
-                }
+                
                 var CompletedOrdersViewModel = new CompletedOrdersViewModel
                 {
                     CompletedOrders = result,
@@ -65,6 +61,50 @@ namespace DeliveryMonitoring.Controllers
                 return View(null);
             }
         }
+
+        [HttpGet("getCompletedOrders")]
+        public async Task<IActionResult> GetCompletedOrdersApi()
+        {
+            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+
+            var result = await FetchCompletedOrders(client);
+            if (result == null || result.Data == null)
+            {
+                return NotFound("Failed to retrieve or parse completed orders.");
+            }
+
+            if (companyTin != "0076217301")
+            {
+                result.Data = result.Data.Where(order => order.Tin == companyTin).ToList();
+            }
+            foreach (var item in result.Data)
+            {
+                item.RequestCreatedAtString = item.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss");
+            }
+            return Ok(result);
+        }
+
+
+        private async Task<HulubejeResponse<List<CompletedOrders>>> FetchCompletedOrders(HttpClient client)
+        {
+            try
+            {
+                var response = await client.GetAsync("voucher/getcompletedorders");
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(responseData);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         [HttpPost("savenote")]
         public async Task<IActionResult> SaveOrderReview([FromBody] CompletedOrders request)
         {

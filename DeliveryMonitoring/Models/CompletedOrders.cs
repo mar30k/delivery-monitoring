@@ -23,6 +23,7 @@ namespace DeliveryMonitoring.Models
         public int CompanyCode { get; set; }
         public int BranchCode { get; set; }
         public string? BranchName { get; set; }
+        public string? RequestCreatedAtString { get; set; }
     }
 
     public class CompletedOrdersViewModel
