@@ -28,12 +28,12 @@ namespace DeliveryMonitoring.Models
         public string? deviceID { get; set; }
         public string? firstName { get; set; }
         public bool? isDisabled { get; set; }
-        public long? lastUpdatedAt { get; set; }
+        public long lastUpdatedAt { get; set; }
         public string? lastUpdatedAtIso { get; set; }
         public Location latLng { get; set; }
         public string? phoneNumber { get; set; }
         public string? status { get; set; }
-        public Detail detail { get; set; }
+        public Detail? detail { get; set; }
         public int? numberOfAcceptedOrders { get; set; }
         public int? numberOfRejectedOrders { get; set; }
         public Review? review { get; set; }

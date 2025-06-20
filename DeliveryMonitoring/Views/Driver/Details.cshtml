@@ -168,7 +168,6 @@
             var i = 0;
             var bearing = 0;
             var places = [];
-
             map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 16,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
@@ -202,7 +201,7 @@
                         {
                             foreach (var item in Orders ?? new List<OrderDetail>())
                             {
-                                if (@item.AssignedDriverPhoneNumber == @Model?.phoneNumber)
+                                if (item.AssignedDriverPhoneNumber == Model?.phoneNumber)
                                 {
                                     <text>
                                         places = [{
@@ -226,8 +225,8 @@
                     title: places[i].Name,
                     map: map,
                     icon: {
-                        url: '/images/motor.png',
-                        scale: 3,
+                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                        scale: 4,
                     },
                 });
 
