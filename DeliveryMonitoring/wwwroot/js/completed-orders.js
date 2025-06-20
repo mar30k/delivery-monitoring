@@ -38,16 +38,11 @@ async function showDetailsModal(button) {
     reviewSection.innerHTML = '';
     try {
         const foundReview = await fetchDriverReview(phoneNumber, voucherCode);
-
         if (foundReview) {
-            reviewSection.innerHTML = `
-                <div class="alert alert-secondary">
-                    <h6 class="mb-1">${foundReview.fullName} <small class="text-muted float-end">${new Date(foundReview.date).toLocaleDateString()}</small></h6>
-                    <p class="mb-1">${foundReview.review}</p>
-                    <div class="text-warning">Rating: ${foundReview.rating.toFixed(1)} ⭐</div>
-                    ${foundReview.reply ? `<div class="alert alert-light mt-2"><strong>Reply:</strong> ${foundReview.reply}</div>` : ''}
-                </div>
+            reviewSection.innerHTML = ` 
+                ${renderReview(foundReview)}
             `;
+
         } else {
             reviewSection.innerHTML = `
                 <div class="alert alert-warning mb-0" role="alert">
@@ -87,15 +82,15 @@ async function showReviewModal(button) {
     try {
         const foundReview = await fetchDriverReview(phoneNumber, voucherCode);
         if (foundReview) {
-            reviewSection.innerHTML = `
-                <div class="alert alert-info mt-3">
-                    <strong>${foundReview.fullName}</strong> rated this ${foundReview.rating.toFixed(1)} ⭐<br/>
-                    "${foundReview.review}"<br/>
-                    ${foundReview.reply ? `<div class="text-muted mt-2">Reply: ${foundReview.reply}</div>` : ''}
-                </div>
+            reviewSection.innerHTML = ` 
+                ${renderReview(foundReview)}
             `;
         } else {
-            reviewSection.innerHTML = `<div class="alert alert-warning mt-3">No customer review found for this order.</div>`;
+            reviewSection.innerHTML = `
+                <div class="alert alert-warning mb-0" role="alert">
+                    No customer review found for this order.
+                </div>
+            `;
         }
     } catch (err) {
         reviewSection.innerHTML = `<div class="alert alert-danger mt-3">Failed to fetch customer review.</div>`;
@@ -104,6 +99,35 @@ async function showReviewModal(button) {
     }
 }
 
+function renderReview(foundReview) {
+    return `<div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex">
+                                <img src="${foundReview.image}" alt="${foundReview.fullName}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">${foundReview.fullName}</h6>
+                                    <small class="text-muted">${new Date(foundReview.date).toLocaleDateString()}</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-semibold text-warning">
+                                    ${renderStars(foundReview.rating)} 
+                                    <span class="ms-1 text-dark">${foundReview.rating.toFixed(1)}</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        ${foundReview.review ? `<p class="my-1"><strong class="text-muted">Review:</strong> ${foundReview.review}</p>` : ''}
+                        ${foundReview.reply ? `<p class="my-1"><strong class="text-muted">Reply:</strong> ${foundReview.reply}</p>` : ''}
+                    </div>
+                </div>`;
+}
+function renderStars(rating) {
+    rating = Math.floor(rating);
+    return '<i class="bi bi-star-fill text-warning"></i>'.repeat(rating) +
+        '<i class="bi bi-star text-warning"></i>'.repeat(5 - rating);
+}
 
 
 async function fetchDriverReview(phoneNumber, voucherCode) {
@@ -116,10 +140,7 @@ async function fetchDriverReview(phoneNumber, voucherCode) {
 
         const result = await response.json();
         if (!result || !result.reviews || result.reviews.length === 0) break;
-        result.reviews.forEach(review => {
-            console.log(review.voucherCode)
-        });
-        foundReview = result.reviews.find(r => r.voucherCode === voucherCode);
+        foundReview = result.reviews.find(r => r.referenceVoucher === voucherCode);
         if (foundReview) break;
 
         page++;
@@ -156,25 +177,21 @@ document.getElementById('reviewForm').addEventListener('submit', async function 
     }
 });
 
-var activityButtons = document.getElementsByClassName('activityBtn');
-Array.from(activityButtons).forEach(button => {
-    button.addEventListener('click', async function (e) {
-        e.preventDefault();
 
-        const voucherCode = e.target.getAttribute('data-voucher');
-        const companyCode = e.target.getAttribute('data-company-code');
+async function showActivity(button) {
+    const voucherCode = button.getAttribute('data-voucher');
+    const companyCode = button.getAttribute('data-company-code');
+    const url = `/CompletedOrders/getDeliveryActivity?voucherCode=${encodeURIComponent(voucherCode)}&companyCode=${encodeURIComponent(companyCode)}`;
 
-        const url = `/CompletedOrders/getDeliveryActivity?voucherCode=${encodeURIComponent(voucherCode)}&companyCode=${encodeURIComponent(companyCode)}`;
+    try {
+        const response = await fetch(url);
+        const result = await response.json();
 
-        try {
-            const response = await fetch(url);
-            const result = await response.json();
+        if (result.isSuccessful) {
+            const data = result.data;
 
-            if (result.isSuccessful) {
-                const data = result.data;
-
-                // Fill Summary Section
-                document.getElementById('activitySummary').innerHTML = `
+            // Fill Summary Section
+            document.getElementById('activitySummary').innerHTML = `
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Start Time:</strong> ${new Date(data.startTime).toLocaleString()}</p>
@@ -189,33 +206,39 @@ Array.from(activityButtons).forEach(button => {
                 
             `;
 
-                // Fill Activity Table
-                const timeline = document.getElementById('activityTimeline');
-                timeline.innerHTML = ''; // clear previous rows
+            // Fill Activity Table
+            const timeline = document.getElementById('activityTimeline');
+            timeline.innerHTML = ''; // clear previous rows
 
-                data.activityResponse.forEach((activity, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+            data.activityResponse.forEach((activity, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${activity.name}</td>
                     <td>${new Date(activity.time).toLocaleTimeString()}</td>
                     <td>${activity.timeElapsed}</td>
                 `;
-                    timeline.appendChild(row);
-                });
+                timeline.appendChild(row);
+            });
 
-                // Show Modal (Bootstrap 5)
-                const modal = new bootstrap.Modal(document.getElementById('activityModal'));
-                modal.show();
-            } else {
-                showAlert("Failed to fetch activity.", "warning");
+            const existingModalEl = document.getElementById('activityModal');
+            const existingModal = bootstrap.Modal.getInstance(existingModalEl);
+            if (existingModal) {
+                existingModal.hide(); // prevent aria-hidden issues
             }
-        } catch (err) {
-            console.error(err);
-            showAlert("An error occurred while loading activity.", "danger");
+
+            const modal = new bootstrap.Modal(existingModalEl);
+            modal.show();
+        } else {
+            showAlert("Failed to fetch activity.", "warning");
         }
-    });
-});
+    } catch (err) {
+        console.error(err);
+        showAlert("An error occurred while loading activity.", "danger");
+    }
+}
+
+
 
 
 
@@ -232,3 +255,82 @@ function showAlert(message, type = 'danger') {
     container.innerHTML = alertHtml;
 }
 
+
+
+setInterval(fetchCompletedOrders, 30000); // every 60 seconds
+
+async function fetchCompletedOrders() {
+    try {
+        const response = await fetch('/completedOrders/getcompletedorders');
+        if (!response.ok) {
+            console.error("Failed to fetch completed orders");
+            return;
+        }
+
+        const result = await response.json();
+        const data = result.data || [];
+        let currentPage = tablelist.page.info().page;
+        const tbody = document.querySelector('#tablelist tbody');
+        tbody.innerHTML = ''; // Clear old rows
+
+        data.forEach(order => {
+            const requestCreatedAt = order.requestCreatedAtString || "N/A";
+
+            const driverPhone = order.driverPhoneNumber
+                ? `<a href="tel:${order.driverPhoneNumber}">${order.driverPhoneNumber}</a>`
+                : "N/A";
+
+            const reviewButton = order.purpose
+                ? `<button class="btn btn-outline-secondary btn-sm"
+                            data-note="${order.note ?? ''}"
+                            data-purpose="${order.purpose ?? ''}"
+                            data-voucher-code="${order.voucherCode ?? ''}"
+                            data-phone-number="${order.driverPhoneNumber ?? ''}"
+                            onclick="showDetailsModal(this)">Show</button>`
+                : `<button class="btn btn-outline-secondary btn-sm"
+                            data-voucher-code="${order.voucherCode ?? ''}"
+                            data-phone-number="${order.driverPhoneNumber ?? ''}"
+                            onclick="showReviewModal(this)">Review</button>`;
+
+            const activityButton = `<button class="btn btn-outline-secondary activityBtn btn-sm"
+                                      data-voucher="${order.voucherCode ?? ''}"
+                                      data-company-code="${order.companyCode}"
+                                      onclick="showActivity(this)"
+                                      >
+                                      Show
+                                    </button>`;
+
+            let row = document.createElement('tr');
+            row.setAttribute('data-voucher', order.voucherCode);
+            row.style.fontSize = "13px";
+
+            row.innerHTML = `
+                <td>${order.voucherCode || 'N/A'}</td>
+                <td class="text-center">${order.companyName || 'N/A'}</td>
+                <td class="text-center">${order.branchName || 'N/A'}</td>
+                <td class="text-center">${order.firstName || 'N/A'}</td>
+                <td class="text-center"><a href="tel:${order.phoneNumber}">${order.phoneNumber || 'N/A'}</a></td>
+                <td data-order="${order.requestCreatedAt}" data-iso="${requestCreatedAt}" class="text-center">${requestCreatedAt}</td>
+                <td data-order="${order.distance}" class="text-center">${order.distance ?? 'N/A'} K.M</td>
+                <td data-order="${order.duration}" class="text-center">${order.duration ?? 'N/A'} Min</td>
+                <td data-order="${order.eta}" class="text-center">${order.eta ?? 'N/A'} Min</td>
+                <td class="driver-cell text-center">${driverPhone}</td>
+                <td class="text-center">${order.supervisorName || 'N/A'}</td>
+                <td class="text-center">${order.totalAmount ?? 'N/A'}</td>
+                <td class="text-center">${reviewButton}</td>
+                <td class="text-center">${activityButton}</td>
+            `;
+
+            tbody.appendChild(row);
+        });
+
+        // Reinitialize DataTable without destroying it
+        tablelist.clear();
+        tablelist.rows.add(js('#tablelist tbody tr'));  // Add the newly updated rows
+        // Redraw the table and retain the current page
+        tablelist.draw();
+        tablelist.page(currentPage).draw(false);
+    } catch (err) {
+        console.error("Error rendering completed orders:", err);
+    }
+}
