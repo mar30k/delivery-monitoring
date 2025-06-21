@@ -21,9 +21,9 @@
             </thead>
             <tbody>
                 @{
-                    @foreach (var tin in Model.Companies.companyTins)
+                    @foreach (var tin in Model.Companies.companyTins ?? new List<string>())
                     {
-                        var company = Model.company.FirstOrDefault(c => c.Tin == tin);
+                        var company = Model.company.FirstOrDefault(c => c?.Tin == tin);
 
                         <tr>
                             <td>@(company?.BrandName ?? "N/A")</td>
