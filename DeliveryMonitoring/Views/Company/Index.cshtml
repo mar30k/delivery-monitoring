@@ -21,7 +21,7 @@
             </thead>
             <tbody>
                 @{
-                    @foreach (var tin in Model.Companies.companyTins ?? new List<string>())
+                    @foreach (var tin in Model.Companies.companyTins)
                     {
                         var company = Model.company.FirstOrDefault(c => c?.Tin == tin);
 
