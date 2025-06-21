@@ -3,7 +3,7 @@
     ViewData["title"] = "Restaurant Connectivity";
 }
 <div class="p-4 mt-2">
-    <h2 class="mb-4">Restaurant Connectivity</h2>
+    <h3 class="mb-4">KOT status</h2>
 
     @if (Model == null || !Model.Any())
     {
@@ -15,9 +15,9 @@
     {
         <div class="row card">
             <div class="pt-3 pb-3 col-12 col-xl-12 table-responsive">
-                <table class="table compact stripe hover pt-3 mt-3" id="tablelist">
+                <table class="table compact stripe hover pt-3 mt-3" id="tablelist" style="font-size: 13px;">
                     <thead class="table-bordered">
-                        <tr>
+                        <tr >
                             <th class="text-center">TIN</th>
                             <th class="text-center">Company</th>
                             <th class="text-center">Branch</th>
@@ -46,7 +46,7 @@
                                 <td class="text-center">@(item.MachineNo ?? "N/A")</td>
                                 <td class="text-center">@(item.UserName ?? "N/A")</td>
                                 <td class="text-center">@item.Note</td>
-                                <td class="text-center">@item.TimeStamp?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td data-order="@item.TimeStamp?.ToString("yyyy-MM-ddTHH:mm:ss")" class="text-center">@item.TimeStamp?.ToString("yyyy-MM-dd hh:mm:ss")</td>
                                 <td>
                                     @if (item.Seen == true)
                                     {
@@ -83,7 +83,8 @@
         js(document).ready(function () {
             tablelist = js('#tablelist').DataTable({
                 responsive: true,
-                "order": [[1, "desc"]],
+                "order": [[9, "desc"]],
+                "pageLength": 20,
                 columnDefs: [
                     { orderable: false, targets: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }
                 ],
