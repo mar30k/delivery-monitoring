@@ -17,7 +17,7 @@
                     columnDefs: [
                         { orderable: false, targets: [2, 4] } // Disable sorting on specified columns
                     ],
-                    order: [[3, 'desc']]
+                    order: [[4, 'desc']]
                 });
             } else {
                 tablelist = js('#tablelist').DataTable();
@@ -78,18 +78,18 @@
                         // ---- UPDATE DRIVER STATUS IN TABLE ----
                         data.forEach(driver => {
                             let rowIndex = tablelist.rows().eq(0).filter(function (index) {
-                                let cellText = tablelist.cell(index, 2).node().innerText.trim();
+                                let cellText = tablelist.cell(index, 3).node().innerText.trim();
                                 return cellText === driver.phoneNumber?.trim();
                             });
 
                             if (rowIndex.length) {
                                 // Update the data
-                                tablelist.cell(rowIndex, 3).data(driver.status);
+                                tablelist.cell(rowIndex, 4).data(driver.status);
                                         // Set the text
-                                tablelist.cell(rowIndex, 3).data(driver.status);
+                                tablelist.cell(rowIndex, 4).data(driver.status);
 
                                 // Get the actual cell element
-                                const statuscell = tablelist.cell(rowIndex, 3).node();
+                                const statuscell = tablelist.cell(rowIndex, 4).node();
 
                                 const driverStatus = (driver.status || "default").toLowerCase();
                                 const statusInfo = statusColors[driverStatus] || statusColors.default;
@@ -105,7 +105,7 @@
 
                                 // Update the data-order attribute and cell content
                                 $(lastUpdatedCell).attr('data-order', driver.lastUpdatedAt);
-                                tablelist.cell(rowIndex, 1).data(driver.lastUpdatedAtIso);
+                                tablelist.cell(rowIndex, 2).data(driver.lastUpdatedAtIso);
 
                                 // Invalidate row data for DataTables
                                 tablelist.row(rowIndex).invalidate();
@@ -115,7 +115,7 @@
                         let currentPage = tablelist.page.info().page;
 
                         // Order by the first column (1) in descending order
-                        tablelist.order([[3, 'desc']]).draw(false);
+                        tablelist.order([[4, 'desc']]).draw(false);
 
                         // Go back to the original page
                         tablelist.page(currentPage).draw(false);
@@ -161,5 +161,5 @@
                     })
                     .catch(error => console.error('Error fetching live location:', error, error.responseText));
 
-                    tablelist.order([3, 'desc']).draw(false);
+                    tablelist.order([4, 'desc']).draw(false);
 }

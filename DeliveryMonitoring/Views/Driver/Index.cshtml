@@ -60,6 +60,9 @@
                                 Name
                             </th>
                             <th class="text-center">
+                                Company
+                            </th>
+                            <th class="text-center">
                                 Last Updated At
                             </th>
                             <th class="text-center">
@@ -106,8 +109,11 @@
 
                             <tr data-phone="@driver?.phoneNumber">
 
-                                <td>
+                                <td >
                                     @driver?.firstName
+                                </td>
+                                <td class="text-center">
+                                    @driver?.companyTin
                                 </td>
                                 <td data-order="@driver?.lastUpdatedAt" class="text-center">
                                     @DateTimeOffset.FromUnixTimeMilliseconds(driver?.lastUpdatedAt ?? new long()).ToOffset(TimeSpan.FromHours(3)).DateTime.ToString("yyyy-MM-dd hh:mm:ss")
