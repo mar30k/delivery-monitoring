@@ -9,7 +9,7 @@ const statusColors = {
     accepted: "seagreen",
     arrived: "coral",
     ontheway: "darkorange",
-    driverNotFound: "red",
+    drivernotfound: "red",
     sos: "darkred",
     default: "yellow"
 };
@@ -18,7 +18,7 @@ function loadAvailableDrivers() {
     $select.html(`<option value="" selected disabled>Loading drivers...</option>`);
 
     $.ajax({
-        url: "/getDrivers",
+        url: "driver/getDrivers",
         method: "GET",
         success: function (drivers) {
             if (!drivers || drivers.length === 0) {

@@ -15,7 +15,7 @@
                 tablelist = js('#tablelist').DataTable({
                     responsive: true,
                     columnDefs: [
-                        { orderable: false, targets: [2, 4] } // Disable sorting on specified columns
+                        { orderable: false, targets: [3, 5, 1] } // Disable sorting on specified columns
                     ],
                     order: [[4, 'desc']]
                 });
