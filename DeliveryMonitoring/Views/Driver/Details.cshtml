@@ -68,7 +68,7 @@
                     <img src="@Model?.detail?.profilePicture" alt="" class="half-size-img">
                 </div>
                 <div class="col-6">
-                    <span id="letters">@Html.DisplayNameFor(model => model.detail.fullName):</span>
+                    <span id="letters">Name: </span>
                     <span id="outputs">@Model?.firstName</span>
                     <a id="outputs">
                         @{
@@ -98,50 +98,51 @@
                     }
 
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.lastUpdatedAt):</span>
+                        <span id="letters">Last updated at: </span>
                         <span id="outputs">
-                            @{
-                                long unixtimestamp = Model.lastUpdatedAt;
-                            }
-                            @DateTimeOffset.FromUnixTimeMilliseconds(unixtimestamp).DateTime.ToString("HH:mm:ss - ddd, MMMM dd, yyyy")
+                            @DateTimeOffset.FromUnixTimeMilliseconds(Model?.lastUpdatedAt ?? new long()).ToOffset(TimeSpan.FromHours(3)).DateTime.ToString("yyyy-MM-dd hh:mm:ss")
                         </span>
+                    </div>
+                    <div>
+                        <span id="letters">Status:</span>
+                        <span>@Model?.status</span>
                     </div>
                     <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.companyTin):</span>
                         <span id="outputs"><a href="/company/@Model?.companyTin"">@Html.DisplayFor(model => model.companyTin)</a></span>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.phoneNumber):</span>
+                        <span id="letters">Phone Number:</span>
                         <span id="outputs">
                             <a href="tel:@Model?.phoneNumber">@Model?.phoneNumber</a>
                         </span>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.detail.plateNumber):</span>
+                        <span id="letters">Plate Number:</span>
                         <span id="outputs">@(Model?.detail?.plateNumber ?? "N/A")</span>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.detail.email):</span>
+                        <span id="letters">Email: </span>
                         <a id="outputs" href="mailto: @Model?.detail?.email">@Html.DisplayFor(model => model.detail.email)</a>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.detail.gender):</span>
+                        <span id="letters">Gender: </span>
                         <a id="outputs">@Html.DisplayFor(model => model.detail.gender)</a>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.detail.dob):</span>
+                        <span id="letters">Dob:</span>
                         <a id="outputs">@Html.DisplayFor(model => model.detail.dob)</a>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.numberOfAcceptedOrders):</span>
+                        <span id="letters">Number Of Accepted Orders:</span>
                         <span id="outputs">@Html.DisplayFor(model => model.numberOfAcceptedOrders)</span>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.numberOfRejectedOrders):</span>
+                        <span id="letters">Number Of Rejected Orders:</span>
                         <span id="outputs">@Html.DisplayFor(model => model.numberOfRejectedOrders)</span>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.traveledDistance):</span>
+                        <span id="letters">Traveled Distance:</span>
                         <span id="outputs">@(Model?.traveledDistance != null ? Model?.traveledDistance + " km" : "N/A")</span>
                     </div>
                 </div>

@@ -4,7 +4,7 @@
     ViewData["Title"] = "List of Orders";
     var disTinctSupervisors = Model.DistinctBy(x => x.SupervisedBy).Where(x=> x.SupervisedBy!= null).ToList();
 }
-<div class="container-fluid col-11 pt-5">
+<div class="p-4 mt-2">
     <div id="alertContainer" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1050; width: auto;"></div>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0">List of Orders</h3>
@@ -22,9 +22,9 @@
 
     <div class="row card">
         <div class="table-responsive pt-3 pb-3">
-            <table class="table compact stripe hover pt-3" id="tablelist">
+            <table class="table compact stripe hover pt-3" id="tablelist" style="font-size: 13px;">
                 <thead class="">
-                    <tr style="font-size: 13px;">
+                    <tr >
                         <th>
                             Order Number
                         </th>
@@ -101,7 +101,7 @@
                             RequestCreatedAt = DateTimeOffset.Now.ToUnixTimeMilliseconds(),
                             RequestCreatedAtIso = DateTime.Now,
                             Status = "DriverNotFound",
-                            VoucherCode = "TEST123",
+                            VoucherCode = "0939977886-152027-221",
                             Platform = "Web",
                             TargetBranchLocation = new Location
                             {
@@ -188,7 +188,9 @@
                                             });
                                             <a class="btn btn-outline-dark btn-sm"
                                                data-order='@Html.Raw(jsonOrder)'
-                                               onclick="openRedispatchModal(this)">
+                                               onclick="openRedispatchModal(this)"
+                                               id="@order?.VoucherCode?.ToString()"
+                                               >
                                                 Redispatch
                                             </a>
                                         }
@@ -202,7 +204,8 @@
             </table>
 @*             <a class="btn btn-outline-dark"
                data-order='@Html.Raw(testJsonOrder)'
-               onclick="openRedispatchModal(this)">
+               onclick="openRedispatchModal(this)"
+               id="@testOrder.VoucherCode.ToString()">
                 Redispatch
                 </a>  <a class="btn btn-outline-dark btn-sm" onclick="assiignSupervisor('@voucher')">Assign</a> *@
            
@@ -220,7 +223,7 @@
                     <div class="modal-body">
                         <p class="mb-3 text-muted">Choose how you want to re-dispatch the order:</p>
 
-                        <button class="btn btn-outline-primary w-100 mb-3" onclick="confirmRedispatchToAll()">
+                        <button class="btn btn-outline-primary w-100 mb-3" id="confirmRedispatchToAll" onclick="confirmRedispatchToAll()">
                             🔄 Re-dispatch to All Available Drivers
                         </button>
 
