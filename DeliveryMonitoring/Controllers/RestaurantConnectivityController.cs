@@ -18,7 +18,7 @@ namespace DeliveryMonitoring.Controllers
             _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
         }
-        [Route("/connectivity")]
+        [Route("/deviceControl")]
         public async Task<IActionResult >Index( string startDate, string endDate)
         {
             var client = _httpClientFactory.CreateClient("ApiBaseUrl");
@@ -40,7 +40,7 @@ namespace DeliveryMonitoring.Controllers
                 {
                     deviceControl = deviceControl?.Where(x => x?.Tin?.ToString() == companyTin?.Trim()).ToList();
                 }
-
+                deviceControl = deviceControl?.Where(x => !x.Note.StartsWith("09")).ToList();
                 return View(deviceControl);
             }
             catch (Exception ex)
