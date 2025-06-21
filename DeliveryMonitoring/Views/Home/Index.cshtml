@@ -9,29 +9,28 @@
 <link rel="stylesheet" href="~/css/homeIndex.css" />
 
 <div class="container-fluid col-11 mt-3">
-    <div class="row">
-        <div class="col-12 col-md-3 mb-3">
-            <div class="card border-1" id="orderCard">                
-                    <div class="row">
-                        <div class="col-3" id="dashboardIcon">
-                            <i class="bi bi-truck"></i>
+    <div class="d-flex flex-wrap justify-content-between gap-3">
+        <div class="card flex-grow-1" >
+            <div class="card border-1" id="orderCard">
+                <div class="row">
+                    <div class="col-3" id="dashboardIcon">
+                        <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i>
+                    </div>
+                    <div class="card-body col-7">
+                        <p class="card-title">Total Drivers</p>
+                        <div class="d-flex align-items-baseline mt-lg-5">
+                            <h1 class="card-text mb-0 me-2">
+                                @(Model?.Drivers?.Count ?? 0)
+                            </h1>
+                            <p>
+                                (@(Model?.Drivers?.Count(x => x.isDisabled != true) ?? 0) Active)
+                            </p>
                         </div>
-                        <div class="card-body col-7">
-                            <p class="card-title">Total Drivers</p>
-                            <div class="d-flex align-items-baseline mt-lg-5">
-                                <h1 class="card-text mb-0 me-2">
-                                    @(Model?.Drivers?.Count ?? 0)
-                                </h1>
-                                <p >
-                                    (@(Model?.Drivers?.Count(x => x.isDisabled != true) ?? 0) Active)
-                                </p>
-                            </div>
-                        </div>
-                    </div>    
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="col-12 col-md-3 mb-3">
+        <div class="card flex-grow-1">
             <div class="card border-1" id="orderCard">
                 <div class="row">
                     <div class="col-3" id="dashboardIcon">
@@ -41,33 +40,32 @@
                         <p class="card-title">Total Orders</p>
                         <h1 class="card-text" id="orderCount">@Model?.Orders?.Count</h1>
                     </div>
-                </div>                
+                </div>
             </div>
         </div>
-
-        <div class="col-12 col-md-3 mb-3">
+        <div class="card flex-grow-1" >
             <div class="card border-1" id="orderCard">
                 <div class="row">
                     <div class="col-3" id="dashboardIcon">
-                        <i class="bi bi-building"></i>
+                        <i class="fa-regular fa-building"></i>
                     </div>
                     <div class="card-body col-7">
                         <p class="card-title">Companies</p>
-                        <h1 class="card-text">@Model?.Comps?.companyTins.Count</h1>
+                        <h1 class="card-text">@Model?.Comps?.companyTins?.Count</h1>
                     </div>
-                </div>               
+                </div>
             </div>
         </div>
-        <div class="col-12 col-md-3 mb-3">
+        <div class="card flex-grow-1" >
             <div class="card border-1" id="orderCard">
                 <div class="row">
                     <div class="col-3" id="dashboardIcon">
-                        <i class="bi bi-building"></i>
+                        <i class="fas fa-cash-register"></i>
                     </div>
                     <div class="card-body col-7">
                         <div>
-                            <a class="card-title" style="text-decoration: none" 
-                            href="/connectivity?startDate=@DateTime.Today.ToString("yyyy-MM-dd")&endDate=@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")">KOT Status </a> <br />
+                            <a class="card-title" style="text-decoration: none"
+                               href="/deviceControl?startDate=@DateTime.Today.ToString("yyyy-MM-dd")&endDate=@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")">KOT Status </a> <br />
                             <span class="text-sm">
                                 @DateTime.Today.ToString("yyyy-MM-dd")
                             </span>
@@ -77,9 +75,22 @@
                 </div>
             </div>
         </div>
+        <div class="card flex-grow-1">
+            <div class="card border-1" id="orderCard">
+                <div class="row">
+                    <div class="col-3" id="dashboardIcon">
+                        <i class="fa-duotone fa-solid fa-user"></i>
+                    </div>
+                    <div class="card-body col-7">
+                        <p class="card-title">Supervisors</p>
+                        <h1 class="card-text">@Model?.Supervisors?.Count</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-   
+
     <div class="row mt-3">
         <!--The Donut Chart and the Map Starts Here-->
         <div class="col-md-6">

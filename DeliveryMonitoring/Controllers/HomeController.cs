@@ -28,9 +28,11 @@ namespace DeliveryMonitoring.Controllers
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
             var _httpClient = _httpClientFactory.CreateClient("ApiBaseUrl");
+            var _v7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
 
             // Fetch driver data
             List<Driver> drivers = new();
+            List<SupervisorsDTO>? superVisors = new();
 
             HttpResponseMessage driverResponse = await _client.GetAsync(_client.BaseAddress + "/drivers");
 
@@ -65,6 +67,7 @@ namespace DeliveryMonitoring.Controllers
                 var endDate = DateTime.Today.ToString("yyyy-MM-dd");
 
                 HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/companies");
+                HttpResponseMessage getsupervisors = await _v7client.GetAsync(_v7client.BaseAddress + $"auth/getsupervisors");
 
 
                 if (response.IsSuccessStatusCode)
@@ -72,7 +75,11 @@ namespace DeliveryMonitoring.Controllers
                     string data = await response.Content.ReadAsStringAsync();
                     company = JsonConvert.DeserializeObject<Companies>(data) ?? new Companies();
                 }
-
+                if (getsupervisors.IsSuccessStatusCode)
+                {
+                    string data = await getsupervisors.Content.ReadAsStringAsync();
+                    superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
+                }
 
                 if (companyTin!= "0076217301" && company?.companyTins?.Contains(companyTin) == true)
                 {
@@ -89,7 +96,7 @@ namespace DeliveryMonitoring.Controllers
                 {
                     deviceControl = deviceControl.Where(x => x.Tin.ToString() == companyTin.Trim()).ToList();
                 }
-                
+                deviceControl = deviceControl?.Where(x => !x.Note.StartsWith("09")).ToList();
             }
             catch (HttpRequestException)
             {
@@ -102,7 +109,8 @@ namespace DeliveryMonitoring.Controllers
                 Orders = orders,
                 Comps = company,
                 CompanyTin = companyTin,
-                DeviceControl = deviceControl
+                DeviceControl = deviceControl,
+                Supervisors = superVisors
             };
 
             return View(viewModel);
