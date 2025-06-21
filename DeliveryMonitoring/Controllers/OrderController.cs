@@ -84,7 +84,33 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
         }
-        //Order Details Page -- Ends Here
+        [HttpPost]
+        public async Task<IActionResult> AssignSupervisor([FromBody] string Vouchercode)
+        {
+            if (Vouchercode == null)
+                return BadRequest("Invalid voucher data.");
+
+            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+
+            try
+            {
+                var response = await client.GetAsync($"auth/assign?voucherCode={Vouchercode}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"Redispatch failed: {error}");
+                }
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<Boolean>(responseData);
+                return result ? Ok(result) : BadRequest("Unable To Assign Supervisor!");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Exception: {ex.Message}");
+            }
+        }
         [HttpPost]
         public async Task<IActionResult> Dispatch([FromBody] OrderDetail order)
         {
@@ -121,34 +147,7 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500, $"Exception: {ex.Message}");
             }
         }
-        [HttpPost]
-        public async Task<IActionResult> AssignSupervisor([FromBody] string Vouchercode)
-        {
-            if (Vouchercode == null)
-                return BadRequest("Invalid voucher data.");
-
-            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-
-            try
-            {
-                var response = await client.GetAsync($"auth/assign?voucherCode={Vouchercode}");
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    return StatusCode((int)response.StatusCode, $"Redispatch failed: {error}");
-                }
-
-                var responseData = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<Boolean>(responseData);
-                return result?  Ok(result) : BadRequest("Unable To Assign Supervisor!");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Exception: {ex.Message}");
-            }
-        }
-
+        
 
         [HttpPost]
         public async Task<IActionResult> OrderDetails([FromBody] Order order)
