@@ -28,7 +28,9 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
+            var _V7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             List<OrderDetail>? orders = new ();
+            List<SupervisorsDTO>? superVisors = new ();
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
             {
@@ -36,11 +38,17 @@ namespace DeliveryMonitoring.Controllers
             }
 
             HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
+            HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + $"auth/getsupervisors");
 
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();
                 orders = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
+            }
+            if (getsupervisors.IsSuccessStatusCode)
+            {
+                string data = await getsupervisors.Content.ReadAsStringAsync();
+                superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
             }
             return View(orders);
         }

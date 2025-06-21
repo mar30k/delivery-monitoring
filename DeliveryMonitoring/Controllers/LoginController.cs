@@ -135,6 +135,7 @@ namespace DeliveryMonitoring.Controllers
                         if (userValidation?.Count > 0)
                         {
                             baseAddress = userValidation.FirstOrDefault()?.BaseUrl + "/api";
+                            //baseAddress = "http://196.191.244.156:7038/api";
                             AddCookie(CNET_WebConstantes.IdentificationCookie, userValidation?.FirstOrDefault()?.Tin, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
                             AddCookie("apibaseAddress", baseAddress, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
                             if (userValidation.FirstOrDefault()?.Tin == model.myId?.Trim())
