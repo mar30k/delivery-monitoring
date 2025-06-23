@@ -17,14 +17,29 @@
                         <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i>
                     </div>
                     <div class="card-body col-7">
-                        <p class="card-title">Total Drivers</p>
-                        <div class="d-flex align-items-baseline mt-lg-5">
-                            <h1 class="card-text mb-0 me-2">
-                                @(Model?.Drivers?.Count ?? 0)
-                            </h1>
-                            <p>
-                                (@(Model?.Drivers?.Count(x => x.isDisabled != true) ?? 0) Active)
-                            </p>
+                        <h5 class="card-title mb-4 ">Total Drivers</h5>
+    
+                        <div class="d-flex align-items-center gap-4 flex-wrap">
+                            <div class="text-center">
+                                <h1 class="mb-0 fw-bold text-primary">
+                                    @(Model?.Drivers?.Count ?? 0)
+                                </h1>
+                                <small class="text-black">Total</small>
+                            </div>
+        
+                            <div class="text-center">
+                                <h5 class="mb-0 text-success">
+                                    @(Model?.Drivers?.Count(x => x.isDisabled != true) ?? 0)
+                                </h5>
+                                <small class="text-muted">Active</small>
+                            </div>
+
+                            <div class="text-center">
+                                <h5 class="mb-0 text-info">
+                                    @(Model?.Drivers?.Count(x => x.status?.ToLower() == "ready") ?? 0)
+                                </h5>
+                                <small class="text-muted">Ready</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -63,14 +78,14 @@
                         <i class="fas fa-cash-register"></i>
                     </div>
                     <div class="card-body col-7">
-                        <div>
-                            <a class="card-title" style="text-decoration: none"
-                               href="/deviceControl?startDate=@DateTime.Today.ToString("yyyy-MM-dd")&endDate=@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")">KOT Status </a> <br />
-                            <span class="text-sm">
-                                @DateTime.Today.ToString("yyyy-MM-dd")
-                            </span>
+                        <div class="mb-1">
+                            <a class="card-title fw-semibold  text-decoration-none"
+                               href="/deviceControl?date=@DateTime.Today.ToString("yyyy-MM-dd")">
+                                KOT Status
+                            </a><br />
+                            <small class="text-muted">@DateTime.Today.ToString("yyyy-MM-dd")</small>
                         </div>
-                        <h1 class="card-text">@Model?.DeviceControl?.Count</h1>
+                        <h1 class="card-text fw-bold mb-0">@Model?.DeviceControl?.Count</h1>
                     </div>
                 </div>
             </div>
@@ -82,8 +97,28 @@
                         <i class="fa-duotone fa-solid fa-user"></i>
                     </div>
                     <div class="card-body col-7">
-                        <p class="card-title">Supervisors</p>
-                        <h1 class="card-text">@Model?.Supervisors?.Count</h1>
+                        <p class="card-title mb-4">Supervisors</p>
+                        <div class="d-flex align-items-center gap-4 flex-wrap">
+                            <div class="text-center">
+                                <h1 class="mb-0 fw-bold text-primary">
+                                    @(Model?.Supervisors?.Count ?? 0)
+                                </h1>
+                                <small class="text-black">Total</small>
+                            </div>
+        
+                            <div class="text-center">
+                                <h5 class="mb-0 text-success">
+                                    @(Model?.Supervisors?.Count(x => x.IsActive == true) ?? 0)
+                                </h5>
+                                <small class="text-muted">Active</small>
+                            </div>
+                            <div class="text-center">
+                                <h5 class="mb-0 text-info">
+                                    @(Model?.Supervisors?.Count(x => x.LoggedInStatus == true) ?? 0)
+                                </h5>
+                                <small class="text-muted">Logged In</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
