@@ -26,83 +26,71 @@ namespace DeliveryMonitoring.Controllers
         [Route("/")]
         public async Task<IActionResult> Index()
         {
-            var _client = _httpClientFactory.CreateClient("Delivery");
-            var _httpClient = _httpClientFactory.CreateClient("ApiBaseUrl");
-            var _v7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            var client = _httpClientFactory.CreateClient("Delivery");
+            var httpClient = _httpClientFactory.CreateClient("ApiBaseUrl");
+            var v7Client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
 
-            // Fetch driver data
-            List<Driver> drivers = new();
-            List<SupervisorsDTO>? superVisors = new();
-
-            HttpResponseMessage driverResponse = await _client.GetAsync(_client.BaseAddress + "/drivers");
-
-            if (driverResponse.IsSuccessStatusCode)
-            {
-                string driverData = await driverResponse.Content.ReadAsStringAsync();
-                drivers = JsonConvert.DeserializeObject<List<Driver>>(driverData) ?? new List<Driver>();
-                
-            }
-
-            // Fetch order data
-            List<OrderDetail> orders = new ();
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin)) {
+            if (string.IsNullOrWhiteSpace(companyTin))
                 return RedirectToAction("Logout", "Login");
-            }
 
-            HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
+            string driverUri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
 
-            if (orderResponse.IsSuccessStatusCode)
-            {
-                string orderData = await orderResponse.Content.ReadAsStringAsync();
-                orders = JsonConvert.DeserializeObject<List<OrderDetail>>(orderData) ?? new List<OrderDetail>();
-            }
-
-            Companies company = new ();
-            var deviceControl = new List<DeviceControl>();
+            // Declare all variables outside try
+            List<Driver> drivers = new();
+            List<OrderDetail> orders = new();
+            Companies company = new();
+            List<DeviceControl> deviceControl = new();
+            List<SupervisorsDTO> superVisors = new();
 
             try
             {
-                var startDate = DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd");
-                var endDate = DateTime.Today.ToString("yyyy-MM-dd");
+                // Fetch drivers and orders
+                drivers = await FetchData<List<Driver>>(client, driverUri) ?? new List<Driver>();
+                orders = await FetchData<List<OrderDetail>>(client, $"/orderRequests?companyTin={companyTin}") ?? new List<OrderDetail>();
 
-                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/companies");
-                HttpResponseMessage getsupervisors = await _v7client.GetAsync(_v7client.BaseAddress + $"auth/getsupervisors");
+                var startDate = DateTime.Today.ToString("yyyy-MM-dd");
 
+                var companyTask = client.GetAsync($"{client.BaseAddress}/companies");
+                var supervisorTask = v7Client.GetAsync($"{v7Client.BaseAddress}auth/getsupervisors");
+                var deviceTask = httpClient.GetAsync($"deviceControl?StartDate={startDate}&EndDate={startDate}");
 
-                if (response.IsSuccessStatusCode)
+                await Task.WhenAll(companyTask, supervisorTask, deviceTask);
+
+                if (companyTask.Result.IsSuccessStatusCode)
                 {
-                    string data = await response.Content.ReadAsStringAsync();
+                    var data = await companyTask.Result.Content.ReadAsStringAsync();
                     company = JsonConvert.DeserializeObject<Companies>(data) ?? new Companies();
                 }
-                if (getsupervisors.IsSuccessStatusCode)
+
+                if (supervisorTask.Result.IsSuccessStatusCode)
                 {
-                    string data = await getsupervisors.Content.ReadAsStringAsync();
-                    superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
+                    var data = await supervisorTask.Result.Content.ReadAsStringAsync();
+                    superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data) ?? new List<SupervisorsDTO>();
                 }
 
-                if (companyTin!= "0076217301" && company?.companyTins?.Contains(companyTin) == true)
+                if (companyTin != "0076217301" && company?.companyTins?.Contains(companyTin) == true)
                 {
                     company.companyTins = new List<string> { companyTin };
                 }
-                HttpResponseMessage deviceControlResponse = await _httpClient.GetAsync($"deviceControl?StartDate={startDate}&EndDate={endDate}");
 
-                if (deviceControlResponse.IsSuccessStatusCode)
+                if (deviceTask.Result.IsSuccessStatusCode)
                 {
-                    string data = await deviceControlResponse.Content.ReadAsStringAsync();
+                    var data = await deviceTask.Result.Content.ReadAsStringAsync();
                     deviceControl = JsonConvert.DeserializeObject<List<DeviceControl>>(data) ?? new List<DeviceControl>();
                 }
+
                 if (companyTin != "0076217301")
                 {
-                    deviceControl = deviceControl.Where(x => x.Tin.ToString() == companyTin.Trim()).ToList();
+                    deviceControl = deviceControl.Where(x => x.Tin?.ToString() == companyTin.Trim()).ToList();
+                    superVisors = new List<SupervisorsDTO>();
                 }
-                deviceControl = deviceControl?.Where(x => !x.Note.StartsWith("09")).ToList();
             }
             catch (HttpRequestException)
             {
+                // Optionally log the error
             }
 
-            // Create HomeViewModel
             var viewModel = new HomeViewModel
             {
                 Drivers = drivers,
@@ -115,6 +103,14 @@ namespace DeliveryMonitoring.Controllers
 
             return View(viewModel);
         }
-        //This is the end of the code that returns the view for Home/Index Page
+
+        private async Task<T?> FetchData<T>(HttpClient client, string uri)
+        {
+            HttpResponseMessage response = await client.GetAsync(client.BaseAddress + uri);
+            if (!response.IsSuccessStatusCode) return default;
+
+            string json = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(json);
+        }
     }
 }
