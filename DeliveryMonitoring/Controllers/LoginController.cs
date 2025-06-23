@@ -109,7 +109,7 @@ namespace DeliveryMonitoring.Controllers
             if (ModelState.IsValid)
             {
                 string message = string.Empty;
-                if(model.myId.Trim().ToLower() == "0076217301") 
+                if(model.myId?.Trim().ToLower() == "0076217301") 
                 {
                     baseAddress = _client.BaseAddress.ToString();
                     AddCookie(CNET_WebConstantes.IdentificationCookie, "0076217301", TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
@@ -126,12 +126,11 @@ namespace DeliveryMonitoring.Controllers
                     string requestUrl = $"/Consignee/filter?Tin={model.myId}";
 
                     HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + requestUrl);
-                    var userValidation = new List<EntityModel>();
 
                     if (response.IsSuccessStatusCode)
                     {
                         string juservalidation = await response.Content.ReadAsStringAsync();
-                        userValidation = JsonConvert.DeserializeObject<List<EntityModel>>(juservalidation); 
+                        List<EntityModel>? userValidation = JsonConvert.DeserializeObject<List<EntityModel>>(juservalidation);
                         if (userValidation?.Count > 0)
                         {
                             baseAddress = userValidation.FirstOrDefault()?.BaseUrl + "/api";

@@ -19,13 +19,13 @@ namespace DeliveryMonitoring.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
         [Route("/deviceControl")]
-        public async Task<IActionResult >Index( string startDate, string endDate)
+        public async Task<IActionResult >Index( string date)
         {
             var client = _httpClientFactory.CreateClient("ApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             try
             {
-                var response = await client.GetAsync($"deviceControl?StartDate={startDate}&EndDate={endDate}");
+                var response = await client.GetAsync($"deviceControl?StartDate={date}&EndDate={date}");
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -35,12 +35,10 @@ namespace DeliveryMonitoring.Controllers
 
                 var responseData = await response.Content.ReadAsStringAsync();
                 var deviceControl = JsonConvert.DeserializeObject<List<DeviceControl>>(responseData);
-
                 if (companyTin != "0076217301")
                 {
                     deviceControl = deviceControl?.Where(x => x?.Tin?.ToString() == companyTin?.Trim()).ToList();
                 }
-                deviceControl = deviceControl?.Where(x => !x.Note.StartsWith("09")).ToList();
                 return View(deviceControl);
             }
             catch (Exception ex)
