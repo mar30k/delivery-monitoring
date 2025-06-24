@@ -84,17 +84,26 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
         }
-        [HttpPost]
-        public async Task<IActionResult> AssignSupervisor([FromBody] string Vouchercode)
+        public class AssignSuperVisorDTO
         {
-            if (Vouchercode == null)
+           public string? voucherCode { get; set; }
+           public string? id { get; set; }
+        }
+        [HttpPost]
+        public async Task<IActionResult> AssignSupervisor([FromBody] AssignSuperVisorDTO assignSuperVisorDTO)
+        {
+            if (assignSuperVisorDTO.voucherCode == null)
                 return BadRequest("Invalid voucher data.");
 
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            var uri = assignSuperVisorDTO.id == "all" ?
+                $"auth/assign?voucherCode={assignSuperVisorDTO.voucherCode}" :
+                $"auth/assign?voucherCode={assignSuperVisorDTO.voucherCode}&id={assignSuperVisorDTO.id}";
+
 
             try
             {
-                var response = await client.GetAsync($"auth/assign?voucherCode={Vouchercode}");
+                var response = await client.GetAsync(client.BaseAddress + uri);
 
                 if (!response.IsSuccessStatusCode)
                 {
