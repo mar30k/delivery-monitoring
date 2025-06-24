@@ -204,7 +204,6 @@ function openRedispatchModal(el) {
     try {
         const dataAttr = el.getAttribute('data-order');
         selectedOrder = JSON.parse(dataAttr.replace(/&quot;/g, '"'));
-        console.log(selectedOrder)
         const driverSelect = document.getElementById("driverSelect");
         if (driverSelect) {
             driverSelect.selectedIndex = 0;
@@ -218,7 +217,7 @@ function openRedispatchModal(el) {
         const modal = new bootstrap.Modal(modalElement);
 
         $('#reDispatchModal').one('shown.bs.modal', function () {
-        loadAvailableDrivers();
+            loadAvailableDrivers();
         });
         modal.show();
     } catch (e) {
@@ -345,20 +344,95 @@ function showAssignAlert(message, type = "info") {
     }, 3000);
 }
 
-function assiignSupervisor(voucherCode) {
+async function assignSupervisor(voucherCode, id = "all") {
+    showLoading("assignLoading");
+    var data = {
+        voucherCode,
+        id
+    };
+
     $.ajax({
         url: "/order/assignSupervisor",
         type: "POST",
         contentType: "application/json",
-        data: JSON.stringify(voucherCode),
+        data: JSON.stringify(data),
         success: function (response) {
-            showAssignAlert("Supervisor Assignment successful!", "success");
+            hideLoading("assignLoading");
+            showAlert("Supervisor Assignment successful!", "success", "assignSupervisor");
         },
         error: function (xhr) {
-            showAssignAlert("Supervisor Assignment failed: " + xhr.responseText, "danger");
+            hideLoading("assignLoading");
+            showAlert("Supervisor Assignment failed " , "danger", "assignSupervisor");
+        }
+    });
+}
+let assignSupervisorVoucherCode = null;
+
+function openAssignSupervisorModal(voucherCode) {
+    try {
+        const supervisor = document.getElementById("modalSupervisorSelect");
+        if (supervisor) {
+            supervisor.selectedIndex = 0;
+        }
+        assignSupervisorVoucherCode = voucherCode;
+        hideLoading("assignLoading");
+
+        const modalElement = document.getElementById('assignSupervisor');
+        if (!modalElement) throw new Error("Modal element missing");
+
+        $('#assignVoucherCodeLabel').text(`- ${voucherCode}`);
+
+        const modal = new bootstrap.Modal(modalElement);
+
+        $('#assignSupervisor').one('shown.bs.modal', function () {
+            loadAvailableSupervisors();
+        });
+
+        modal.show();
+    } catch (e) {
+        console.error("Failed to open modal:", e);
+        alert("Error preparing supervisor assignment. Please try again.");
+    }
+}
+
+
+function loadAvailableSupervisors() {
+    const $select = $('#modalSupervisorSelect');
+    $.ajax({
+        url: "order/getAvailableSupervisors",
+        method: "GET",
+        success: function (supervisors) {
+            if (!supervisors || supervisors.length === 0) {
+                $select.html(`<option disabled>No available supervisors found</option>`);
+                return;
+            }
+            $select.empty().append(`<option value="" selected disabled>Select a supervisor</option>`);
+            supervisors.forEach(supervisor => {
+                const option = `<option value="${supervisor.id}">
+                    ${supervisor.firstName || ''} ${supervisor.secondName || ''}
+                </option>`;
+                $select.append(option);
+            });
+        },
+        error: function () {
+            $select.html(`<option disabled>Error loading supervisors</option>`);
         }
     });
 }
 
 
 
+
+function confirmAssignToAll() {
+    if (!assignSupervisorVoucherCode) return;
+    assignSupervisor(assignSupervisorVoucherCode);
+}
+
+function confirmAssignToSupervisor() {
+    const supervisorId = document.getElementById("modalSupervisorSelect")?.value;
+    if (!supervisorId) {
+        alert("Please select a supervisor.");
+        return;
+    }
+    assignSupervisor(assignSupervisorVoucherCode, supervisorId);
+}
