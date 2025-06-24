@@ -188,5 +188,25 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500, $"Exception: {ex.Message}");
             }
         }
+
+        [HttpGet("order/getAvailableSupervisors")]
+        public async Task<IActionResult> GetAvailableSupervisors()
+        {
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            string uri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
+
+            var _client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            List<SupervisorsDTO> supervisors = new();
+
+            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "auth/getsupervisors");
+
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                supervisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data) ?? new List<SupervisorsDTO>();
+            }
+
+            return Ok(supervisors);
+        }
     }
 }
