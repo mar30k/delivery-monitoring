@@ -197,4 +197,11 @@ namespace DeliveryMonitoring.Models
         public DateTime? Time { get; set; }
         public string? TimeElapsed { get; set; }
     }
+
+
+    public class OrderViewModel
+    {
+        public List<OrderDetail>? OrderDetail { get; set; }
+        public List<SupervisorsDTO>? Supervisors { get; set; }
+    }
 }

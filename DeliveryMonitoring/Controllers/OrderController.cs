@@ -50,7 +50,12 @@ namespace DeliveryMonitoring.Controllers
                 string data = await getsupervisors.Content.ReadAsStringAsync();
                 superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
             }
-            return View(orders);
+            var orderViewModel = new OrderViewModel
+            {
+                OrderDetail = orders,
+                Supervisors = superVisors
+            };
+            return View(orderViewModel);
         }
         //List of Orders Page -- Ends Here
 
@@ -124,16 +129,16 @@ namespace DeliveryMonitoring.Controllers
         
 
         [HttpPost]
-        public async Task<IActionResult> OrderDetails([FromBody] Order order)
+        public async Task<IActionResult> OrderDetails([FromBody] OrderDetail order)
         {
-            if (order.voucherCode == null)
+            if (order.VoucherCode == null)
                 return BadRequest("Invalid voucher code.");
 
             var _client = _httpClientFactory.CreateClient("Delivery");
             try
             {
 
-                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/orderRequests/{order.voucherCode?.ToString()}");
+                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/orderRequests/{order.VoucherCode?.ToString()}");
 
                 if (!response.IsSuccessStatusCode)
                 {

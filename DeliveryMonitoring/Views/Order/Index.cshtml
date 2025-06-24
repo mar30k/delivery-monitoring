@@ -1,8 +1,8 @@
-﻿@model List<DeliveryMonitoring.Models.OrderDetail>
+﻿@model OrderViewModel
 
 @{
     ViewData["Title"] = "List of Orders";
-    var disTinctSupervisors = Model.DistinctBy(x => x.SupervisedBy).Where(x=> x.SupervisedBy!= null).ToList();
+    var disTinctSupervisors = Model.OrderDetail?.DistinctBy(x => x.SupervisedBy).Where(x=> x.SupervisedBy!= null).ToList();
 }
 <div class="p-4 mt-2">
     <div id="alertContainer" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1050; width: auto;"></div>
@@ -12,9 +12,9 @@
             <label for="supervisorSelect" class="form-label mb-0 me-2 fw-semibold">Supervisor:</label>
             <select id="supervisorSelect" class="form-select form-select-sm" style="width: auto; min-width: 200px;">
                 <option value="" selected>All Supervisors</option>
-                @foreach (var supervisor in disTinctSupervisors)
+                @foreach (var supervisor in disTinctSupervisors ?? new List<OrderDetail>())
                 {
-                    <option value="@supervisor.SupervisedBy">@supervisor.SupervisedBy</option>
+                    <option value="@supervisor.SupervisedBy">@Model.Supervisors?.FirstOrDefault(x => x.UserName == @supervisor.SupervisedBy)?.FirstName @supervisor.SupervisedBy</option>
                 }
             </select>
         </div>
@@ -115,7 +115,7 @@
                             PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                             WriteIndented = false
                         });
-                        foreach (var order in Model)
+                        foreach (var order in Model?.OrderDetail ?? new List<OrderDetail>())
                         {
                             var statusKey = order?.Status?.ToLower() ?? "default"; 
                             var bgColor = statusColors.ContainsKey(statusKey)?  statusColors[statusKey] : statusColors["default"];
