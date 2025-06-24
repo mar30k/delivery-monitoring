@@ -38,7 +38,7 @@ namespace DeliveryMonitoring.Controllers
             }
 
             HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
-            HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + $"auth/getsupervisors");
+            HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
 
             if (response.IsSuccessStatusCode)
             {
@@ -84,42 +84,7 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
         }
-        public class AssignSuperVisorDTO
-        {
-           public string? voucherCode { get; set; }
-           public string? id { get; set; }
-        }
-        [HttpPost]
-        public async Task<IActionResult> AssignSupervisor([FromBody] AssignSuperVisorDTO assignSuperVisorDTO)
-        {
-            if (assignSuperVisorDTO.voucherCode == null)
-                return BadRequest("Invalid voucher data.");
-
-            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-            var uri = assignSuperVisorDTO.id == "all" ?
-                $"auth/assign?voucherCode={assignSuperVisorDTO.voucherCode}" :
-                $"auth/assign?voucherCode={assignSuperVisorDTO.voucherCode}&id={assignSuperVisorDTO.id}";
-
-
-            try
-            {
-                var response = await client.GetAsync(client.BaseAddress + uri);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    return StatusCode((int)response.StatusCode, $"Redispatch failed: {error}");
-                }
-
-                var responseData = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<Boolean>(responseData);
-                return result ? Ok(result) : BadRequest("Unable To Assign Supervisor!");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Exception: {ex.Message}");
-            }
-        }
+       
         [HttpPost]
         public async Task<IActionResult> Dispatch([FromBody] OrderDetail order)
         {
@@ -198,18 +163,54 @@ namespace DeliveryMonitoring.Controllers
             List<SupervisorsDTO> supervisors = new();
             try
             {
-            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "auth/getsupervisors");
+                HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "auth/getsupervisors");
 
                 if (!response.IsSuccessStatusCode)
-            {
+                {
                     var error = await response.Content.ReadAsStringAsync();
                     return StatusCode((int)response.StatusCode, $"Redispatch failed: {error}");
                 }
                 string data = await response.Content.ReadAsStringAsync();
                 supervisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data) ?? new List<SupervisorsDTO>();
 
-            return Ok(supervisors);
+                return Ok(supervisors);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Exception: {ex.Message}");
+            }
         }
+        public class AssignSuperVisorDTO
+        {
+            public string? voucherCode { get; set; }
+            public string? id { get; set; }
+        }
+        [HttpPost]
+        public async Task<IActionResult> AssignSupervisor([FromBody] AssignSuperVisorDTO assignSuperVisorDTO)
+        {
+            if (assignSuperVisorDTO.voucherCode == null)
+                return BadRequest("Invalid voucher data.");
+
+            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            var uri = assignSuperVisorDTO.id == "all" ?
+                $"auth/assign?voucherCode={assignSuperVisorDTO.voucherCode}" :
+                $"auth/assign?voucherCode={assignSuperVisorDTO.voucherCode}&id={assignSuperVisorDTO.id}";
+
+
+            try
+            {
+                var response = await client.GetAsync(client.BaseAddress + uri);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode);
+                }
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<Boolean>(responseData);
+                return result ? Ok(result) : BadRequest("Unable To Assign Supervisor!");
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Exception: {ex.Message}");
