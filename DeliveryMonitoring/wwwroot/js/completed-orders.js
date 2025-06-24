@@ -230,11 +230,11 @@ async function showActivity(button) {
             const modal = new bootstrap.Modal(existingModalEl);
             modal.show();
         } else {
-            showAlert("Failed to fetch activity.", "warning");
+            showalert("Failed to fetch activity.", "warning");
         }
     } catch (err) {
         console.error(err);
-        showAlert("An error occurred while loading activity.", "danger");
+        showalert("An error occurred while loading activity.", "danger");
     }
 }
 
@@ -244,7 +244,7 @@ async function showActivity(button) {
 
 
 
-function showAlert(message, type = 'danger') {
+function showalert(message, type = 'danger') {
     const container = document.getElementById('alertContainer');
     const alertHtml = `
         <div class="alert alert-${type} alert-dismissible fade show" role="alert">
