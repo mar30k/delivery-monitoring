@@ -210,7 +210,7 @@ function openRedispatchModal(el) {
             driverSelect.selectedIndex = 0;
         }
 
-        hideLoading();
+        hideLoading("dispatchLoading");
 
         const modalElement = document.getElementById('reDispatchModal');
         if (!modalElement) throw new Error("Modal element missing");
@@ -242,7 +242,7 @@ function confirmRedispatchToDriver() {
 }
 
 async function dispatchOrder(order) {
-    showLoading();
+    showLoading("dispatchLoading");
     const isDispatchable = await checkOrderStatus(order.voucherCode);
     if (isDispatchable) {
         $.ajax({
@@ -251,22 +251,22 @@ async function dispatchOrder(order) {
             contentType: "application/json",
             data: JSON.stringify(order),
             success: function (response) {
-                hideLoading();
-                showAlert("Dispatch successful!", "success");
+                hideLoading("dispatchLoading");
+                showAlert("Dispatch successful!", "success", "reDispatchModal");
 
                 //const modalElement = document.getElementById('reDispatchModal');
                 //const modal = bootstrap.Modal.getInstance(modalElement);
                 //if (modal) modal.hide();
             },
             error: function (xhr) {
-                hideLoading();
+                hideLoading("dispatchLoading");
                 console.error("Dispatch failed:", xhr.responseText);
-                showAlert("Dispatch failed: " + xhr.responseText, "danger");
+                showAlert("Dispatch failed: " + xhr.responseText, "danger", "reDispatchModal");
             }
         });
     } else {
-        hideLoading();
-        showAlert("Order Can't be Redispatched", "danger");
+        hideLoading("dispatchLoading");
+        showAlert("Order Can't be Redispatched", "danger", "reDispatchModal");
     }
      
 }
