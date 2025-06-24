@@ -193,20 +193,27 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> GetAvailableSupervisors()
         {
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            string uri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
 
             var _client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             List<SupervisorsDTO> supervisors = new();
-
+            try
+            {
             HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "auth/getsupervisors");
 
-            if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
             {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"Redispatch failed: {error}");
+                }
                 string data = await response.Content.ReadAsStringAsync();
                 supervisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data) ?? new List<SupervisorsDTO>();
-            }
 
             return Ok(supervisors);
+        }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Exception: {ex.Message}");
+            }
         }
     }
 }
