@@ -295,7 +295,7 @@ function hideLoading(id) {
 }
 
 // Function to show a temporary Bootstrap alert
-function showAlert(message, type = "info") {
+function showAlert(message, type = "info", modal) {
     // Create alert HTML
     const alertHTML = `
                 <div class="alert alert-${type} alert-dismissible fade show" role="alert">
@@ -305,11 +305,11 @@ function showAlert(message, type = "info") {
             `;
 
     // Insert after modal header
-    const modalHeader = document.querySelector('#reDispatchModal .modal-header');
+    const modalHeader = document.querySelector(`#${modal} .modal-header`);
     if (!modalHeader) return;
 
     // Remove any existing alert first
-    const existingAlert = document.querySelector('#reDispatchModal .alert');
+    const existingAlert = document.querySelector(`#${modal} .alert`);
     if (existingAlert) existingAlert.remove();
 
     // Insert new alert
@@ -317,7 +317,7 @@ function showAlert(message, type = "info") {
 
     // Auto-close after 5 seconds
     setTimeout(() => {
-        const newAlert = document.querySelector('#reDispatchModal .alert');
+        const newAlert = document.querySelector(`#${modal} .alert`);
         if (newAlert) {
             bootstrap.Alert.getOrCreateInstance(newAlert).close();
         }
