@@ -286,12 +286,12 @@ async function checkOrderStatus(voucherCode) {
     }
 }
 
-function showLoading() {
-    document.getElementById("dispatchLoading").classList.remove("d-none");
+function showLoading(id) {
+    document.getElementById(id).classList.remove("d-none");
 }
 
-function hideLoading() {
-    document.getElementById("dispatchLoading").classList.add("d-none");
+function hideLoading(id) {
+    document.getElementById(id).classList.add("d-none");
 }
 
 // Function to show a temporary Bootstrap alert
