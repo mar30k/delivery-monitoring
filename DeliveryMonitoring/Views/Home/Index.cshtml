@@ -97,6 +97,10 @@
                         <i class="fa-duotone fa-solid fa-user"></i>
                     </div>
                     <div class="card-body col-7">
+                        <p class="card-title">Supervisors</p>
+                        <h1 class="card-text">@(Model?.Supervisors?.Count ?? 0)</h1>
+                    </div>
+                    @* <div class="card-body col-7">
                         <p class="card-title mb-4">Supervisors</p>
                         <div class="d-flex align-items-center gap-4 flex-wrap">
                             <div class="text-center">
@@ -104,7 +108,7 @@
                                     @(Model?.Supervisors?.Count ?? 0)
                                 </h1>
                                 <small class="text-black">Total</small>
-                            </div>
+                           </div>
         
                             <div class="text-center">
                                 <h5 class="mb-0 text-success">
@@ -112,14 +116,14 @@
                                 </h5>
                                 <small class="text-muted">Active</small>
                             </div>
-                            <div class="text-center">
+                             <div class="text-center">
                                 <h5 class="mb-0 text-info">
                                     @(Model?.Supervisors?.Count(x => x.LoggedInStatus == true) ?? 0)
                                 </h5>
                                 <small class="text-muted">Logged In</small>
-                            </div>
+                            </div> 
                         </div>
-                    </div>
+                    </div> *@
                 </div>
             </div>
         </div>
