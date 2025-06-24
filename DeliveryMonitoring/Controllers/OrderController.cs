@@ -178,7 +178,7 @@ namespace DeliveryMonitoring.Controllers
 
                 var responseData = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<OrderDetail>(responseData);
-                var isRedespatchAble = new[] { "drivernotfound", "declined", "requested" ,"sos"}
+                var isRedespatchAble = new[] { "drivernotfound", "declined", "requested" ,"sos", "assigned" }
                     .Contains(result?.Status, StringComparer.OrdinalIgnoreCase);
                 
                 return isRedespatchAble ? Ok(isRedespatchAble) : StatusCode(500, $"Can't Redispatch");
