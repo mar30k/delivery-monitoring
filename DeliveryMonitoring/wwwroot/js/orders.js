@@ -213,10 +213,14 @@ function openRedispatchModal(el) {
         hideLoading("dispatchLoading");
 
         const modalElement = document.getElementById('reDispatchModal');
+        $('#voucherCodeLabel').text(`- ${selectedOrder.voucherCode}`);
         if (!modalElement) throw new Error("Modal element missing");
         const modal = new bootstrap.Modal(modalElement);
-        modal.show();
+
+        $('#reDispatchModal').one('shown.bs.modal', function () {
         loadAvailableDrivers();
+        });
+        modal.show();
     } catch (e) {
         console.error("Failed to open modal:", e);
         alert("Error preparing dispatch. Please try again.");
