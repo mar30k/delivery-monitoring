@@ -125,12 +125,13 @@ function updateOrders() {
             ? `<a href="tel:${order.assignedDriverPhoneNumber}">${order.assignedDriverPhoneNumber}</a>`
             : "N/A";
         let orderJson = JSON.stringify(order).replace(/"/g, '&quot;'); // Escape double quotes for HTML
-        let redispatch = (order.status.toLowerCase() === "drivernotfound" || order.status.toLowerCase() === "declined" || order.status.toLowerCase() === "requested" || order.status.toLowerCase() === "sos")
+        let redispatch = (order.status.toLowerCase() === "drivernotfound" || order.status.toLowerCase() === "declined" || order.status.toLowerCase() === "requested"
+            || order.status.toLowerCase() === "sos" || order.status.toLowerCase() === "assigned")
             ? `<a class="btn btn-outline-dark btn-sm" data-order="${orderJson}" onclick="openRedispatchModal(this)">Redispatch</a>`
             : '';
         let assign = (order.supervisedBy === null || order.supervisedBy === undefined)
-            ? `<a class="btn btn-outline-dark btn-sm" onclick="assiignSupervisor('${order.voucherCode}')">Assign</a>`
-            : `<a href="tel ${order.supervisedBy}">${order.supervisedBy}</a>`;
+            ? `<a class="btn btn-outline-dark btn-sm" onclick="openAssignSupervisorModal('${order.voucherCode}')">Assign</a>`
+            : `<a href="tel:${order.supervisedBy}">${order.supervisedBy}</a>`;
         newRow.innerHTML = `                    
                     <td>${order.voucherCode}</td>
                     <td class="text-center">${order.customer.firstName || 'N/A'}</td>
