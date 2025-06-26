@@ -16,46 +16,72 @@
             <!--The table is Written Here-->
             <div class="col-12 col-lg-12 table-responsive pt-3">
                 
-                <table class="table compact stripe hover pt-3" id="tablelist">
+                <table class="table compact stripe hover pt-3" id="tablelist" style="font-size: 13px;">
                     <thead class="">
                         <tr>
 
                             <th>
                                 @Html.DisplayNameFor(model => model.firstName)
                             </th>
-                            <th>
+                            <th class="text-center">
                                 @Html.DisplayNameFor(model => model.lastUpdatedAt)
                             </th>
-                            <th>
+                            <th class="text-center">
                                 @Html.DisplayNameFor(model => model.phoneNumber)
                             </th>
-                            <th>
+                            <th class="text-center">
                                 @Html.DisplayNameFor(model => model.status)
                             </th>
-                            <th>
+                            <th class="text-center">
                                 Driver Details
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model)
+                        @functions {
+                            public class StatusInfo
+                            {
+                                public string? Color { get; set; }
+                                public string? Priority { get; set; }
+                            }
+                        }
+                        @{
+                            var statusColors = new Dictionary<string, StatusInfo>
+                                                {
+                                                { "offline",         new StatusInfo { Color = "#dc3545", Priority = "1" } }, // Bootstrap danger - Offline
+                                                { "ready",           new StatusInfo { Color = "#28a745", Priority = "7" } }, // Bootstrap success - Ready
+                                                { "accepted",        new StatusInfo { Color = "#007bff", Priority = "5" } }, // Bootstrap primary - Accepted
+                                                { "delivering",      new StatusInfo { Color = "#fd7e14", Priority = "6" } }, // Bootstrap orange - Delivering
+                                                { "arrivedatbranch", new StatusInfo { Color = "#17a2b8", Priority = "4" } }, // Bootstrap info - Arrived
+                                                { "completed",       new StatusInfo { Color = "#20c997", Priority = "3" } }, // Bootstrap teal - Completed
+                                                { "default",         new StatusInfo { Color = "#ffc107", Priority = "2" } }  // Bootstrap warning - Default
+                                                };
+                        }
+                        @foreach (var driver in Model)
                         {
+                            var statusKey = driver?.status ?? "default";
+                            var statusInfo = statusColors.ContainsKey(statusKey)
+                            ? statusColors[statusKey]
+                            : statusColors["default"];
+
+                            var bgColor = statusInfo.Color;
+                            var priority = statusInfo.Priority;
                             <tr>
                                 <td>
-                                    @Html.DisplayFor(modelItem => item.firstName)
+                                    @Html.DisplayFor(modelItem => driver.firstName)
                                 </td>
-                                <td data-order="@item.lastUpdatedAt">
-                                    @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
+                                <td class="text-center" data-order="@driver.lastUpdatedAt">
+                                    @DateTimeOffset.FromUnixTimeMilliseconds(driver.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
 
                                 </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.phoneNumber)
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => driver.phoneNumber)
                                 </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.status)
+                                <td class ="text-center" data-status style="background: @bgColor; color: white;" data-order="@priority">
+                                    @driver?.status
                                 </td>
-                                <td>
-                                    <a class="btn btn-outline-dark" href="/driverdetail/@item.phoneNumber">Details</a>
+                                <td class="text-center">
+                                    <a class="btn btn-outline-dark btn-sm" href="/driverdetail/@driver?.phoneNumber">Details</a>
                                 </td>
                             </tr>
                         }
@@ -63,7 +89,7 @@
                 </table>
 
                 <div class="pt-3 pb-3">
-                    <a class="btn btn-outline-dark" asp-action="Index">All Drivers</a>
+                    <a class="btn btn-outline-dark btn-sm" asp-action="Index">All Drivers</a>
                 </div>
             </div>
             <!--this is the table ending-->

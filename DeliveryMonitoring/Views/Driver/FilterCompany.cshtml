@@ -16,48 +16,72 @@
             <!--The table is Written Here-->
             <div class="col-12 col-lg-12 table-responsive pt-3">
 
-                <table class="table compact stripe hover pt-3" id="tablelist">
+                <table class="table compact stripe hover pt-3" id="tablelist" style="font-size: 13px;">
                     <thead class="">
                         <tr>
 
                             <th>
                                 @Html.DisplayNameFor(model => model.firstName)
                             </th>
-                            <th>
+                            <th class="text-center">
                                 @Html.DisplayNameFor(model => model.lastUpdatedAt)
                             </th>
-                            <th>
+                            <th class="text-center">
                                 @Html.DisplayNameFor(model => model.phoneNumber)
                             </th>
-                            <th>
+                            <th class="text-center">
                                 @Html.DisplayNameFor(model => model.status)
                             </th>
-                            <th>
+                            <th class="text-center">
                                 Driver Details
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model)
+                        @functions {
+                            public class StatusInfo
+                            {
+                                public string? Color { get; set; }
+                                public string? Priority { get; set; }
+                            }
+                        }
+                        @{
+                            var statusColors = new Dictionary<string, StatusInfo>
+                                                {
+                                                { "offline",         new StatusInfo { Color = "#dc3545", Priority = "1" } }, // Bootstrap danger - Offline
+                                                { "ready",           new StatusInfo { Color = "#28a745", Priority = "7" } }, // Bootstrap success - Ready
+                                                { "accepted",        new StatusInfo { Color = "#007bff", Priority = "5" } }, // Bootstrap primary - Accepted
+                                                { "delivering",      new StatusInfo { Color = "#fd7e14", Priority = "6" } }, // Bootstrap orange - Delivering
+                                                { "arrivedatbranch", new StatusInfo { Color = "#17a2b8", Priority = "4" } }, // Bootstrap info - Arrived
+                                                { "completed",       new StatusInfo { Color = "#20c997", Priority = "3" } }, // Bootstrap teal - Completed
+                                                { "default",         new StatusInfo { Color = "#ffc107", Priority = "2" } }  // Bootstrap warning - Default
+                                                };
+                        }
+                        @foreach (var driver in Model)
                         {
+                            var statusKey = driver?.status ?? "default";
+                            var statusInfo = statusColors.ContainsKey(statusKey)
+                            ? statusColors[statusKey]
+                            : statusColors["default"];
 
+                            var bgColor = statusInfo.Color;
+                            var priority = statusInfo.Priority;
                             <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => driver.firstName)
+                                </td>
+                                <td class="text-center" data-order="@driver.lastUpdatedAt">
+                                    @DateTimeOffset.FromUnixTimeMilliseconds(driver.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
 
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.firstName)
                                 </td>
-                                <td data-order="@item.lastUpdatedAt">
-                                    @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
-
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => driver.phoneNumber)
                                 </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.phoneNumber)
+                                <td class="text-center" data-status style="background: @bgColor; color: white;" data-order="@priority">
+                                    @driver?.status
                                 </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.status)
-                                </td>
-                                <td>
-                                    <a class="btn btn-outline-dark" href="/driverdetail/@item.phoneNumber">Details</a>
+                                <td class="text-center">
+                                    <a class="btn btn-outline-dark btn-sm" href="/driverdetail/@driver.phoneNumber">Details</a>
                                 </td>
                             </tr>
                         }
@@ -65,160 +89,153 @@
                 </table>
 
                 <div class="pt-3 pb-3">
-                    <a class="btn btn-outline-dark" asp-action="Index">All Drivers</a>
+                    <a class="btn btn-outline-dark btn-sm" asp-action="Index">All Drivers</a>
                 </div>
             </div>
             <!--this is the table ending-->
 
         </div>
     </div>
+</div>
+<script>
+    fetch('/Map/GetMapData')
+        .then(response => response.text())
+        .then(script => {
+            // Execute the received script
+            eval(script);
+        })
+        .catch(error => console.error('Error loading Google Maps API:', error));
 
-    <script>
-        fetch('/Map/GetMapData')
-            .then(response => response.text())
-            .then(script => {
-                // Execute the received script
-                eval(script);
-            })
-            .catch(error => console.error('Error loading Google Maps API:', error));
-    </script>
-
-    <script>
-        // var index = -1;
-        var places = [];
-        @{         
+    // var index = -1;
+    var places = [];
+    @{
             foreach (var item in Model)
             {
-               <text>
-                    places.push({ TIN: '@item.companyTin' });
-                </text>
-                break;
+                   <text>
+                        places.push({ TIN: '@item.companyTin' });
+                    </text>
+                    break;
             }
- 
-        }
-        var map;
-        var marker;
-        var markers = [];
-        function initMap() {
-            // Default center coordinates
-            const defaultLat = 9.0103899; // Replace with your default latitude
-            const defaultLng = 38.7614259; // Replace with your default longitude
 
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: defaultLat, lng: defaultLng },
-                zoom: 13,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            });
-            // map.setCenter();
-            // Create an array to store the relevant information
+    }
+    var marker;
+    var markers = [];
+    function initMap() {
+        // Default center coordinates
+        const defaultLat = 9.0103899; // Replace with your default latitude
+        const defaultLng = 38.7614259; // Replace with your default longitude
 
-            function fetchDataAndUpdateMarkers() {
-                // index++;
-
-                fetch(`/Driver/LiveLocationByCompany/${places[0].TIN}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Iterate over each object in the array
-                        var places = [];
-                        data.forEach(driver => {
-                            // Extract the relevant information from each object
-                            if (driver.latLng && typeof driver.latLng === 'object' && driver.latLng.lat !== undefined && driver.latLng.lng !== undefined) {
-                                var placeInfo = {
-                                    Name: driver.firstName,
-                                    lat: driver.latLng.lat,
-                                    lng: driver.latLng.lng,
-                                    Phone: driver.phoneNumber,
-                                    Status: driver.status
-                                };
-                            }
-                            places.push(placeInfo);
-                        })
-
-                        // if(index == 0){
-                        //     places[0].lat = 9.0166004;
-                        //     places[0].lng = 38.7631881;
-                        //     places[1].lat = 9.01191;
-                        //     places[1].lng = 38.76275;
-
-                        // }
-                        // if (index == 1) {
-                        //     places[0].lat = 9.0147;
-                        //     places[0].lng = 38.76265;
-                        //     places[1].lat = 9.01123;
-                        //     places[1].lng = 38.76264;
-                        // }
-                        // if (index == 2) {
-                        //     places[0].lat = 9.01394;
-                        //     places[0].lng = 38.76294;
-                        //     places[1].lat = 9.01103;
-                        //     places[1].lng = 38.76267;
-                        // }
-                        // Push the extracted information into the places array
-                        // Filter out undefined values
-                        places = places.filter(place => place !== undefined);
-                        // Process the places array after fetching the data
-
-                        markers.forEach(marker => marker.setMap(null));
-                        markers = []; // Reset the array
-
-                        places.forEach(place => {
-                            marker = new google.maps.Marker({
-                                position: { lat: place.lat, lng: place.lng },
-                                title: place.Name,
-                                map: map,
-                                icon: {
-                                    url: '/images/motor.png',
-                                    scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
-                                }
-                            });
-
-                            markers.push(marker);
-
-                            // Add a listener for the marker
-                            var content = "<b>Name:</b> " + place.Name + "<br/><b>Phone:</b> " + place.Phone + "<br/><b>Status:</b> " + place.Status;
-
-                            var infowindow = new google.maps.InfoWindow();
-
-                            google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
-                                return function () {
-                                    infowindow.setContent(content);
-                                    infowindow.open(map, marker);
-                                };
-                            })(marker, content, infowindow));
-
-                            google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
-                                return function () {
-                                    infowindow.close();
-                                };
-                            })(infowindow));
-                        });
-                        // console.log(places);
-                        // console.log(index);
-
-                    })
-                    .catch(error => console.error('Error fetching live location:', error, error.responseText));
-            }
-            // Call the function immediately to show the initial view
-            fetchDataAndUpdateMarkers();
-            setInterval(fetchDataAndUpdateMarkers, 300000);
-
-        }
-    </script>
-    <!--Map JavaScript Implementation Ends Here-->
-    <!--Jquery Datatable Starts Here-->
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
-    <script>
-        var js = jQuery.noConflict(true);
-        js(document).ready(function () {
-            js('#tablelist').DataTable({
-                responsive: true,
-                columnDefs: [
-                    { orderable: false, targets: [2, 3, 4] } // Disable sorting on all columns except index 0 (firstName)
-                ]
-            });
+        var map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: defaultLat, lng: defaultLng },
+            zoom: 13,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
         });
-    </script>
-    <!--Jquery Datatable Ends Here-->
-</div>
+        // map.setCenter();
+        // Create an array to store the relevant information
+
+        function fetchDataAndUpdateMarkers() {
+            // index++;
+
+            fetch(`/Driver/LiveLocationByCompany/${places[0].TIN}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Iterate over each object in the array
+                    var places = [];
+                    data.forEach(driver => {
+                        // Extract the relevant information from each object
+                        if (driver.latLng && typeof driver.latLng === 'object' && driver.latLng.lat !== undefined && driver.latLng.lng !== undefined) {
+                            var placeInfo = {
+                                Name: driver.firstName,
+                                lat: driver.latLng.lat,
+                                lng: driver.latLng.lng,
+                                Phone: driver.phoneNumber,
+                                Status: driver.status
+                            };
+                        }
+                        places.push(placeInfo);
+                    })
+
+                    // if(index == 0){
+                    //     places[0].lat = 9.0166004;
+                    //     places[0].lng = 38.7631881;
+                    //     places[1].lat = 9.01191;
+                    //     places[1].lng = 38.76275;
+
+                    // }
+                    // if (index == 1) {
+                    //     places[0].lat = 9.0147;
+                    //     places[0].lng = 38.76265;
+                    //     places[1].lat = 9.01123;
+                    //     places[1].lng = 38.76264;
+                    // }
+                    // if (index == 2) {
+                    //     places[0].lat = 9.01394;
+                    //     places[0].lng = 38.76294;
+                    //     places[1].lat = 9.01103;
+                    //     places[1].lng = 38.76267;
+                    // }
+                    // Push the extracted information into the places array
+                    // Filter out undefined values
+                    places = places.filter(place => place !== undefined);
+                    // Process the places array after fetching the data
+
+                    markers.forEach(marker => marker.setMap(null));
+                    markers = []; // Reset the array
+
+                    places.forEach(place => {
+                        marker = new google.maps.Marker({
+                            position: { lat: place.lat, lng: place.lng },
+                            title: place.Name,
+                            map: map,
+                            icon: {
+                                url: '/images/motor.png',
+                                scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
+                            }
+                        });
+
+                        markers.push(marker);
+
+                        // Add a listener for the marker
+                        var content = "<b>Name:</b> " + place.Name + "<br/><b>Phone:</b> " + place.Phone + "<br/><b>Status:</b> " + place.Status;
+
+                        var infowindow = new google.maps.InfoWindow();
+
+                        google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
+                            return function () {
+                                infowindow.setContent(content);
+                                infowindow.open(map, marker);
+                            };
+                        })(marker, content, infowindow));
+
+                        google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
+                            return function () {
+                                infowindow.close();
+                            };
+                        })(infowindow));
+                    });
+                    // console.log(places);
+                    // console.log(index);
+
+                })
+                .catch(error => console.error('Error fetching live location:', error, error.responseText));
+        }
+        // Call the function immediately to show the initial view
+        fetchDataAndUpdateMarkers();
+        setInterval(fetchDataAndUpdateMarkers, 300000);
+
+    }
+</script>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+<script>
+    var js = jQuery.noConflict(true);
+    js(document).ready(function () {
+        js('#tablelist').DataTable({
+            responsive: true,
+            columnDefs: [
+                { orderable: false, targets: [2, 3, 4] } // Disable sorting on all columns except index 0 (firstName)
+            ]
+        });
+    });
+</script>
