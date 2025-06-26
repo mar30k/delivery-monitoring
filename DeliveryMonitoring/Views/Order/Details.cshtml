@@ -33,18 +33,20 @@
                             var statusColors = new Dictionary<string, string>
                             {
                                 { "requested", "deepskyblue" },
+                                { "arrivedatbranch", "orange" },
                                 { "assigned", "lawngreen" },
                                 { "declined", "red" },
                                 { "accepted", "seagreen" },
                                 { "arrived", "coral" },
                                 { "ontheway", "darkorange" },
-                                { "driverNotFound", "red" },
+                                { "drivernotfound", "red" },
                                 { "sos", "darkred" },
                                 { "default", "yellow" }
                             };
-                            var bgColor = statusColors.ContainsKey(Model?.Status ?? "") ? statusColors[Model?.Status ?? ""] : statusColors["default"];
+                            var bgColor = statusColors.ContainsKey(Model?.Status?.ToLower() ?? "") ? statusColors[Model?.Status?.ToLower() ?? ""] : statusColors["default"];
                         }
                         <div>
+                            <span><strong>Order Status:</strong></span>
                             <div style="background-color: @bgColor;
                                 border-radius: 10px;
                                 color: @(bgColor == "red" || bgColor == "green" ? "white" : "black");

@@ -18,20 +18,20 @@
                 <table class="table compact stripe hover pt-3 mt-3" id="tablelist" style="font-size: 13px;">
                     <thead class="table-bordered">
                         <tr>
-                            <th class="text-center">Full Name</th>
+                            <th>Full Name</th>
                             <th class="text-center">Phone Number</th>
-                            <th class="text-center">LoggedIn Status</th>
-                            <th class="text-center">Is Active</th>
+                            <th class="text-center">Logged In</th>
+                            <th class="text-center">Active</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var supervisor in Model ?? new List<SupervisorsDTO>())
                         {
                             <tr>
-                                <td class="text-center">@supervisor.FirstName @supervisor.SecondName</td>
+                                <td>@supervisor.FirstName @supervisor.SecondName</td>
                                 <td class="text-center">@supervisor.UserName</td>
-                                <td class="text-center">@supervisor.LoggedInStatus</td>
-                                <td class="text-center">@supervisor.IsActive</td>
+                                <td class="text-center">@((supervisor.LoggedInStatus) ? "Yes" : "No")</td>
+                                <td class="text-center">@((supervisor.IsActive) ? "Yes" : "No")</td>
                             </tr>
                         }
                     </tbody>
@@ -43,9 +43,6 @@
 
 </div>
 @section Scripts {
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
     <script>
         var js = jQuery.noConflict(true);
         var tablelist;
