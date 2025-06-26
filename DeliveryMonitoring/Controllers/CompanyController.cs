@@ -70,7 +70,7 @@ namespace DeliveryMonitoring.Controllers
             // Create the CompanyIndex view model
             var viewModel = new CompanyIndex
             {
-                Companies = companiesModel,
+                Companies = companiesModel ?? new Companies(),
                 company = companyDetailsList
             };
 
@@ -88,7 +88,7 @@ namespace DeliveryMonitoring.Controllers
                 return RedirectToAction("Logout", "Login");
             }
             else if (companyTin != "0076217301") { return RedirectToAction("index", "home"); }
-            Company company = null;
+            Company? company = null;
 
             try
             {
@@ -97,7 +97,7 @@ namespace DeliveryMonitoring.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     string data = await response.Content.ReadAsStringAsync();
-                    company = JsonConvert.DeserializeObject<Company>(data) ?? new Company();
+                    company = !string.IsNullOrEmpty(data) ? JsonConvert.DeserializeObject<Company>(data) : null;
                 }
 
                 if (company == null )
