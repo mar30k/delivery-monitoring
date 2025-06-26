@@ -104,10 +104,6 @@
                         </span>
                     </div>
                     <div>
-                        <span id="letters">Status:</span>
-                        <span>@Model?.status</span>
-                    </div>
-                    <div>
                         <span id="letters">@Html.DisplayNameFor(model => model.companyTin):</span>
                         <span id="outputs"><a href="/company/@Model?.companyTin"">@Html.DisplayFor(model => model.companyTin)</a></span>
                     </div>
@@ -123,19 +119,33 @@
                     </div>
                     <div>
                         <span id="letters">Email: </span>
-                        <a id="outputs" href="mailto: @Model?.detail?.email">@Html.DisplayFor(model => model.detail.email)</a>
+                        @if (!string.IsNullOrEmpty(Model?.detail?.email))
+                        {
+                            <a id="outputs" href="mailto:@@Model.detail.email">@Model.detail.email</a>
+                        }
+                        else
+                        {
+                            <span>N/A</span>
+                        }
                     </div>
                     <div>
                         <span id="letters">Gender: </span>
-                        <a id="outputs">@Html.DisplayFor(model => model.detail.gender)</a>
+                        <a id="outputs">@(Model?.detail?.gender ?? "N/A")</a>
                     </div>
                     <div>
                         <span id="letters">Number Of Accepted Orders:</span>
-                        <span id="outputs">@Html.DisplayFor(model => model.numberOfAcceptedOrders)</span>
+                        <span id="outputs">@(Model?.numberOfAcceptedOrders.ToString() ?? "N/A")</span>
                     </div>
                     <div>
                         <span id="letters">Number Of Rejected Orders:</span>
-                        <span id="outputs">@Html.DisplayFor(model => model.numberOfRejectedOrders)</span>
+                        @if (!string.IsNullOrEmpty(Model?.numberOfRejectedOrders.ToString()))
+                        {
+                            <span id="outputs">@Model?.numberOfRejectedOrders.ToString()</span>
+                        }
+                        else
+                        {
+                            <span id="outputs">N/A</span>
+                        }
                     </div>
                     <div>
                         <span id="letters">Traveled Distance:</span>
