@@ -103,12 +103,21 @@ function updateOrders() {
         ).values()
     );
 
-    disTinctSupervisors.forEach(superVisor => {
+    getAvailableSupervisors()
+        .then(allSupervisors => {
+            if (!Array.isArray(allSupervisors)) return;
+            disTinctSupervisors.forEach(supervisor => {
+                const matched = allSupervisors.find(s => s.userName === supervisor.supervisedBy);
         const option = document.createElement("option");
-        option.value = superVisor.supervisedBy;
-        option.textContent = superVisor.supervisedBy;
+                option.value = supervisor.supervisedBy; // ✅ fixed
+                const supervisorName = matched?.firstName ? matched.firstName + " " : "";
+                option.textContent = `${supervisorName}${supervisor.supervisedBy}`;
         superVisorSelect.appendChild(option);
     });
+        })
+        .catch((err) => {
+            console.log(err);
+        });
     // Add the new rows or update existing ones
     data.forEach(order => {
         const status = order.status.toLowerCase() || "default";
@@ -396,25 +405,38 @@ function openAssignSupervisorModal(voucherCode) {
 }
 
 
+function getAvailableSupervisors() {
+    return $.ajax({
+        url: "order/getAvailableSupervisors",
+        method: "GET"
+    });
+}
+
 function loadAvailableSupervisors() {
     const $select = $('#modalSupervisorSelect');
-    $.ajax({
-        url: "order/getAvailableSupervisors",
-        method: "GET",
-        success: function (supervisors) {
+
+    getAvailableSupervisors()
+        .then(supervisors => {
             if (!supervisors || supervisors.length === 0) {
                 $select.html(`<option disabled>No available supervisors found</option>`);
                 return;
             }
+            const loggedInSupervisors = supervisors.filter(s => s.loggedInStatus === true);
+
+            if (loggedInSupervisors.length === 0) {
+                $select.html(`<option disabled>No logged-in supervisors found</option>`);
+                return;
+            }
+
             $select.empty().append(`<option value="" selected disabled>Select a supervisor</option>`);
-            supervisors.forEach(supervisor => {
+            loggedInSupervisors.forEach(supervisor => {
                 const option = `<option value="${supervisor.id}">
                     ${supervisor.firstName || ''} ${supervisor.secondName || ''}
                 </option>`;
                 $select.append(option);
             });
-        },
-        error: function () {
+        })
+        .catch(() => {
             $select.html(`<option disabled>Error loading supervisors</option>`);
         }
     });
