@@ -81,7 +81,7 @@
                                     @driver?.status
                                 </td>
                                 <td class="text-center">
-                                    <a class="btn btn-outline-dark btn-sm" href="/driverdetail/@driver.phoneNumber">Details</a>
+                                    <a class="btn btn-outline-dark btn-sm" href="/driverdetail/@driver?.phoneNumber">Details</a>
                                 </td>
                             </tr>
                         }
@@ -97,145 +97,143 @@
         </div>
     </div>
 </div>
-<script>
-    fetch('/Map/GetMapData')
-        .then(response => response.text())
-        .then(script => {
-            // Execute the received script
-            eval(script);
-        })
-        .catch(error => console.error('Error loading Google Maps API:', error));
+@section Scripts{
+    <script>
+        fetch('/Map/GetMapData')
+            .then(response => response.text())
+            .then(script => {
+                // Execute the received script
+                eval(script);
+            })
+            .catch(error => console.error('Error loading Google Maps API:', error));
 
-    // var index = -1;
-    var places = [];
-    @{
-            foreach (var item in Model)
-            {
-                   <text>
-                        places.push({ TIN: '@item.companyTin' });
-                    </text>
-                    break;
-            }
+        // var index = -1;
+        var places = [];
+        @{
+                    foreach (var item in Model)
+                    {
+                               <text>
+                                    places.push({ TIN: '@item.companyTin' });
+                                </text>
+                                break;
+                    }
 
-    }
-    var marker;
-    var markers = [];
-    function initMap() {
-        // Default center coordinates
-        const defaultLat = 9.0103899; // Replace with your default latitude
-        const defaultLng = 38.7614259; // Replace with your default longitude
-
-        var map = new google.maps.Map(document.getElementById("map"), {
-            center: { lat: defaultLat, lng: defaultLng },
-            zoom: 13,
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-        });
-        // map.setCenter();
-        // Create an array to store the relevant information
-
-        function fetchDataAndUpdateMarkers() {
-            // index++;
-
-            fetch(`/Driver/LiveLocationByCompany/${places[0].TIN}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Iterate over each object in the array
-                    var places = [];
-                    data.forEach(driver => {
-                        // Extract the relevant information from each object
-                        if (driver.latLng && typeof driver.latLng === 'object' && driver.latLng.lat !== undefined && driver.latLng.lng !== undefined) {
-                            var placeInfo = {
-                                Name: driver.firstName,
-                                lat: driver.latLng.lat,
-                                lng: driver.latLng.lng,
-                                Phone: driver.phoneNumber,
-                                Status: driver.status
-                            };
-                        }
-                        places.push(placeInfo);
-                    })
-
-                    // if(index == 0){
-                    //     places[0].lat = 9.0166004;
-                    //     places[0].lng = 38.7631881;
-                    //     places[1].lat = 9.01191;
-                    //     places[1].lng = 38.76275;
-
-                    // }
-                    // if (index == 1) {
-                    //     places[0].lat = 9.0147;
-                    //     places[0].lng = 38.76265;
-                    //     places[1].lat = 9.01123;
-                    //     places[1].lng = 38.76264;
-                    // }
-                    // if (index == 2) {
-                    //     places[0].lat = 9.01394;
-                    //     places[0].lng = 38.76294;
-                    //     places[1].lat = 9.01103;
-                    //     places[1].lng = 38.76267;
-                    // }
-                    // Push the extracted information into the places array
-                    // Filter out undefined values
-                    places = places.filter(place => place !== undefined);
-                    // Process the places array after fetching the data
-
-                    markers.forEach(marker => marker.setMap(null));
-                    markers = []; // Reset the array
-
-                    places.forEach(place => {
-                        marker = new google.maps.Marker({
-                            position: { lat: place.lat, lng: place.lng },
-                            title: place.Name,
-                            map: map,
-                            icon: {
-                                url: '/images/motor.png',
-                                scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
-                            }
-                        });
-
-                        markers.push(marker);
-
-                        // Add a listener for the marker
-                        var content = "<b>Name:</b> " + place.Name + "<br/><b>Phone:</b> " + place.Phone + "<br/><b>Status:</b> " + place.Status;
-
-                        var infowindow = new google.maps.InfoWindow();
-
-                        google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
-                            return function () {
-                                infowindow.setContent(content);
-                                infowindow.open(map, marker);
-                            };
-                        })(marker, content, infowindow));
-
-                        google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
-                            return function () {
-                                infowindow.close();
-                            };
-                        })(infowindow));
-                    });
-                    // console.log(places);
-                    // console.log(index);
-
-                })
-                .catch(error => console.error('Error fetching live location:', error, error.responseText));
         }
-        // Call the function immediately to show the initial view
-        fetchDataAndUpdateMarkers();
-        setInterval(fetchDataAndUpdateMarkers, 300000);
+        var marker;
+        var markers = [];
+        function initMap() {
+            // Default center coordinates
+            const defaultLat = 9.0103899; // Replace with your default latitude
+            const defaultLng = 38.7614259; // Replace with your default longitude
 
-    }
-</script>
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
-<script>
-    var js = jQuery.noConflict(true);
-    js(document).ready(function () {
-        js('#tablelist').DataTable({
-            responsive: true,
-            columnDefs: [
-                { orderable: false, targets: [2, 3, 4] } // Disable sorting on all columns except index 0 (firstName)
-            ]
+            var map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: defaultLat, lng: defaultLng },
+                zoom: 13,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+            // map.setCenter();
+            // Create an array to store the relevant information
+
+            function fetchDataAndUpdateMarkers() {
+                // index++;
+
+                fetch(`/Driver/LiveLocationByCompany/${places[0].TIN}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Iterate over each object in the array
+                        var places = [];
+                        data.forEach(driver => {
+                            // Extract the relevant information from each object
+                            if (driver.latLng && typeof driver.latLng === 'object' && driver.latLng.lat !== undefined && driver.latLng.lng !== undefined) {
+                                var placeInfo = {
+                                    Name: driver.firstName,
+                                    lat: driver.latLng.lat,
+                                    lng: driver.latLng.lng,
+                                    Phone: driver.phoneNumber,
+                                    Status: driver.status
+                                };
+                            }
+                            places.push(placeInfo);
+                        })
+
+                        // if(index == 0){
+                        //     places[0].lat = 9.0166004;
+                        //     places[0].lng = 38.7631881;
+                        //     places[1].lat = 9.01191;
+                        //     places[1].lng = 38.76275;
+
+                        // }
+                        // if (index == 1) {
+                        //     places[0].lat = 9.0147;
+                        //     places[0].lng = 38.76265;
+                        //     places[1].lat = 9.01123;
+                        //     places[1].lng = 38.76264;
+                        // }
+                        // if (index == 2) {
+                        //     places[0].lat = 9.01394;
+                        //     places[0].lng = 38.76294;
+                        //     places[1].lat = 9.01103;
+                        //     places[1].lng = 38.76267;
+                        // }
+                        // Push the extracted information into the places array
+                        // Filter out undefined values
+                        places = places.filter(place => place !== undefined);
+                        // Process the places array after fetching the data
+
+                        markers.forEach(marker => marker.setMap(null));
+                        markers = []; // Reset the array
+
+                        places.forEach(place => {
+                            marker = new google.maps.Marker({
+                                position: { lat: place.lat, lng: place.lng },
+                                title: place.Name,
+                                map: map,
+                                icon: {
+                                    url: '/images/motor.png',
+                                    scaledSize: new google.maps.Size(31, 61) // Adjust the size as needed
+                                }
+                            });
+
+                            markers.push(marker);
+
+                            // Add a listener for the marker
+                            var content = "<b>Name:</b> " + place.Name + "<br/><b>Phone:</b> " + place.Phone + "<br/><b>Status:</b> " + place.Status;
+
+                            var infowindow = new google.maps.InfoWindow();
+
+                            google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
+                                return function () {
+                                    infowindow.setContent(content);
+                                    infowindow.open(map, marker);
+                                };
+                            })(marker, content, infowindow));
+
+                            google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
+                                return function () {
+                                    infowindow.close();
+                                };
+                            })(infowindow));
+                        });
+                        // console.log(places);
+                        // console.log(index);
+
+                    })
+                    .catch(error => console.error('Error fetching live location:', error, error.responseText));
+            }
+            // Call the function immediately to show the initial view
+            fetchDataAndUpdateMarkers();
+            setInterval(fetchDataAndUpdateMarkers, 300000);
+
+        }
+
+        var js = jQuery.noConflict(true);
+        js(document).ready(function () {
+            js('#tablelist').DataTable({
+                responsive: true,
+                columnDefs: [
+                    { orderable: false, targets: [2, 3, 4] } // Disable sorting on all columns except index 0 (firstName)
+                ]
+            });
         });
-    });
-</script>
+    </script>
+}

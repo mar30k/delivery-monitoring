@@ -96,7 +96,8 @@
 
         </div>
     </div>
-    
+</div>
+@section Scripts{
     <script>
         fetch('/Map/GetMapData')
             .then(response => response.text())
@@ -105,9 +106,7 @@
                 eval(script);
             })
             .catch(error => console.error('Error loading Google Maps API:', error));
-    </script>
 
-    <script>
         // var index = -1;
         const urlParams = new URLSearchParams(window.location.search);
         let status = urlParams.get('status');
@@ -233,14 +232,6 @@
             fetchDataAndUpdateMarkers();
             setInterval(fetchDataAndUpdateMarkers, 60000);
         }
-    </script>
-    <!--Map JavaScript Implementation Ends Here-->
-
-    <!--Jquery Datatable Starts Here-->
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
-    <script>
         var js = jQuery.noConflict(true);
         js(document).ready(function () {
             js('#tablelist').DataTable({
@@ -251,5 +242,4 @@
             });
         });
     </script>
-    <!--Jquery Datatable Ends Here-->
-</div>
+}
