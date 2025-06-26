@@ -165,7 +165,6 @@ namespace DeliveryMonitoring.Controllers
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
             var _client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-            List<SupervisorsDTO> supervisors = new();
             try
             {
                 HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + "auth/getsupervisors");
@@ -176,9 +175,9 @@ namespace DeliveryMonitoring.Controllers
                     return StatusCode((int)response.StatusCode, $"Redispatch failed: {error}");
                 }
                 string data = await response.Content.ReadAsStringAsync();
-                supervisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data) ?? new List<SupervisorsDTO>();
+                var supervisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data) ?? new List<SupervisorsDTO>();
 
-                return Ok(supervisors);
+                return Ok(supervisors ?? new List<SupervisorsDTO>());
             }
             catch (Exception ex)
             {
