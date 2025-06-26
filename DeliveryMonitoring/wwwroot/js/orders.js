@@ -42,6 +42,8 @@ js( ()=> {
     tablelist = js('#tablelist').DataTable({
         responsive: true,
         "order": [[4, "desc"]],
+        "pageLength": 15,
+        "lengthMenu": [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
         columnDefs: [
             { orderable: false, targets: [0, 2, 5, 6, 7,9] }
         ],
@@ -108,12 +110,12 @@ function updateOrders() {
             if (!Array.isArray(allSupervisors)) return;
             disTinctSupervisors.forEach(supervisor => {
                 const matched = allSupervisors.find(s => s.userName === supervisor.supervisedBy);
-        const option = document.createElement("option");
+                const option = document.createElement("option");
                 option.value = supervisor.supervisedBy; // ✅ fixed
                 const supervisorName = matched?.firstName ? matched.firstName + " " : "";
                 option.textContent = `${supervisorName}${supervisor.supervisedBy}`;
-        superVisorSelect.appendChild(option);
-    });
+                superVisorSelect.appendChild(option);
+            });
         })
         .catch((err) => {
             console.log(err);
@@ -431,15 +433,14 @@ function loadAvailableSupervisors() {
             $select.empty().append(`<option value="" selected disabled>Select a supervisor</option>`);
             loggedInSupervisors.forEach(supervisor => {
                 const option = `<option value="${supervisor.id}">
-                    ${supervisor.firstName || ''} ${supervisor.secondName || ''}
-                </option>`;
+                ${supervisor.firstName || ''} ${supervisor.secondName || ''}
+            </option>`;
                 $select.append(option);
             });
         })
         .catch(() => {
             $select.html(`<option disabled>Error loading supervisors</option>`);
-        }
-    });
+        });
 }
 
 
