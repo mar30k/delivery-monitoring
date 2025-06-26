@@ -5,6 +5,7 @@ js( ()=> {
         responsive: true,
         "order": [[5, "desc"]],
         "pageLength": 15,
+        "lengthMenu": [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
         columnDefs: [
             { orderable: false, targets: [0, 4, 9, 13, 12] } 
             //{
