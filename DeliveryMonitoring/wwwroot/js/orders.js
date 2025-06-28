@@ -125,7 +125,7 @@ function updateOrders() {
         const status = order.status.toLowerCase() || "default";
         const color = statusColors[status] || statusColors["default"];
         const textColorClass = (color === "lawngreen" || color === "yellow") ? "text-black" : "text-white";
-        let requestCreatedAt = previousDates.get(order.voucherCode) || formatDateTime(order.requestCreatedAtIso);
+        let requestCreatedAt = previousDates.get(order.voucherCode) || formatDateTime(order.createdAt);
         let newRow = document.createElement('tr');
         newRow.setAttribute('data-voucher', order.voucherCode);
         newRow.setAttribute('data-supervisor', order.supervisedBy);
@@ -145,11 +145,11 @@ function updateOrders() {
             : `<a href="tel:${order.supervisedBy}">${order.supervisedBy}</a>`;
         newRow.innerHTML = `                    
                     <td>${order.voucherCode}</td>
-                    <td class="text-center">${order.customer.firstName || 'N/A'}</td>
-                    <td class="text-center"><a href="tel:${order.customer.phoneNumber}">${order.customer.phoneNumber || 'N/A'}</a></td>
-                    <td class="text-center">${order.customer.geocodeAddress} - ${order.customer.specificAddress}</td>
+                    <td class="text-center">${order.customerFirstName || 'N/A'}</td>
+                    <td class="text-center"><a href="tel:${order.customerPhoneNumber}">${order.customerPhoneNumber || 'N/A'}</a></td>
+                    <td class="text-center">${order.customerGeocodeAddress} - ${order.customerSpecificAddress}</td>
 
-                    <td data-order="${order.requestCreatedAt}" data-iso="${requestCreatedAt}" class="text-center">
+                    <td data-order="${order.createdAt}" data-iso="${order.createdAtString}" class="text-center">
                         ${requestCreatedAt}
                     </td>
                     <td class="status-cell text-center  ${textColorClass}" style="background: ${color}">${order.status}</td>
@@ -157,7 +157,7 @@ function updateOrders() {
                     <td class="text-center">${assign}</td>
                     <td class="text-center">${order.grandTotal}</td>
                     <td style="text-align: center; vertical-align: middle;">
-                        <div  style="display: inline-block;">
+                        <div style="display: inline-block;">
                             <a class="btn btn-outline-dark btn-sm" href="/order/${order.voucherCode}">Details</a>
                             ${redispatch}
                         </div>
@@ -240,7 +240,6 @@ function openRedispatchModal(el) {
 function confirmRedispatchToAll() {
     if (!selectedOrder) return;
     selectedOrder.assignedDriverPhoneNumber = "";
-    selectedOrder.status = "requested";
     dispatchOrder(selectedOrder);
 }
 
@@ -251,7 +250,6 @@ function confirmRedispatchToDriver() {
         return;
     }
     selectedOrder.assignedDriverPhoneNumber = driverPhone;
-    selectedOrder.status = "assigned";
     dispatchOrder(selectedOrder);
 }
 
