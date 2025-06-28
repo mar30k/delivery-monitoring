@@ -15,15 +15,15 @@
         <div class="row">
             <div class="col-11 col-md-6" id="orderDetail">
                 <div>
-                    <span><strong>@Html.DisplayNameFor(model => model.VoucherCode):</strong></span>
+                    <span><strong>VoucherCode:</strong></span>
                     <span>@Html.DisplayFor(model => model.VoucherCode)</span>
                 </div>
                 <div>
-                    <span><strong>@Html.DisplayNameFor(model => model.Activities.Eta):</strong></span>
+                    <span><strong>Expected Time Of Arrival:</strong></span>
                     <span>@(Model?.Activities?.Eta?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
                 </div>
                 <div>
-                    <span><strong>@Html.DisplayNameFor(model => model.Activities.ActualArrival):</strong></span>
+                    <span><strong>Actual Arrival:</strong></span>
                     <span>@(Model?.Activities?.ActualArrival?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
                 </div>
                 
@@ -62,7 +62,7 @@
             <div class="col-12 col-md-5 d-flex justify-content-end">
                 <div class="d-flex align-items-end flex-column">
                     <div class="mb-1"> 
-                        <span><strong>@DateTimeOffset.FromUnixTimeMilliseconds(Model.RequestCreatedAt).LocalDateTime.ToString(" ddd, MMMM dd, yyyy- hh:mm:ss tt")</strong></span>
+                        <span><strong>@Model?.CreatedAt?.ToString(" ddd, MMMM dd, yyyy- hh:mm:ss tt")</strong></span>
                     </div>
                     <div>
                         @{
@@ -94,18 +94,18 @@
                 <h4><i class="bi bi-person-circle icon"></i>Customer</h4>
                 <div>
                     <span id="letters">Name:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.Customer.FirstName)</span>
+                    <span id="outputs">@Model?.Customer?.FirstName</span>
                 </div>
                 <div>
                     <span id="letters">Address:</span>
                     <span id="outputs">
-                        @Html.DisplayFor(model => model.Customer.GeocodeAddress) -
-                        @Html.DisplayFor(model => model.Customer.SpecificAddress)
+                        @Model?.CustomerGeocodeAddress -
+                        @Model?.CustomerSpecificAddress
                     </span>
                 </div>
                 <div>
                     <span id="letters">Phone:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.Customer.PhoneNumber)</span>
+                    <span id="outputs">@Model.CustomerPhoneNumber</span>
                 </div>
                 @* <div>
                 <span id="letters">Device ID:</span>
