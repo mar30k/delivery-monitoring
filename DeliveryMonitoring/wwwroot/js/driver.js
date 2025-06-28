@@ -63,7 +63,7 @@
                                     lat: driver.latLng.lat,
                                     lng: driver.latLng.lng,
                                     Phone: driver.phoneNumber,
-                                    LastUpdatedAt: driver.lastUpdatedAt,
+                                    LastUpdatedAt: driver.updatedAt,
                                     Status: driver.status
                                 };
                             }
@@ -73,7 +73,6 @@
                         // Filter out undefined values
                         places = places.filter(place => place !== undefined);
                         // Process the places array after fetching the data
-
 
                         // ---- UPDATE DRIVER STATUS IN TABLE ----
                         data.forEach(driver => {
@@ -102,9 +101,8 @@
                                 $(statuscell).attr('data-order', priority);
                                 // Get the cell for last updated
                                 let lastUpdatedCell = tablelist.cell(rowIndex, 1).node();
-
                                 // Update the data-order attribute and cell content
-                                $(lastUpdatedCell).attr('data-order', driver.lastUpdatedAt);
+                                $(lastUpdatedCell).attr('data-order', driver.updatedAt);
                                 tablelist.cell(rowIndex, 2).data(driver.lastUpdatedAtIso);
 
                                 // Invalidate row data for DataTables
