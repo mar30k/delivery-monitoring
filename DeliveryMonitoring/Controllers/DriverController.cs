@@ -61,7 +61,7 @@ namespace DeliveryMonitoring.Controllers
                 data = JsonConvert.DeserializeObject<List<Driver>>(responseString);
                 foreach (var item in data ?? new List<Driver>())
                 {
-                    item.lastUpdatedAtIso = @DateTimeOffset.FromUnixTimeMilliseconds(item.lastUpdatedAt).ToOffset(TimeSpan.FromHours(3)).DateTime.ToString("yyyy-MM-dd hh:mm:ss");
+                    item.lastUpdatedAtIso = item?.updatedAt?.ToString("yyyy-MM-dd HH:mm:ss");
                 }
 
             }
@@ -209,20 +209,21 @@ namespace DeliveryMonitoring.Controllers
             // Fetch order data
             List<OrderDetail> orders = new ();
 
-            HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
-
-            if (orderResponse.IsSuccessStatusCode)
-            {
-                string orderData = await orderResponse.Content.ReadAsStringAsync();
-                orders = JsonConvert.DeserializeObject<List<OrderDetail>>(orderData) ?? new List<OrderDetail>();
-
-            }
+            
 
             // Fetch driver data
             Driver? driver = new ();
 
             try
             {
+                HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
+
+                if (orderResponse.IsSuccessStatusCode)
+                {
+                    string orderData = await orderResponse.Content.ReadAsStringAsync();
+                    orders = JsonConvert.DeserializeObject<List<OrderDetail>>(orderData) ?? new List<OrderDetail>();
+
+                }
                 HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers/{phoneNumber}");
 
                 if (response.IsSuccessStatusCode)
@@ -244,7 +245,6 @@ namespace DeliveryMonitoring.Controllers
 
             catch (HttpRequestException)
             {
-                return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
 
             ViewData["Orders"] = orders;
@@ -367,10 +367,10 @@ namespace DeliveryMonitoring.Controllers
                         break;
 
                     if (page == 1)
-            {
+                    {
                         allReviews.Count = pageData.Count;
                         allReviews.Rating = pageData.Rating;
-            }
+                    }
 
                     allReviewItems.AddRange(pageData.Reviews);
                     page++;
