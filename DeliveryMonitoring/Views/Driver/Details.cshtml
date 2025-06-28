@@ -72,18 +72,31 @@
                     <span id="outputs">@Model?.firstName</span>
                     <a id="outputs">
                         @{
-                            var statusColors = new Dictionary<string, string>
+                            @functions {
+                                public class StatusInfo
                                 {
-                                    { "offline", "red" },
-                                    { "ready", "orange" },
-                                    { "accepted", "yellow" },
-                                    { "delivering", "deepskyblue" },
-                                    { "completed", "lawngreen" }
-                                };
-
-                            if (Model?.status != null && statusColors.ContainsKey(Model.status))
+                                    public string? Color { get; set; }
+                                    public string? Priority { get; set; }
+                                }
+                            }
+                            var statusColors = new Dictionary<string, StatusInfo>
                             {
-                                <div style="background-color: @statusColors[Model.status]; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
+                                { "offline",         new StatusInfo { Color = "#dc3545", Priority = "1" } }, // Bootstrap danger - Offline
+                                { "ready",           new StatusInfo { Color = "#28a745", Priority = "7" } }, // Bootstrap success - Ready
+                                { "accepted",        new StatusInfo { Color = "#007bff", Priority = "5" } }, // Bootstrap primary - Accepted
+                                { "delivering",      new StatusInfo { Color = "#fd7e14", Priority = "6" } }, // Bootstrap orange - Delivering
+                                { "arrivedatbranch", new StatusInfo { Color = "#17a2b8", Priority = "4" } }, // Bootstrap info - Arrived
+                                { "completed",       new StatusInfo { Color = "#20c997", Priority = "3" } }, // Bootstrap teal - Completed
+                                { "default",         new StatusInfo { Color = "#ffc107", Priority = "2" } }  // Bootstrap warning - Default
+                            };
+                        var statusKey = Model?.status?.ToLower() ?? "default";
+                        var statusInfo = statusColors.ContainsKey(statusKey)
+                        ? statusColors[statusKey]
+                        : statusColors["default"];
+                        var bgColor = statusInfo.Color;
+                            if (Model?.status != null && statusColors.ContainsKey(Model.status.ToLower()))
+                            {
+                            <div style="background-color: @bgColor; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
                                     @Html.DisplayFor(model => model.status)
                                 </div>
                             }
