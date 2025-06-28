@@ -9,6 +9,7 @@ namespace DeliveryMonitoring.Models
         public string? email { get; set; }
         public string? idNumber { get; set; }
         public string? idType { get; set; }
+        public string? bikeType { get; set; }
         public string? plateNumber { get; set; }
         public string? gender { get; set; }
         public string? occupation { get; set; }
@@ -24,6 +25,7 @@ namespace DeliveryMonitoring.Models
 
     public class Driver
     {
+        public string? ID { get; set; }
         public string? companyTin { get; set; }
         public string? deviceID { get; set; }
         public string? firstName { get; set; }
@@ -32,6 +34,8 @@ namespace DeliveryMonitoring.Models
         public string? lastUpdatedAtIso { get; set; }
         public Location latLng { get; set; }
         public string? phoneNumber { get; set; }
+        public DateTime? updatedAt { get; set; }
+        public DateTime? createdAt { get; set; }
         public string? status { get; set; }
         public Detail? detail { get; set; }
         public int? numberOfAcceptedOrders { get; set; }

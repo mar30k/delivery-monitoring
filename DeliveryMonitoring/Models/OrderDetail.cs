@@ -11,67 +11,71 @@ namespace DeliveryMonitoring.Models
 
     public class OrderDetail
     {
-        [DisplayName("Driver Phone Number")]
+        public string? Id { get; set; }
         public string? AssignedDriverPhoneNumber { get; set; }
 
-        [DisplayName("Branch Name")]
         public string? BranchName { get; set; }
-
-        [DisplayName("Company Code")]
         public int? CompanyCode { get; set; }
 
-        [DisplayName("Company Name")]
         public string? CompanyName { get; set; }
 
-        [DisplayName("Company TIN")]
         public string? CompanyTin { get; set; }
-        [DisplayName("Delivery TIN")]
         public string? DeliveryTin { get; set; }
         public string? SupervisedBy { get; set; }
         public string? SosReason { get; set; }
         public string? GrandTotal { get; set; }
 
-        [DisplayName("Customer")]
         public CustomerDetail? Customer { get; set; }
+        public string? CustomerDeviceID { get; set; }
 
-        [DisplayName("Driver Assigned At")]
+        public string? CustomerFirstName { get; set; }
+
+        public string? CustomerGeocodeAddress { get; set; }
+
+        public double? CustomerLat { get; set; }
+
+        public double? CustomerLng { get; set; }
+
+        public string? CustomerPhoneNumber { get; set; }
+
+        public string? CustomerSpecificAddress { get; set; }
+
         public long? DriverAssignedAt { get; set; }
 
-        [DisplayName("Is Assigned Acknowledged")]
         public bool? IsAssignedAck { get; set; }
 
-        [DisplayName("Is No Drivers Acknowledged")]
         public bool? IsNoDriversAck { get; set; }
 
-        [DisplayName("Order Arrived Ack by Customer")]
         public bool? OrderArrivedAckByCustomer { get; set; }
 
-        [DisplayName("Order Arrived Ack by Driver")]
         public bool? OrderArrivedAckByDriver { get; set; }
         public string? Platform { get; set; }
 
-        [DisplayName("Request Created At")]
         public long RequestCreatedAt { get; set; }
-        public DateTime RequestCreatedAtIso { get; set; }
-
-        [DisplayName("Status")]
+        public string CreatedAtString { get; set; }
+        public DateTime? RequestCreatedAtIso { get; set; }
+        public DateTime? DriverAssignedTime { get; set; }
+        public DateTime? DeliveryDateTime { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? Eta { get; set; }
         public string? Status { get; set; }
 
-        [DisplayName("Target Branch Location")]
         public Location? TargetBranchLocation { get; set; }
 
-        [DisplayName("Voucher Code")]
+        public double? TargetBranchLat { get; set; }
+
+        public double? TargetBranchLng { get; set; }
+
         public string? VoucherCode { get; set; }
         public string? Alert { get; set; }
 
-        [DisplayName("Line Items Detail")]
         public LineItemsDetail? LineItemsDetail { get; set; }
 
-        [DisplayName("Activities")]
         public Activities? Activities { get; set; }
         public DateTime? OrderAcceptedNotification { get; set; }
         public DateTime? OrderReceiveNotification { get; set; }
-        public string[]? ExceptDrivers { get; set; } = Array.Empty<string>();
+        public string? ExceptDrivers { get; set; }
     }
 
     public class CustomerDetail
