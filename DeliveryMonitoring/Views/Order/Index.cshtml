@@ -125,19 +125,19 @@
                                     @order?.VoucherCode
                                 </td>
                                 <td class="text-center">
-                                    @(order?.Customer?.FirstName ?? "N/A")
+                                    @(order?.CustomerFirstName ?? "N/A")
                                 </td>
                                 <td class="text-center">
-                                    <a href="tel:@order?.Customer?.PhoneNumber">
-                                        @(order?.Customer?.PhoneNumber ?? "N/A")
+                                    <a href="tel:@order?.CustomerPhoneNumber">
+                                        @(order?.CustomerPhoneNumber ?? "N/A")
                                     </a>
                                 </td>
                                 <td class="text-center">
-                                    @(order?.Customer != null ? $"{order.Customer.GeocodeAddress} - {order.Customer.SpecificAddress}" : "N/A")
+                                    @($"{order?.CustomerGeocodeAddress} - {order?.CustomerSpecificAddress}")
                                 </td>
 
-                                <td data-order="@order?.RequestCreatedAt" data-iso="@order?.RequestCreatedAtIso.ToString("yyyy-MM-dd hh:mm:ss")" class="text-center" >
-                                    @order?.RequestCreatedAtIso.ToString("yyyy-MM-dd hh:mm:ss")
+                                <td data-order="@order?.CreatedAt?.ToString(" yyyy-MM-ddTHH:mm:ss")" data-iso="@order?.CreatedAt?.ToString("yyyy-MM-dd hh:mm:ss")" class="text-center">
+                                    @order?.CreatedAt?.ToString("yyyy-MM-dd hh:mm:ss")
                                 </td>
                                 <td class="status-cell text-center @(bgColor == "lawngreen" || bgColor == "yellow" ? "text-black" : "text-white")" style="background: @bgColor">
                                     @order?.Status
