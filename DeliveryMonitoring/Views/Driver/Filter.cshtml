@@ -68,14 +68,13 @@
                             var priority = statusInfo.Priority;
                             <tr>
                                 <td>
-                                    @Html.DisplayFor(modelItem => driver.firstName)
+                                    @driver?.firstName
                                 </td>
-                                <td class="text-center" data-order="@driver.lastUpdatedAt">
-                                    @DateTimeOffset.FromUnixTimeMilliseconds(driver.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")
-
+                                <td class="text-center" data-order="@driver?.updatedAt?.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                    @driver?.updatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
                                 </td>
                                 <td class="text-center">
-                                    @Html.DisplayFor(modelItem => driver.phoneNumber)
+                                    @driver?.phoneNumber
                                 </td>
                                 <td class ="text-center" data-status style="background: @bgColor; color: white;" data-order="@priority">
                                     @driver?.status

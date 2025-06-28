@@ -99,7 +99,7 @@
 
                         @foreach (var driver in Model)
                         {
-                            var statusKey = driver?.status ?? "default";
+                            var statusKey = driver?.status?.ToLower() ?? "default";
                             var statusInfo = statusColors.ContainsKey(statusKey) 
                                 ? statusColors[statusKey] 
                                 : statusColors["default"];
@@ -115,8 +115,8 @@
                                 <td class="text-center">
                                     @driver?.companyTin
                                 </td>
-                                <td data-order="@driver?.lastUpdatedAt" class="text-center">
-                                    @DateTimeOffset.FromUnixTimeMilliseconds(driver?.lastUpdatedAt ?? new long()).ToOffset(TimeSpan.FromHours(3)).DateTime.ToString("yyyy-MM-dd hh:mm:ss")
+                                <td data-order="@driver?.updatedAt?.ToString("yyyy-MM-ddTHH:mm:ss")" class="text-center">
+                                    @driver?.updatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
                                 </td>
                                 <td class="text-center">
                                     <a href="tel:@driver?.phoneNumber">
