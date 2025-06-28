@@ -32,6 +32,7 @@ namespace DeliveryMonitoring.Helpers
                     var responseMessageData = await responseMessage.Content.ReadAsStringAsync();
                     response = JsonConvert.DeserializeObject<List<OrderDetail>>(responseMessageData);
                 }
+                response?.ForEach(x => x.CreatedAtString = x?.CreatedAt?.ToString("yyyy-MM-dd hh:mm:ss"));
                 return response ?? new List<OrderDetail>();
             }
             catch
