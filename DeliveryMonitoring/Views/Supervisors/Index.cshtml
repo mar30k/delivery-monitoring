@@ -1,11 +1,11 @@
-﻿@model List<SupervisorsDTO>
+﻿@model OrderViewModel
 @{
     ViewData["title"] = "Supervisors";
 }
 <div class="p-4 mt-2">
-    <h3 class="mb-4">KOT status</h3>
+    <h3 class="mb-4">Supervisors</h3>
 
-    @if (Model == null || !Model.Any())
+    @if (Model == null || !Model.Supervisors.Any())
     {
         <div class="alert alert-info">
             No records found.
@@ -22,16 +22,33 @@
                             <th class="text-center">Phone Number</th>
                             <th class="text-center">Logged In</th>
                             <th class="text-center">Active</th>
+                            <th class="text-center">Orders Count</th>
+                            <th class="text-center">Orders Assigned</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var supervisor in Model ?? new List<SupervisorsDTO>())
+                        @foreach (var supervisor in Model?.Supervisors ?? new List<SupervisorsDTO>())
                         {
+                            var orders = Model?.OrderDetail?.Where(o => o.SupervisedBy == supervisor.UserName).ToList();
                             <tr>
                                 <td>@supervisor.FirstName @supervisor.SecondName</td>
-                                <td class="text-center">@supervisor.UserName</td>
+                                <td class="text-center"><a href="tel: @supervisor.UserName">@supervisor.UserName</a></td>
                                 <td class="text-center">@((supervisor.LoggedInStatus) ? "Yes" : "No")</td>
                                 <td class="text-center">@((supervisor.IsActive) ? "Yes" : "No")</td>
+                                <td class="text-center">@(orders?.Count.ToString() ?? "0")</td>
+                                <td class="text-center">
+                                    @if (orders != null && orders.Any())
+                                    {
+                                        foreach(var order in orders)
+                                        {
+                                            <a href="/order/@order?.VoucherCode">@order?.VoucherCode</a>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -51,7 +68,9 @@
                 responsive: true,
                 "order": [[0, "asc"]],
                 columnDefs: [
-                    { orderable: false, targets: [1, 2, 3] }
+                    { orderable: false, targets: [1, 2, 3,4] },
+                    { width: "35%", targets: 5 },
+                    { width: "15%", targets: 0 }
                 ],
                 language: {
                     "emptyTable": "No information to display at the moment!"
