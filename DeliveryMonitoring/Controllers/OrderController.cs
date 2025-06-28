@@ -38,13 +38,12 @@ namespace DeliveryMonitoring.Controllers
             }
 
             HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
-            HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
-
             if (response.IsSuccessStatusCode)
             {
                 string data = await response.Content.ReadAsStringAsync();
                 orders = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
             }
+            HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");      
             if (getsupervisors.IsSuccessStatusCode)
             {
                 string data = await getsupervisors.Content.ReadAsStringAsync();
@@ -93,12 +92,34 @@ namespace DeliveryMonitoring.Controllers
         [HttpPost]
         public async Task<IActionResult> Dispatch([FromBody] OrderDetail order)
         {
+            order.Customer = new CustomerDetail
+            {
+                FirstName = order.CustomerFirstName,
+                GeocodeAddress = order.CustomerGeocodeAddress,
+                SpecificAddress = order.CustomerSpecificAddress,
+                PhoneNumber = order.CustomerPhoneNumber,
+                DeviceID = order.CustomerDeviceID,
+                LatLng = new Location
+                {
+                    Lat = order.CustomerLat,
+                    Lng = order.CustomerLng
+                }
+            };
+            order.TargetBranchLocation = new Location
+            {
+                Lat = order.TargetBranchLat,
+                Lng = order.TargetBranchLng
+            };
+            long unixMilliseconds = new DateTimeOffset(DateTime.Parse(order.CreatedAt.ToString(), null, System.Globalization.DateTimeStyles.RoundtripKind)).ToUnixTimeMilliseconds();
+            order.RequestCreatedAtIso = order.CreatedAt;
+            order.RequestCreatedAt = unixMilliseconds;
             order.IsAssignedAck = false;
             order.IsNoDriversAck = false;
             order.OrderArrivedAckByCustomer = false;
             order.OrderArrivedAckByDriver = false;
             order.OrderReceiveNotification = null;
             order.Alert = null;
+            order.Status = "requested";
             order.DriverAssignedAt = 0;
             if (order == null)
                 return BadRequest("Invalid order data.");
