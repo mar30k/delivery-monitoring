@@ -49,7 +49,7 @@
             <div class="card border-1" id="orderCard">
                 <div class="row">
                     <div class="col-3" id="dashboardIcon">
-                        <i class="bi bi-cart2"></i>
+                        <i class="fa-solid fa-cart-shopping"></i>
                     </div>
                     <div class="card-body col-7">
                         <p class="card-title">Total Orders</p>
@@ -96,12 +96,16 @@
                     <div class="col-3" id="dashboardIcon">
                         <i class="fa-duotone fa-solid fa-user"></i>
                     </div>
-                    <div class="card-body col-7">
+                    @* <div class="card-body col-7">
                         <p class="card-title">Supervisors</p>
                         <h1 class="card-text">@(Model?.Supervisors?.Count ?? 0)</h1>
-                    </div>
-                    @* <div class="card-body col-7">
-                        <p class="card-title mb-4">Supervisors</p>
+                    </div> *@
+                    <div class="card-body col-7">
+@*                         <p class="card-title">Supervisors</p>
+ *@                        <a class="card-title fw-semibold  text-decoration-none"
+                           href="/supervisors">
+                            Supervisors
+                        </a><br/>
                         <div class="d-flex align-items-center gap-4 flex-wrap">
                             <div class="text-center">
                                 <h1 class="mb-0 fw-bold text-primary">
@@ -110,12 +114,12 @@
                                 <small class="text-black">Total</small>
                            </div>
         
-                            <div class="text-center">
+                            @* <div class="text-center">
                                 <h5 class="mb-0 text-success">
                                     @(Model?.Supervisors?.Count(x => x.IsActive == true) ?? 0)
                                 </h5>
                                 <small class="text-muted">Active</small>
-                            </div>
+                            </div> *@
                              <div class="text-center">
                                 <h5 class="mb-0 text-info">
                                     @(Model?.Supervisors?.Count(x => x.LoggedInStatus == true) ?? 0)
@@ -123,7 +127,7 @@
                                 <small class="text-muted">Logged In</small>
                             </div> 
                         </div>
-                    </div> *@
+                    </div>
                 </div>
             </div>
         </div>
