@@ -30,23 +30,21 @@
                         @foreach (var supervisor in Model?.Supervisors ?? new List<SupervisorsDTO>())
                         {
                             var orders = Model?.OrderDetail?.Where(o => o.SupervisedBy == supervisor.UserName).ToList();
+                            int count = orders?.Count ?? 0;
                             <tr>
                                 <td>@supervisor.FirstName @supervisor.SecondName</td>
                                 <td class="text-center"><a href="tel: @supervisor.UserName">@supervisor.UserName</a></td>
                                 <td class="text-center">@((supervisor.LoggedInStatus) ? "Yes" : "No")</td>
                                 <td class="text-center">@((supervisor.IsActive) ? "Yes" : "No")</td>
-                                <td class="text-center">@(orders?.Count.ToString() ?? "0")</td>
+                                <td class="text-center">@count</td>
                                 <td class="text-center">
                                     @if (orders != null && orders.Any())
                                     {
-                                        foreach(var order in orders)
-                                        {
-                                            <a href="/order/@order?.VoucherCode">@order?.VoucherCode</a>
-                                        }
+                                        @Html.Raw(string.Join(", ",orders.Select(order => $"<a href='/order/{order.VoucherCode}'>{order.VoucherCode}</a>")))
                                     }
                                     else
                                     {
-                                        <span class="text-muted">-</span>
+                                        <span class="text-danger">-</span>
                                     }
                                 </td>
                             </tr>
