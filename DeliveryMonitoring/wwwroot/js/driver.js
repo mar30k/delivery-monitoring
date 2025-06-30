@@ -14,6 +14,8 @@
             if (!js.fn.DataTable.isDataTable('#tablelist')) {
                 tablelist = js('#tablelist').DataTable({
                     responsive: true,
+                    pageLength: 13,
+                    "lengthMenu": [[10, 13, 25, 50, 100], [10, 13, 25, 50, 100]],
                     columnDefs: [
                         { orderable: false, targets: [3, 5, 1] } // Disable sorting on specified columns
                     ],
@@ -36,8 +38,8 @@
 
         function initMap() {
             // Default center coordinates
-            const defaultLat = 8.9660573;; // Replace with your default latitude
-            const defaultLng = 38.8404793; // Replace with your default longitude
+            const defaultLat = 9.0003776;; // Replace with your default latitude
+            const defaultLng = 38.7828502; // Replace with your default longitude
 
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: defaultLat, lng: defaultLng },
