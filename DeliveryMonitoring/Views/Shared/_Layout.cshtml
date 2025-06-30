@@ -112,8 +112,6 @@
             });
             closeAlert();
             fetchAlerts();
-            // Refresh alerts every 10 seconds
-            setInterval(fetchAlerts, 10000);
         });
                 // Mock sessionStorage for testing purposes
         // sessionStorage.setItem("displayedAlerts", JSON.stringify({
@@ -185,6 +183,7 @@
             } catch (error) {
                 console.error("Error fetching alerts:", error);
             }
+            setTimeout(fetchAlerts, 10000);
         }
 
         let alertAudio = null;
