@@ -36,18 +36,22 @@ namespace DeliveryMonitoring.Controllers
                 string data = await response.Content.ReadAsStringAsync();
                 orders = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
             }
-            HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
-
-
-            if (getsupervisors.IsSuccessStatusCode)
+            if( companyTin== "0076217301" )
             {
-                string data = await getsupervisors.Content.ReadAsStringAsync();
-                superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
+                HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
+
+
+                if (getsupervisors.IsSuccessStatusCode)
+                {
+                    string data = await getsupervisors.Content.ReadAsStringAsync();
+                    superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
+                }
             }
+            
             var orderViewModel = new OrderViewModel
             {
                 OrderDetail = orders,
-                Supervisors = superVisors
+                Supervisors = companyTin== "0076217301" ?superVisors : new List<SupervisorsDTO>()
             };
             return View(orderViewModel);
         }
