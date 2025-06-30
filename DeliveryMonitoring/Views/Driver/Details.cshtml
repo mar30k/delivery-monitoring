@@ -94,26 +94,31 @@
                         ? statusColors[statusKey]
                         : statusColors["default"];
                         var bgColor = statusInfo.Color;
-                            if (Model?.status != null && statusColors.ContainsKey(Model.status.ToLower()))
-                            {
-                            <div style="background-color: @bgColor; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
-                                    @Html.DisplayFor(model => model.status)
-                                </div>
-                            }
                         }
                     </a>
-                    @{
-                        foreach (var item in (Orders ?? new List<OrderDetail>()).Where(o => o.AssignedDriverPhoneNumber == @Model?.phoneNumber))
-                        {
-                            var voucher = item.VoucherCode;
-                            <a class=""href="/order/@voucher" style="margin-left: 0px; text-decoration: none;">- Order Details</a>
-                        }
+                    <div>
+                        <span id="letters">Status: </span>
+                        <span id="outputs" style="background-color: @bgColor; border-radius: 20px; display: inline-block; padding: 5px 5px;">
+                            @Html.DisplayFor(model => model.status)
+                        </span>
+                    </div>
+                    @if ((Orders ?? new List<OrderDetail>()).Where(o => o.AssignedDriverPhoneNumber == @Model?.phoneNumber).ToList().Count() > 0)
+                    {
+                        var assignedOrders = (Orders ?? new List<OrderDetail>()).Where(o => o.AssignedDriverPhoneNumber == @Model?.phoneNumber).ToList();
+                        <div>
+                            <span id="letters">Orders: </span>
+                            <span id="outputs">
+                                @foreach (var order in assignedOrders)
+                                {
+                                    <a class="" href="/order/@order.VoucherCode" style="margin-left: 0px; text-decoration: none;">@order.VoucherCode </a>
+                                }
+                            </span>
+                        </div>
                     }
-
                     <div>
                         <span id="letters">Last updated at: </span>
                         <span id="outputs">
-                            @DateTimeOffset.FromUnixTimeMilliseconds(Model?.lastUpdatedAt ?? new long()).ToOffset(TimeSpan.FromHours(3)).DateTime.ToString("yyyy-MM-dd hh:mm:ss")
+                            @Model?.updatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
                         </span>
                     </div>
                     <div>
