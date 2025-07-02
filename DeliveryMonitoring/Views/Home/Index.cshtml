@@ -29,14 +29,14 @@
         
                             <div class="text-center">
                                 <h5 class="mb-0 text-success">
-                                    @(Model?.Drivers?.Count(x => x.isDisabled != true) ?? 0)
+                                    @(Model?.Drivers?.Count(x => x.IsDisabled != true) ?? 0)
                                 </h5>
                                 <small class="text-muted">Active</small>
                             </div>
 
                             <div class="text-center">
                                 <h5 class="mb-0 text-info">
-                                    @(Model?.Drivers?.Count(x => x.status?.ToLower() == "ready") ?? 0)
+                                    @(Model?.Drivers?.Count(x => x.Status?.ToLower() == "ready") ?? 0)
                                 </h5>
                                 <small class="text-muted">Ready</small>
                             </div>
@@ -169,12 +169,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     @{
         //counts related to drivers
-        int offlineCount = Model.Drivers.Count(d => d.status == "offline");
-        int readyCount = Model.Drivers.Count(d => d.status == "ready");
-        int acceptedCount = Model.Drivers.Count(d => d.status == "accepted");
-        int deliveringCount = Model.Drivers.Count(d => d.status == "delivering");
-        int completedCount = Model.Drivers.Count(d => d.status == "completed");
-        int arrivedatbranchCount = Model.Drivers.Count(d => d.status.ToLower() == "arrivedatbranch");
+        int offlineCount = Model.Drivers.Count(d => d.Status == "offline");
+        int readyCount = Model.Drivers.Count(d => d.Status == "ready");
+        int acceptedCount = Model.Drivers.Count(d => d.Status == "accepted");
+        int deliveringCount = Model.Drivers.Count(d => d.Status == "delivering");
+        int completedCount = Model.Drivers.Count(d => d.Status == "completed");
+        int arrivedatbranchCount = Model.Drivers.Count(d => d.Status?.ToLower() == "arrivedatbranch");
         //counts related to orders
         int completedOrdersCount = Model.Orders.Count(d => d.Status == "completed");
         int requestedOrdersCount = Model.Orders.Count(d => d.Status == "requested");

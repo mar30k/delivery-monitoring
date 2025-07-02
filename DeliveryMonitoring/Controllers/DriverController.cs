@@ -61,7 +61,7 @@ namespace DeliveryMonitoring.Controllers
                 data = JsonConvert.DeserializeObject<List<Driver>>(responseString);
                 foreach (var item in data ?? new List<Driver>())
                 {
-                    item.lastUpdatedAtIso = item?.updatedAt?.ToString("yyyy-MM-dd HH:mm:ss");
+                    item.LastUpdatedAtIso = item?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss");
                 }
 
             }
@@ -231,7 +231,7 @@ namespace DeliveryMonitoring.Controllers
                     string data = await response.Content.ReadAsStringAsync();
                     driver = JsonConvert.DeserializeObject<Driver>(data) ?? new Driver();
 
-                    if(companyTin!= "0076217301" && companyTin!= driver.companyTin)
+                    if(companyTin!= "0076217301" && companyTin!= driver.CompanyTin)
                     {
                         return NotFound();
                     }

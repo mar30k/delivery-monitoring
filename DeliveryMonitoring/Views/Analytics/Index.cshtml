@@ -108,11 +108,11 @@
 </div>
 @{
     //counts related to driver
-    int offlineCount = Model.Drivers.Count(d => d.status == "offline");
-    int readyCount = Model.Drivers.Count(d => d.status == "ready");
-    int acceptedCount = Model.Drivers.Count(d => d.status == "accepted");
-    int deliveringCount = Model.Drivers.Count(d => d.status == "delivering");
-    int completedCount = Model.Drivers.Count(d => d.status == "completed");
+    int offlineCount = Model.Drivers.Count(d => d.Status == "offline");
+    int readyCount = Model.Drivers.Count(d => d.Status == "ready");
+    int acceptedCount = Model.Drivers.Count(d => d.Status == "accepted");
+    int deliveringCount = Model.Drivers.Count(d => d.Status == "delivering");
+    int completedCount = Model.Drivers.Count(d => d.Status == "completed");
     //counts related to order
     int completedOrdersCount = Model.Orders.Count(d => d.Status == "completed"); 
     int requestedOrdersCount = Model.Orders.Count(d => d.Status == "requested");

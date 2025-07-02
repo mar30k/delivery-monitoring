@@ -19,18 +19,18 @@
                 <table class="table compact stripe hover pt-3" id="tablelist" style="font-size: 13px;">
                     <thead class="">
                         <tr>
-
+                            
                             <th>
-                                @Html.DisplayNameFor(model => model.firstName)
+                                First Name
                             </th>
                             <th class="text-center">
-                                @Html.DisplayNameFor(model => model.lastUpdatedAt)
+                                Last Updated At
                             </th>
                             <th class="text-center">
-                                @Html.DisplayNameFor(model => model.phoneNumber)
+                                Phone Number
                             </th>
                             <th class="text-center">
-                                @Html.DisplayNameFor(model => model.status)
+                                Status
                             </th>
                             <th class="text-center">
                                 Driver Details
@@ -59,7 +59,7 @@
                         }
                         @foreach (var driver in Model)
                         {
-                            var statusKey = driver?.status ?? "default";
+                            var statusKey = driver?.Status ?? "default";
                             var statusInfo = statusColors.ContainsKey(statusKey)
                             ? statusColors[statusKey]
                             : statusColors["default"];
@@ -68,19 +68,19 @@
                             var priority = statusInfo.Priority;
                             <tr>
                                 <td>
-                                    @Html.DisplayFor(modelItem => driver.firstName)
+                                    @driver?.FirstName
                                 </td>
-                                <td class="text-center" data-order="@driver?.updatedAt?.ToString("yyyy-MM-ddTHH:mm:ss")">
-                                    @driver?.updatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
+                                <td class="text-center" data-order="@driver?.UpdatedAt?.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                    @driver?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
                                 </td>
                                 <td class="text-center">
-                                    @Html.DisplayFor(modelItem => driver.phoneNumber)
+                                    @driver?.PhoneNumber
                                 </td>
                                 <td class="text-center" data-status style="background: @bgColor; color: white;" data-order="@priority">
-                                    @driver?.status
+                                    @driver?.Status
                                 </td>
                                 <td class="text-center">
-                                    <a class="btn btn-outline-dark btn-sm" href="/driverdetail/@driver?.phoneNumber">Details</a>
+                                    <a class="btn btn-outline-dark btn-sm" href="/driverdetail/@driver?.PhoneNumber">Details</a>
                                 </td>
                             </tr>
                         }
@@ -112,7 +112,7 @@
                     foreach (var item in Model)
                     {
                                <text>
-                                    places.push({ TIN: '@item.companyTin' });
+                                    places.push({ TIN: '@item.CompanyTin' });
                                 </text>
                                 break;
                     }

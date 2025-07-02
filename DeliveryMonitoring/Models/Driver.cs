@@ -5,18 +5,21 @@ namespace DeliveryMonitoring.Models
 
     public class Detail
     {
-        public string? fullName { get; set; }
-        public string? email { get; set; }
-        public string? idNumber { get; set; }
-        public string? idType { get; set; }
-        public string? bikeType { get; set; }
-        public string? plateNumber { get; set; }
-        public string? gender { get; set; }
-        public string? occupation { get; set; }
-        public DateTime? dob { get; set; }
-        public string? profilePicture { get; set; }
+        public string? FullName { get; set; }
+        public string? IdNumber { get; set; }
+        public int? IdType { get; set; }
+        public string? BikeType { get; set; }
+        public string? PlateNumber { get; set; }
+        public string? Email { get; set; }
+        public string? Gender { get; set; }
+        public string? Occupation { get; set; }
+        public DateTime? Dob { get; set; }
+        public string? ProfilePicture { get; set; }
+        public int? TotalDelivery { get; set; }
+        public double? TotalKm { get; set; }
+        public int? WeekDelivery { get; set; }
+        public int? TodayDelivery { get; set; }
     }
-
     public class Review
     {
         public double? totalRating { get; set; }
@@ -25,23 +28,24 @@ namespace DeliveryMonitoring.Models
 
     public class Driver
     {
-        public string? ID { get; set; }
-        public string? companyTin { get; set; }
-        public string? deviceID { get; set; }
-        public string? firstName { get; set; }
-        public bool? isDisabled { get; set; }
-        public long lastUpdatedAt { get; set; }
-        public string? lastUpdatedAtIso { get; set; }
-        public Location latLng { get; set; }
-        public string? phoneNumber { get; set; }
-        public DateTime? updatedAt { get; set; }
-        public DateTime? createdAt { get; set; }
-        public string? status { get; set; }
-        public Detail? detail { get; set; }
-        public int? numberOfAcceptedOrders { get; set; }
-        public int? numberOfRejectedOrders { get; set; }
-        public Review? review { get; set; }
-        public int? traveledDistance { get; set; }
+        public string? Id { get; set; }
+        public string? CompanyTin { get; set; }
+        public string? DeviceId { get; set; }
+        public string? FirstName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public bool IsDisabled { get; set; }
+        public double? Lat { get; set; }
+        public double? Lng { get; set; }
+        public int NumberOfAcceptedOrders { get; set; }
+        public int NumberOfRejectedOrders { get; set; }
+        public string? Status { get; set; }
+        public string? LastUpdatedAtIso { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public Location? LatLng { get; set; }
+        public Detail? Detail { get; set; }
+        public Review? Review { get; set; }
+        public int? TraveledDistance { get; set; }
     }
 
 }

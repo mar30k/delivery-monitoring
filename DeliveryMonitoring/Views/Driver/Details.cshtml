@@ -4,8 +4,8 @@
     ViewData["Title"] = "Driver Details";
     var Orders = ViewData["Orders"] as List<OrderDetail>;
 
-    double totalRating = Model?.review?.totalRating ?? 0.0;
-    double totalReviews = Model?.review?.totalReviews ?? 0;
+    double totalRating = Model?.Review?.totalRating ?? 0.0;
+    double totalReviews = Model?.Review?.totalReviews ?? 0;
     double rating = totalRating / totalReviews;
 
     string GetStarRating(double rating)
@@ -51,12 +51,12 @@
                 
                 <div class="col-8 d-flex justify-content-center gap-2">
                     <div>
-                        <a class="btn btn-success" href="/updatedriverinfo/@Model?.phoneNumber">
+                        <a class="btn btn-success" href="/updatedriverinfo/@Model?.PhoneNumber">
                             <i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info
                         </a>
                     </div>
                     <div>
-                        <a class="btn btn-primary" href="/review/@Model?.phoneNumber">
+                        <a class="btn btn-primary" href="/review/@Model?.PhoneNumber">
                             <i class="bi bi-chat-left-text"></i>&nbsp;Reviews
                         </a>
                     </div>
@@ -65,11 +65,11 @@
 
             <div class="row" id="orderDetail">               
                 <div class="col-6">
-                    <img src="@Model?.detail?.profilePicture" alt="" class="half-size-img">
+                    <img src="@Model?.Detail?.ProfilePicture" alt="" class="half-size-img">
                 </div>
                 <div class="col-6">
                     <span id="letters">Name: </span>
-                    <span id="outputs">@Model?.firstName</span>
+                    <span id="outputs">@Model?.FirstName</span>
                     <a id="outputs">
                         @{
                             @functions {
@@ -89,22 +89,22 @@
                                 { "completed",       new StatusInfo { Color = "#20c997", Priority = "3" } }, // Bootstrap teal - Completed
                                 { "default",         new StatusInfo { Color = "#ffc107", Priority = "2" } }  // Bootstrap warning - Default
                             };
-                        var statusKey = Model?.status?.ToLower() ?? "default";
-                        var statusInfo = statusColors.ContainsKey(statusKey)
-                        ? statusColors[statusKey]
-                        : statusColors["default"];
-                        var bgColor = statusInfo.Color;
+                            var statusKey = Model?.Status?.ToLower() ?? "default";
+                            var statusInfo = statusColors.ContainsKey(statusKey)
+                            ? statusColors[statusKey]
+                            : statusColors["default"];
+                            var bgColor = statusInfo.Color;
                         }
                     </a>
                     <div>
                         <span id="letters">Status: </span>
                         <span id="outputs" style="background-color: @bgColor; border-radius: 20px; display: inline-block; padding: 5px 5px;">
-                            @Html.DisplayFor(model => model.status)
+                            @Model?.Status
                         </span>
                     </div>
-                    @if ((Orders ?? new List<OrderDetail>()).Where(o => o.AssignedDriverPhoneNumber == @Model?.phoneNumber).ToList().Count() > 0)
+                    @if ((Orders ?? new List<OrderDetail>()).Where(o => o.AssignedDriverPhoneNumber == @Model?.PhoneNumber).ToList().Count() > 0)
                     {
-                        var assignedOrders = (Orders ?? new List<OrderDetail>()).Where(o => o.AssignedDriverPhoneNumber == @Model?.phoneNumber).ToList();
+                        var assignedOrders = (Orders ?? new List<OrderDetail>()).Where(o => o.AssignedDriverPhoneNumber == @Model?.PhoneNumber).ToList();
                         <div>
                             <span id="letters">Orders: </span>
                             <span id="outputs">
@@ -118,28 +118,28 @@
                     <div>
                         <span id="letters">Last updated at: </span>
                         <span id="outputs">
-                            @Model?.updatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
+                            @Model?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
                         </span>
                     </div>
                     <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.companyTin):</span>
-                        <span id="outputs"><a href="/company/@Model?.companyTin">@Html.DisplayFor(model => model.companyTin)</a></span>
+                        <span id="letters">@Html.DisplayNameFor(model => model.CompanyTin):</span>
+                        <span id="outputs"><a href="/company/@Model?.CompanyTin">@Html.DisplayFor(model => model.CompanyTin)</a></span>
                     </div>
                     <div>
                         <span id="letters">Phone Number:</span>
                         <span id="outputs">
-                            <a href="tel:@Model?.phoneNumber">@Model?.phoneNumber</a>
+                            <a href="tel:@Model?.PhoneNumber">@Model?.PhoneNumber</a>
                         </span>
                     </div>
                     <div>
                         <span id="letters">Plate Number:</span>
-                        <span id="outputs">@(Model?.detail?.plateNumber ?? "N/A")</span>
+                        <span id="outputs">@(Model?.Detail?.PlateNumber ?? "N/A")</span>
                     </div>
                     <div>
                         <span id="letters">Email: </span>
-                        @if (!string.IsNullOrEmpty(Model?.detail?.email))
+                        @if (!string.IsNullOrEmpty(Model?.Detail?.Email))
                         {
-                            <a id="outputs" href="mailto:@@Model.detail.email">@Model.detail.email</a>
+                            <a id="outputs" href="mailto:@@Model.detail.email">@Model?.Detail?.Email</a>
                         }
                         else
                         {
@@ -148,17 +148,17 @@
                     </div>
                     <div>
                         <span id="letters">Gender: </span>
-                        <a id="outputs">@(Model?.detail?.gender ?? "N/A")</a>
+                        <a id="outputs">@(Model?.Detail?.Gender ?? "N/A")</a>
                     </div>
                     <div>
                         <span id="letters">Number Of Accepted Orders:</span>
-                        <span id="outputs">@(Model?.numberOfAcceptedOrders.ToString() ?? "N/A")</span>
+                        <span id="outputs">@(Model?.NumberOfAcceptedOrders.ToString() ?? "N/A")</span>
                     </div>
                     <div>
                         <span id="letters">Number Of Rejected Orders:</span>
-                        @if (!string.IsNullOrEmpty(Model?.numberOfRejectedOrders.ToString()))
+                        @if (!string.IsNullOrEmpty(Model?.NumberOfRejectedOrders.ToString()))
                         {
-                            <span id="outputs">@Model?.numberOfRejectedOrders.ToString()</span>
+                            <span id="outputs">@Model?.NumberOfRejectedOrders.ToString()</span>
                         }
                         else
                         {
@@ -167,7 +167,7 @@
                     </div>
                     <div>
                         <span id="letters">Traveled Distance:</span>
-                        <span id="outputs">@(Model?.traveledDistance != null ? Model?.traveledDistance + " km" : "N/A")</span>
+                        <span id="outputs">@(Model?.Detail?.TotalKm != null ? Model?.Detail?.TotalKm + " km" : "N/A")</span>
                     </div>
                 </div>
             </div>
@@ -215,34 +215,38 @@
                     {
                         <text>
                                     places =[{
-                                        Name: '@Model.firstName',
-                                        LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                        Phone: '@Model.phoneNumber',
-                                        Status: '@Model.status',
-                                        lat: @Model?.latLng?.Lat,
-                                        lng: @Model?.latLng?.Lng}];
+                                        Name: '@Model.FirstName',
+                                        LastUpdatedAt: '@Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")',
+                                        Phone: '@Model.PhoneNumber',
+                                        Status: '@Model.Status',
+                                        lat: @Model?.LatLng?.Lat,
+                                        lng: @Model?.LatLng?.Lng}];
                         </text>
-                        if (Orders != null)
+                        @if (Orders?.Any() == true)
                         {
-                            foreach (var item in Orders ?? new List<OrderDetail>())
-                            {
-                                if (item.AssignedDriverPhoneNumber == Model?.phoneNumber)
+                                var driverOrders = Orders
+                                        .Where(x => x?.AssignedDriverPhoneNumber == Model?.PhoneNumber)
+                                        .ToList();
+
+                                foreach (var order in driverOrders)
                                 {
-                                    <text>
-                                        places = [{
-                                            Name: '@Model?.firstName',
-                                            LastUpdatedAt: '@DateTimeOffset.FromUnixTimeMilliseconds(Model.lastUpdatedAt).DateTime.ToString("yyyy-MM-dd HH:mm:ss")',
-                                            Phone: '@Model?.phoneNumber',
-                                            Status: '@Model?.status',
-                                            lat: @Model?.latLng?.Lat,
-                                            lng: @Model?.latLng?.Lng,
-                                            DestLat: @(item?.Customer?.LatLng?.Lat ?? 0.0),
-                                            DestLng: @(item?.Customer?.LatLng?.Lng ?? 0.0)
-                                        }];
-                                    </text>
+                                        var customerLat = order?.Customer?.LatLng?.Lat ?? 0.0;
+                                        var customerLng = order?.Customer?.LatLng?.Lng ?? 0.0;
+                                        <text>
+                                            places = [{
+                                                Name: '@Model?.FirstName',
+                                                LastUpdatedAt: '@Model?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")',
+                                                Phone: '@Model?.PhoneNumber',
+                                                Status: '@Model?.Status',
+                                                lat: @Model?.LatLng?.Lat,
+                                                lng: @Model?.LatLng?.Lng,
+                                                DestLat: @customerLat,
+                                                DestLng: @customerLng
+                                            }];
+                                        </text>
                                 }
-                            }
                         }
+
                     }
                 }
                 marker = new google.maps.Marker({

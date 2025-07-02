@@ -99,7 +99,7 @@
 
                         @foreach (var driver in Model)
                         {
-                            var statusKey = driver?.status?.ToLower() ?? "default";
+                            var statusKey = driver?.Status?.ToLower() ?? "default";
                             var statusInfo = statusColors.ContainsKey(statusKey) 
                                 ? statusColors[statusKey] 
                                 : statusColors["default"];
@@ -107,27 +107,27 @@
                             var bgColor = statusInfo.Color;
                             var priority = statusInfo.Priority;
 
-                            <tr data-phone="@driver?.phoneNumber">
+                            <tr data-phone="@driver?.PhoneNumber">
 
                                 <td >
-                                    @driver?.firstName
+                                    @driver?.FirstName
                                 </td>
                                 <td class="text-center">
-                                    @driver?.companyTin
+                                    @driver?.CompanyTin
                                 </td>
-                                <td data-order="@driver?.updatedAt?.ToString("yyyy-MM-ddTHH:mm:ss")" class="text-center">
-                                    @driver?.updatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
+                                <td data-order="@driver?.UpdatedAt?.ToString("yyyy-MM-ddTHH:mm:ss")" class="text-center">
+                                    @driver?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
                                 </td>
                                 <td class="text-center">
-                                    <a href="tel:@driver?.phoneNumber">
-                                        @driver?.phoneNumber
+                                    <a href="tel:@driver?.PhoneNumber">
+                                        @driver?.PhoneNumber
                                     </a>
                                 </td>
                                 <td class="text-center" data-status style="background: @bgColor; color: white;" data-order="@priority">
-                                    @driver?.status
+                                    @driver?.Status
                                 </td>
                                 <td class="text-center">
-                                    <a class="btn btn-outline-dark btn-sm" href="/driverdetail/@driver?.phoneNumber">Details</a>
+                                    <a class="btn btn-outline-dark btn-sm" href="/driverdetail/@driver?.PhoneNumber">Details</a>
                                 </td>
                             </tr>
                         }
