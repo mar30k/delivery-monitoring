@@ -191,6 +191,8 @@ async function showActivity(button) {
         if (result.isSuccessful) {
             const data = result.data;
 
+            document.getElementById('activityModalLabel').innerHTML = `Delivery Activity ${voucherCode}`;
+
             // Fill Summary Section
             document.getElementById('activitySummary').innerHTML = `
                 <div class="row">
