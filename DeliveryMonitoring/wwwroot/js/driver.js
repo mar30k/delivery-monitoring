@@ -38,8 +38,8 @@
 
         function initMap() {
             // Default center coordinates
-            const defaultLat = 9.0003776;; // Replace with your default latitude
-            const defaultLng = 38.7828502; // Replace with your default longitude
+            const defaultLat = 9.0003776; 
+            const defaultLng = 38.7828502; 
 
             map = new google.maps.Map(document.getElementById("map"), {
                 center: { lat: defaultLat, lng: defaultLng },
