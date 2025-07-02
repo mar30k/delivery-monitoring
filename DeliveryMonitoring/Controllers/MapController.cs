@@ -22,11 +22,9 @@ namespace DeliveryMonitoring.Controllers
             string apiKey = "AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ";
             string apiUrl = "https://maps.googleapis.com/maps/api/js?key=" + apiKey + "&callback=initMap&libraries=places,geometry&v=weekly";
 
-            using (var client = _httpClientFactory.CreateClient())
-            {
-                var result = await client.GetStringAsync(apiUrl);
-                return Content(result, "application/javascript");
-            }
+            using var client = _httpClientFactory.CreateClient();
+            var result = await client.GetStringAsync(apiUrl);
+            return Content(result, "application/javascript");
         }
     }
 }
