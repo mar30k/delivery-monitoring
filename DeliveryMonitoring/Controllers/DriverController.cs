@@ -213,6 +213,7 @@ namespace DeliveryMonitoring.Controllers
 
             // Fetch driver data
             Driver? driver = new ();
+            RouteModel? getRoutedata = new ();
 
             try
             {
@@ -236,6 +237,12 @@ namespace DeliveryMonitoring.Controllers
                         return NotFound();
                     }
 
+                    HttpResponseMessage getRouteDetailResponse = await _client.GetAsync($"{_client.BaseAddress}/routing/getRouteDetail?lat1={driver.Lat}&lng1={driver.Lng}&lat2=8.9660626&lng2=38.8356084");
+                    if (getRouteDetailResponse.IsSuccessStatusCode)
+                    {
+                        string getRouteString = await getRouteDetailResponse.Content.ReadAsStringAsync();
+                        getRoutedata = JsonConvert.DeserializeObject<RouteModel>(getRouteString) ?? new RouteModel();
+                    }
                     if (driver == null)
                     {
                         return NotFound(); // Return a 404 Not Found response if no driver is found.
@@ -248,6 +255,7 @@ namespace DeliveryMonitoring.Controllers
             }
 
             ViewData["Orders"] = orders;
+            ViewData["Routedata"] = getRoutedata;
             return View(driver);
         }
         //Driver Details -- Ends Here
