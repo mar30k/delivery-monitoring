@@ -3,7 +3,12 @@
 @{
     ViewData["Title"] = "Driver Details";
     var Orders = ViewData["Orders"] as List<OrderDetail>;
+    var routedata = ViewData["Routedata"] as RouteModel;
+    var reorderedCoordinates = routedata?.Coordinates
+            ?.Select(coord => new { lat = coord[1], lng = coord[0] }) // Swap [lng, lat] → {lat, lng}
+            ?.ToList();
 
+    var coordinatesJson = Newtonsoft.Json.JsonConvert.SerializeObject(reorderedCoordinates);
     double totalRating = Model?.Review?.totalRating ?? 0.0;
     double totalReviews = Model?.Review?.totalReviews ?? 0;
     double rating = totalRating / totalReviews;
@@ -175,6 +180,7 @@
     </div>
 
     <script>
+        var routeCoordinates = @Html.Raw(coordinatesJson);
         fetch('/Map/GetMapData')
             .then(response => response.text())
             .then(script => {
