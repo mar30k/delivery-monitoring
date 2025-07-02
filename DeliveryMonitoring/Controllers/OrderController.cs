@@ -219,7 +219,7 @@ namespace DeliveryMonitoring.Controllers
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var uri = assignSuperVisorDTO.id == "all" ?
                 $"auth/assign?voucherCode={assignSuperVisorDTO.voucherCode}" :
-                $"auth/assign?voucherCode={assignSuperVisorDTO.voucherCode}&id={assignSuperVisorDTO.id}";
+                $"auth/manualassign?voucherCode={assignSuperVisorDTO.voucherCode}&id={assignSuperVisorDTO.id}";
 
 
             try
