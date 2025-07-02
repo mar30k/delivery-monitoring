@@ -148,8 +148,8 @@ namespace DeliveryMonitoring.Controllers
 
                 var responseData = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<HulubejeResponse<Activities>>(responseData);
-
-
+                Response.Headers["Cache-Control"] = "public, max-age=300"; // cache for 5 minutes
+                Response.Headers["Vary"] = "Accept-Encoding";
                 return Ok(result);
             }
             catch (Exception ex)
