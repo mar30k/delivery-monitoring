@@ -235,9 +235,12 @@
         js(document).ready(function () {
             js('#tablelist').DataTable({
                 responsive: true,
+                pageLength: 13,
+                "lengthMenu": [[10, 13, 25, 50, 100], [10, 13, 25, 50, 100]],
                 columnDefs: [
-                    { orderable: false, targets: [2, 3, 4] } // Disable sorting on all columns except index 0 (firstName)
-                ]
+                    { orderable: false, targets: [2, 4] }
+                ],
+                order: [[3, 'desc']]
             });
         });
     </script>
