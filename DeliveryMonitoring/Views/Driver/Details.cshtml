@@ -56,12 +56,12 @@
                 
                 <div class="col-8 d-flex justify-content-center gap-2">
                     <div>
-                        <a class="btn btn-success" href="/updatedriverinfo/@Model?.PhoneNumber">
+                        <a class="btn btn-success btn-sm" href="/updatedriverinfo/@Model?.PhoneNumber">
                             <i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info
                         </a>
                     </div>
                     <div>
-                        <a class="btn btn-primary" href="/review/@Model?.PhoneNumber">
+                        <a class="btn btn-primary btn-sm" href="/review/@Model?.PhoneNumber">
                             <i class="bi bi-chat-left-text"></i>&nbsp;Reviews
                         </a>
                     </div>
@@ -73,9 +73,10 @@
                     <img src="@Model?.Detail?.ProfilePicture" alt="" class="half-size-img">
                 </div>
                 <div class="col-6">
-                    <span id="letters">Name: </span>
-                    <span id="outputs">@Model?.FirstName</span>
-                    <a id="outputs">
+                    <div class="mb-2">
+                        <span class="fw-bold">Name: </span>
+                        <span>@Model?.FirstName</span>
+                    </div>
                         @{
                             @functions {
                                 public class StatusInfo
@@ -100,79 +101,78 @@
                             : statusColors["default"];
                             var bgColor = statusInfo.Color;
                         }
-                    </a>
-                    <div>
-                        <span id="letters">Status: </span>
-                        <span id="outputs" style="background-color: @bgColor; border-radius: 20px; display: inline-block; padding: 5px 5px;">
+                    <div class="mb-2">
+                        <span class="fw-bold">Status: </span>
+                        <span class="text-white px-2 py-1 rounded" style="background-color: @bgColor;">
                             @Model?.Status
                         </span>
                     </div>
-                    @if ((Orders ?? new List<OrderDetail>()).Where(o => o.AssignedDriverPhoneNumber == @Model?.PhoneNumber).ToList().Count() > 0)
+
+                    @if ((Orders ?? new List<OrderDetail>()).Any(o => o.AssignedDriverPhoneNumber == @Model?.PhoneNumber))
                     {
-                        var assignedOrders = (Orders ?? new List<OrderDetail>()).Where(o => o.AssignedDriverPhoneNumber == @Model?.PhoneNumber).ToList();
-                        <div>
-                            <span id="letters">Orders: </span>
-                            <span id="outputs">
+                        var assignedOrders = (Orders ?? new List<OrderDetail>())
+                        .Where(o => o.AssignedDriverPhoneNumber == @Model?.PhoneNumber).ToList();
+                        <div class="mb-2">
+                            <span class="fw-bold">Orders: </span>
+                            <span>
                                 @foreach (var order in assignedOrders)
                                 {
-                                    <a class="" href="/order/@order.VoucherCode" style="margin-left: 0px; text-decoration: none;">@order.VoucherCode </a>
+                                    <a href="/order/@order.VoucherCode" class="me-2 text-decoration-none">@order.VoucherCode</a>
                                 }
                             </span>
                         </div>
                     }
-                    <div>
-                        <span id="letters">Last updated at: </span>
-                        <span id="outputs">
-                            @Model?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
-                        </span>
+
+                    <div class="mb-2">
+                        <span class="fw-bold">Last updated at: </span>
+                        <span>@Model?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")</span>
                     </div>
-                    <div>
-                        <span id="letters">@Html.DisplayNameFor(model => model.CompanyTin):</span>
-                        <span id="outputs"><a href="/company/@Model?.CompanyTin">@Html.DisplayFor(model => model.CompanyTin)</a></span>
+
+                    <div class="mb-2">
+                        <span class="fw-bold">@Html.DisplayNameFor(model => model.CompanyTin): </span>
+                        <a href="/company/@Model?.CompanyTin">@Html.DisplayFor(model => model.CompanyTin)</a>
                     </div>
-                    <div>
-                        <span id="letters">Phone Number:</span>
-                        <span id="outputs">
+
+                    <div class="mb-2">
+                        <span class="fw-bold">Phone Number: </span>
                             <a href="tel:@Model?.PhoneNumber">@Model?.PhoneNumber</a>
-                        </span>
                     </div>
-                    <div>
-                        <span id="letters">Plate Number:</span>
-                        <span id="outputs">@(Model?.Detail?.PlateNumber ?? "N/A")</span>
+
+                    <div class="mb-2">
+                        <span class="fw-bold">Plate Number: </span>
+                        <span>@(Model?.Detail?.PlateNumber ?? "N/A")</span>
                     </div>
-                    <div>
-                        <span id="letters">Email: </span>
+
+                    <div class="mb-2">
+                        <span class="fw-bold">Email: </span>
                         @if (!string.IsNullOrEmpty(Model?.Detail?.Email))
                         {
-                            <a id="outputs" href="mailto:@@Model.detail.email">@Model?.Detail?.Email</a>
+                            <a href="mailto:@@Model?.Detail?.Email">@Model?.Detail?.Email</a>
                         }
                         else
                         {
                             <span>N/A</span>
                         }
                     </div>
-                    <div>
-                        <span id="letters">Gender: </span>
-                        <a id="outputs">@(Model?.Detail?.Gender ?? "N/A")</a>
+
+                    <div class="mb-2">
+                        <span class="fw-bold">Gender: </span>
+                        <span>@(Model?.Detail?.Gender ?? "N/A")</span>
                     </div>
-                    <div>
-                        <span id="letters">Number Of Accepted Orders:</span>
-                        <span id="outputs">@(Model?.NumberOfAcceptedOrders.ToString() ?? "N/A")</span>
+
+                    <div class="mb-2">
+                        <span class="fw-bold">Number Of Accepted Orders: </span>
+                        <span>@(Model?.NumberOfAcceptedOrders.ToString() ?? "N/A")</span>
                     </div>
-                    <div>
-                        <span id="letters">Number Of Rejected Orders:</span>
-                        @if (!string.IsNullOrEmpty(Model?.NumberOfRejectedOrders.ToString()))
-                        {
-                            <span id="outputs">@Model?.NumberOfRejectedOrders.ToString()</span>
-                        }
-                        else
-                        {
-                            <span id="outputs">N/A</span>
-                        }
+
+                    <div class="mb-2">
+                        <span class="fw-bold">Number Of Rejected Orders: </span>
+                        <span>@(Model?.NumberOfRejectedOrders.ToString() ?? "N/A")</span>
                     </div>
-                    <div>
-                        <span id="letters">Traveled Distance:</span>
-                        <span id="outputs">@(Model?.Detail?.TotalKm != null ? Model?.Detail?.TotalKm + " km" : "N/A")</span>
+
+                    <div class="mb-2">
+                        <span class="fw-bold">Traveled Distance: </span>
+                        <span>@(Model?.Detail?.TotalKm != null ? Model?.Detail?.TotalKm + " km" : "N/A")</span>
                     </div>
                 </div>
             </div>
@@ -188,9 +188,6 @@
                 eval(script);
             })
             .catch(error => console.error('Error loading Google Maps API:', error));
-    </script>
-
-    <script>
         function initMap() {
             var map;
             var orderAssigned = false;
