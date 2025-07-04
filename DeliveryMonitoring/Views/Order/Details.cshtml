@@ -6,14 +6,14 @@
 }
 <!-- Add this line to include the custom CSS -->
 <link rel="stylesheet" href="~/css/orderDetail.css" />
-<div class="container-fluid col-11 pt-5">
+<div class="px-4 mt-2">
 
     <h3>Order Details</h3>
 
     <div class="card" id="orderCard">
         <br />      
-        <div class="row">
-            <div class="col-11 col-md-6" id="orderDetail">
+        <div class="row mb-2 p-4">
+            <div class="col-md-6">
                 <div>
                     <span><strong>VoucherCode:</strong></span>
                     <span>@Html.DisplayFor(model => model.VoucherCode)</span>
@@ -59,7 +59,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-5 d-flex justify-content-end">
+            <div class="col-12 col-md-6 d-flex justify-content-end">
                 <div class="d-flex align-items-end flex-column">
                     <div class="mb-1"> 
                         <span><strong>@Model?.CreatedAt?.ToString(" ddd, MMMM dd, yyyy- hh:mm:ss tt")</strong></span>
@@ -85,13 +85,11 @@
                 </div>
             </div>
         </div>
-        <br />
 
-        <div class="row">
+        <div class="row p-4 d-flex justify-content-evenly">
 
-            <!--Customer Details-->
-            <div class="col-12 col-md-4 detail" id="orderDetail">
-                <h4><i class="bi bi-person-circle icon"></i>Customer</h4>
+            <div class="col-md-3 mb-3">
+                <h4 style="margin-bottom: 5px;"><i class="bi bi-person-circle icon"></i>Customer</h4>
                 <div>
                     <span id="letters">Name:</span>
                     <span id="outputs">@Model?.Customer?.FirstName</span>
@@ -105,17 +103,11 @@
                 </div>
                 <div>
                     <span id="letters">Phone:</span>
-                    <span id="outputs">@Model.CustomerPhoneNumber</span>
+                    <span id="outputs">@Model?.CustomerPhoneNumber</span>
                 </div>
-                @* <div>
-                <span id="letters">Device ID:</span>
-                <span id="outputs">@Html.DisplayFor(model => model.customer.deviceId)</span>
-                </div> *@
             </div>
-            <!--Customer Details Ends Here-->
-            <!--Company Details-->
-            <div class="col-12 col-md-4 detail">
-                <h4><i class="bi bi-building icon"></i>Company</h4>
+            <div class="col-md-3 mb-3">
+                <h4 style="margin-bottom: 5px;"><i class="bi bi-building icon"></i>Company</h4>
                 <div>
                     <span id="letters">Branch:</span>
                     <span id="outputs">@Html.DisplayFor(model => model.BranchName)</span>
@@ -132,10 +124,8 @@
                     </span>
                 </div>
             </div>
-            <!--Company Details Ends Here-->
-            <!--Driver Details-->
-            <div class="col-12 col-md-3">
-                <h4><i class="bi bi-car-front icon"></i>Driver</h4>
+            <div class="col-md-3 mb-3">
+                <h4 style="margin-bottom: 5px;"> <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Driver</h4>
                 <div>
                     <span id="letters">Phone:</span>
                     <span id="outputs">
@@ -150,7 +140,7 @@
                     <span id="outputs">
                         @(Model?.SupervisedBy ?? "Not Assigned")
                     </span>
-            </div>
+                </div>
                 @if(Model?.SupervisorName != null)
                 {
                     <div>
@@ -158,26 +148,26 @@
                         <span id="outputs">
                             @Model?.SupervisorName
                         </span>
-        </div>
+                    </div>
                 }
             </div>
         </div>
         <!--Order Items Table-->
-        <h4 id="orderDetail">Products</h4>
-        <div class="col-11 table-responsive table-bordered" id="orderDetail">
-            <table class="table pt-3" id="orderTable">
+        <h4 style="margin-left: 28px; margin-bottom: 10px;">Products</h4>
+        <div class="px-4 table-responsive table-bordered">
+            <table class="table" id="orderTable">
                 <thead class="table-secondary">
                     <tr>
                         <th>
                             Item Name
                         </th>
-                        <th>
+                        <th class="text-center">
                             Quantity
                         </th>
-                        <th>
+                        <th class="text-center">
                             Unit Amount
                         </th>
-                        <th>
+                        <th class="text-center">
                             Taxable Amount
                         </th>
                     </tr>
@@ -189,13 +179,13 @@
                             <td>
                                 @Html.DisplayFor(modelItem => item.Name)
                             </td>
-                            <td>
+                            <td class="text-center">
                                 @Html.DisplayFor(modelItem => item.Quantity)
                             </td>
-                            <td>
+                            <td class="text-center">
                                 @String.Format("{0:F2} ETB", item.UnitAmount)
                             </td>
-                            <td>
+                            <td class="text-center">
                                 @String.Format("{0:F2} ETB", item.TaxableAmount)
                             </td>
                         </tr>
@@ -210,7 +200,7 @@
                             </td>
                             <td>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 @String.Format("{0:F2} ETB", @charge.Value)
                             </td>
                         </tr>
@@ -223,7 +213,7 @@
                         </td>
                         <td>
                         </td>
-                        <td>
+                        <td class="text-center">
                             <h4><b>@String.Format("{0:F2} ETB", Model?.LineItemsDetail?.GrandTotal)</b></h4>
                         </td>
                     </tr>
@@ -247,7 +237,7 @@
                             <div class="uk-grid-small uk-flex-middle" uk-grid>
 
                                 <!-- Column 1: Date and Time -->
-                                <div class="uk-width-1-3">
+                                <div class="uk-width-1-1@s uk-width-1-3@m uk-text-center">
                                     <p class="uk-card-title uk-margin-remove-bottom">
                                         <time datetime="@activity?.Time?.ToString("yyyy-MM-ddTHH:mm:ss")">
                                             @activity?.Time?.ToString("ddd MMM, dd yyyy hh:mm:ss tt")
@@ -256,19 +246,19 @@
                                 </div>
 
                                 <!-- Column 2: Elapsed Time -->
-                                <div class="uk-width-1-3 uk-text-center">
+                                <div class="uk-width-1-1@s uk-width-1-3@m uk-text-center">
                                     @if (!string.IsNullOrEmpty(activity?.TimeElapsed))
                                     {
-@*                                         <span class="uk-label uk-label-warning">@FormatElapsedTime(activity.TimeElapsed)</span>
- *@                                        <span class="uk-label uk-label-warning">@activity.TimeElapsed</span>
+                                        <span class="uk-label uk-label-warning">@activity.TimeElapsed</span>
                                     }
                                 </div>
 
                                 <!-- Column 3: Activity Name -->
-                                <div class="uk-width-1-3 uk-text-right">
-                                    <span class="uk-label uk-label-success">@activity?.Name</span>
+                                <div class="uk-width-1-1@s uk-width-1-3@m uk-text-center">
+                                    <span class="uk-label uk-label-success" style="white-space: normal; word-break: break-word;">
+                                        @activity?.Name
+                                    </span>
                                 </div>
-
                             </div>
                         </div>
                     </div>
