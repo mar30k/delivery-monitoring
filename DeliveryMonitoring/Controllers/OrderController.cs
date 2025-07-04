@@ -63,8 +63,9 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Details(string voucherCode)
         { 
             var _client = _httpClientFactory.CreateClient("Delivery");
+            var _V7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             OrderDetail? order = null;
-
+            List<SupervisorsDTO>? superVisors = new();
             try
             {
                 HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/orderRequests/{voucherCode}");
@@ -75,12 +76,21 @@ namespace DeliveryMonitoring.Controllers
                     order = JsonConvert.DeserializeObject<OrderDetail>(data);
                     //order.assignedDriverPhoneNumber = "0924438476";
                 }
-
+                HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
+                if (getsupervisors.IsSuccessStatusCode)
+                {
+                    string data = await getsupervisors.Content.ReadAsStringAsync();
+                    superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
+                }
                 if (order == null)
                 {
                     return NotFound(); // Return a 404 Not Found response if no driver is found.
                 }
-
+                else
+                {
+                    var supervisor = superVisors?.FirstOrDefault(s => s.UserName == order.SupervisedBy);
+                    order.SupervisorName = supervisor?.FirstName + supervisor?.SecondName;
+                }
                 return View(order);
             }
             catch (HttpRequestException)

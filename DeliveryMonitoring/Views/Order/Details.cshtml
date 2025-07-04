@@ -143,7 +143,24 @@
                     </span>
                 </div>
             </div>
-            <!--Driver Details Ends Here-->
+            <div class="col-md-3">
+                <h4 style="margin-bottom: 5px;"><i class="bi bi-person-circle icon"></i>Supervisor</h4>
+                <div>
+                    <span id="letters">Phone:</span>
+                    <span id="outputs">
+                        @(Model?.SupervisedBy ?? "Not Assigned")
+                    </span>
+            </div>
+                @if(Model?.SupervisorName != null)
+                {
+                    <div>
+                        <span id="letters">Name:</span>
+                        <span id="outputs">
+                            @Model?.SupervisorName
+                        </span>
+        </div>
+                }
+            </div>
         </div>
         <!--Order Items Table-->
         <h4 id="orderDetail">Products</h4>
