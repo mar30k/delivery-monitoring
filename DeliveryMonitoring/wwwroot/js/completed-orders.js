@@ -1,24 +1,70 @@
 ﻿var js = jQuery.noConflict(true);
 var tablelist;
-js( ()=> {
+
+js(() => {
+    let startDate = moment().startOf('day');
+    let endDate = moment().endOf('day');
+
+    // Add DataTables custom filter logic BEFORE initializing the table
+    js.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        if (!startDate || !endDate) return true;
+
+        var orderDateStr = data[5]; // column with Order DateTime
+        var orderDate = moment(orderDateStr, "YYYY-MM-DD HH:mm:ss");
+
+        return orderDate.isBetween(startDate, endDate, undefined, '[]');
+    });
+
+    // Temporarily unhide all rows so DataTables can register them
+    js('#tablelist tbody tr.initial-hide').removeClass('initial-hide');
+    // Initialize DataTable
     tablelist = js('#tablelist').DataTable({
         responsive: true,
-        "order": [[5, "desc"]],
-        "pageLength": 15,
-        "lengthMenu": [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
+        order: [[5, "desc"]],
+        pageLength: 15,
+        lengthMenu: [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
         columnDefs: [
             { orderable: false, targets: [0, 4, 9, 13, 12] } 
-            //{
-            //    targets: 5, // the column with the date
-            //    type: 'html'
-            //}
         ],
         language: {
-            "emptyTable": "No orders history to display at the moment."
+            emptyTable: "No orders history to display at the moment."
         }
     });
+
+    // Initialize Date Range Picker with today's date preselected
+    js('#dateRange').daterangepicker({
+        startDate: startDate,
+        endDate: endDate,
+        maxDate: moment(),
+        autoUpdateInput: true,
+        locale: {
+            cancelLabel: 'Clear',
+            format: 'YYYY-MM-DD'
+        }
 });
 
+    // Set the input manually (because autoUpdateInput may not trigger redraw)
+    js('#dateRange').val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
+
+    // Initial draw to apply default today's filter
+    tablelist.draw();
+
+    // On apply
+    js('#dateRange').on('apply.daterangepicker', function (ev, picker) {
+        startDate = picker.startDate.startOf('day');
+        endDate = picker.endDate.endOf('day');
+        js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+        tablelist.draw();
+    });
+
+    // On clear
+    js('#dateRange').on('cancel.daterangepicker', function (ev, picker) {
+        startDate = null;
+        endDate = null;
+        js(this).val('');
+        tablelist.draw();
+    });
+});
 async function showDetailsModal(button) {
     const note = button.getAttribute('data-note');
     const purpose = button.getAttribute('data-purpose');
