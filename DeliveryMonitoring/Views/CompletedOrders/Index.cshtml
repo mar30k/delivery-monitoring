@@ -3,7 +3,11 @@
     ViewData["Title"] = "Completed Orders";
     var disTinctSupervisors = Model?.CompletedOrders?.Data?.DistinctBy(x => x.SupervisorPhoneNumber).Where(x => x.SupervisorPhoneNumber != null).ToList();
 }
-
+<style>
+    .initial-hide {
+        display: none;
+    }
+</style>
 <div class="p-4 mt-2">
     <div id="alertContainer"></div>
     <h3>Completed Orders List</h3>
@@ -60,11 +64,14 @@
                 </thead>
                 <tbody>
                     @{
+                        var today = DateTime.Today.ToString("yyyy-MM-dd");
                         foreach (var order in Model?.CompletedOrders?.Data ?? new List<CompletedOrders>())
                         {
+                            var orderDate = order?.RequestCreatedAt.ToString("yyyy-MM-dd");
+                            var isToday = orderDate == today;
+                            var rowClass = isToday ? "" : "initial-hide";
 
-
-                            <tr data-voucher="@order?.VoucherCode" >
+                            <tr class="@rowClass" data-voucher="@order?.VoucherCode">
                                 <td>
                                     @(order?.VoucherCode ?? "N/A")
                                 </td>
