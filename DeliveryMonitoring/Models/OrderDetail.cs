@@ -22,6 +22,7 @@ namespace DeliveryMonitoring.Models
         public string? CompanyTin { get; set; }
         public string? DeliveryTin { get; set; }
         public string? SupervisedBy { get; set; }
+        public string? SupervisorName { get; set; }
         public string? SosReason { get; set; }
         public string? GrandTotal { get; set; }
 
@@ -102,10 +103,10 @@ namespace DeliveryMonitoring.Models
     public class Location
     {
         [DisplayName("Latitude")]
-        public double? Lat { get; set; }
+        public double? lat { get; set; }
 
         [DisplayName("Longitude")]
-        public double? Lng { get; set; }
+        public double? lng { get; set; }
     }
 
     public class LineItemsDetail

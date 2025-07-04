@@ -46,6 +46,7 @@ namespace DeliveryMonitoring.Models
         public Detail? Detail { get; set; }
         public Review? Review { get; set; }
         public int? TraveledDistance { get; set; }
+        public List<Location>? Coordinates { get; set; }
     }
 
 }

@@ -111,14 +111,14 @@ namespace DeliveryMonitoring.Controllers
                 DeviceID = order.CustomerDeviceID,
                 LatLng = new Location
                 {
-                    Lat = order.CustomerLat,
-                    Lng = order.CustomerLng
+                    lat = order.CustomerLat,
+                    lng = order.CustomerLng
                 }
             };
             order.TargetBranchLocation = new Location
             {
-                Lat = order.TargetBranchLat,
-                Lng = order.TargetBranchLng
+                lat = order.TargetBranchLat,
+                lng = order.TargetBranchLng
             };
             long unixMilliseconds = new DateTimeOffset(DateTime.Parse(order.CreatedAt.ToString(), null, System.Globalization.DateTimeStyles.RoundtripKind)).ToUnixTimeMilliseconds();
             order.RequestCreatedAtIso = order.CreatedAt;
