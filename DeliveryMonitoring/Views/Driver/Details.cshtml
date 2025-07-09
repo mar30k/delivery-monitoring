@@ -4,11 +4,8 @@
     ViewData["Title"] = "Driver Details";
     var Orders = ViewData["Orders"] as List<OrderDetail>;
     var routedata = ViewData["Routedata"] as RouteModel;
-    var reorderedCoordinates = routedata?.Coordinates
-            ?.Select(coord => new { lat = coord[1], lng = coord[0] }) // Swap [lng, lat] → {lat, lng}
-            ?.ToList();
 
-    var coordinatesJson = Newtonsoft.Json.JsonConvert.SerializeObject(reorderedCoordinates);
+    var coordinatesJson = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Coordinates);
     double totalRating = Model?.Review?.totalRating ?? 0.0;
     double totalReviews = Model?.Review?.totalReviews ?? 0;
     double rating = totalRating / totalReviews;
@@ -78,23 +75,7 @@
                         <span>@Model?.FirstName</span>
                     </div>
                         @{
-                            @functions {
-                                public class StatusInfo
-                                {
-                                    public string? Color { get; set; }
-                                    public string? Priority { get; set; }
-                                }
-                            }
-                            var statusColors = new Dictionary<string, StatusInfo>
-                            {
-                                { "offline",         new StatusInfo { Color = "#dc3545", Priority = "1" } }, // Bootstrap danger - Offline
-                                { "ready",           new StatusInfo { Color = "#28a745", Priority = "7" } }, // Bootstrap success - Ready
-                                { "accepted",        new StatusInfo { Color = "#007bff", Priority = "5" } }, // Bootstrap primary - Accepted
-                                { "delivering",      new StatusInfo { Color = "#fd7e14", Priority = "6" } }, // Bootstrap orange - Delivering
-                                { "arrivedatbranch", new StatusInfo { Color = "#17a2b8", Priority = "4" } }, // Bootstrap info - Arrived
-                                { "completed",       new StatusInfo { Color = "#20c997", Priority = "3" } }, // Bootstrap teal - Completed
-                                { "default",         new StatusInfo { Color = "#ffc107", Priority = "2" } }  // Bootstrap warning - Default
-                            };
+                        var statusColors = StatusInfo.StatusMap;
                             var statusKey = Model?.Status?.ToLower() ?? "default";
                             var statusInfo = statusColors.ContainsKey(statusKey)
                             ? statusColors[statusKey]
@@ -172,7 +153,7 @@
 
                     <div class="mb-2">
                         <span class="fw-bold">Traveled Distance: </span>
-                        <span>@(Model?.Detail?.TotalKm != null ? Model?.Detail?.TotalKm + " km" : "N/A")</span>
+                        <span>@(Model?.Detail?.TotalKm != null ? Model?.Detail?.TotalKm?.ToString("0.00") + " km" : "N/A")</span>
                     </div>
                 </div>
             </div>
@@ -181,6 +162,14 @@
 
     <script>
         var routeCoordinates = @Html.Raw(coordinatesJson);
+        var coordinate = {
+            lat: @(@Model?.LatLng?.lat ?? 0),
+            lng: @(@Model?.LatLng?.lng ?? 0)
+        };
+        if(routeCoordinates == null){
+            routeCoordinates = [];
+            routeCoordinates.push(coordinate);
+        }
         fetch('/Map/GetMapData')
             .then(response => response.text())
             .then(script => {
