@@ -40,6 +40,10 @@ namespace DeliveryMonitoring.Controllers
             {
                 string data = await response.Content.ReadAsStringAsync();
                 drivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
+                var status = StatusInfo.StatusMap;
+                drivers = drivers
+                .OrderByDescending(d => status.GetValueOrDefault(d.Status?.ToLower() ?? "", status["default"]).Priority)
+                .ToList();
             }
             return View(drivers);         
         }
@@ -114,6 +118,10 @@ namespace DeliveryMonitoring.Controllers
             {
                 string data = await response.Content.ReadAsStringAsync();
                 filteredDrivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
+                var driverStatus = StatusInfo.StatusMap;
+                filteredDrivers = filteredDrivers
+                .OrderByDescending(d => driverStatus.GetValueOrDefault(d.Status?.ToLower() ?? "", driverStatus["default"]).Priority)
+                .ToList();
             }
 
             return View(filteredDrivers);
@@ -174,6 +182,10 @@ namespace DeliveryMonitoring.Controllers
             {
                 string data = await response.Content.ReadAsStringAsync();
                 filteredDrivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
+                var status = StatusInfo.StatusMap;
+                filteredDrivers = filteredDrivers
+                .OrderByDescending(d => status.GetValueOrDefault(d.Status?.ToLower() ?? "", status["default"]).Priority)
+                .ToList();
             }
             return View(filteredDrivers);
         }
