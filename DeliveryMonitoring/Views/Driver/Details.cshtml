@@ -178,21 +178,13 @@
             })
             .catch(error => console.error('Error loading Google Maps API:', error));
         function initMap() {
-            var map;
-            var orderAssigned = false;
-            var marker;
             var marker2;
-            var i = 0;
             var bearing = 0;
-            var places = [];
-            map = new google.maps.Map(document.getElementById("map"), {
+            var map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 16,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
             //initializes the map with specified parameters - ends here
-
-            //google map's direction service to draw the line in real road setting
-            var directionsService = new google.maps.DirectionsService();
             var directionsRenderer = new google.maps.DirectionsRenderer();
             directionsRenderer.setMap(map);
 
@@ -200,47 +192,56 @@
 
             //google map's direction service to draw the line in real road setting ends here
             function details() {
-                // let index = 0;
-                //this takes all the information from the api response and save it in a places array
+
+                var place = null;
+                var orderAssigned = false;
+
                 @{
                     if (Model != null)
                     {
+                        var status = Model.Status?.ToLower();
+                        var driverOrder = Orders?.FirstOrDefault(x => x.AssignedDriverPhoneNumber == Model.PhoneNumber);
+                        string destLat = "0.0";
+                        string destLng = "0.0";
+
+                        if (status == "delivering" || status == "arrivedatbranch")
+                        {
+                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                        }
+                        else if (status == "accepted")
+                        {
+                            destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
+                            destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
+                        }
+                        else if (driverOrder != null)
+                        {
+                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                        }
                         <text>
-                                    places =[{
+                            place = {
                                         Name: '@Model.FirstName',
                                         LastUpdatedAt: '@Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")',
                                         Phone: '@Model.PhoneNumber',
                                         Status: '@Model.Status',
-                                        lat: @Model?.LatLng?.Lat,
-                                        lng: @Model?.LatLng?.Lng}];
+                                lat: @(@Model?.LatLng?.lat ?? 0.0),
+                                lng: @(@Model?.LatLng?.lng ?? 0.0),
+                                DestLat: @destLat,
+                                DestLng: @destLng
+                            };
                         </text>
-                        @if (Orders?.Any() == true)
-                        {
-                                var driverOrders = Orders
-                                        .Where(x => x?.AssignedDriverPhoneNumber == Model?.PhoneNumber)
-                                        .ToList();
 
-                                foreach (var order in driverOrders)
+                        if (driverOrder!=null)
                                 {
-                                        var customerLat = order?.Customer?.LatLng?.Lat ?? 0.0;
-                                        var customerLng = order?.Customer?.LatLng?.Lng ?? 0.0;
-                                        <text>
-                                            places = [{
-                                                Name: '@Model?.FirstName',
-                                                LastUpdatedAt: '@Model?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")',
-                                                Phone: '@Model?.PhoneNumber',
-                                                Status: '@Model?.Status',
-                                                lat: @Model?.LatLng?.Lat,
-                                                lng: @Model?.LatLng?.Lng,
-                                                DestLat: @customerLat,
-                                                DestLng: @customerLng
-                                            }];
-                                        </text>
+                            <text>orderAssigned = true;</text>
                                 }
                         }
 
                     }
-                }
+
+                
+
                 marker = new google.maps.Marker({
                     position: { lat: places[0].lat, lng: places[0].lng },
                     title: places[i].Name,
