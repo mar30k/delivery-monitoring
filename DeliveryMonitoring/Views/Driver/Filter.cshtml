@@ -38,24 +38,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @functions {
-                            public class StatusInfo
-                            {
-                                public string? Color { get; set; }
-                                public string? Priority { get; set; }
-                            }
-                        }
                         @{
-                            var statusColors = new Dictionary<string, StatusInfo>
-                                                {
-                                                { "offline",         new StatusInfo { Color = "#dc3545", Priority = "1" } }, // Bootstrap danger - Offline
-                                                { "ready",           new StatusInfo { Color = "#28a745", Priority = "7" } }, // Bootstrap success - Ready
-                                                { "accepted",        new StatusInfo { Color = "#007bff", Priority = "5" } }, // Bootstrap primary - Accepted
-                                                { "delivering",      new StatusInfo { Color = "#fd7e14", Priority = "6" } }, // Bootstrap orange - Delivering
-                                                { "arrivedatbranch", new StatusInfo { Color = "#17a2b8", Priority = "4" } }, // Bootstrap info - Arrived
-                                                { "completed",       new StatusInfo { Color = "#20c997", Priority = "3" } }, // Bootstrap teal - Completed
-                                                { "default",         new StatusInfo { Color = "#ffc107", Priority = "2" } }  // Bootstrap warning - Default
-                                                };
+                            var statusColors = StatusInfo.StatusMap;
                         }
                         @foreach (var driver in Model)
                         {
