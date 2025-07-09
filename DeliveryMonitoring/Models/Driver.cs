@@ -48,5 +48,21 @@ namespace DeliveryMonitoring.Models
         public int? TraveledDistance { get; set; }
         public List<Location>? Coordinates { get; set; }
     }
+    public class StatusInfo
+    {
+        public string? Color { get; set; }
+        public string? Priority { get; set; }
+
+        public static readonly Dictionary<string, StatusInfo> StatusMap = new()
+        {
+            { "offline",         new StatusInfo { Color = "#dc3545", Priority = "1" } },
+            { "default",         new StatusInfo { Color = "#ffc107", Priority = "2" } },
+            { "completed",       new StatusInfo { Color = "#20c997", Priority = "3" } },
+            { "arrivedatbranch", new StatusInfo { Color = "#17a2b8", Priority = "4" } },
+            { "accepted",        new StatusInfo { Color = "#007bff", Priority = "5" } },
+            { "delivering",      new StatusInfo { Color = "#fd7e14", Priority = "6" } },
+            { "ready",           new StatusInfo { Color = "#28a745", Priority = "7" } }
+        };
+    }
 
 }
