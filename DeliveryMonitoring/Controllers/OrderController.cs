@@ -64,6 +64,7 @@ namespace DeliveryMonitoring.Controllers
         { 
             var _client = _httpClientFactory.CreateClient("Delivery");
             var _V7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             OrderDetail? order = null;
             List<SupervisorsDTO>? superVisors = new();
             try
@@ -74,7 +75,10 @@ namespace DeliveryMonitoring.Controllers
                 {
                     string data = await response.Content.ReadAsStringAsync();
                     order = JsonConvert.DeserializeObject<OrderDetail>(data);
-                    //order.assignedDriverPhoneNumber = "0924438476";
+                }
+                if(companyTin != "0076217301" && companyTin != order?.CompanyTin)
+                {
+                    return RedirectToAction("Index");
                 }
                 HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
                 if (getsupervisors.IsSuccessStatusCode)
@@ -92,7 +96,7 @@ namespace DeliveryMonitoring.Controllers
                 else
                 {
                     var supervisor = superVisors?.FirstOrDefault(s => s.UserName == order.SupervisedBy);
-                    order.SupervisorName = supervisor?.FirstName + supervisor?.SecondName;
+                    order.SupervisorName = supervisor?.FirstName + " " + supervisor?.SecondName;
                 }
                 return View(order);
             }
