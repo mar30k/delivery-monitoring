@@ -248,16 +248,42 @@ namespace DeliveryMonitoring.Controllers
                     {
                         return NotFound();
                     }
+                    var status = driver.Status;
+                    var driverOrder = orders?.FirstOrDefault(x => x.AssignedDriverPhoneNumber == phoneNumber);
+                    string destLat = "0.0";
+                    string destLng = "0.0";
 
-                    HttpResponseMessage getRouteDetailResponse = await _client.GetAsync($"{_client.BaseAddress}/routing/getRouteDetail?lat1={driver.Lat}&lng1={driver.Lng}&lat2=8.9660626&lng2=38.8356084");
+                    if (status == "delivering" || status == "arrivedatbranch")
+                    {
+                        destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                        destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                    }
+                    else if (status == "accepted")
+                    {
+                        destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
+                        destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
+                    }else if (driverOrder != null)
+                    {
+                        destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                        destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                    }
+                        HttpResponseMessage getRouteDetailResponse = await _client.GetAsync($"{_client.BaseAddress}/routing/getRouteDetail?lat1={driver.Lat}&lng1={driver.Lng}&lat2={destLat}&lng2={destLng}");
                     if (getRouteDetailResponse.IsSuccessStatusCode)
                     {
                         string getRouteString = await getRouteDetailResponse.Content.ReadAsStringAsync();
                         getRoutedata = JsonConvert.DeserializeObject<RouteModel>(getRouteString) ?? new RouteModel();
                     }
+                    var reorderedCoordinates = getRoutedata?.Coordinates
+                        ?.Select(coord => new Location{ lat = coord[1], lng = coord[0] }) // Swap [lng, lat] → {lat, lng}
+                        ?.ToList();
+
                     if (driver == null)
                     {
                         return NotFound(); // Return a 404 Not Found response if no driver is found.
+                    }
+                    else
+                    {
+                        driver.Coordinates = reorderedCoordinates;
                     }
                 }
             }
@@ -277,15 +303,56 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> LiveLocation(string phoneNumber)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             string? data = null;
-
+            var driver = new Driver();
+            List<OrderDetail> orders = new();
+            RouteModel? getRoutedata = new();
             HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers/{phoneNumber}");
            
             if (response.IsSuccessStatusCode)
             {
                 data = await response.Content.ReadAsStringAsync();
+                driver = JsonConvert.DeserializeObject<Driver>(data) ?? new Driver();
             }
-            return Ok(data);
+            HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
+
+            if (orderResponse.IsSuccessStatusCode)
+            {
+                string orderData = await orderResponse.Content.ReadAsStringAsync();
+                orders = JsonConvert.DeserializeObject<List<OrderDetail>>(orderData) ?? new List<OrderDetail>();
+            }
+            var status = driver.Status;
+            var driverOrder = orders?.FirstOrDefault(x => x.AssignedDriverPhoneNumber == phoneNumber);
+            string destLat = "0.0";
+            string destLng = "0.0";
+
+            if (status == "delivering" || status == "arrivedatbranch")
+            {
+                destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+            }
+            else if (status == "accepted")
+            {
+                destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
+                destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
+            }
+            else if (driverOrder != null)
+            {
+                destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+            }
+            HttpResponseMessage getRouteDetailResponse = await _client.GetAsync($"{_client.BaseAddress}/routing/getRouteDetail?lat1={driver.Lat}&lng1={driver.Lng}&lat2={destLat}&lng2={destLng}");
+            if (getRouteDetailResponse.IsSuccessStatusCode)
+            {
+                string getRouteString = await getRouteDetailResponse.Content.ReadAsStringAsync();
+                getRoutedata = JsonConvert.DeserializeObject<RouteModel>(getRouteString) ?? new RouteModel();
+            }
+            var reorderedCoordinates = getRoutedata?.Coordinates
+                ?.Select(coord => new Location { lat = coord[1], lng = coord[0] }) // Swap [lng, lat] → {lat, lng}
+                ?.ToList();
+            driver.Coordinates = reorderedCoordinates;
+            return Ok(driver);
         }
         //Used for fetching the driver's location regularly - ends here
 
