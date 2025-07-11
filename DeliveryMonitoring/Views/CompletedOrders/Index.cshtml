@@ -129,6 +129,7 @@
                                                 data-note="@order.Note"
                                                 data-purpose="@order.Purpose"
                                                 data-voucher-code="@order?.VoucherCode"
+                                                data-customer-phone="@order?.PhoneNumber"
                                                 data-phone-number="@order?.DriverPhoneNumber"
                                                 onclick="showDetailsModal(this)">
                                             Show
@@ -139,6 +140,7 @@
                                         <button class="btn btn-outline-secondary btn-sm"
                                                 data-voucher-code="@order?.VoucherCode"
                                                 data-phone-number="@order?.DriverPhoneNumber"
+                                                data-customer-phone="@order?.PhoneNumber"
                                                 onclick="showReviewModal(this)">
                                             Review
                                         </button>

@@ -70,7 +70,7 @@ async function showDetailsModal(button) {
     const purpose = button.getAttribute('data-purpose');
     const voucherCode = button.getAttribute('data-voucher-code');
     const phoneNumber = button.getAttribute('data-phone-number');
-
+    const customerPhone = button.getAttribute('data-customer-phone');
     // Reset modal fields
     document.getElementById('modalNote').textContent = note || '—';
     document.getElementById('modalPurpose').textContent = purpose || '—';
@@ -84,7 +84,7 @@ async function showDetailsModal(button) {
     const reviewSection = document.getElementById('customerReview'); // new div for this modal
     reviewSection.innerHTML = '';
     try {
-        const foundReview = await fetchDriverReview(phoneNumber, voucherCode);
+        const foundReview = await fetchDriverReview(phoneNumber, voucherCode, customerPhone);
         if (foundReview) {
             reviewSection.innerHTML = ` 
                 ${renderReview(foundReview)}
@@ -114,6 +114,7 @@ async function showReviewModal(button) {
     const note = button.getAttribute('data-note');
     const voucherCode = button.getAttribute('data-voucher-code');
     const phoneNumber = button.getAttribute('data-phone-number');
+    const customerPhone = button.getAttribute('data-customer-phone');
 
     document.getElementById('reviewOrderId').value = voucherCode;
     document.getElementById('reviewPurpose').value = '';
@@ -127,7 +128,7 @@ async function showReviewModal(button) {
     const reviewSection = document.getElementById('customerReviewSection'); // new div for this modal
     reviewSection.innerHTML = '';
     try {
-        const foundReview = await fetchDriverReview(phoneNumber, voucherCode);
+        const foundReview = await fetchDriverReview(phoneNumber, voucherCode, customerPhone);
         if (foundReview) {
             reviewSection.innerHTML = ` 
                 ${renderReview(foundReview)}
@@ -186,11 +187,12 @@ async function fetchDriverReview(phoneNumber, voucherCode) {
         if (!response.ok) break;
 
         const result = await response.json();
-        if (!result || !result.reviews || result.reviews.length === 0) break;
-        foundReview = result.reviews.find(r => r.referenceVoucher === voucherCode);
-        if (foundReview) break;
+        if (!result || !result.reviews || result.reviews.length === 0) return null;
+        return result.reviews.find(r=> r.referenceVoucher === voucherCode && r.reviewerPhoneNumber == customerPhone) || null;
 
-        page++;
+    } catch (error) {
+        console.error("Error fetching driver review:", error);
+        return null;
     }
 
     return foundReview;
