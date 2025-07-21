@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;
 using static NuGet.Packaging.PackagingConstants;
-
+using Bogus;
 namespace DeliveryMonitoring.Controllers
 {
     [Authorize]
@@ -27,34 +27,42 @@ namespace DeliveryMonitoring.Controllers
         [Route("/orders")]
         public async Task<IActionResult> Index()
         {
-            var _client = _httpClientFactory.CreateClient("Delivery");
-            var _V7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-            List<OrderDetail>? orders = new ();
-            List<SupervisorsDTO>? superVisors = new ();
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
+            List<OrderDetail>? orders = new();
+            List<SupervisorsDTO>? superVisors = new();
+            try
             {
-                return RedirectToAction("Logout", "Login");
-            }
+                var _client = _httpClientFactory.CreateClient("Delivery");
+                var _V7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+               
+                var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+                if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
+                {
+                    return RedirectToAction("Logout", "Login");
+                }
 
-            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
-            if (response.IsSuccessStatusCode)
-            {
-                string data = await response.Content.ReadAsStringAsync();
-                orders = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
+                HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
+                if (response.IsSuccessStatusCode)
+                {
+                    string data = await response.Content.ReadAsStringAsync();
+                    orders = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
+                }
+                HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
+                if (getsupervisors.IsSuccessStatusCode)
+                {
+                    string data = await getsupervisors.Content.ReadAsStringAsync();
+                    superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
+                }
+                var orderViewModel = new OrderViewModel
+                {
+                    OrderDetail = orders,
+                    Supervisors = superVisors
+                };
+                return View(orderViewModel);
             }
-            HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");      
-            if (getsupervisors.IsSuccessStatusCode)
+            catch (Exception ex)
             {
-                string data = await getsupervisors.Content.ReadAsStringAsync();
-                superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
+                return View(null);
             }
-            var orderViewModel = new OrderViewModel
-            {
-                OrderDetail = orders,
-                Supervisors = superVisors
-            };
-            return View(orderViewModel);
         }
         //List of Orders Page -- Ends Here
 
@@ -70,28 +78,38 @@ namespace DeliveryMonitoring.Controllers
             try
             {
                 HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/orderRequests/{voucherCode}");
-
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    string data = await response.Content.ReadAsStringAsync();
-                    order = JsonConvert.DeserializeObject<OrderDetail>(data);
+                    var errorResponse = await response.Content.ReadAsStringAsync();
+                    var errorObject = JsonConvert.DeserializeObject<dynamic>(errorResponse);
+
+                    // Extract message from the response (assuming JSON structure you shared)
+                    string message = errorObject?.message ?? "An error occurred. Please try again later.";
+
+                    // Pass the message to TempData
+                    TempData["Message"] = $"{voucherCode}: {message}";
+                    return RedirectToAction("index");
                 }
-                if(companyTin != "0076217301" && companyTin != order?.CompanyTin)
+
+
+                string data = await response.Content.ReadAsStringAsync();
+                order = JsonConvert.DeserializeObject<OrderDetail>(data);
+                if (companyTin != "0076217301" && companyTin != order?.CompanyTin)
                 {
                     return RedirectToAction("Index");
                 }
                 HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
                 if (getsupervisors.IsSuccessStatusCode)
                 {
-                    string data = await getsupervisors.Content.ReadAsStringAsync();
-                    superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
+                    string Supervisordata = await getsupervisors.Content.ReadAsStringAsync();
+                    superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(Supervisordata);
                 }
                 if (order == null)
                 {
-                    //return RedirectToAction("index");
+                    TempData["Message"] = $"Order {voucherCode} not found!";
+                    return RedirectToAction("index");
                     //var sampleOrder = GetSampleOrder();
                     //return View(sampleOrder);
-                    return RedirectToAction("Index");
                 }
                 else
                 {
@@ -120,7 +138,7 @@ namespace DeliveryMonitoring.Controllers
                 SupervisedBy = "SUP001",
                 SupervisorName = "Mr. Dawit",
                 SosReason = "Delayed",
-                GrandTotal = "1500.00",
+                GrandTotal = 1500.00m,
                 Platform = "Web",
                 RequestCreatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
                 CreatedAtString = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -172,35 +190,35 @@ namespace DeliveryMonitoring.Controllers
                 LineItemsDetail = new LineItemsDetail
                 {
                     LineItems = new List<LineItem>
-        {
-            new LineItem
-            {
-                Article = 101,
-                Name = "Laptop",
-                UnitAmount = 1200.00m,
-                Quantity = 1,
-                TaxableAmount = 1200.00m
-            },
-            new LineItem
-            {
-                Article = 202,
-                Name = "Mouse",
-                UnitAmount = 100.00m,
-                Quantity = 2,
-                TaxableAmount = 200.00m
-            }
-        },
-                    ExtraCharge = new Dictionary<string, decimal>
-        {
-            { "VAT", 150.00m },
-            { "Delivery", 50.00m }
-        },
-                    GrandTotal = 1500.00m,
-                    ExtraInformation = new Dictionary<string, object>
-        {
-            { "DeliveredBy", "Drone" },
-            { "Packaging", "Eco-friendly" }
-        },
+                    {
+                        new LineItem
+                        {
+                            Article = 101,
+                            Name = "Laptop",
+                            UnitAmount = 1200.00m,
+                            Quantity = 1,
+                            TaxableAmount = 1200.00m
+                        },
+                        new LineItem
+                        {
+                            Article = 202,
+                            Name = "Mouse",
+                            UnitAmount = 100.00m,
+                            Quantity = 2,
+                            TaxableAmount = 200.00m
+                        }
+                    },
+                                ExtraCharge = new Dictionary<string, decimal>
+                    {
+                        { "VAT", 150.00m },
+                        { "Delivery", 50.00m }
+                    },
+                                GrandTotal = 1500.00m,
+                                ExtraInformation = new Dictionary<string, object>
+                    {
+                        { "DeliveredBy", "Drone" },
+                        { "Packaging", "Eco-friendly" }
+                    },
                     ExtraData = new ExtraData
                     {
                         VoucherId = 555,
@@ -222,27 +240,27 @@ namespace DeliveryMonitoring.Controllers
                     ActualArrival = null,
                     Alert = "Driver Delayed",
                     ActivityResponse = new List<ActivityResponse>
-        {
-            new ActivityResponse
-            {
-                Name = "Picked Up",
-                Time = DateTime.UtcNow.AddMinutes(-30),
-                TimeElapsed = "30 minutes ago"
-            },
-            new ActivityResponse
-            {
-                Name = "En Route",
-                Time = DateTime.UtcNow.AddMinutes(-10),
-                TimeElapsed = "10 minutes ago"
-            }
-            }
+                    {
+                        new ActivityResponse
+                        {
+                            Name = "Picked Up",
+                            Time = DateTime.UtcNow.AddMinutes(-30),
+                            TimeElapsed = "30 minutes ago"
+                        },
+                        new ActivityResponse
+                        {
+                            Name = "En Route",
+                            Time = DateTime.UtcNow.AddMinutes(-10),
+                            TimeElapsed = "10 minutes ago"
+                        }
+                    }
                 },
 
                 OrderAcceptedNotification = DateTime.UtcNow.AddMinutes(-20),
                 OrderReceiveNotification = DateTime.UtcNow.AddMinutes(-5)
             };
         }
-       
+
         [HttpPost]
         public async Task<IActionResult> Dispatch([FromBody] OrderDetail order)
         {
@@ -275,6 +293,7 @@ namespace DeliveryMonitoring.Controllers
             order.Alert = null;
             order.Status = "requested";
             order.DriverAssignedAt = 0;
+            order.ExceptDrivers = null;
             if (order == null)
                 return BadRequest("Invalid order data.");
 
@@ -373,7 +392,7 @@ namespace DeliveryMonitoring.Controllers
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var uri = assignSuperVisorDTO.id == "all" ?
                 $"auth/assign?voucherCode={assignSuperVisorDTO.voucherCode}" :
-                $"auth/manualassign?voucherCode={assignSuperVisorDTO.voucherCode}&id={assignSuperVisorDTO.id}";
+                $"auth/manualassign?voucherCode={assignSuperVisorDTO.voucherCode}&userId={assignSuperVisorDTO.id}";
 
 
             try

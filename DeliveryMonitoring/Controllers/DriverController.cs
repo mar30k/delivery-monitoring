@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using Tweetinvi.Core.Events;
 
 namespace DeliveryMonitoring.Controllers
 {
@@ -65,7 +66,13 @@ namespace DeliveryMonitoring.Controllers
                 data = JsonConvert.DeserializeObject<List<Driver>>(responseString);
                 foreach (var item in data ?? new List<Driver>())
                 {
-                    item.LastUpdatedAtIso = item?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss");
+                    if (item?.UpdatedAt != null)
+                    {
+                        var utc = DateTime.SpecifyKind(item.UpdatedAt.Value, DateTimeKind.Utc);
+                        var etTime = new DateTimeOffset(utc).ToOffset(TimeSpan.FromHours(3));
+                        item.LastUpdatedAtIso = etTime.ToString("yyyy-MM-dd hh:mm:ss tt");
+                        //item.UpdatedAt = etTime.DateTime;
+                    }
                 }
 
             }
@@ -243,7 +250,7 @@ namespace DeliveryMonitoring.Controllers
                 {
                     string data = await response.Content.ReadAsStringAsync();
                     driver = JsonConvert.DeserializeObject<Driver>(data) ?? new Driver();
-
+               
                     if(companyTin!= "0076217301" && companyTin!= driver.CompanyTin)
                     {
                         return NotFound();
@@ -441,31 +448,11 @@ namespace DeliveryMonitoring.Controllers
                 return BadRequest("Invalid phone number.");
             int page = 1;
             string trimmedPhone = phoneNumber.Substring(1); // Remove first character
-            var allReviews = new DriverReview();
-            List<Reviews> allReviewItems = new();
-
             try
             {
-                while (true)
-                {
-                    var pageData = await FetchDriverReviewsAsync(page, trimmedPhone);
+                DriverReview? allReviews = await FetchDriverReviewsAsync(page, trimmedPhone);
 
-                    if (pageData == null || pageData.Reviews == null || !pageData.Reviews.Any())
-                        break;
-
-                    if (page == 1)
-                    {
-                        allReviews.Count = pageData.Count;
-                        allReviews.Rating = pageData.Rating;
-                    }
-
-                    allReviewItems.AddRange(pageData.Reviews);
-                    page++;
-                }
-
-                allReviews.Reviews = allReviewItems;
-
-                if (!allReviewItems.Any())
+                if (!allReviews.Reviews.Any())
                 {
                     ViewBag.Error = "No reviews found for this driver.";
                     return View("review", null);
@@ -505,7 +492,7 @@ namespace DeliveryMonitoring.Controllers
             var requestPayload = new
             {
                 article = phoneNumber,
-                page
+                retriveAllReviews = true
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(requestPayload), Encoding.UTF8, "application/json");
@@ -524,7 +511,7 @@ namespace DeliveryMonitoring.Controllers
                 var json = await response.Content.ReadAsStringAsync();
                 var apiResponse = JsonConvert.DeserializeObject<HulubejeResponse<DriverReview>>(json);
 
-                return apiResponse?.Data;
+                return apiResponse.Data;
             }
             catch (Exception ex)
             {
