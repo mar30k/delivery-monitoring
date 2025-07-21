@@ -28,6 +28,27 @@ js(() => {
         ],
         language: {
             emptyTable: "No orders history to display at the moment."
+        },
+        footerCallback: function (row, data, start, end, display) {
+            var api = this.api();
+            var columnIndex = 11; // <-- Update this to match the TotalAmount column
+
+            var parseValue = function (i) {
+                const parsed = typeof i === 'string'
+                    ? parseFloat(i.replace(/[^0-9.-]+/g, '')) || 0
+                    : typeof i === 'number'
+                        ? i
+                        : 0;
+                return parsed;
+            };
+
+            var columnData = api.column(columnIndex, { page: 'current' }).data();
+            var pageTotal = columnData.reduce(function (a, b) {
+                return parseValue(a) + parseValue(b);
+            }, 0);
+            js(api.column(columnIndex).footer()).html(
+                pageTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            );
         }
     });
 
