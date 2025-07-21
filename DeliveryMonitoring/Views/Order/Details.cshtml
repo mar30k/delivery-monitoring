@@ -52,9 +52,9 @@
                                 color: @(bgColor == "red" || bgColor == "green" ? "white" : "black");
                                 display: inline-block;
                                 padding: 5px 5px;">
-                                <strong>@Html.DisplayFor(model => model.Status) </strong>
+                                <strong id="orderStatus">@Html.DisplayFor(model => model.Status) </strong>
                             </div>
-                            <span class="text-info bg-aqua">@(Model?.Status == "sos" && Model.SosReason != null ? $"{Model.SosReason}" : "")</span>
+                            <span class="text-info bg-aqua" id="sosReason">@(Model?.Status == "sos" && Model.SosReason != null ? $"{Model.SosReason}" : "")</span>
                         </div>
                     </div>
                 </div>
@@ -62,7 +62,16 @@
             <div class="col-12 col-md-6 d-flex justify-content-end">
                 <div class="d-flex align-items-end flex-column">
                     <div class="mb-1"> 
-                        <span><strong>@Model?.CreatedAt?.ToString(" ddd, MMMM dd, yyyy- hh:mm:ss tt")</strong></span>
+                        <span>
+                            <strong>
+                                @*@Model?.CreatedAt.ToString("ddd, MMMM dd, yyyy - hh:mm:ss tt")*@
+                                @(Model?.CreatedAt != null
+                                    ? new DateTimeOffset(DateTime.SpecifyKind(Model.CreatedAt.Value, DateTimeKind.Utc))
+                                    .ToOffset(TimeSpan.FromHours(3))
+                                    .ToString("ddd, MMMM dd, yyyy - hh:mm:ss tt")
+                                    : "")
+                            </strong>
+                        </span>
                     </div>
                     <div>
                         @{
@@ -298,4 +307,19 @@
         // If all parts are zero (unlikely, but for safety), return "0s"
         return parts.Count > 0 ? string.Join(" ", parts) : "0s";
     }
+}
+@section Scripts{
+    <script>
+        setInterval(updateOrderStatuses, 10000);
+        var voucherCode  = '@Model?.VoucherCode';
+        function updateOrderStatuses(){
+            const matchedOrder = data.find(order => order.voucherCode === voucherCode);
+            if(matchedOrder){
+                $("#orderStatus").text(matchedOrder.status);
+            }
+            if(matchedOrder && matchedOrder.status === 'sos' && matchedOrder.sosReason){
+                $("#sosReason").text(matchedOrder.sosReason);
+            }
+        }
+    </script>
 }

@@ -99,7 +99,11 @@
                                     @driver?.CompanyTin
                                 </td>
                                 <td data-order="@driver?.UpdatedAt?.ToString("yyyy-MM-ddTHH:mm:ss")" class="text-center">
-                                    @driver?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")
+                                    @(driver?.UpdatedAt != null
+                                        ? new DateTimeOffset(DateTime.SpecifyKind(driver.UpdatedAt.Value, DateTimeKind.Utc))
+                                        .ToOffset(TimeSpan.FromHours(3))
+                                        .ToString("yyyy-MM-dd hh:mm:ss tt")
+                                        : "")
                                 </td>
                                 <td class="text-center">
                                     <a href="tel:@driver?.PhoneNumber">
