@@ -87,17 +87,25 @@ js(() => {
     });
 });
 async function showDetailsModal(button) {
-    const note = button.getAttribute('data-note');
+    const note = button.getAttribute('data-note').replace(/\n/g, '<br>');;
     const purpose = button.getAttribute('data-purpose');
     const voucherCode = button.getAttribute('data-voucher-code');
     const phoneNumber = button.getAttribute('data-phone-number');
     const customerPhone = button.getAttribute('data-customer-phone');
-    // Reset modal fields
-    document.getElementById('modalNote').textContent = note || '—';
+    const purposeKey = button.getAttribute('data-purpose-key');
+
+
+    document.getElementById('modalNote').innerHTML = note || '—';
     document.getElementById('modalPurpose').textContent = purpose || '—';
     document.getElementById('voucherCodeDetail').textContent = voucherCode ? `- ${voucherCode}` : '';
     document.getElementById('reviewDetailsLoadingSpinner').style.display = 'block';
 
+    const editBtn = document.getElementById('editNote');
+    editBtn.setAttribute('data-voucher-code', voucherCode);
+    editBtn.setAttribute('data-phone-number', phoneNumber);
+    editBtn.setAttribute('data-customer-phone', customerPhone);
+    editBtn.setAttribute('data-purpose-key', purposeKey);
+    editBtn.setAttribute('data-note', note);
     // Show the modal immediately
     const modal = new bootstrap.Modal(document.getElementById('reviewDetailsModal'));
     modal.show();
@@ -198,12 +206,20 @@ function renderStars(rating) {
         '<i class="bi bi-star text-warning"></i>'.repeat(5 - rating);
 }
 
+document.getElementById('editNote').addEventListener('click', function (e) {
+    e.preventDefault();
 
-async function fetchDriverReview(phoneNumber, voucherCode) {
-    let page = 1;
-    let foundReview = null;
+    // Close the reviewDetailsModal
+    const reviewDetailsModalEl = document.getElementById('reviewDetailsModal');
+    const reviewDetailsModal = bootstrap.Modal.getInstance(reviewDetailsModalEl) || new bootstrap.Modal(reviewDetailsModalEl);
+    reviewDetailsModal.hide();
 
-    while (true) {
+    showReviewModal(this);
+});
+
+async function fetchDriverReview(phoneNumber, voucherCode, customerPhone) {
+    const page = 1;
+    try {
         const response = await fetch(`/Driver/fetchReview?phoneNumber=${encodeURIComponent(phoneNumber)}&page=${page}`);
         if (!response.ok) break;
 
@@ -220,6 +236,11 @@ async function fetchDriverReview(phoneNumber, voucherCode) {
 }
 document.getElementById('reviewForm').addEventListener('submit', async function (e) {
     e.preventDefault(); 
+
+    const submitBtn = document.getElementById('submitReviewBtn');
+    submitBtn.disabled = true;
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Submitting...';
 
     const voucherCode = document.getElementById('reviewOrderId').value;
     const purpose = document.getElementById('reviewPurpose').value;
@@ -244,6 +265,9 @@ document.getElementById('reviewForm').addEventListener('submit', async function 
     } catch (err) {
         console.error(err);
         alert("An error occurred while submitting.");
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
     }
 });
 

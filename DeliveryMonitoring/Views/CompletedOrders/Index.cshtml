@@ -74,6 +74,7 @@
                 </thead>
                 <tbody>
                     @{
+                        var time = Model?.CompletedOrders?.Data?.FirstOrDefault(o => o.VoucherCode == "0924438476-131018-938")?.RequestCreatedAt;
                         var today = DateTime.Today.ToString("yyyy-MM-dd");
                         foreach (var order in Model?.CompletedOrders?.Data ?? new List<CompletedOrders>())
                         {
@@ -82,7 +83,7 @@
                             var rowClass = isToday ? "" : "initial-hide";
 
                             <tr class="@rowClass" data-voucher="@order?.VoucherCode">
-                                <td>
+                                <td class="text-center">
                                     @(order?.VoucherCode ?? "N/A")
                                 </td>
                                 <td class="text-center">
@@ -118,16 +119,18 @@
                                     @(order?.SupervisorName ?? "N/A")
                                 </td>
                                 <td class="text-center">
-                                    @(order?.TotalAmount)
+                                    @(order?.TotalAmount.ToString("N2") ?? "N/A")
                                 </td>
                                 
 
                                 <td class="text-center">
                                     @if (order?.Purpose != null)
                                     {
+                                        var purposeKey = Model?.PurposeOptions?.FirstOrDefault(x => x.Value == order.Purpose).Key;
                                         <button class="btn btn-outline-secondary btn-sm"
                                                 data-note="@order.Note"
                                                 data-purpose="@order.Purpose"
+                                                data-purpose-key="@purposeKey"
                                                 data-voucher-code="@order?.VoucherCode"
                                                 data-customer-phone="@order?.PhoneNumber"
                                                 data-phone-number="@order?.DriverPhoneNumber"
@@ -178,8 +181,20 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p><strong>Purpose:</strong> <span id="modalPurpose">—</span></p>
-                <p><strong>Note:</strong> <span id="modalNote">—</span></p>
+                <p><strong>Purpose: </strong> <span id="modalPurpose">—</span></p>
+                <p>
+                    <strong>Note: </strong><span id="modalNote">—</span>
+                    <a id="editNote"
+                       href="#"
+                       data-voucher-code=""
+                       data-phone-number=""
+                       data-customer-phone=""
+                       data-purpose-key=""
+                       data-note=""
+                    >
+                        <i class="fa-solid fa-pen-to-square"></i> edit
+                    </a>
+                </p>
 
                 <div id="reviewDetailsLoadingSpinner" class="text-center my-3">
                     <div class="spinner-border text-primary" role="status"></div>
@@ -228,7 +243,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Submit</button>
+                    <button type="submit" id="submitReviewBtn" class="btn btn-success">Submit</button>
                 </div>
             </form>
         </div>
@@ -239,17 +254,28 @@
 <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="activityModalLabel"></h5>
+            <div class="modal-header bg-secondary">
+                <h5 class="modal-title text-white" id="activityModalLabel">Delivery Activity</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
 
-                <div id="activitySummary" class="mb-3">
-                    <!-- Summary content injected here -->
+                <!-- Loader -->
+                <div id="activityLoader" class="text-center my-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Fetching delivery activity...</p>
                 </div>
 
-                <table class="table table-bordered table-hover">
+                <!-- Alert container -->
+                <div id="activityAlertContainer" class="mb-3"></div>
+
+                <!-- Summary Section -->
+                <div id="activitySummary" class="mb-3 d-none"></div>
+
+                <!-- Activity Timeline -->
+                <table class="table table-bordered table-hover d-none" id="activityTable">
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
@@ -258,9 +284,7 @@
                             <th>Elapsed</th>
                         </tr>
                     </thead>
-                    <tbody id="activityTimeline">
-                        <!-- Timeline rows injected here -->
-                    </tbody>
+                    <tbody id="activityTimeline"></tbody>
                 </table>
 
             </div>
@@ -272,6 +296,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script>
+        const purposeOptions = @Html.Raw(Json.Serialize(Model?.PurposeOptions ?? new Dictionary<int, string>()));
+    </script>
     <script src="~/js/completed-orders.js"></script>
 }
 
