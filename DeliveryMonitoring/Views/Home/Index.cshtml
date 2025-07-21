@@ -183,18 +183,19 @@
         int onTheWayOrdersCount = Model.Orders.Count(d => d.Status == "ontheway");
         int declinedOrdersCount = Model.Orders.Count(d => d.Status == "declined");
         int driverNotFoundOrdersCount = Model.Orders.Count(d => d.Status == "driverNotFound");
-        int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrivedAtBranch");
+        int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrived");
+        int arrivedAtBranchOrdersCount = Model.Orders.Count(d => d.Status == "ArrivedAtBranch");
         int sosOrdersCount = Model.Orders.Count(d => d.Status == "sos");
     }
     <script>
         const ctx = document.getElementById('driversChart');
         var driverDataSet = [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount , @arrivedatbranchCount];
         var orderDataSet = [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
-                            @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedOrdersCount,@sosOrdersCount ];
+                            @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedAtBranchOrdersCount,@arrivedOrdersCount,@sosOrdersCount ];
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch'],
+                labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
                 datasets: [{
                     label: 'Drivers',
                     data: driverDataSet,
@@ -237,6 +238,7 @@
                     'Declined',
                     'Driver Not Found',
                     'ArrivedAtBranch',
+                    'Arrived',
                     'sos'
                 ],
                 datasets: [{
@@ -251,6 +253,7 @@
                         'red',          // Declined
                         'firebrick',    // Driver Not Found (alternative to red)
                         'coral',        // ArrivedAtBranch
+                        '#F7BEA2',      // Arrived
                         'darkred'       // sos
                     ],
                     hoverOffset: 6
@@ -279,6 +282,7 @@
                 declined: 0,
                 driverNotFound: 0,
                 arrivedAtBranch: 0,
+                arrived: 0,
                 sos: 0
             };
 
@@ -299,6 +303,7 @@
                 statusCounts.declined,
                 statusCounts.driverNotFound,
                 statusCounts.arrivedAtBranch,
+                statusCounts.arrived,
                 statusCounts.sos
             ];
 

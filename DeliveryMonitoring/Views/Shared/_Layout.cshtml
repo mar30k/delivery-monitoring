@@ -20,6 +20,30 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        #mySidebar {
+            width: 15%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            overflow-x: hidden;
+            transition: transform 0.3s ease;
+            transform: translateX(0); /* visible */
+            z-index: 1000;
+        }
+
+            #mySidebar.closed {
+                transform: translateX(-100%); /* hidden */
+            }
+
+        #main {
+            margin-left: 15%;
+            transition: margin-left 0.3s ease;
+        }
+
+            #main.full {
+                margin-left: 0%;
+            }
         .floating-alert {
             position: fixed;
             top: 10%;
@@ -310,33 +334,24 @@
     @await RenderSectionAsync("Scripts", required: false)
     
     <script>
-        var screenSize = screen.width;
-        var main = document.getElementById("main");
-        var sidebar = document.getElementById("mySidebar");
+        const screenSize = screen.width;
+        const main = document.getElementById("main");
+        const sidebar = document.getElementById("mySidebar");
+
         if (screenSize > 767) {
-            sidebar.style.display = "block";
-            sidebar.style.width = "15%";
-            main.style.marginLeft = "15%";
-        }
-        else {
-            sidebar.style.display = "none";
-            sidebar.style.width = "15%";
-            main.style.marginLeft = "0%";
+            sidebar.classList.remove("closed");
+            main.classList.remove("full");
+        } else {
+            sidebar.classList.add("closed");
+            main.classList.add("full");
         }
 
         function toggleSidebar() {
-            if (sidebar.style.display === "block") {
-                // Sidebar is open, so close it
-                main.style.marginLeft = "0%";
-                sidebar.style.display = "none";
-            } else {
-                // Sidebar is closed, so open it
-                main.style.marginLeft = "15%";
-                sidebar.style.display = "block";
-            }
+            sidebar.classList.toggle("closed");
+            main.classList.toggle("full");
         }
-    </script>
+    </script>    
     
-    
+
 </body>
 </html>
