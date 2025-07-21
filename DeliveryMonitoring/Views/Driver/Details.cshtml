@@ -169,6 +169,16 @@
     </div>
 
     <script>
+        let infowindow = null;
+        const statusColors = {
+            offline: { color: "#dc3545", priority: "1" },  // Bootstrap danger - Offline
+            ready: { color: "#28a745", priority: "7" },  // Bootstrap success - Ready
+            accepted: { color: "#007bff", priority: "5" },  // Bootstrap primary - Accepted
+            delivering: { color: "#fd7e14", priority: "6" },  // Bootstrap orange - Delivering
+            arrivedatbranch: { color: "#17a2b8", priority: "4" },  // Bootstrap info - Arrived
+            completed: { color: "#20c997", priority: "3" },  // Bootstrap teal - Completed
+            default: { color: "#ffc107", priority: "2" }   // Bootstrap warning - Default
+        };
         var routeCoordinates = @Html.Raw(coordinatesJson);
         var coordinate = {
             lat: @(@Model?.LatLng?.lat ?? 0),
@@ -414,8 +424,8 @@
                                 }
 
                                 moveCar();
-
-                                if (data.status === "delivering") {
+                                updateDriverInfo(data.status, data.updatedAt, data.phoneNumber, data.firstName);
+                                if (data.status === "delivering" || data.status==="arrivedatbranch" || data.status==="accepted") {
                                     clearInterval(AR);
                                     marker.setMap(null);
                                     details();
@@ -463,8 +473,26 @@
                         }, 70);
                     }
                 }
+        function updateDriverInfo(status, lastUpdatedAt, phoneNumber, name) {
+            const formatted = moment(lastUpdatedAt).format("YYYY-MM-DD hh:mm:ss A");
+            const key = status.toString().toLowerCase();
+            const backGround = statusColors[key] || statusColors['default'];
+            $("#statusInfo")
+                .text(status)
+                .css("background-color", backGround.color)
+
+            $("#lastUpdatedAtInfo").text(formatted);
+            if (infowindow) {
+                const updatedContent = `
+                    <b>Name:</b> ${name}<br/>
+                    <b>LastUpdatedAt:</b> ${formatted}<br/>
+                    <b>Phone:</b> ${phoneNumber}<br/>
+                    <b>Status:</b> <span style="background-color:${backGround.color}; color:white; padding:2px 6px; border-radius:4px;">${status}</span>
+                `;
+                infowindow.setContent(updatedContent);
             }
         }
+
     </script>
 </div>
 
