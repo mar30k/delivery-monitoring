@@ -22,9 +22,9 @@ js(() => {
         responsive: true,
         order: [[5, "desc"]],
         pageLength: 15,
-        lengthMenu: [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
+        lengthMenu: [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
         columnDefs: [
-            { orderable: false, targets: [0, 4, 9, 13, 12] } 
+            { orderable: false, targets: [0, 4, 9, 13, 12] }
         ],
         language: {
             emptyTable: "No orders history to display at the moment."
@@ -62,7 +62,7 @@ js(() => {
             cancelLabel: 'Clear',
             format: 'YYYY-MM-DD'
         }
-});
+    });
 
     // Set the input manually (because autoUpdateInput may not trigger redraw)
     js('#dateRange').val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
@@ -109,34 +109,13 @@ async function showDetailsModal(button) {
     // Show the modal immediately
     const modal = new bootstrap.Modal(document.getElementById('reviewDetailsModal'));
     modal.show();
-
-    const reviewSection = document.getElementById('customerReview'); // new div for this modal
-    reviewSection.innerHTML = '';
-    try {
-        const foundReview = await fetchDriverReview(phoneNumber, voucherCode, customerPhone);
-        if (foundReview) {
-            reviewSection.innerHTML = ` 
-                ${renderReview(foundReview)}
-            `;
-
-        } else {
-            reviewSection.innerHTML = `
-                <div class="alert alert-warning mb-0" role="alert">
-                    No customer review found for this order.
-                </div>
-            `;
-        }
-
-        reviewSection.classList.remove('d-none');
-    } catch (err) {
-        console.error('Error fetching review:', err);
-        reviewSection.innerHTML = `
-            <div class="alert alert-danger" role="alert">Failed to load review.</div>
-        `;
-        reviewSection.classList.remove('d-none');
-    } finally {
-        document.getElementById('reviewDetailsLoadingSpinner').style.display = 'none';
-    }
+    showReview({
+        phoneNumber,
+        voucherCode,
+        customerPhone,
+        reviewSectionId: 'customerReview',
+        spinnerId: 'reviewDetailsLoadingSpinner'
+    });
 }
 
 async function showReviewModal(button) {
@@ -178,28 +157,14 @@ async function showReview({
 }) {
     const reviewSection = document.getElementById(reviewSectionId);
     reviewSection.innerHTML = '';
+
+    const spinner = document.getElementById(spinnerId);
+
     try {
         const foundReview = await fetchDriverReview(phoneNumber, voucherCode, customerPhone);
         if (foundReview) {
-            reviewSection.innerHTML = ` 
-                ${renderReview(foundReview)}
-            `;
-        } else {
-            reviewSection.innerHTML = `
-                <div class="alert alert-warning mb-0" role="alert">
-                    No customer review found for this order.
-                </div>
-            `;
-        }
-    } catch (err) {
-        reviewSection.innerHTML = `<div class="alert alert-danger mt-3">Failed to fetch customer review.</div>`;
-    } finally {
-        document.getElementById('reviewLoadingSpinner').style.display = 'none';
-    }
-}
-
-function renderReview(foundReview) {
-    return `<div class="card shadow-sm border-0 mb-3">
+            reviewSection.innerHTML =
+                `<div class="card shadow-sm border-0 mb-3">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="d-flex">
@@ -221,7 +186,28 @@ function renderReview(foundReview) {
                         ${foundReview.reply ? `<p class="my-1"><strong class="text-muted">Reply:</strong> ${foundReview.reply}</p>` : ''}
                     </div>
                 </div>`;
+        } else {
+            reviewSection.innerHTML = `
+                <div class="alert alert-warning mb-0" role="alert">
+                    No customer review found for this order.
+                </div>
+            `;
+        }
+
+        reviewSection.classList.remove('d-none');
+    } catch (err) {
+        console.error('Error fetching review:', err);
+        reviewSection.innerHTML = `
+            <div class="alert alert-danger mt-3" role="alert">
+                Failed to fetch customer review.
+            </div>
+        `;
+        reviewSection.classList.remove('d-none');
+    } finally {
+        if (spinner) spinner.style.display = 'none';
+    }
 }
+
 function renderStars(rating) {
     rating = Math.floor(rating);
     return '<i class="bi bi-star-fill text-warning"></i>'.repeat(rating) +
@@ -243,8 +229,7 @@ async function fetchDriverReview(phoneNumber, voucherCode, customerPhone) {
     const page = 1;
     try {
         const response = await fetch(`/Driver/fetchReview?phoneNumber=${encodeURIComponent(phoneNumber)}&page=${page}`);
-        if (!response.ok) break;
-
+        if (!response.ok) return null;
         const result = await response.json();
         if (!result || !result.reviews || result.reviews.length === 0) return null;
         return result.reviews.find(r=> r.referenceVoucher === voucherCode && r.reviewerPhoneNumber == customerPhone) || null;
@@ -253,8 +238,6 @@ async function fetchDriverReview(phoneNumber, voucherCode, customerPhone) {
         console.error("Error fetching driver review:", error);
         return null;
     }
-
-    return foundReview;
 }
 document.getElementById('reviewForm').addEventListener('submit', async function (e) {
     e.preventDefault(); 
@@ -299,6 +282,27 @@ async function showActivity(button) {
     const companyCode = button.getAttribute('data-company-code');
     const url = `/CompletedOrders/getDeliveryActivity?voucherCode=${encodeURIComponent(voucherCode)}&companyCode=${encodeURIComponent(companyCode)}`;
 
+    // Get modal elements
+    const modalEl = document.getElementById('activityModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+    const loader = document.getElementById('activityLoader');
+    const alertContainer = document.getElementById('activityAlertContainer');
+    const summary = document.getElementById('activitySummary');
+    const timeline = document.getElementById('activityTimeline');
+    const table = document.getElementById('activityTable');
+    const title = document.getElementById('activityModalLabel');
+
+    // Show modal and reset content
+    title.innerText = `Delivery Activity - ${voucherCode}`;
+    loader.classList.remove('d-none');
+    alertContainer.innerHTML = '';
+    summary.innerHTML = '';
+    summary.classList.add('d-none');
+    timeline.innerHTML = '';
+    table.classList.add('d-none');
+    modal.show();
+
     try {
         const response = await fetch(url);
         const result = await response.json();
@@ -306,10 +310,7 @@ async function showActivity(button) {
         if (result.isSuccessful) {
             const data = result.data;
 
-            document.getElementById('activityModalLabel').innerHTML = `Delivery Activity ${voucherCode}`;
-
-            // Fill Summary Section
-            document.getElementById('activitySummary').innerHTML = `
+            summary.innerHTML = `
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Start Time:</strong> ${new Date(data.startTime).toLocaleString()}</p>
@@ -320,13 +321,8 @@ async function showActivity(button) {
                         <p><strong>Current Time:</strong> ${new Date(data.currentTime).toLocaleString()}</p>
                     </div>
                 </div>
-                
-                
             `;
-
-            // Fill Activity Table
-            const timeline = document.getElementById('activityTimeline');
-            timeline.innerHTML = ''; // clear previous rows
+            summary.classList.remove('d-none');
 
             data.activityResponse.forEach((activity, index) => {
                 const row = document.createElement('tr');
@@ -339,43 +335,33 @@ async function showActivity(button) {
                 timeline.appendChild(row);
             });
 
-            const existingModalEl = document.getElementById('activityModal');
-            const existingModal = bootstrap.Modal.getInstance(existingModalEl);
-            if (existingModal) {
-                existingModal.hide(); // prevent aria-hidden issues
-            }
-
-            const modal = new bootstrap.Modal(existingModalEl);
-            modal.show();
+            table.classList.remove('d-none');
         } else {
-            showalert("Failed to fetch activity.", "warning");
+            showActivityAlert("Failed to fetch delivery activity.", "warning");
         }
     } catch (err) {
         console.error(err);
-        showalert("An error occurred while loading activity.", "danger");
+        showActivityAlert("An error occurred while loading delivery activity.", "danger");
+    } finally {
+        loader.classList.add('d-none');
     }
 }
 
+function showActivityAlert(message, type = 'danger') {
+    const alertContainer = document.getElementById('activityAlertContainer');
+    if (!alertContainer) return;
 
-
-
-
-
-
-function showalert(message, type = 'danger') {
-    const container = document.getElementById('alertContainer');
-    const alertHtml = `
+    alertContainer.innerHTML = `
         <div class="alert alert-${type} alert-dismissible fade show" role="alert">
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     `;
-    container.innerHTML = alertHtml;
 }
 
 
 
-setInterval(fetchCompletedOrders, 30000); // every 60 seconds
+setInterval(fetchCompletedOrders, 30000); // every 30 seconds
 
 async function fetchCompletedOrders() {
     try {
@@ -390,10 +376,9 @@ async function fetchCompletedOrders() {
         let currentPage = tablelist.page.info().page;
         const tbody = document.querySelector('#tablelist tbody');
         tbody.innerHTML = ''; // Clear old rows
-
         data.forEach(order => {
             const requestCreatedAt = order.requestCreatedAtString || "N/A";
-
+            const purposeKey = Object.entries(purposeOptions).find(([key, val]) => val === order.purpose)?.[0];
             const driverPhone = order.driverPhoneNumber
                 ? `<a href="tel:${order.driverPhoneNumber}">${order.driverPhoneNumber}</a>`
                 : "N/A";
@@ -402,12 +387,15 @@ async function fetchCompletedOrders() {
                 ? `<button class="btn btn-outline-secondary btn-sm"
                             data-note="${order.note ?? ''}"
                             data-purpose="${order.purpose ?? ''}"
+                            data-purpose-key="${purposeKey}"
                             data-voucher-code="${order.voucherCode ?? ''}"
+                            data-customer-phone="${order.voucherCode ?? ''}"
                             data-phone-number="${order.driverPhoneNumber ?? ''}"
                             onclick="showDetailsModal(this)">Show</button>`
                 : `<button class="btn btn-outline-secondary btn-sm"
                             data-voucher-code="${order.voucherCode ?? ''}"
                             data-phone-number="${order.driverPhoneNumber ?? ''}"
+                            data-customer-phone="${order.phoneNumber ?? ''}"
                             onclick="showReviewModal(this)">Review</button>`;
 
             const activityButton = `<button class="btn btn-outline-secondary activityBtn btn-sm"
@@ -423,7 +411,7 @@ async function fetchCompletedOrders() {
             row.style.fontSize = "13px";
 
             row.innerHTML = `
-                <td>${order.voucherCode || 'N/A'}</td>
+                <td class="text-center">${order.voucherCode || 'N/A'}</td>
                 <td class="text-center">${order.companyName || 'N/A'}</td>
                 <td class="text-center">${order.branchName || 'N/A'}</td>
                 <td class="text-center">${order.firstName || 'N/A'}</td>
@@ -434,7 +422,9 @@ async function fetchCompletedOrders() {
                 <td data-order="${order.eta}" class="text-center">${order.eta ?? 'N/A'} Min</td>
                 <td class="driver-cell text-center">${driverPhone}</td>
                 <td class="text-center">${order.supervisorName || 'N/A'}</td>
-                <td class="text-center">${order.totalAmount ?? 'N/A'}</td>
+                <td class="text-center">
+                  ${order.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}
+                </td>
                 <td class="text-center">${reviewButton}</td>
                 <td class="text-center">${activityButton}</td>
             `;
