@@ -48,7 +48,7 @@
         <div class="card border-1" id="orderCard">
             <div class="row pt-3" id="orderDetail">
                 <div class="col-4">
-                    <h4><i class="bi bi-car-front icon"></i>Driver</h4>
+                    <h4><i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Driver</h4>
                 </div>
                 
                 <div class="col-8 d-flex justify-content-center gap-2">
@@ -84,7 +84,7 @@
                         }
                     <div class="mb-2">
                         <span class="fw-bold">Status: </span>
-                        <span class="text-white px-2 py-1 rounded" style="background-color: @bgColor;">
+                        <span id="statusInfo" class="text-white px-2 py-1 rounded" style="background-color: @bgColor;">
                             @Model?.Status
                         </span>
                     </div>
@@ -98,7 +98,9 @@
                             <span>
                                 @foreach (var order in assignedOrders)
                                 {
-                                    <a href="/order/@order.VoucherCode" class="me-2 text-decoration-none">@order.VoucherCode</a>
+                                    <a href="/order/@order.VoucherCode" class="me-2 text-decoration-none" target="_blank">
+                                        @order.VoucherCode
+                                    </a>
                                 }
                             </span>
                         </div>
@@ -106,7 +108,13 @@
 
                     <div class="mb-2">
                         <span class="fw-bold">Last updated at: </span>
-                        <span>@Model?.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                        <span id="lastUpdatedAtInfo">
+                            @(Model?.UpdatedAt != null
+                            ? new DateTimeOffset(DateTime.SpecifyKind(Model.UpdatedAt.Value, DateTimeKind.Utc))
+                            .ToOffset(TimeSpan.FromHours(3))
+                            .ToString("yyyy-MM-dd hh:mm:ss tt")
+                            : "")
+                        </span>
                     </div>
 
                     <div class="mb-2">
@@ -222,7 +230,11 @@
                         <text>
                             place = {
                                         Name: '@Model.FirstName',
-                                        LastUpdatedAt: '@Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss")',
+                                                LastUpdatedAt: '@(Model?.UpdatedAt != null
+                                                ? new DateTimeOffset(DateTime.SpecifyKind(Model.UpdatedAt.Value, DateTimeKind.Utc))
+                                                .ToOffset(TimeSpan.FromHours(3))
+                                                .ToString("yyyy-MM-dd hh:mm:ss tt")
+                                                : "")',
                                         Phone: '@Model.PhoneNumber',
                                         Status: '@Model.Status',
                                 lat: @(@Model?.LatLng?.lat ?? 0.0),
@@ -232,7 +244,7 @@
                             };
                         </text>
 
-                        if (driverOrder!=null)
+                                        if (driverOrder != null)
                                 {
                             <text>orderAssigned = true;</text>
                                 }
