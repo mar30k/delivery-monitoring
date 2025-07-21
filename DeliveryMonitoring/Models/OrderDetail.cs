@@ -24,7 +24,7 @@ namespace DeliveryMonitoring.Models
         public string? SupervisedBy { get; set; }
         public string? SupervisorName { get; set; }
         public string? SosReason { get; set; }
-        public string? GrandTotal { get; set; }
+        public decimal? GrandTotal { get; set; }
 
         public CustomerDetail? Customer { get; set; }
         public string? CustomerDeviceID { get; set; }

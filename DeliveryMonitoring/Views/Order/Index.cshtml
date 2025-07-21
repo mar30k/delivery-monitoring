@@ -119,6 +119,9 @@
                         {
                             var statusKey = order?.Status?.ToLower() ?? "default"; 
                             var bgColor = statusColors.ContainsKey(statusKey)?  statusColors[statusKey] : statusColors["default"];
+                            var orderTime = order?.CreatedAt != null ? new DateTimeOffset(DateTime.SpecifyKind(order.CreatedAt.Value, DateTimeKind.Utc))
+                                    .ToOffset(TimeSpan.FromHours(3))
+                                    .ToString("yyyy-MM-dd HH:mm:ss") : "";
 
                             <tr data-voucher="@order?.VoucherCode" data-supervisor="@order?.SupervisedBy" style="font-size: 13px;">
                                 <td>
@@ -136,8 +139,9 @@
                                     @($"{order?.CustomerGeocodeAddress} - {order?.CustomerSpecificAddress}")
                                 </td>
 
-                                <td data-order="@order?.CreatedAt?.ToString(" yyyy-MM-ddTHH:mm:ss")" data-iso="@order?.CreatedAt?.ToString("yyyy-MM-dd hh:mm:ss")" class="text-center">
-                                    @order?.CreatedAt?.ToString("yyyy-MM-dd hh:mm:ss")
+                                <td data-order="@order?.CreatedAt?.ToString(" yyyy-MM-ddTHH:mm:ss")" data-iso="@orderTime" class="text-center">
+                                    @*@order?.CreatedAt.ToString("ddd, MMMM dd, yyyy - hh:mm:ss")*@
+                                    @orderTime
                                 </td>
                                 <td class="status-cell text-center @(bgColor == "lawngreen" || bgColor == "yellow" ? "text-black" : "text-white")" style="background: @bgColor">
                                     @order?.Status
