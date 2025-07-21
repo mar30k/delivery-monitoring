@@ -98,7 +98,6 @@ async function showDetailsModal(button) {
     document.getElementById('modalNote').innerHTML = note || '—';
     document.getElementById('modalPurpose').textContent = purpose || '—';
     document.getElementById('voucherCodeDetail').textContent = voucherCode ? `- ${voucherCode}` : '';
-    document.getElementById('reviewDetailsLoadingSpinner').style.display = 'block';
 
     const editBtn = document.getElementById('editNote');
     editBtn.setAttribute('data-voucher-code', voucherCode);
@@ -109,7 +108,7 @@ async function showDetailsModal(button) {
     // Show the modal immediately
     const modal = new bootstrap.Modal(document.getElementById('reviewDetailsModal'));
     modal.show();
-    showReview({
+    showCustomerReview({
         phoneNumber,
         voucherCode,
         customerPhone,
@@ -138,9 +137,8 @@ async function showReviewModal(button) {
 
     const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
     modal.show();
-    document.getElementById('reviewLoadingSpinner').style.display = 'block';
 
-    showReview({
+    showCustomerReview({
         phoneNumber,
         voucherCode,
         customerPhone,
@@ -148,18 +146,28 @@ async function showReviewModal(button) {
         spinnerId: 'reviewLoadingSpinner'
     });
 }
-async function showReview({
+async function showCustomerReview({
     phoneNumber,
     voucherCode,
     customerPhone,
-    reviewSectionId = 'reviewSection',
-    spinnerId = 'reviewLoadingSpinner',
+    reviewSectionId,
+    spinnerId,
 }) {
     const reviewSection = document.getElementById(reviewSectionId);
     reviewSection.innerHTML = '';
 
     const spinner = document.getElementById(spinnerId);
-
+    spinner.style.display = 'block';
+    const retryButton = `<button class="btn btn-sm btn-outline-secondary p-1"
+                        onclick="showCustomerReview({
+                            phoneNumber: &quot;${phoneNumber}&quot;,
+                            voucherCode: &quot;${voucherCode}&quot;,
+                            customerPhone: &quot;${customerPhone}&quot;,
+                            reviewSectionId: &quot;${reviewSectionId}&quot;,
+                            spinnerId: &quot;${spinnerId}&quot;
+                        })" style="font-size: 12px;">
+                        <i class="fas fa-rotate-right me-1"></i>Retry
+                    </button>`;
     try {
         const foundReview = await fetchDriverReview(phoneNumber, voucherCode, customerPhone);
         if (foundReview) {
@@ -199,7 +207,8 @@ async function showReview({
         console.error('Error fetching review:', err);
         reviewSection.innerHTML = `
             <div class="alert alert-danger mt-3" role="alert">
-                Failed to fetch customer review.
+                Failed to fetch customer review. 
+                ${retryButton}
             </div>
         `;
         reviewSection.classList.remove('d-none');
@@ -229,14 +238,14 @@ async function fetchDriverReview(phoneNumber, voucherCode, customerPhone) {
     const page = 1;
     try {
         const response = await fetch(`/Driver/fetchReview?phoneNumber=${encodeURIComponent(phoneNumber)}&page=${page}`);
-        if (!response.ok) return null;
+        if (!response.ok) throw new Error(`Failed to fetch review: ${response.status}`);
         const result = await response.json();
         if (!result || !result.reviews || result.reviews.length === 0) return null;
         return result.reviews.find(r=> r.referenceVoucher === voucherCode && r.reviewerPhoneNumber == customerPhone) || null;
 
     } catch (error) {
         console.error("Error fetching driver review:", error);
-        return null;
+        throw error;
     }
 }
 document.getElementById('reviewForm').addEventListener('submit', async function (e) {
