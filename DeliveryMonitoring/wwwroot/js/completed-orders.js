@@ -144,9 +144,16 @@ async function showReviewModal(button) {
     const voucherCode = button.getAttribute('data-voucher-code');
     const phoneNumber = button.getAttribute('data-phone-number');
     const customerPhone = button.getAttribute('data-customer-phone');
+    const purposeKey = button.getAttribute('data-purpose-key');
 
+    // Close any open modal before opening this one
+    document.querySelectorAll('.modal.show').forEach(modalEl => {
+        bootstrap.Modal.getInstance(modalEl)?.hide();
+    });
+
+    // Populate modal inputs
     document.getElementById('reviewOrderId').value = voucherCode;
-    document.getElementById('reviewPurpose').value = '';
+    document.getElementById('reviewPurpose').value = purposeKey || '';
     document.getElementById('reviewNote').value = note || '';
     document.getElementById('voucherCodeReview').textContent = voucherCode ? `- ${voucherCode}` : '';
 
@@ -154,7 +161,22 @@ async function showReviewModal(button) {
     modal.show();
     document.getElementById('reviewLoadingSpinner').style.display = 'block';
 
-    const reviewSection = document.getElementById('customerReviewSection'); // new div for this modal
+    showReview({
+        phoneNumber,
+        voucherCode,
+        customerPhone,
+        reviewSectionId: 'customerReviewSection',
+        spinnerId: 'reviewLoadingSpinner'
+    });
+}
+async function showReview({
+    phoneNumber,
+    voucherCode,
+    customerPhone,
+    reviewSectionId = 'reviewSection',
+    spinnerId = 'reviewLoadingSpinner',
+}) {
+    const reviewSection = document.getElementById(reviewSectionId);
     reviewSection.innerHTML = '';
     try {
         const foundReview = await fetchDriverReview(phoneNumber, voucherCode, customerPhone);
