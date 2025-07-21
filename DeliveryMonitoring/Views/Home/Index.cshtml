@@ -28,14 +28,14 @@
                             </div>
         
                             <div class="text-center">
-                                <h5 class="mb-0 text-success">
+                                <h5 class="mb-0 text-info">
                                     @(Model?.Drivers?.Count(x => x.IsDisabled != true) ?? 0)
                                 </h5>
                                 <small class="text-muted">Active</small>
                             </div>
 
                             <div class="text-center">
-                                <h5 class="mb-0 text-info">
+                                <h5 class="mb-0 text-success">
                                     @(Model?.Drivers?.Count(x => x.Status?.ToLower() == "ready") ?? 0)
                                 </h5>
                                 <small class="text-muted">Ready</small>
@@ -66,7 +66,7 @@
                     </div>
                     <div class="card-body col-7">
                         <p class="card-title">Companies</p>
-                        <h1 class="card-text">@Model?.Comps?.companyTins?.Count</h1>
+                        <h1 class="card-text">@(Model?.Comps?.companyTins?.Count ?? 0)</h1>
                     </div>
                 </div>
             </div>
@@ -183,7 +183,7 @@
         int onTheWayOrdersCount = Model.Orders.Count(d => d.Status == "ontheway");
         int declinedOrdersCount = Model.Orders.Count(d => d.Status == "declined");
         int driverNotFoundOrdersCount = Model.Orders.Count(d => d.Status == "driverNotFound");
-        int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrived");
+        int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrivedAtBranch");
         int sosOrdersCount = Model.Orders.Count(d => d.Status == "sos");
     }
     <script>
@@ -199,12 +199,12 @@
                     label: 'Drivers',
                     data: driverDataSet,
                     backgroundColor: [
-                        'rgb(255, 127, 127)',
-                        'rgb(255, 165, 0)',
-                        'rgb(241, 196, 15)',
-                        'rgb(3, 138, 255)',
-                        'rgb(60, 179, 113)',
-                        'rgb (32, 201, 151)'
+                        '#dc3545', // Offline
+                        '#28a745', // Ready
+                        '#007bff', // Accepted
+                        '#fd7e14', // Delivering
+                        '#20c997', // Completed
+                        '#17a2b8'  // ArrivedAtBranch
                     ],
                     hoverOffset: 4
                 }]
@@ -236,22 +236,22 @@
                     'On The Way',
                     'Declined',
                     'Driver Not Found',
-                    'Arrived',
+                    'ArrivedAtBranch',
                     'sos'
                 ],
                 datasets: [{
                     label: 'Orders',
                     data: orderDataSet,
                     backgroundColor: [
-                        'rgb(46, 204, 113)',  // Completed - Green
-                        'rgb(52, 152, 219)',  // Requested - Blue
-                        'rgb(155, 89, 182)',  // Assigned - Purple
-                        'rgb(241, 196, 15)',  // Accepted - Yellow
-                        'rgb(243, 156, 18)',  // On The Way - Orange
-                        'rgb(255, 127, 127)', // Declined - light red
-                        'rgb(149, 165, 166)', // Driver Not Found - Gray
-                        'rgb(26, 188, 156)',   // Arrived - Teal
-                        'rgb(139, 0, 0)'   // Sos - Dark Red
+                        'green',       // Completed (fallback/default)
+                        'deepskyblue',  // Requested
+                        'lawngreen',    // Assigned
+                        'seagreen',     // Accepted
+                        'darkorange',   // On The Way
+                        'red',          // Declined
+                        'firebrick',    // Driver Not Found (alternative to red)
+                        'coral',        // ArrivedAtBranch
+                        'darkred'       // sos
                     ],
                     hoverOffset: 6
                 }]
@@ -278,7 +278,7 @@
                 ontheway: 0,
                 declined: 0,
                 driverNotFound: 0,
-                arrived: 0,
+                arrivedAtBranch: 0,
                 sos: 0
             };
 
@@ -298,7 +298,7 @@
                 statusCounts.ontheway,
                 statusCounts.declined,
                 statusCounts.driverNotFound,
-                statusCounts.arrived,
+                statusCounts.arrivedAtBranch,
                 statusCounts.sos
             ];
 

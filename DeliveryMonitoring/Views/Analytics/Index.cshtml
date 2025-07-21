@@ -113,6 +113,7 @@
     int acceptedCount = Model.Drivers.Count(d => d.Status == "accepted");
     int deliveringCount = Model.Drivers.Count(d => d.Status == "delivering");
     int completedCount = Model.Drivers.Count(d => d.Status == "completed");
+    int arrivedatbranchCount = Model.Drivers.Count(d => d.Status?.ToLower() == "arrivedatbranch");
     //counts related to order
     int completedOrdersCount = Model.Orders.Count(d => d.Status == "completed"); 
     int requestedOrdersCount = Model.Orders.Count(d => d.Status == "requested");
@@ -141,16 +142,17 @@
     new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed'],
+            labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch'],
             datasets: [{
                 label: 'Drivers',
-                data: [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount],
+                data: [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount, @arrivedatbranchCount],
                 backgroundColor: [
-                    'rgb(255, 127, 127)',
-                    'rgb(255, 165, 0)',
-                    'rgb(255, 255, 127)',
-                    'rgb(3, 138, 255)',
-                    'rgb(60, 179, 113)'
+                    '#dc3545', // Offline
+                    '#28a745', // Ready
+                    '#007bff', // Accepted
+                    '#fd7e14', // Delivering
+                    '#20c997', // Completed
+                    '#17a2b8'  // ArrivedAtBranch
                 ],
                 hoverOffset: 4
             }]
@@ -197,15 +199,15 @@
                     @sosOrdersCount
                 ],
                 backgroundColor: [
-                    'rgb(46, 204, 113)',  // Completed - Green
-                    'rgb(52, 152, 219)',  // Requested - Blue
-                    'rgb(155, 89, 182)',  // Assigned - Purple
-                    'rgb(241, 196, 15)',  // Accepted - Yellow
-                    'rgb(243, 156, 18)',  // On The Way - Orange
-                    'rgb(255, 127, 127)',
-                    'rgb(149, 165, 166)', // Driver Not Found - Gray
-                    'rgb(26, 188, 156)',   // Arrived - Teal
-                    'rgb(139, 0, 0)'   // Sos - Dark Red
+                    'green',       // Completed (fallback/default)
+                    'deepskyblue',  // Requested
+                    'lawngreen',    // Assigned
+                    'seagreen',     // Accepted
+                    'darkorange',   // On The Way
+                    'red',          // Declined
+                    'firebrick',    // Driver Not Found (alternative to red)
+                    'coral',        // Arrived
+                    'darkred'       // sos
                 ],
                 hoverOffset: 6
             }]
