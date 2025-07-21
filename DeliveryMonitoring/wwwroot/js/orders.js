@@ -13,31 +13,8 @@ const statusColors = {
     sos: "darkred",
     default: "yellow"
 };
-function loadAvailableDrivers() {
-    const $select = $("#driverSelect");
-    $select.html(`<option value="" selected disabled>Loading drivers...</option>`);
 
-    $.ajax({
-        url: "driver/getDrivers",
-        method: "GET",
-        success: function (drivers) {
-            if (!drivers || drivers.length === 0) {
-                $select.html(`<option disabled>No available drivers found</option>`);
-                return;
-            }
-
-            $select.empty().append(`<option value="" selected disabled>Select a driver</option>`);
-            drivers.forEach(driver => {
-                const option = `<option value="${driver.phoneNumber}">${driver.firstName} (${driver.phoneNumber}) (${driver.status})</option>`;
-                $select.append(option);
-            });
-        },
-        error: function () {
-            $select.html(`<option disabled>Error loading drivers</option>`);
-        }
-    });
-}
-
+//datatable initailization
 js( ()=> {
     tablelist = js('#tablelist').DataTable({
         responsive: true,
@@ -51,9 +28,29 @@ js( ()=> {
             "emptyTable": "No orders to display at the moment."
         }
     });
-    setInterval(updateOrders, 10000);
+    setInterval(fetchAndRender, 10000);
 });
 
+//get available supervisors request
+let supervisors = null;
+function getAvailableSupervisors() {
+    return $.ajax({
+        url: "order/getAvailableSupervisors",
+        method: "GET"
+    });
+}
+
+//fetch supervisors and update orders
+async function fetchAndRender() {
+    try {
+        supervisors = await getAvailableSupervisors();
+        updateOrders();
+    } catch (err) {
+        console.error("Failed to load supervisors:", err);
+    }
+}
+
+//supervisor select filter
 js('#supervisorSelect').on('change', function () {
     var selectedSupervisor = js(this).val();
 
@@ -71,10 +68,10 @@ js('#supervisorSelect').on('change', function () {
 
     tablelist.draw(false); // Redraw without changing pagination
 });
+
+//update orders
 function updateOrders() {
     let existingVouchers = new Set();  // To track existing voucher codes in the table
-
-
     let previousDates = new Map();     // Store previous requestCreatedAtIso values
 
     // Step 1: Retrieve previous requestCreatedAtIso values from DataTables
@@ -105,21 +102,20 @@ function updateOrders() {
         ).values()
     );
 
-    getAvailableSupervisors()
-        .then(allSupervisors => {
-            if (!Array.isArray(allSupervisors)) return;
+    if (Array.isArray(disTinctSupervisors) && Array.isArray(supervisors)) {
             disTinctSupervisors.forEach(supervisor => {
-                const matched = allSupervisors.find(s => s.userName === supervisor.supervisedBy);
+            if (!supervisor?.supervisedBy) return; // skip if key missing
+            const matched = supervisors.find(s => s.userName === supervisor.supervisedBy);
                 const option = document.createElement("option");
-                option.value = supervisor.supervisedBy; // ✅ fixed
+            option.value = supervisor.supervisedBy;
                 const supervisorName = matched?.firstName ? matched.firstName + " " : "";
                 option.textContent = `${supervisorName}${supervisor.supervisedBy}`;
+
                 superVisorSelect.appendChild(option);
             });
-        })
-        .catch((err) => {
-            console.log(err);
-        });
+    } else {
+        console.warn("disTinctSupervisors or supervisors is not a valid array");
+    }
     // Add the new rows or update existing ones
     data.forEach(order => {
         const status = order.status.toLowerCase() || "default";
@@ -131,6 +127,9 @@ function updateOrders() {
         newRow.setAttribute('data-supervisor', order.supervisedBy);
         newRow.style.fontSize = "13px";
 
+        if (Array.isArray(supervisors)) {
+            supervisor = supervisors.find(x => x.userName === order.supervisedBy);
+        }
 
         let assignedDriverPhoneNumber = order.assignedDriverPhoneNumber
             ? `<a href="tel:${order.assignedDriverPhoneNumber}">${order.assignedDriverPhoneNumber}</a>`
@@ -142,7 +141,7 @@ function updateOrders() {
             : '';
         let assign = (order.supervisedBy === null || order.supervisedBy === undefined)
             ? `<a class="btn btn-outline-dark btn-sm" onclick="openAssignSupervisorModal('${order.voucherCode}')">Assign</a>`
-            : `<a href="tel:${order.supervisedBy}">${order.supervisedBy}</a>`;
+            : `<a href="tel:${order.supervisedBy}">${supervisor ? supervisor.firstName + ' ' + supervisor.secondName : order.supervisedBy}</a> <a onclick="openAssignSupervisorModal('${order.voucherCode}')"> <i class="fa-solid fa-pen-to-square"></i></a>`;
         newRow.innerHTML = `                    
                     <td>${order.voucherCode}</td>
                     <td class="text-center">${order.customerFirstName || 'N/A'}</td>
@@ -155,7 +154,7 @@ function updateOrders() {
                     <td class="status-cell text-center  ${textColorClass}" style="background: ${color}">${order.status}</td>
                     <td class="driver-cell text-center" >${assignedDriverPhoneNumber}</td>
                     <td class="text-center">${assign}</td>
-                    <td class="text-center">${order.grandTotal}</td>
+                    <td class="text-center">${order.grandTotal?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}</td>
                     <td style="text-align: center; vertical-align: middle;">
                         <div style="display: inline-block;">
                             <a class="btn btn-outline-dark btn-sm" href="/order/${order.voucherCode}">Details</a>
