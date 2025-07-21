@@ -74,14 +74,14 @@
                         <span class="fw-bold">Name: </span>
                         <span>@Model?.FirstName</span>
                     </div>
-                        @{
+                    @{
                         var statusColors = StatusInfo.StatusMap;
-                            var statusKey = Model?.Status?.ToLower() ?? "default";
-                            var statusInfo = statusColors.ContainsKey(statusKey)
-                            ? statusColors[statusKey]
-                            : statusColors["default"];
-                            var bgColor = statusInfo.Color;
-                        }
+                        var statusKey = Model?.Status?.ToLower() ?? "default";
+                        var statusInfo = statusColors.ContainsKey(statusKey)
+                        ? statusColors[statusKey]
+                        : statusColors["default"];
+                        var bgColor = statusInfo.Color;
+                    }
                     <div class="mb-2">
                         <span class="fw-bold">Status: </span>
                         <span id="statusInfo" class="text-white px-2 py-1 rounded" style="background-color: @bgColor;">
@@ -124,7 +124,7 @@
 
                     <div class="mb-2">
                         <span class="fw-bold">Phone Number: </span>
-                            <a href="tel:@Model?.PhoneNumber">@Model?.PhoneNumber</a>
+                        <a href="tel:@Model?.PhoneNumber">@Model?.PhoneNumber</a>
                     </div>
 
                     <div class="mb-2">
@@ -167,7 +167,11 @@
             </div>
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+@*     <script async
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=places,geometry&v=weekly">
+    </script>
+ *@
     <script>
         let infowindow = null;
         const statusColors = {
@@ -215,58 +219,58 @@
                 var orderAssigned = false;
 
                 @{
-                    if (Model != null)
-                    {
-                        var status = Model.Status?.ToLower();
-                        var driverOrder = Orders?.FirstOrDefault(x => x.AssignedDriverPhoneNumber == Model.PhoneNumber);
-                        string destLat = "0.0";
-                        string destLng = "0.0";
+                            if (Model != null)
+                            {
+                                        var status = Model.Status?.ToLower();
+                                        var driverOrder = Orders?.FirstOrDefault(x => x.AssignedDriverPhoneNumber == Model.PhoneNumber);
+                                        string destLat = "0.0";
+                                        string destLng = "0.0";
 
-                        if (status == "delivering" || status == "arrivedatbranch")
-                        {
-                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
-                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
-                        }
-                        else if (status == "accepted")
-                        {
-                            destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
-                            destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
-                        }
-                        else if (driverOrder != null)
-                        {
-                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
-                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
-                        }
-                        <text>
-                            place = {
-                                        Name: '@Model.FirstName',
+                                        if (status == "delivering" || status == "arrivedatbranch")
+                                        {
+                                                    destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                                                    destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                                        }
+                                        else if (status == "accepted")
+                                        {
+                                                    destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
+                                                    destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
+                                        }
+                                        else if (driverOrder != null)
+                                        {
+                                                    destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                                                    destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                                        }
+                                        <text>
+                                            place = {
+                                                Name: '@Model.FirstName',
                                                 LastUpdatedAt: '@(Model?.UpdatedAt != null
                                                 ? new DateTimeOffset(DateTime.SpecifyKind(Model.UpdatedAt.Value, DateTimeKind.Utc))
                                                 .ToOffset(TimeSpan.FromHours(3))
                                                 .ToString("yyyy-MM-dd hh:mm:ss tt")
                                                 : "")',
-                                        Phone: '@Model.PhoneNumber',
-                                        Status: '@Model.Status',
-                                lat: @(@Model?.LatLng?.lat ?? 0.0),
-                                lng: @(@Model?.LatLng?.lng ?? 0.0),
-                                DestLat: @destLat,
-                                DestLng: @destLng
-                            };
-                        </text>
+                                                Phone: '@Model.PhoneNumber',
+                                                Status: '@Model.Status',
+                                                lat: @(@Model?.LatLng?.lat ?? 0.0),
+                                                lng: @(@Model?.LatLng?.lng ?? 0.0),
+                                                DestLat: @destLat,
+                                                DestLng: @destLng
+                                            };
+                                        </text>
 
                                         if (driverOrder != null)
-                                {
-                            <text>orderAssigned = true;</text>
-                                }
-                        }
+                                        {
+                                                    <text>orderAssigned = true;</text>
+                                        }
+                            }
 
-                    }
+                }
 
-                
+
 
                 marker = new google.maps.Marker({
-                    position: { lat: places[0].lat, lng: places[0].lng },
-                    title: places[i].Name,
+                    position: { lat: routeCoordinates[0].lat, lng: routeCoordinates[0].lng},
+                    title:place.Name,
                     map: map,
                     icon: {
                         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
@@ -275,12 +279,18 @@
                 });
 
                 map.setCenter(marker.getPosition());
-                //sets the marker in the specified position - ends here
 
-                //content for each driver starts here
-                var content = "<b>Name:</b> " + places[i].Name + "<br/><b>LastUpdatedAt:</b> " + places[i].LastUpdatedAt + "<br/><b>Phone:</b> " + places[i].Phone + "<br/><b>Status:</b> " + places[i].Status
+                const statusKey = (place.Status || "default").toLowerCase();
+                const statusColor = statusColors[statusKey]?.color || statusColors.default.color;
+                const content = `
+                    <b>Name:</b> ${place.Name}<br/>
+                    <b>LastUpdatedAt:</b> ${place.LastUpdatedAt}<br/>
+                    <b>Phone:</b> ${place.Phone}<br/>
+                    <b>Status:</b> <span style="background-color:${statusColor}; color:white; padding:2px 6px; border-radius:4px;">${place.Status}</span>
+                `;
 
-                var infowindow = new google.maps.InfoWindow()
+                infowindow = new google.maps.InfoWindow();
+
 
                 google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
                     return function () {
@@ -294,135 +304,110 @@
                         infowindow.close();
                     };
                 })(infowindow));
-                ////content for each driver ends here
 
-                var liveLocation = [places[0].lat, places[0].lng];
+                var liveLocation = [routeCoordinates[0].lat, routeCoordinates[0].lng];
 
-                //this one moves the driver if status is delivering
+                let currentPolyline = null; // Declare at the outer scope
+
                 if (orderAssigned) {
                     marker2 = new google.maps.Marker({
-                        position: { lat: places[0].DestLat, lng: places[0].DestLng },
+                        position: {
+                            lat: routeCoordinates[routeCoordinates.length - 1].lat,
+                            lng: routeCoordinates[routeCoordinates.length - 1].lng
+                        },
                         title: 'Order Destination',
                         map: map,
                         icon: {
                             url: '/images/Destination.png',
-                            scaledSize: new google.maps.Size(48, 48)
+                            scaledSize: new google.maps.Size(25, 25)
                         },
                     });
 
-                    var beginPosition = new google.maps.LatLng(places[0].lat, places[0].lng);
-                    var destinationPosition = new google.maps.LatLng(places[0].DestLat, places[0].DestLng);
-
-                    // Update the directions request
-                    var request = {
-                        origin: beginPosition,
-                        destination: destinationPosition,
-                        travelMode: google.maps.TravelMode.DRIVING
-                    };
-
-                    directionsService.route(request, function (result, status) {
-                        if (status == google.maps.DirectionsStatus.OK) {
-                            directionsRenderer.setDirections(result);
-
-                            // Set an interval to fetch the updated location from the API and call moveCar
-                            var apiResponseInterval = setInterval(function () {
-
-                                if (liveLocation.length > 0) {
-
-                                    liveLocation.pop();
-                                    liveLocation.pop();
-                                }
-                                // Fetch the updated location from the API
-                                fetch(`/Driver/LiveLocation/${places[0].Phone}`)
-                                    .then(response => response.json())
-                                    .then(data => {
-
-                                        if (data.latLng.lat !== undefined && data.latLng.lng !== undefined) {
-                                            liveLocation.push(data.latLng.lat);
-                                            liveLocation.push(data.latLng.lng);
-                                        }
-
-                                        moveCar();
-
-                                        if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status === "completed") {
-                                            clearInterval(apiResponseInterval);
-                                            marker2.setMap(null);
-                                            marker.setMap(null);
-                                            directionsRenderer.setMap(null); // Hide the directions
-                                            details();
-                                        }
-                                    })
-                                    .catch(error => console.error('Error fetching live location:', error, error.responseText));
-
-
-                            }, 10000); // Adjust the interval time as needed
-
-                        } else {
-                            // Set an interval to fetch the updated location from the API and call moveCar
-                            var apiResponse = setInterval(function () {
-                                if (liveLocation.length > 0) {
-                                    liveLocation.pop();
-                                    liveLocation.pop();
-                                }
-                                // Fetch the updated location from the API
-                                fetch(`/Driver/LiveLocation/${places[0].Phone}`)
-                                    .then(response => response.json())
-                                    .then(data => {
-                                        // console.log(data)
-                                        if (data.latLng.lat !== undefined && data.latLng.lng !== undefined) {
-                                            liveLocation.push(data.latLng.lat);
-                                            liveLocation.push(data.latLng.lng);
-                                        }
-
-                                        // if (index === 0) {
-                                        //     liveLocation.push(9.0147);
-                                        //     liveLocation.push(38.76265);
-                                        // }
-                                        // if (index === 1) {
-                                        //     liveLocation.push(9.01394);
-                                        //     liveLocation.push(38.76294);
-                                        // }
-                                        // if (index === 2) {
-                                        //     liveLocation.push(9.01191);
-                                        //     liveLocation.push(38.76275);
-                                        // }
-                                        // if (index === 3) {
-                                        //     liveLocation.push(9.01123);
-                                        //     liveLocation.push(38.76264);
-                                        // }
-
-                                        moveCar();
-
-                                        if (marker.getPosition().lat() == destinationPosition.lat() && marker.getPosition().lng() == destinationPosition.lng() || data.status === "completed") {
-                                            clearInterval(apiResponse);
-                                            marker2.setMap(null);
-                                            marker.setMap(null);
-                                            details();
-                                        }
-                                    })
-                                    .catch(error => console.error('Error fetching live location:', error, error.responseText));
-                            }, 10000); // Adjust the interval time as needed
-                        }
+                    currentPolyline = new google.maps.Polyline({
+                        path: routeCoordinates,
+                        geodesic: true,
+                        strokeColor: "red",
+                        strokeOpacity: 1.0,
+                        strokeWeight: 4
                     });
+                    currentPolyline.setMap(map);
+
+                    var destinationPosition = new google.maps.LatLng(place.DestLat, place.DestLng);
+
+                    var apiResponseInterval = setInterval(function () {
+                        if (liveLocation.length > 0) {
+                            liveLocation.pop();
+                            liveLocation.pop();
+                        }
+
+                        fetch(`/Driver/LiveLocation/${place.Phone}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                routeCoordinates = data.coordinates;
+
+                                if (data.latLng.lat !== undefined && data.latLng.lng !== undefined) {
+                                    liveLocation.push(routeCoordinates[0].lat);
+                                    liveLocation.push(routeCoordinates[0].lng);
+                                }
+
+                                moveCar();
+                                updateDriverInfo(data.status, data.updatedAt, data.phoneNumber, data.firstName);
+
+                                // Remove old marker and polyline if they exist
+                                if (marker2) marker2.setMap(null);
+                                if (currentPolyline) currentPolyline.setMap(null);
+
+                                marker2 = new google.maps.Marker({
+                                    position: {
+                                        lat: routeCoordinates[routeCoordinates.length - 1].lat,
+                                        lng: routeCoordinates[routeCoordinates.length - 1].lng
+                                    },
+                                    title: 'Order Destination',
+                                    map: map,
+                                    icon: {
+                                        url: '/images/Destination.png',
+                                        scaledSize: new google.maps.Size(25, 25)
+                                    },
+                                });
+
+                                currentPolyline = new google.maps.Polyline({
+                                    path: routeCoordinates,
+                                    geodesic: true,
+                                    strokeColor: "red",
+                                    strokeOpacity: 1.0,
+                                    strokeWeight: 4
+                                });
+                                currentPolyline.setMap(map);
+
+                                if (
+                                    marker.getPosition().lat() === destinationPosition.lat() &&
+                                    marker.getPosition().lng() === destinationPosition.lng() ||
+                                    data.status === "completed"
+                                ) {
+                                    clearInterval(apiResponseInterval);
+                                    marker2.setMap(null);
+                                    marker.setMap(null);
+                                    if (currentPolyline) currentPolyline.setMap(null);
+                                    details();
+                                }
+                            })
+                            .catch(error => console.error('Error fetching live location:', error));
+                    }, 10000);
                 }
-                //this one moves the driver if order is assigned - ends here
                 else {
-                    // Set an interval to fetch the updated location from the API and call moveCar
                     var AR = setInterval(function () {
                         if (liveLocation.length > 0) {
                             liveLocation.pop();
                             liveLocation.pop();
                         }
-                        // Fetch the updated location from the API
-                        fetch(`/Driver/LiveLocation/${places[0].Phone}`)
+
+                        fetch(`/Driver/LiveLocation/${place.Phone}`)
                             .then(response => response.json())
                             .then(data => {
-                                // console.log(data)
                                 if (data.latLng.lat !== undefined && data.latLng.lng !== undefined) {
                                     liveLocation.push(data.latLng.lat);
                                     liveLocation.push(data.latLng.lng);
                                 }
-
                                 moveCar();
                                 updateDriverInfo(data.status, data.updatedAt, data.phoneNumber, data.firstName);
                                 if (data.status === "delivering" || data.status==="arrivedatbranch" || data.status==="accepted") {
@@ -431,48 +416,46 @@
                                     details();
                                 }
                             })
-                            .catch(error => console.error('Error fetching live location:', error, error.responseText));
-                    }, 10000); // Adjust the interval time as needed
+                            .catch(error => console.error('Error fetching live location:', error));
+                    }, 10000);
                 }
+
                 function moveCar() {
-                    // index++;
-                    // Check if the driver's location has changed
-                    if (liveLocation.length > 0 && (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng())) {
+                    if (liveLocation.length > 0 &&
+                        (liveLocation[0] !== marker.getPosition().lat() || liveLocation[1] !== marker.getPosition().lng())) {
 
-                        var liveLatLng = new google.maps.LatLng(liveLocation[0], liveLocation[1]);
-                        // Calculate the bearing between the previous location and the current location
-                        bearing = google.maps.geometry.spherical.computeHeading(marker.getPosition(), liveLatLng);
+                        const startLatLng = marker.getPosition();
+                        const endLatLng = new google.maps.LatLng(liveLocation[0], liveLocation[1]);
+                        const bearing = google.maps.geometry.spherical.computeHeading(startLatLng, endLatLng);
 
-                        // Calculate the step size for interpolation
-                        var numSteps = 100;
-                        var step = 0;
+                        const duration = 2000; // total animation duration in ms
+                        const startTime = performance.now();
 
-                        // Use setInterval for interpolation and smooth sliding
-                        var interval = setInterval(function () {
-                            step += 1;
-
-                            // Calculate the interpolated position
-                            var interpolatedPosition = google.maps.geometry.spherical.interpolate(marker.getPosition(), liveLatLng, step / numSteps);
-
-                            // Set the marker position
+                        function animate(time) {
+                            const elapsed = time - startTime;
+                            const t = Math.min(elapsed / duration, 1); // progress from 0 to 1
+                            const interpolatedPosition = google.maps.geometry.spherical.interpolate(startLatLng, endLatLng, t);
                             marker.setPosition(interpolatedPosition);
-
-                            // Set the marker icon with rotation
                             marker.setIcon({
                                 path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                                 scale: 4,
                                 rotation: bearing,
                             });
 
-                            // Check if reached the final position
-                            if (step == numSteps) {
-                                clearInterval(interval);
-                                marker.setPosition(liveLatLng);
-                                map.setCenter(marker.getPosition());
+                            if (t < 1) {
+                                requestAnimationFrame(animate);
+                            } else {
+                                marker.setPosition(endLatLng);
+                                map.setCenter(endLatLng);
                             }
-                        }, 70);
+                        }
+
+                        requestAnimationFrame(animate);
                     }
                 }
+
+            }
+        }
         function updateDriverInfo(status, lastUpdatedAt, phoneNumber, name) {
             const formatted = moment(lastUpdatedAt).format("YYYY-MM-DD hh:mm:ss A");
             const key = status.toString().toLowerCase();
