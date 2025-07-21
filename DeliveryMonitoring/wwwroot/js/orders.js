@@ -103,16 +103,16 @@ function updateOrders() {
     );
 
     if (Array.isArray(disTinctSupervisors) && Array.isArray(supervisors)) {
-            disTinctSupervisors.forEach(supervisor => {
+        disTinctSupervisors.forEach(supervisor => {
             if (!supervisor?.supervisedBy) return; // skip if key missing
             const matched = supervisors.find(s => s.userName === supervisor.supervisedBy);
-                const option = document.createElement("option");
+            const option = document.createElement("option");
             option.value = supervisor.supervisedBy;
-                const supervisorName = matched?.firstName ? matched.firstName + " " : "";
-                option.textContent = `${supervisorName}${supervisor.supervisedBy}`;
+            const supervisorName = matched?.firstName ? matched.firstName + " " : "";
+            option.textContent = `${supervisorName}${supervisor.supervisedBy}`;
 
-                superVisorSelect.appendChild(option);
-            });
+            superVisorSelect.appendChild(option);
+        });
     } else {
         console.warn("disTinctSupervisors or supervisors is not a valid array");
     }
@@ -186,6 +186,7 @@ function updateOrders() {
 
 }
 
+// time date format
 function formatDateTime(input) {
     try {
         let date = new Date(input);
@@ -208,6 +209,7 @@ function formatDateTime(input) {
     }
 }
 
+// open redispatch modal
 let selectedOrder = null;
 function openRedispatchModal(el) {
     try {
@@ -268,6 +270,7 @@ function confirmRedispatchToAll() {
     dispatchOrder(selectedOrder);
 }
 
+//confirm dispatch to a dirver
 function confirmRedispatchToDriver() {
     const driverPhone = document.getElementById("driverSelect")?.value;
     if (!driverPhone) {
@@ -278,6 +281,7 @@ function confirmRedispatchToDriver() {
     dispatchOrder(selectedOrder);
 }
 
+//dispatch order request
 async function dispatchOrder(order) {
     showLoading("dispatchLoading");
     const isDispatchable = await checkOrderStatus(order.voucherCode);
@@ -308,6 +312,7 @@ async function dispatchOrder(order) {
      
 }
 
+// check order status for redispatching
 async function checkOrderStatus(voucherCode) {
     try {
         await $.ajax({
@@ -323,10 +328,12 @@ async function checkOrderStatus(voucherCode) {
     }
 }
 
+//show loading
 function showLoading(id) {
     document.getElementById(id).classList.remove("d-none");
 }
 
+//hide loading
 function hideLoading(id) {
     document.getElementById(id).classList.add("d-none");
 }
@@ -360,6 +367,7 @@ function showAlert(message, type = "info", modal) {
         }
     }, 5000);
 }
+//show assign alert
 function showAssignAlert(message, type = "info") {
     const alertHTML = `
         <div class="alert alert-${type} alert-dismissible fade show" role="alert">
@@ -378,6 +386,7 @@ function showAssignAlert(message, type = "info") {
     }, 3000);
 }
 
+//assign supervisor request
 async function assignSupervisor(voucherCode, id = "all") {
     showLoading("assignLoading");
     var data = {
@@ -400,8 +409,9 @@ async function assignSupervisor(voucherCode, id = "all") {
         }
     });
 }
-let assignSupervisorVoucherCode = null;
 
+//assign suupervisor modal opening
+let assignSupervisorVoucherCode = null;
 function openAssignSupervisorModal(voucherCode) {
     try {
         const supervisor = document.getElementById("modalSupervisorSelect");
@@ -429,14 +439,7 @@ function openAssignSupervisorModal(voucherCode) {
     }
 }
 
-
-function getAvailableSupervisors() {
-    return $.ajax({
-        url: "order/getAvailableSupervisors",
-        method: "GET"
-    });
-}
-
+//load supervisors for supervisor modal
 function loadAvailableSupervisors() {
     const $select = $('#modalSupervisorSelect');
 
@@ -468,12 +471,13 @@ function loadAvailableSupervisors() {
 
 
 
-
+//assign randomly from all supervisor
 function confirmAssignToAll() {
     if (!assignSupervisorVoucherCode) return;
     assignSupervisor(assignSupervisorVoucherCode);
 }
 
+//assign a specific supervisor
 function confirmAssignToSupervisor() {
     const supervisorId = document.getElementById("modalSupervisorSelect")?.value;
     if (!supervisorId) {
