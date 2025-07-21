@@ -209,7 +209,6 @@ function formatDateTime(input) {
 }
 
 let selectedOrder = null;
-
 function openRedispatchModal(el) {
     try {
         const dataAttr = el.getAttribute('data-order');
@@ -236,6 +235,33 @@ function openRedispatchModal(el) {
     }
 }
 
+//load available drivers for redispatch modal initailization
+function loadAvailableDrivers() {
+    const $select = $("#driverSelect");
+    $select.html(`<option value="" selected disabled>Loading drivers...</option>`);
+
+    $.ajax({
+        url: "driver/getDrivers",
+        method: "GET",
+        success: function (drivers) {
+            if (!drivers || drivers.length === 0) {
+                $select.html(`<option disabled>No available drivers found</option>`);
+                return;
+            }
+
+            $select.empty().append(`<option value="" selected disabled>Select a driver</option>`);
+            drivers.forEach(driver => {
+                const option = `<option value="${driver.phoneNumber}">${driver.firstName} (${driver.phoneNumber}) (${driver.status})</option>`;
+                $select.append(option);
+            });
+        },
+        error: function () {
+            $select.html(`<option disabled>Error loading drivers</option>`);
+        }
+    });
+}
+
+//confirm dispatch to all dirvers
 function confirmRedispatchToAll() {
     if (!selectedOrder) return;
     selectedOrder.assignedDriverPhoneNumber = "";
