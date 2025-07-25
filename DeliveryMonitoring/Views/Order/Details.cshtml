@@ -1,4 +1,6 @@
-﻿@model DeliveryMonitoring.Models.OrderDetail
+﻿@using System.Net
+@using System.Text.RegularExpressions
+@model DeliveryMonitoring.Models.OrderDetail
 
 @{
     ViewData["Title"] = "Order Details";
@@ -11,9 +13,15 @@
     <h3>Order Details</h3>
 
     <div class="card" id="orderCard">
-        <br />      
-        <div class="row mb-2 p-4">
-            <div class="col-md-6">
+        <div class="row p-4">
+            @{
+                var colClass = "col-md-6";
+                if (!string.IsNullOrEmpty(Model?.CustomerSpecialRequest) || !string.IsNullOrEmpty(Model?.StatusReport) || !string.IsNullOrEmpty(Model?.PreparationTime.ToString()))
+                {
+                    colClass = "col-md-4";
+                }
+            }
+            <div class="@colClass">
                 <div>
                     <span><strong>VoucherCode:</strong></span>
                     <span>@Html.DisplayFor(model => model.VoucherCode)</span>
@@ -22,11 +30,13 @@
                     <span><strong>Expected Time Of Arrival:</strong></span>
                     <span>@(Model?.Activities?.Eta?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
                 </div>
-                <div>
-                    <span><strong>Actual Arrival:</strong></span>
-                    <span>@(Model?.Activities?.ActualArrival?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
-                </div>
-                
+                @if (Model?.Activities?.ActualArrival != null)
+                {
+                    <div>
+                        <span><strong>Actual Arrival:</strong></span>
+                        <span id="actualArrival">@(Model?.Activities?.ActualArrival?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
+                    </div>
+                }
                 <div class="d-flex d-inline-block">
                     <div>
                         @{
@@ -51,7 +61,7 @@
                                 border-radius: 10px;
                                 color: @(bgColor == "red" || bgColor == "green" ? "white" : "black");
                                 display: inline-block;
-                                padding: 5px 5px;">
+                                padding: 3px 3px;">
                                 <strong id="orderStatus">@Html.DisplayFor(model => model.Status) </strong>
                             </div>
                             <span class="text-info bg-aqua" id="sosReason">@(Model?.Status == "sos" && Model.SosReason != null ? $"{Model.SosReason}" : "")</span>
@@ -59,12 +69,39 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 d-flex justify-content-end">
-                <div class="d-flex align-items-end flex-column">
-                    <div class="mb-1"> 
+            @if(colClass != "col-md-6")
+            {
+                <div class="@colClass">
+                    @if (!string.IsNullOrEmpty(Model?.CustomerSpecialRequest))
+                    {
+                        <div>
+                            <span><strong>Customer Special Request:</strong></span>
+                            <span>@Html.DisplayFor(model => model.CustomerSpecialRequest)</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model?.StatusReport))
+                    {
+                        var rawText = WebUtility.HtmlDecode(Model?.StatusReport ?? "-");         // Step 1: Decode entities like &#x12DD;
+                        var cleanText = Regex.Replace(rawText, "<.*?>", string.Empty);          // Step 2: Strip any actual HTML tags
+                        <div>
+                            <span><strong>Status Report:</strong></span>
+                            <span>@cleanText</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model?.PreparationTime?.ToString()))
+                    {
+                        <div>
+                            <span><strong>Preparation Time:</strong></span>
+                            <span>@(Model?.PreparationTime) min</span>
+                        </div>
+                    }
+                </div>
+            }
+            <div class="col-12 @colClass d-flex justify-content-md-end justify-content-start text-md-end text-start">
+                <div class="d-flex flex-column">
+                    <div class="mb-1">
                         <span>
                             <strong>
-                                @*@Model?.CreatedAt.ToString("ddd, MMMM dd, yyyy - hh:mm:ss tt")*@
                                 @(Model?.CreatedAt != null
                                     ? new DateTimeOffset(DateTime.SpecifyKind(Model.CreatedAt.Value, DateTimeKind.Utc))
                                     .ToOffset(TimeSpan.FromHours(3))
@@ -78,10 +115,10 @@
                             if (phoneNumber != null && phoneNumber.Length < 10)
                             {
                                 <div style="background-color: red;
-                                    border-radius: 20px;
-                                    color: black;
-                                    display: inline-block;
-                                    padding: 5px 5px;">
+                                border-radius: 20px;
+                                color: black;
+                                display: inline-block;
+                                padding: 5px 5px;">
                                     <strong>Driver Phone Not Available</strong>
                                 </div>
                             }
@@ -309,6 +346,7 @@
     }
 }
 @section Scripts{
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
     <script>
         setInterval(updateOrderStatuses, 10000);
         var voucherCode  = '@Model?.VoucherCode';
@@ -317,9 +355,23 @@
             if(matchedOrder){
                 $("#orderStatus").text(matchedOrder.status);
             }
+            if (matchedOrder && matchedOrder.activities?.actualArrival) {
+                const formatted = moment("7/22/2025 11:48:31 AM")
+                    .format("ddd, MMMM DD - hh:mm:ss A"); // Matches C# format
+                $("#actualArrival").text(formatted);
+            } 
+            else {
+                $("#actualArrival").text("N/A");
+            }
             if(matchedOrder && matchedOrder.status === 'sos' && matchedOrder.sosReason){
                 $("#sosReason").text(matchedOrder.sosReason);
             }
+            const actualArrival = "7/22/2025 11:48:31 AM";
+            const parsed = moment(actualArrival, "M/D/YYYY hh:mm:ss A");
+            const formatted = parsed.utcOffset(180).format("ddd, MMMM DD - hh:mm:ss A");
+
+            $("#actualArrival").text(formatted);
+
         }
     </script>
 }

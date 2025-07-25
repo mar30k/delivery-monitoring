@@ -61,7 +61,10 @@ namespace DeliveryMonitoring.Models
         public DateTime? UpdatedAt { get; set; }
         public DateTime? Eta { get; set; }
         public string? Status { get; set; }
-
+        public int? PreparationTime { get; set; }
+        public string? StatusTrackerId { get; set; }
+        public string? CustomerSpecialRequest { get; set; }
+        public string? StatusReport { get; set; }
         public Location? TargetBranchLocation { get; set; }
 
         public double? TargetBranchLat { get; set; }
