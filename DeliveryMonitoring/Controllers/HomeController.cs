@@ -45,46 +45,13 @@ namespace DeliveryMonitoring.Controllers
 
             try
             {
+                var startDate = DateTime.Today.ToString("yyyy-MM-dd");
                 // Fetch drivers and orders
                 drivers = await FetchData<List<Driver>>(client, driverUri) ?? new List<Driver>();
                 orders = await FetchData<List<OrderDetail>>(client, $"/orderRequests?companyTin={companyTin}") ?? new List<OrderDetail>();
-
-                var startDate = DateTime.Today.ToString("yyyy-MM-dd");
-
-                var companyTask = client.GetAsync($"{client.BaseAddress}/companies");
-                var supervisorTask = v7Client.GetAsync($"{v7Client.BaseAddress}auth/getsupervisors");
-                var deviceTask = httpClient.GetAsync($"deviceControl?StartDate={startDate}&EndDate={startDate}");
-
-                await Task.WhenAll(companyTask, supervisorTask, deviceTask);
-
-                if (companyTask.Result.IsSuccessStatusCode)
-                {
-                    var data = await companyTask.Result.Content.ReadAsStringAsync();
-                    company = JsonConvert.DeserializeObject<Companies>(data) ?? new Companies();
-                }
-
-                if (supervisorTask.Result.IsSuccessStatusCode)
-                {
-                    var data = await supervisorTask.Result.Content.ReadAsStringAsync();
-                    superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data) ?? new List<SupervisorsDTO>();
-                }
-
-                if (companyTin != "0076217301" && company?.companyTins?.Contains(companyTin) == true)
-                {
-                    company.companyTins = new List<string> { companyTin };
-                }
-
-                if (deviceTask.Result.IsSuccessStatusCode)
-                {
-                    var data = await deviceTask.Result.Content.ReadAsStringAsync();
-                    deviceControl = JsonConvert.DeserializeObject<List<DeviceControl>>(data) ?? new List<DeviceControl>();
-                }
-
-                if (companyTin != "0076217301")
-                {
-                    deviceControl = deviceControl.Where(x => x.Tin?.ToString() == companyTin.Trim()).ToList();
-                    superVisors = new List<SupervisorsDTO>();
-                }
+                company = await FetchData<Companies>(client, $"/companies") ?? new Companies();
+                superVisors = await FetchData<List<SupervisorsDTO>>(v7Client, $"auth/getsupervisors") ?? new List<SupervisorsDTO>();
+                deviceControl = await FetchData<List<DeviceControl>>(httpClient, $"deviceControl?StartDate={startDate}&EndDate={startDate}") ?? new List<DeviceControl>();
             }
             catch (HttpRequestException)
             {

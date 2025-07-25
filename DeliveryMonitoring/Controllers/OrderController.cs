@@ -87,8 +87,10 @@ namespace DeliveryMonitoring.Controllers
                     string message = errorObject?.message ?? "An error occurred. Please try again later.";
 
                     // Pass the message to TempData
-                    TempData["Message"] = $"{voucherCode}: {message}";
+                    TempData["Message"] = $"Order {voucherCode}: {message}";
                     return RedirectToAction("index");
+                    //var sampleOrder = GetSampleOrder();
+                    //return View(sampleOrder);
                 }
 
 
@@ -186,7 +188,9 @@ namespace DeliveryMonitoring.Controllers
                 IsNoDriversAck = false,
                 OrderArrivedAckByCustomer = false,
                 OrderArrivedAckByDriver = true,
-
+                StatusReport = "መንገድ ተዘጋግቷል",
+                PreparationTime = 20,
+                CustomerSpecialRequest = "Special Request",
                 LineItemsDetail = new LineItemsDetail
                 {
                     LineItems = new List<LineItem>
@@ -381,23 +385,22 @@ namespace DeliveryMonitoring.Controllers
         public class AssignSuperVisorDTO
         {
             public string? voucherCode { get; set; }
-            public string? id { get; set; }
+            public string? phoneNumber { get; set; }
         }
         [HttpPost]
         public async Task<IActionResult> AssignSupervisor([FromBody] AssignSuperVisorDTO assignSuperVisorDTO)
         {
             if (assignSuperVisorDTO.voucherCode == null)
                 return BadRequest("Invalid voucher data.");
-
-            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-            var uri = assignSuperVisorDTO.id == "all" ?
-                $"auth/assign?voucherCode={assignSuperVisorDTO.voucherCode}" :
-                $"auth/manualassign?voucherCode={assignSuperVisorDTO.voucherCode}&userId={assignSuperVisorDTO.id}";
+            var jsonBody = JsonConvert.SerializeObject(assignSuperVisorDTO);
+            var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            var client = _httpClientFactory.CreateClient("Delivery");
+            var uri = "/orderRequests/assignOrderSupervisor";
 
 
             try
             {
-                var response = await client.GetAsync(client.BaseAddress + uri);
+                var response = await client.PatchAsync(client.BaseAddress +  uri, content);
 
                 if (!response.IsSuccessStatusCode)
                 {
