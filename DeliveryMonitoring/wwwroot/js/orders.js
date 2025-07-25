@@ -15,18 +15,36 @@ const statusColors = {
 };
 
 //datatable initailization
-js( ()=> {
+js(() => {
     tablelist = js('#tablelist').DataTable({
         responsive: true,
-        "order": [[4, "desc"]],
-        "pageLength": 15,
-        "lengthMenu": [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
+        order: [[4, "desc"]],
+        pageLength: 15,
+        lengthMenu: [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
         columnDefs: [
-            { orderable: false, targets: [0, 2, 5, 6, 7,9] }
+            { orderable: false, targets: [0, 2, 5, 6, 7, 8, 9, 11] }
         ],
         language: {
-            "emptyTable": "No orders to display at the moment."
+            emptyTable: "No orders to display at the moment."
         }
+    });
+
+    // Safe to register custom filter here
+    js.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        const selectedSupervisor = js('#supervisorSelect').val();
+        const rowNode = tablelist.row(dataIndex).node(); // This is now safe
+        const supervisorAttr = js(rowNode).attr('data-supervisor');
+
+        if (!selectedSupervisor || selectedSupervisor === "") {
+            return true;
+        }
+
+        return supervisorAttr === selectedSupervisor;
+    });
+
+    // Event binding stays here
+    js('#supervisorSelect').on('change', function () {
+        tablelist.draw(); // Triggers filter
     });
     setInterval(fetchAndRender, 10000);
 });
@@ -50,24 +68,6 @@ async function fetchAndRender() {
     }
 }
 
-//supervisor select filter
-js('#supervisorSelect').on('change', function () {
-    var selectedSupervisor = js(this).val();
-
-    tablelist.rows().every(function () {
-        var row = this.node();
-        var supervisor = js(row).data('supervisor');
-
-        // Show all rows if 'All Supervisors' is selected
-        if (!selectedSupervisor || selectedSupervisor === "") {
-            js(row).show();
-        } else {
-            js(row).toggle(supervisor === selectedSupervisor);
-        }
-    });
-
-    tablelist.draw(false); // Redraw without changing pagination
-});
 
 //update orders
 function updateOrders() {
