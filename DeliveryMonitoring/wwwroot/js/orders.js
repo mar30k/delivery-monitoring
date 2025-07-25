@@ -152,6 +152,8 @@ function updateOrders() {
                         ${requestCreatedAt}
                     </td>
                     <td class="status-cell text-center  ${textColorClass}" style="background: ${color}">${order.status}</td>
+                    <td class="text-center">${clean(order.statusReport ?? '-')}</td>
+                    <td class="text-center ${order.alert !=null ? 'bg-danger' : ''}">${order.alert ?? '-'}</td>
                     <td class="driver-cell text-center" >${assignedDriverPhoneNumber}</td>
                     <td class="text-center">${assign}</td>
                     <td class="text-center">${order.grandTotal?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}</td>
@@ -166,7 +168,7 @@ function updateOrders() {
         tbody.appendChild(newRow);
         existingVouchers.add(order.voucherCode);
     });
-
+    
 
     // Second, remove rows that no longer exist in the new data
     const rows = document.querySelectorAll('#tablelist tbody tr');
@@ -185,7 +187,7 @@ function updateOrders() {
     tablelist.page(currentPage).draw(false);
 
 }
-
+const clean = (s) => new DOMParser().parseFromString(s, 'text/html').body.textContent || '-';
 // time date format
 function formatDateTime(input) {
     try {
@@ -387,11 +389,11 @@ function showAssignAlert(message, type = "info") {
 }
 
 //assign supervisor request
-async function assignSupervisor(voucherCode, id = "all") {
+async function assignSupervisor(voucherCode, phoneNumber = "all") {
     showLoading("assignLoading");
     var data = {
         voucherCode,
-        id
+        phoneNumber
     };
 
     $.ajax({
@@ -401,7 +403,8 @@ async function assignSupervisor(voucherCode, id = "all") {
         data: JSON.stringify(data),
         success: function (response) {
             hideLoading("assignLoading");
-            showAlert("Supervisor Assignment successful!", "success", "assignSupervisor");
+            alert("Supervisor Assignment successful!");
+            window.location.reload();
         },
         error: function (xhr) {
             hideLoading("assignLoading");
@@ -456,9 +459,9 @@ function loadAvailableSupervisors() {
                 return;
             }
 
-            $select.empty().append(`<option value="" selected disabled>Select a supervisor</option>`);
+            $select.empty().append(`<option value="" selected disabled>Select a supervisor</option>`); //userName value="${supervisor.userName}"
             loggedInSupervisors.forEach(supervisor => {
-                const option = `<option value="${supervisor.id}">
+                const option = `<option value="${supervisor.userName}">
                 ${supervisor.firstName || ''} ${supervisor.secondName || ''}
             </option>`;
                 $select.append(option);
@@ -479,10 +482,10 @@ function confirmAssignToAll() {
 
 //assign a specific supervisor
 function confirmAssignToSupervisor() {
-    const supervisorId = document.getElementById("modalSupervisorSelect")?.value;
-    if (!supervisorId) {
+    const supervisorPhone = document.getElementById("modalSupervisorSelect")?.value;
+    if (!supervisorPhone) {
         alert("Please select a supervisor.");
         return;
     }
-    assignSupervisor(assignSupervisorVoucherCode, supervisorId);
+    assignSupervisor(assignSupervisorVoucherCode, supervisorPhone);
 }

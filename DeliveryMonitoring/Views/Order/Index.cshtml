@@ -1,4 +1,6 @@
-﻿@model OrderViewModel
+﻿@using System.Text.RegularExpressions
+@using System.Net
+@model OrderViewModel
 
 @{
     ViewData["Title"] = "List of Orders";
@@ -60,6 +62,12 @@
                         </th>
                         <th class="text-center">
                             Status
+                        </th>                                                                 
+                        <th class="text-center">
+                            Status Report
+                        </th>                                                                 
+                        <th class="text-center">
+                            Alert
                         </th>                                                                 
                         <th class="text-center">
                             Driver
@@ -163,6 +171,15 @@
                                 </td>
                                 <td class="status-cell text-center @(bgColor == "lawngreen" || bgColor == "yellow" ? "text-black" : "text-white")" style="background: @bgColor">
                                     @order?.Status
+                                </td>
+                                
+                                @{
+                                    var rawText = WebUtility.HtmlDecode(order?.StatusReport ?? "-");         // Step 1: Decode entities like &#x12DD;
+                                    var cleanText = Regex.Replace(rawText, "<.*?>", string.Empty);          // Step 2: Strip any actual HTML tags
+                                }
+                                <td class="text-center">@cleanText</td>
+                                <td class="text-center @(order?.Alert != null ? "bg-danger" : "")">
+                                    @(order?.Alert ?? "-")
                                 </td>
                                 <td class="driver-cell text-center" >
                                     @if (!string.IsNullOrWhiteSpace(order?.AssignedDriverPhoneNumber))
@@ -281,15 +298,15 @@
                     </div>
 
                     <div class="modal-body">
-                        <p class="mb-3 text-muted">Choose how you want to assign supervisor to the order:</p>
+@*                         <p class="mb-3 text-muted">Choose how you want to assign supervisor to the order:</p>
 
                         <button class="btn btn-outline-primary w-100 mb-3" id="confirmAssignToAll" onclick="confirmAssignToAll()">
                             🔄 Assign to Available Supervisors Randomly
                         </button>
 
                         <hr class="my-3">
-
-                        <label for="modalSupervisorSelect" class="form-label fw-bold">Or select a specific supervisor:</label>
+ *@
+                        <label for="modalSupervisorSelect" class="form-label fw-bold"> Select supervisor to be assigned:</label>
                         <select id="modalSupervisorSelect" class="form-select mb-3">
                             <option value="" selected disabled>Loading supervisors...</option>
                         </select>
