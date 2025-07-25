@@ -158,8 +158,11 @@
                         <span class="fw-bold">Number Of Rejected Orders: </span>
                         <span>@(Model?.NumberOfRejectedOrders.ToString() ?? "N/A")</span>
                     </div>
-
                     <div class="mb-2">
+                        <span class="fw-bold">Number Of Completed Orders:</span>
+                        <span id="completed">Loading...</span>
+                    </div>
+                    <div>
                         <span class="fw-bold">Traveled Distance: </span>
                         <span>@(Model?.Detail?.TotalKm != null ? Model?.Detail?.TotalKm?.ToString("0.00") + " km" : "N/A")</span>
                     </div>
@@ -475,7 +478,21 @@
                 infowindow.setContent(updatedContent);
             }
         }
-
+        async function getCompletedOrders(phoneNumber){
+            const response = await fetch('/completedOrders/getcompletedorders');
+            const completedOrders = await response.json();
+            console.log(completedOrders)
+            if (!Array.isArray(completedOrders.data)) {
+                return ;
+            }
+            const driverOrders = completedOrders.data.filter(order => order.driverPhoneNumber === phoneNumber);
+            return driverOrders ? driverOrders.length : null;
+        }
+        $(document).ready(async function () {
+            const phoneNumber = '@Model?.PhoneNumber';// static value or load dynamically
+            const count = await getCompletedOrders(phoneNumber);
+            $("#completed").text(count !== null ? count : "0");
+        });
     </script>
 </div>
 
