@@ -7,6 +7,7 @@ using System.Net.Http;
 
 namespace DeliveryMonitoring.Controllers
 {
+    [Route("/deviceControl")]
     [Authorize]
     public class RestaurantConnectivityController : Controller
     {
@@ -19,32 +20,47 @@ namespace DeliveryMonitoring.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
         [Route("/deviceControl")]
-        public async Task<IActionResult >Index( string date)
+        public async Task<IActionResult> Index(string date)
         {
-            var client = _httpClientFactory.CreateClient("ApiBaseUrl");
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+
             try
             {
-                var response = await client.GetAsync($"deviceControl?StartDate={date}&EndDate={date}");
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    return View(null);
-                }
-
-                var responseData = await response.Content.ReadAsStringAsync();
-                var deviceControl = JsonConvert.DeserializeObject<List<DeviceControl>>(responseData);
-                if (companyTin != "0076217301")
-                {
-                    deviceControl = deviceControl?.Where(x => x?.Tin?.ToString() == companyTin?.Trim()).ToList();
-                }
+                var deviceControl = await GetDeviceControlByDate(date);
                 return View(deviceControl);
             }
             catch (Exception ex)
             {
                 return View(null);
             }
+        }
+
+        [HttpGet("/getDeviceControl")]
+        public async Task<List<DeviceControl>?> GetDeviceControlByDate(string date)
+        {
+            if (date == null) date = DateTime.Now.ToString("yyyy-MM-dd");
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            var client = _httpClientFactory.CreateClient("ApiBaseUrl");
+
+            var response = await client.GetAsync($"deviceControl?StartDate={date}&EndDate={date}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                // Log error if necessary
+                return null;
+            }
+
+            var responseData = await response.Content.ReadAsStringAsync();
+            var deviceControl = JsonConvert.DeserializeObject<List<DeviceControl>>(responseData);
+
+            if (companyTin != "0076217301")
+            {
+                deviceControl = deviceControl?
+                    .Where(x => x?.Tin?.ToString() == companyTin?.Trim())
+                    .ToList();
+            }
+
+            return deviceControl;
         }
     }
 }

@@ -58,10 +58,11 @@ namespace DeliveryMonitoring.Models
             { "offline",         new StatusInfo { Color = "#dc3545", Priority = "1" } },
             { "default",         new StatusInfo { Color = "#ffc107", Priority = "2" } },
             { "completed",       new StatusInfo { Color = "#20c997", Priority = "3" } },
-            { "arrivedatbranch", new StatusInfo { Color = "#17a2b8", Priority = "4" } },
-            { "accepted",        new StatusInfo { Color = "#007bff", Priority = "5" } },
-            { "delivering",      new StatusInfo { Color = "#fd7e14", Priority = "6" } },
-            { "ready",           new StatusInfo { Color = "#28a745", Priority = "7" } }
+            { "arrived",         new StatusInfo { Color = "#F7BEA2", Priority = "3" } },
+            { "arrivedatbranch",   new StatusInfo { Color = "coral", Priority = "5" } },
+            { "accepted",       new StatusInfo { Color = "seagreen", Priority = "6" } },
+            { "delivering",   new StatusInfo { Color = "darkorange", Priority = "7" } },
+            { "ready",           new StatusInfo { Color = "#28a745", Priority = "8" } }
         };
     }
 
