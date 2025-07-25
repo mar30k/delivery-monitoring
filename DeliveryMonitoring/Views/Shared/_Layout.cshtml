@@ -5,8 +5,8 @@
 }
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8" />
+    <head>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - DeliveryMonitoring</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -127,231 +127,236 @@
     </style>
 </head>
 
-<body>
-    <script>
-        $(document).ready(function () {
-            $('#logoutButton').click(function () {
-                // Handle logout logic here, e.g., redirect to the logout action
-                window.location.href = '/Login/Logout';
+    <body>
+        <script>
+            $(document).ready(function () {
+                $('#logoutButton').click(function () {
+                    // Handle logout logic here, e.g., redirect to the logout action
+                    window.location.href = '/Login/Logout';
+                });
+                closeAlert();
+                fetchAlerts();
             });
-            closeAlert();
-            fetchAlerts();
-        });
-                // Mock sessionStorage for testing purposes
-        // sessionStorage.setItem("displayedAlerts", JSON.stringify({
-        //     "0912492953-15478-219": "Alert 1",
-        //     "0912492953-84835-4": "Alert 2"
-        // }));
+                    // Mock sessionStorage for testing purposes
+            // sessionStorage.setItem("displayedAlerts", JSON.stringify({
+            //     "0912492953-15478-219": "Alert 1",
+            //     "0912492953-84835-4": "Alert 2"
+            // }));
 
-        // // Simulate the fetch function to mock the API response
-        // window.fetch = function() {
-        //     return Promise.resolve({
-        //         json: function() {
-        //             return Promise.resolve([
-        //                 { voucherCode: "0912492953-15478-219", alert: "New Alert 1" },
-        //                 { voucherCode: "0912492953-84835-4", alert: "New Alert 3" },
-        //                 { voucherCode: "JKL012", alert: "" }
-        //             ]);
-        //         }
-        //     });
-        // };
+            // // Simulate the fetch function to mock the API response
+            // window.fetch = function() {
+            //     return Promise.resolve({
+            //         json: function() {
+            //             return Promise.resolve([
+            //                 { voucherCode: "0912492953-15478-219", alert: "New Alert 1" },
+            //                 { voucherCode: "0912492953-84835-4", alert: "New Alert 3" },
+            //                 { voucherCode: "JKL012", alert: "" }
+            //             ]);
+            //         }
+            //     });
+            // };
 
-        var data = {};
-        async function fetchAlerts() {
-            try {
-                const response = await fetch('/getorders');
-                data = await response.json();
-                const orderCount =  document.getElementById("orderCount");
-                if(orderCount){
-                    orderCount.textContent = data.length;
+            var data = {};
+            async function fetchAlerts() {
+                try {
+                    const response = await fetch('/getorders');
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    const newData = await response.json();
+                    data = newData;
+
+                    const orderCount =  document.getElementById("orderCount");
+                    if(orderCount){
+                        orderCount.textContent = data.length;
+                    }
+                    const alertBox = document.getElementById("floating-alert");
+                    const alertList = document.getElementById("alert-list");
+
+                    // Retrieve previously displayed alerts from sessionStorage
+                    let storedAlerts = JSON.parse(sessionStorage.getItem("displayedAlerts")) || {};
+
+                    // Filter orders that have non-empty alerts
+                    const filteredOrders = data.filter(order => order.alert && order.alert.trim() !== "");
+
+                    // Track alerts that need to be displayed in this refresh
+                    let newAlerts = {};
+                    let hasNewAlerts = false;
+                    filteredOrders.forEach(order => {
+                        const { voucherCode, alert } = order;
+                        // Only add if it's a completely new alert or the alert message has changed
+                        if (!storedAlerts[voucherCode] || storedAlerts[voucherCode] !== alert) {
+                            hasNewAlerts = true;
+                            newAlerts[voucherCode] = alert;
+                        }
+                    });
+
+                    // If there are new alerts, update the UI
+                    if (hasNewAlerts) {
+                        alertList.innerHTML = ""; // Clear alert container
+
+                        for (const voucherCode in newAlerts) {
+                            const listItem = document.createElement("li");
+                            listItem.innerHTML = `<a class="alerts" style="text-decoration: none;" target="_blank" href="/order/${voucherCode}">Order ${voucherCode}: ${newAlerts[voucherCode]}</a>`;
+                            alertList.appendChild(listItem);
+                        }
+
+                        // Show the floating alert box only if there are new alerts
+                        alertBox.style.display = "block";
+                        // playAlertSound();
+
+                        // Update sessionStorage to track displayed alerts
+                        sessionStorage.setItem("displayedAlerts", JSON.stringify({ ...storedAlerts, ...newAlerts }));
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching alerts:", error);
                 }
-                const alertBox = document.getElementById("floating-alert");
-                const alertList = document.getElementById("alert-list");
+                setTimeout(fetchAlerts, 10000);
+            }
 
-                // Retrieve previously displayed alerts from sessionStorage
-                let storedAlerts = JSON.parse(sessionStorage.getItem("displayedAlerts")) || {};
+            let alertAudio = null;
 
-                // Filter orders that have non-empty alerts
-                const filteredOrders = data.filter(order => order.alert && order.alert.trim() !== "");
+            function playAlertSound(times = 4) {
+                if (alertAudio) {
+                    alertAudio.pause(); // Stop any currently playing audio
+                    alertAudio.currentTime = 0;
+                }
 
-                // Track alerts that need to be displayed in this refresh
-                let newAlerts = {};
-                let hasNewAlerts = false;
-                filteredOrders.forEach(order => {
-                    const { voucherCode, alert } = order;
-                    // Only add if it's a completely new alert or the alert message has changed
-                    if (!storedAlerts[voucherCode] || storedAlerts[voucherCode] !== alert) {
-                        hasNewAlerts = true;
-                        newAlerts[voucherCode] = alert;
+                alertAudio = new Audio('/images/alarm2.mp3');
+                let count = 0;
+
+                alertAudio.addEventListener("ended", function () {
+                    count++;
+                    if (count < times) {
+                        alertAudio.currentTime = 0;
+                        alertAudio.play();
                     }
                 });
 
-                // If there are new alerts, update the UI
-                if (hasNewAlerts) {
-                    alertList.innerHTML = ""; // Clear alert container
-
-                    for (const voucherCode in newAlerts) {
-                        const listItem = document.createElement("li");
-                        listItem.innerHTML = `<a class="alerts" style="text-decoration: none;" target="_blank" href="/order/${voucherCode}">Order ${voucherCode}: ${newAlerts[voucherCode]}</a>`;
-                        alertList.appendChild(listItem);
-                    }
-
-                    // Show the floating alert box only if there are new alerts
-                    alertBox.style.display = "block";
-                    // playAlertSound();
-
-                    // Update sessionStorage to track displayed alerts
-                    sessionStorage.setItem("displayedAlerts", JSON.stringify({ ...storedAlerts, ...newAlerts }));
-                }
-
-            } catch (error) {
-                console.error("Error fetching alerts:", error);
-            }
-            setTimeout(fetchAlerts, 10000);
-        }
-
-        let alertAudio = null;
-
-        function playAlertSound(times = 4) {
-            if (alertAudio) {
-                alertAudio.pause(); // Stop any currently playing audio
-                alertAudio.currentTime = 0;
+                alertAudio.play().catch(error => console.error("Audio play failed:", error));
             }
 
-            alertAudio = new Audio('/images/alarm2.mp3');
-            let count = 0;
+            function closeAlert() {
+                document.getElementById("floating-alert").style.display = "none";
 
-            alertAudio.addEventListener("ended", function () {
-                count++;
-                if (count < times) {
+                // Stop the audio
+                if (alertAudio) {
+                    alertAudio.pause();
                     alertAudio.currentTime = 0;
-                    alertAudio.play();
                 }
-            });
-
-            alertAudio.play().catch(error => console.error("Audio play failed:", error));
-        }
-
-        function closeAlert() {
-            document.getElementById("floating-alert").style.display = "none";
-
-            // Stop the audio
-            if (alertAudio) {
-                alertAudio.pause();
-                alertAudio.currentTime = 0;
             }
-        }
 
-    </script>
-<!-- Floating Alert Box -->
-<div id="floating-alert" class="floating-alert">
-    <div class="alert-content">
-        <button type="button" class="close-btn" onclick="closeAlert()">×</button>
-        <p><i class="bi bi-exclamation-triangle-fill"></i> New Alerts</p>
-        <ul id="alert-list"></ul>
-    </div>
-</div>
+        </script>
+        <!-- Floating Alert Box -->
+        <div id="floating-alert" class="floating-alert">
+            <div class="alert-content">
+                <button type="button" class="close-btn" onclick="closeAlert()">×</button>
+                <p><i class="bi bi-exclamation-triangle-fill"></i> New Alerts</p>
+                <ul id="alert-list"></ul>
+            </div>
+        </div>
 
-    <!--sidebar starts here-->
-    <div class="sidebar" id="mySidebar">
-        <ul>
-            <li id="delivery"><a href="/"><!--<img src="/images/cnetlogo.png" alt="CNET logo" width="40" height="40">--><span>&nbsp;Delivery Monitoring</span></a></li>
-            <li><a href="/"><i class="bi bi-house"></i><span>Home</span></a></li>
-            <li><a href="/drivers"><i class="fa-sharp-duotone fa-solid fa-motorcycle"></i><span>Drivers</span></a></li>
-            <li><a href="/orders"><i class="bi bi-cart2"></i><span>Orders</span></a></li>
-            <li><a href="/completedorders"><i class="bi bi-clock-history"></i><span>History</span></a></li>
-            @if (companyTin == "0076217301")
-            {
-                <li><a href="/companies"><i class="bi bi-building"></i><span>Companies</span></a></li>
-            }
-            else
-            {
-                <li><a href="/companies"><i class="bi bi-building"></i><span>Company</span></a></li>
-            }
-        </ul>
-    </div>
-    <div id="main">
-        <header>
-            <nav class="navbar navbar-expand navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
-                <div class="container-fluid">
+        <!--sidebar starts here-->
+        <div class="sidebar" id="mySidebar">
+            <ul>
+                <li id="delivery"><a href="/"><!--<img src="/images/cnetlogo.png" alt="CNET logo" width="40" height="40">--><span>&nbsp;Delivery Monitoring</span></a></li>
+                <li><a href="/"><i class="bi bi-house"></i><span>Home</span></a></li>
+                <li><a href="/drivers"><i class="fa-sharp-duotone fa-solid fa-motorcycle"></i><span>Drivers</span></a></li>
+                <li><a href="/orders"><i class="bi bi-cart2"></i><span>Orders</span></a></li>
+                <li><a href="/completedorders"><i class="bi bi-clock-history"></i><span>History</span></a></li>
+                @if (companyTin == "0076217301")
+                {
+                    <li><a href="/companies"><i class="bi bi-building"></i><span>Companies</span></a></li>
+                }
+                else
+                {
+                    <li><a href="/companies"><i class="bi bi-building"></i><span>Company</span></a></li>
+                }
+            </ul>
+        </div>
+        <div id="main">
+            <header>
+                <nav class="navbar navbar-expand navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
+                    <div class="container-fluid">
                     
-                    <a class="w3-bar-item w3-button w3-large m-3" onclick="toggleSidebar()">
-                        <i class="bi bi-list"></i>
-                    </a>
+                        <a class="w3-bar-item w3-button w3-large m-3" onclick="toggleSidebar()">
+                            <i class="bi bi-list"></i>
+                        </a>
                                        
-                    <div class="navbar-collapse collapse d-flex justify-content-between">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Index" style="margin-top: 8px;"><h5>Dashboard</h5></a>
-                            </li>
-                        </ul>
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" href="#" data-toggle="modal" data-target="#logoutModal" style="margin-top: 8px;">
-                                    <h5><i class="bi bi-box-arrow-left"></i>&nbsp;Logout</h5>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>                                        
-                </div>
-            </nav>
-        </header>
-        <!--navbar ends here-->
-        <!-- Logout Confirmation Modal -->
-        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header bg-light">
-                        <h5 class="modal-title" id="logoutModalLabel"><i class="bi bi-box-arrow-left"></i>&nbsp;Logout</h5>                       
+                        <div class="navbar-collapse collapse d-flex justify-content-between">
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Index" style="margin-top: 8px;"><h5>Dashboard</h5></a>
+                                </li>
+                            </ul>
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" href="#" data-toggle="modal" data-target="#logoutModal" style="margin-top: 8px;">
+                                        <h5><i class="bi bi-box-arrow-left"></i>&nbsp;Logout</h5>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>                                        
                     </div>
-                    <div class="modal-body">
-                        Are you sure you want to Logout?
-                    </div>
-                    <div class="modal-footer">
-                        <a class="btn btn-danger" id="logoutButton">Logout</a>
-                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                </nav>
+            </header>
+            <!--navbar ends here-->
+            <!-- Logout Confirmation Modal -->
+            <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-light">
+                            <h5 class="modal-title" id="logoutModalLabel"><i class="bi bi-box-arrow-left"></i>&nbsp;Logout</h5>                       
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to Logout?
+                        </div>
+                        <div class="modal-footer">
+                            <a class="btn btn-danger" id="logoutButton">Logout</a>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="container-fluid g-0">
-            <main role="main" class="pb-3">
-                @RenderBody()
-            </main>
-        </div>
-        <!--main body ends here-->
-    </div> 
-    <!--Main container ends here all components without the sidebar-->
+            <div class="container-fluid g-0">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
+            <!--main body ends here-->
+        </div> 
+        <!--Main container ends here all components without the sidebar-->
     
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/uikit.min.js"></script>
-    <script src="~/js/uikit-icons.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="~/js/uikit.min.js"></script>
+        <script src="~/js/uikit-icons.min.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.js"></script>
+        @await RenderSectionAsync("Scripts", required: false)
     
-    <script>
-        const screenSize = screen.width;
-        const main = document.getElementById("main");
-        const sidebar = document.getElementById("mySidebar");
+        <script>
+            const screenSize = screen.width;
+            const main = document.getElementById("main");
+            const sidebar = document.getElementById("mySidebar");
 
-        if (screenSize > 767) {
-            sidebar.classList.remove("closed");
-            main.classList.remove("full");
-        } else {
-            sidebar.classList.add("closed");
-            main.classList.add("full");
-        }
+            if (screenSize > 767) {
+                sidebar.classList.remove("closed");
+                main.classList.remove("full");
+            } else {
+                sidebar.classList.add("closed");
+                main.classList.add("full");
+            }
 
-        function toggleSidebar() {
-            sidebar.classList.toggle("closed");
-            main.classList.toggle("full");
-        }
-    </script>    
+            function toggleSidebar() {
+                sidebar.classList.toggle("closed");
+                main.classList.toggle("full");
+            }
+        </script>    
     
 
-</body>
+    </body>
 </html>

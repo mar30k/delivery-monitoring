@@ -111,9 +111,10 @@
                                     @(order?.Eta) Min
                                 </td>
                                 <td class="driver-cell text-center">
-                                    <a href="tel:@order?.DriverPhoneNumber">
-                                        @order?.DriverPhoneNumber
-                                    </a>
+                                    @(!string.IsNullOrEmpty(order?.DriverPhoneNumber)
+                                                                ? Html.Raw($"<a href='tel:{order?.DriverPhoneNumber}'>{order?.DriverPhoneNumber}</a>")
+                                                                : "N/A"
+                                                                )
                                 </td>
                                 <td class="text-center">
                                     @(order?.SupervisorName ?? "N/A")

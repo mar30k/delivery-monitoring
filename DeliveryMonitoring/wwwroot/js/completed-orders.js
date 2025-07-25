@@ -398,7 +398,7 @@ async function fetchCompletedOrders() {
                             data-purpose="${order.purpose ?? ''}"
                             data-purpose-key="${purposeKey}"
                             data-voucher-code="${order.voucherCode ?? ''}"
-                            data-customer-phone="${order.voucherCode ?? ''}"
+                            data-customer-phone="${order.phoneNumber ?? ''}"
                             data-phone-number="${order.driverPhoneNumber ?? ''}"
                             onclick="showDetailsModal(this)">Show</button>`
                 : `<button class="btn btn-outline-secondary btn-sm"

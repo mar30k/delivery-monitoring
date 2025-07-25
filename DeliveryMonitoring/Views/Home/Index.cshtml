@@ -175,16 +175,17 @@
         int deliveringCount = Model.Drivers.Count(d => d.Status == "delivering");
         int completedCount = Model.Drivers.Count(d => d.Status == "completed");
         int arrivedatbranchCount = Model.Drivers.Count(d => d.Status?.ToLower() == "arrivedatbranch");
+        int arrivedCount = Model.Drivers.Count(d => d.Status?.ToLower() == "arrived");
         //counts related to orders
         int completedOrdersCount = Model.Orders.Count(d => d.Status == "completed");
         int requestedOrdersCount = Model.Orders.Count(d => d.Status == "requested");
         int assignedOrdersCount = Model.Orders.Count(d => d.Status == "assigned");
         int acceptedOrdersCount = Model.Orders.Count(d => d.Status == "accepted");
-        int onTheWayOrdersCount = Model.Orders.Count(d => d.Status == "ontheway");
+        int onTheWayOrdersCount = Model.Orders.Count(d => d.Status?.ToLower() == "ontheway");
         int declinedOrdersCount = Model.Orders.Count(d => d.Status == "declined");
         int driverNotFoundOrdersCount = Model.Orders.Count(d => d.Status == "driverNotFound");
         int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrived");
-        int arrivedAtBranchOrdersCount = Model.Orders.Count(d => d.Status == "ArrivedAtBranch");
+        int arrivedAtBranchOrdersCount = Model.Orders.Count(d => d.Status == "arrivedAtBranch");
         int sosOrdersCount = Model.Orders.Count(d => d.Status == "sos");
     }
     <script>
@@ -192,20 +193,21 @@
         var driverDataSet = [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount , @arrivedatbranchCount];
         var orderDataSet = [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
                             @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedAtBranchOrdersCount,@arrivedOrdersCount,@sosOrdersCount ];
-        new Chart(ctx, {
+        const driverChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
+                labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch'],
                 datasets: [{
                     label: 'Drivers',
                     data: driverDataSet,
                     backgroundColor: [
                         '#dc3545', // Offline
                         '#28a745', // Ready
-                        '#007bff', // Accepted
-                        '#fd7e14', // Delivering
+                        'seagreen', // Accepted
+                        'darkorange', // Delivering
                         '#20c997', // Completed
-                        '#17a2b8'  // ArrivedAtBranch
+                        'coral' , // ArrivedAtBranch
+                        '#F7BEA2' , // Arrived
                     ],
                     hoverOffset: 4
                 }]
