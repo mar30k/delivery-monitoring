@@ -1,4 +1,5 @@
-﻿using DeliveryMonitoring.Models;
+﻿using CNET_ERP_V7.WebConstants;
+using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
@@ -7,69 +8,66 @@ namespace DeliveryMonitoring.Controllers
 {
     public class AnalyticsController : Controller
     {
+        private IHttpContextAccessor _httpContextAccessor;
         private readonly IHttpClientFactory _httpClientFactory;
-        public AnalyticsController(IHttpClientFactory httpClientFactory)
+        public AnalyticsController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _httpClientFactory = httpClientFactory;
+            _httpContextAccessor = httpContextAccessor;
         }
         [Route("/Analytics")]
         public async Task<IActionResult> Index()
         {
-            var _client = _httpClientFactory.CreateClient("Delivery");
-            // Fetch driver data
+            var client = _httpClientFactory.CreateClient("Delivery");
+            var httpClient = _httpClientFactory.CreateClient("ApiBaseUrl");
+            var v7Client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            if (string.IsNullOrWhiteSpace(companyTin))
+                return RedirectToAction("Logout", "Login");
+
+            string driverUri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
+
+            // Declare all variables outside try
             List<Driver> drivers = new();
-
-            HttpResponseMessage driverResponse = await _client.GetAsync(_client.BaseAddress + "/drivers");
-
-            if (driverResponse.IsSuccessStatusCode)
-            {
-                string driverData = await driverResponse.Content.ReadAsStringAsync();
-                drivers = JsonConvert.DeserializeObject<List<Driver>>(driverData) ?? new List<Driver>();
-
-            }
-
-            // Fetch order data
             List<OrderDetail> orders = new();
-
-            HttpResponseMessage orderResponse = await _client.GetAsync(_client.BaseAddress + "/orderRequests");
-
-            if (orderResponse.IsSuccessStatusCode)
-            {
-                string orderData = await orderResponse.Content.ReadAsStringAsync();
-                orders = JsonConvert.DeserializeObject<List<OrderDetail>>(orderData) ?? new List<OrderDetail>();
-            }
-
             Companies company = new();
+            List<DeviceControl> deviceControl = new();
+            List<SupervisorsDTO> superVisors = new();
 
             try
             {
-                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/companies");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    string data = await response.Content.ReadAsStringAsync();
-                    company = JsonConvert.DeserializeObject<Companies>(data) ?? new Companies();
-                }
-
-                if (company == null)
-                {
-                    return NotFound(); // Return a 404 Not Found response if no driver is found.
-                }
+                var startDate = DateTime.Today.ToString("yyyy-MM-dd");
+                // Fetch drivers and orders
+                drivers = await FetchData<List<Driver>>(client, driverUri) ?? new List<Driver>();
+                orders = await FetchData<List<OrderDetail>>(client, $"/orderRequests?companyTin={companyTin}") ?? new List<OrderDetail>();
+                company = await FetchData<Companies>(client, $"/companies") ?? new Companies();
+                superVisors = await FetchData<List<SupervisorsDTO>>(v7Client, $"auth/getsupervisors") ?? new List<SupervisorsDTO>();
+                deviceControl = await FetchData<List<DeviceControl>>(httpClient, $"deviceControl?StartDate={startDate}&EndDate={startDate}") ?? new List<DeviceControl>();
             }
             catch (HttpRequestException)
             {
-                return StatusCode(500); // Handle exception with a 500 Internal Server Error
+                // Optionally log the error
             }
 
-            // Create HomeViewModel
             var viewModel = new HomeViewModel
             {
                 Drivers = drivers,
                 Orders = orders,
-                Comps = company
+                Comps = company,
+                CompanyTin = companyTin,
+                DeviceControl = deviceControl,
+                Supervisors = superVisors
             };
-
             return View(viewModel);
+        }
+        private async Task<T?> FetchData<T>(HttpClient client, string uri)
+        {
+            HttpResponseMessage response = await client.GetAsync(client.BaseAddress + uri);
+            if (!response.IsSuccessStatusCode) return default;
+
+            string json = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(json);
         }
     }
 }
