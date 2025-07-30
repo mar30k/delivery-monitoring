@@ -3,11 +3,11 @@ var tablelist;
 var existingVouchers = []; // Track existing voucher codes in new data
 const statusColors = {
     requested: "deepskyblue",
-    arrivedatbranch: "orange",
+    arrivedatbranch: "coral",
     assigned: "lawngreen",
     declined: "red",
     accepted: "seagreen",
-    arrived: "coral",
+    arrived: "#F7BEA2",
     ontheway: "darkorange",
     drivernotfound: "red",
     sos: "darkred",
@@ -18,11 +18,11 @@ const statusColors = {
 js(() => {
     tablelist = js('#tablelist').DataTable({
         responsive: true,
-        order: [[4, "desc"]],
+        order: [[6, "desc"]],
         pageLength: 15,
         lengthMenu: [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
         columnDefs: [
-            { orderable: false, targets: [0, 2, 5, 6, 7, 8, 9, 11] }
+            { orderable: false, targets: [0, 4, 7, 8, 9, 10, 11, 13] }
         ],
         language: {
             emptyTable: "No orders to display at the moment."
@@ -137,13 +137,15 @@ function updateOrders() {
         let orderJson = JSON.stringify(order).replace(/"/g, '&quot;'); // Escape double quotes for HTML
         let redispatch = (order.status.toLowerCase() === "drivernotfound" || order.status.toLowerCase() === "declined" || order.status.toLowerCase() === "requested"
             || order.status.toLowerCase() === "sos" || order.status.toLowerCase() === "assigned")
-            ? `<a class="btn btn-outline-dark btn-sm" data-order="${orderJson}" onclick="openRedispatchModal(this)">Redispatch</a>`
+            ? `<a href="#" data-order="${orderJson}" onclick="openRedispatchModal(this)">Redispatch</a>`
             : '';
         let assign = (order.supervisedBy === null || order.supervisedBy === undefined)
             ? `<a class="btn btn-outline-dark btn-sm" onclick="openAssignSupervisorModal('${order.voucherCode}')">Assign</a>`
             : `<a href="tel:${order.supervisedBy}">${supervisor ? supervisor.firstName + ' ' + supervisor.secondName : order.supervisedBy}</a> <a onclick="openAssignSupervisorModal('${order.voucherCode}')"> <i class="fa-solid fa-pen-to-square"></i></a>`;
         newRow.innerHTML = `                    
                     <td>${order.voucherCode}</td>
+                    <td class="text-center">${order.companyName || 'N/A'}</td>
+                    <td class="text-center">${order.branchName || 'N/A'}</td>
                     <td class="text-center">${order.customerFirstName || 'N/A'}</td>
                     <td class="text-center"><a href="tel:${order.customerPhoneNumber}">${order.customerPhoneNumber || 'N/A'}</a></td>
                     <td class="text-center">${order.customerGeocodeAddress} - ${order.customerSpecificAddress}</td>
@@ -159,7 +161,7 @@ function updateOrders() {
                     <td class="text-center">${order.grandTotal?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}</td>
                     <td style="text-align: center; vertical-align: middle;">
                         <div style="display: inline-block;">
-                            <a class="btn btn-outline-dark btn-sm" href="/order/${order.voucherCode}">Details</a>
+                            <a href="/order/${order.voucherCode}">Details</a>
                             ${redispatch}
                         </div>
                     </td>

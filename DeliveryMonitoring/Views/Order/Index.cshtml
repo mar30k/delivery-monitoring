@@ -49,6 +49,12 @@
                             Order Number
                         </th>
                         <th class="text-center">
+                            Company
+                        </th>
+                        <th class="text-center">
+                            Branch
+                        </th>
+                        <th class="text-center">
                             Customer
                         </th>
                         <th class="text-center">
@@ -87,11 +93,12 @@
                         var statusColors = new Dictionary<string, string>
                         {
                             { "requested", "deepskyblue" },
-                            { "arrivedatbranch", "orange" },
+                            { "completed", "green" },
+                            { "arrivedatbranch", "coral" },
                             { "assigned", "lawngreen" },
                             { "declined", "red" },
                             { "accepted", "seagreen" },
-                            { "arrived", "coral" },
+                            { "arrived", "#F7BEA2" },
                             { "ontheway", "darkorange" },
                             { "drivernotfound", "firebrick" },
                             { "sos", "darkred" },
@@ -154,6 +161,12 @@
                                     @order?.VoucherCode
                                 </td>
                                 <td class="text-center">
+                                    @(order?.CompanyName ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.BranchName ?? "N/A")
+                                </td>
+                                <td class="text-center">
                                     @(order?.CustomerFirstName ?? "N/A")
                                 </td>
                                 <td class="text-center">
@@ -209,7 +222,7 @@
 
                                 <td style="text-align: center; vertical-align: middle;">
                                     <div style="display: inline-block;">
-                                        <a class="btn btn-outline-dark btn-sm" href="/order/@order?.VoucherCode">Details</a>
+                                        <a href="/order/@order?.VoucherCode">Details</a>
 
                                         @if (order?.Status?.ToLower() == "drivernotfound" || order?.Status?.ToLower() == "declined" ||
                                          order?.Status?.ToLower() == "requested" || order?.Status?.ToLower() == "sos" || order?.Status?.ToLower() == "assigned")
@@ -227,7 +240,7 @@
                                                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
                                                 WriteIndented = false
                                             });
-                                            <a class="btn btn-outline-dark btn-sm"
+                                            <a href="#"
                                                data-order='@Html.Raw(jsonOrder)'
                                                onclick="openRedispatchModal(this)"
                                                id="@order?.VoucherCode?.ToString()"
