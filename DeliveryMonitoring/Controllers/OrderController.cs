@@ -35,7 +35,7 @@ namespace DeliveryMonitoring.Controllers
                 var _V7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
                
                 var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-                if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
+                if (string.IsNullOrWhiteSpace(companyTin))
                 {
                     return RedirectToAction("Logout", "Login");
                 }
@@ -45,6 +45,10 @@ namespace DeliveryMonitoring.Controllers
                 {
                     string data = await response.Content.ReadAsStringAsync();
                     orders = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
+                    if (companyTin != "0076217301")
+                    {
+                        orders = orders?.Where(o => o.DeliveryTin == companyTin).ToList();
+                    }
                 }
                 HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
                 if (getsupervisors.IsSuccessStatusCode)
@@ -96,9 +100,10 @@ namespace DeliveryMonitoring.Controllers
 
                 string data = await response.Content.ReadAsStringAsync();
                 order = JsonConvert.DeserializeObject<OrderDetail>(data);
-                if (companyTin != "0076217301" && companyTin != order?.CompanyTin)
+                if (companyTin != "0076217301" && companyTin != order?.DeliveryTin)
                 {
-                    return RedirectToAction("Index");
+                    TempData["Message"] = $"You do not have the necessary permissions to view Order {voucherCode}.";
+                    return RedirectToAction("index");
                 }
                 HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
                 if (getsupervisors.IsSuccessStatusCode)
