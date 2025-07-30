@@ -274,7 +274,7 @@ namespace DeliveryMonitoring.Controllers
                         destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
                         destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
                     }
-                        HttpResponseMessage getRouteDetailResponse = await _client.GetAsync($"{_client.BaseAddress}/routing/getRouteDetail?lat1={driver.Lat}&lng1={driver.Lng}&lat2={destLat}&lng2={destLng}");
+                        HttpResponseMessage getRouteDetailResponse = await _client.GetAsync($"{_client.BaseAddress}/routing/getRouteDetail?lat1={driver.Lat}&lng1={driver.Lng}&lat2={destLat}&lng2={destLng}&profile=car");
                     if (getRouteDetailResponse.IsSuccessStatusCode)
                     {
                         string getRouteString = await getRouteDetailResponse.Content.ReadAsStringAsync();
@@ -349,7 +349,7 @@ namespace DeliveryMonitoring.Controllers
                 destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
                 destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
             }
-            HttpResponseMessage getRouteDetailResponse = await _client.GetAsync($"{_client.BaseAddress}/routing/getRouteDetail?lat1={driver.Lat}&lng1={driver.Lng}&lat2={destLat}&lng2={destLng}");
+            HttpResponseMessage getRouteDetailResponse = await _client.GetAsync($"{_client.BaseAddress}/routing/getRouteDetail?lat1={driver.Lat}&lng1={driver.Lng}&lat2={destLat}&lng2={destLng}&profile=car");
             if (getRouteDetailResponse.IsSuccessStatusCode)
             {
                 string getRouteString = await getRouteDetailResponse.Content.ReadAsStringAsync();
