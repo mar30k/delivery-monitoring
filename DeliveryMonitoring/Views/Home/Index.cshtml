@@ -17,7 +17,7 @@
                         <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i>
                     </div>
                     <div class="card-body col-7">
-                        <h5 class="card-title mb-4 ">Total Drivers</h5>
+                        <a class="card-title fw-semibold  text-decoration-none" href="/drivers">Total Drivers</a>
     
                         <div class="d-flex align-items-center gap-4 flex-wrap">
                             <div class="text-center">
@@ -52,7 +52,7 @@
                         <i class="fa-solid fa-cart-shopping"></i>
                     </div>
                     <div class="card-body col-7">
-                        <p class="card-title">Total Orders</p>
+                        <a class="card-title fw-semibold  text-decoration-none" href="/orders">Total Orders</a>
                         <h1 class="card-text" id="orderCount">@Model?.Orders?.Count</h1>
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                         <i class="fa-regular fa-building"></i>
                     </div>
                     <div class="card-body col-7">
-                        <p class="card-title">Companies</p>
+                        <a class="card-title fw-semibold  text-decoration-none" href="/companies">Companies</a>
                         <h1 class="card-text">@(Model?.Comps?.companyTins?.Count ?? 0)</h1>
                     </div>
                 </div>
@@ -138,9 +138,6 @@
         <!--The Donut Chart and the Map Starts Here-->
         <div class="col-md-6">
             <div class="card border-1 pb-2" id="driverCard">
-                <div id="donut">
-                    <h4 class="px-4 pt-2">Drivers Status</h4>
-                </div>
                 <div class="d-flex justify-content-center align-items-center">
                     <!-- Centering wrapper -->
                     <div class="collapse show col-12" id="donutchart">
@@ -153,9 +150,6 @@
 
         <div class="col-md-6">
             <div class="card border-1 pb-2">
-                <div id="donut">
-                    <h4 class="px-4 pt-2">Orders Status</h4>
-                </div>
                 <div class="d-flex justify-content-center align-items-center">
                     <div class="collapse show col-12" id="donutchart">
                         <canvas id="ordersChart"></canvas>
