@@ -254,7 +254,7 @@ function loadAvailableDrivers() {
                 $select.html(`<option disabled>No available drivers found</option>`);
                 return;
             }
-
+            drivers.sort((a, b) => a.firstName.localeCompare(b.firstName));
             $select.empty().append(`<option value="" selected disabled>Select a driver</option>`);
             drivers.forEach(driver => {
                 const option = `<option value="${driver.phoneNumber}">${driver.firstName} (${driver.phoneNumber}) (${driver.status})</option>`;
