@@ -51,7 +51,7 @@ namespace DeliveryMonitoring.Controllers
                 orders = await FetchData<List<OrderDetail>>(client, $"/orderRequests?companyTin={companyTin}") ?? new List<OrderDetail>();
                 company = await FetchData<Companies>(client, $"/companies") ?? new Companies();
                 superVisors = await FetchData<List<SupervisorsDTO>>(v7Client, $"auth/getsupervisors") ?? new List<SupervisorsDTO>();
-                deviceControl = await FetchData<List<DeviceControl>>(httpClient, $"deviceControl?StartDate={startDate}&EndDate={startDate}") ?? new List<DeviceControl>();
+                deviceControl = (await FetchData<List<DeviceControl>>(httpClient, $"deviceControl?StartDate={startDate}&EndDate={startDate}") ?? new List<DeviceControl>()).ToList().Where(s => !s.Note.StartsWith("09")).ToList();
             }
             catch (HttpRequestException)
             {

@@ -25,7 +25,7 @@ namespace DeliveryMonitoring.Controllers
 
             try
             {
-                var deviceControl = await GetDeviceControlByDate(date);
+                var deviceControl = (await GetDeviceControlByDate(date))?.ToList().Where(s => !s.Note.StartsWith("09")).ToList();
                 return View(deviceControl);
             }
             catch (Exception ex)
