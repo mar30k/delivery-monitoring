@@ -27,10 +27,11 @@ js( ()=> {
 });
 const statusColors = {
     offline: { color: "#dc3545", priority: "1" },  // Bootstrap danger - Offline
-    ready: { color: "#28a745", priority: "7" },  // Bootstrap success - Ready
-    accepted: { color: "#007bff", priority: "5" },  // Bootstrap primary - Accepted
-    delivering: { color: "#fd7e14", priority: "6" },  // Bootstrap orange - Delivering
-    arrivedatbranch: { color: "#17a2b8", priority: "4" },  // Bootstrap info - Arrived
+    ready: { color: "#28a745", priority: "8" },  // Bootstrap success - Ready
+    accepted: { color: "seagreen", priority: "6" },  // Bootstrap primary - Accepted
+    delivering: { color: "darkorange", priority: "7" },  // Bootstrap orange - Delivering
+    arrivedatbranch: { color: "coral", priority: "5" },  // Bootstrap info - Arrived
+    arrived: { color: "#17a2b8", priority: "4" },  // Bootstrap info - Arrived
     completed: { color: "#20c997", priority: "3" },  // Bootstrap teal - Completed
     default: { color: "#ffc107", priority: "2" }   // Bootstrap warning - Default
 };
@@ -44,7 +45,7 @@ function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: defaultLat, lng: defaultLng },
         zoom: 13,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
+        mapTypeId: google.maps.MapTypeId.HYBRID
     });
     // map.setCenter();
     fetchDataAndUpdateMarkers();
