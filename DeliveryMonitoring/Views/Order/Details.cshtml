@@ -14,14 +14,7 @@
 
     <div class="card" id="orderCard">
         <div class="row p-4">
-            @{
-                var colClass = "col-md-6";
-                if (!string.IsNullOrEmpty(Model?.CustomerSpecialRequest) || !string.IsNullOrEmpty(Model?.StatusReport) || !string.IsNullOrEmpty(Model?.PreparationTime.ToString()))
-                {
-                    colClass = "col-md-4";
-                }
-            }
-            <div class="@colClass">
+            <div class="col-md-4">
                 <div>
                     <span><strong>VoucherCode:</strong></span>
                     <span>@Html.DisplayFor(model => model.VoucherCode)</span>
@@ -53,7 +46,8 @@
                                 { "sos", "darkred" },
                                 { "default", "yellow" }
                             };
-                            var bgColor = statusColors.ContainsKey(Model?.Status?.ToLower() ?? "") ? statusColors[Model?.Status?.ToLower() ?? ""] : statusColors["default"];
+                            var statusKey = Model?.Status?.ToLower() ?? "default";
+                            var bgColor = statusColors.ContainsKey(statusKey) ? statusColors[statusKey] : statusColors["default"];
                         }
                         <div>
                             <span><strong>Order Status:</strong></span>
@@ -62,42 +56,36 @@
                                 color: @(bgColor == "red" || bgColor == "green" ? "white" : "black");
                                 display: inline-block;
                                 padding: 3px 3px;">
-                                <strong id="orderStatus">@Html.DisplayFor(model => model.Status) </strong>
+                                <strong class="@(bgColor == "lawngreen" || bgColor == "yellow" ? "text-black" : "text-white")" id="orderStatus">@Html.DisplayFor(model => model.Status) </strong>
                             </div>
                             <span class="text-info bg-aqua" id="sosReason">@(Model?.Status == "sos" && Model.SosReason != null ? $"{Model.SosReason}" : "")</span>
                         </div>
                     </div>
                 </div>
             </div>
-            @if(colClass != "col-md-6")
-            {
-                <div class="@colClass">
-                    @if (!string.IsNullOrEmpty(Model?.CustomerSpecialRequest))
-                    {
-                        <div>
-                            <span><strong>Customer Special Request:</strong></span>
-                            <span>@Html.DisplayFor(model => model.CustomerSpecialRequest)</span>
-                        </div>
-                    }
-                    @if (!string.IsNullOrEmpty(Model?.StatusReport))
-                    {
-                        var rawText = WebUtility.HtmlDecode(Model?.StatusReport ?? "-");         // Step 1: Decode entities like &#x12DD;
-                        var cleanText = Regex.Replace(rawText, "<.*?>", string.Empty);          // Step 2: Strip any actual HTML tags
-                        <div>
-                            <span><strong>Status Report:</strong></span>
-                            <span>@cleanText</span>
-                        </div>
-                    }
-                    @if (!string.IsNullOrEmpty(Model?.PreparationTime?.ToString()))
-                    {
-                        <div>
-                            <span><strong>Preparation Time:</strong></span>
-                            <span>@(Model?.PreparationTime) min</span>
-                        </div>
-                    }
+            <div class="col-md-4">
+                <div>
+                    <span><strong>Customer Special Request:</strong></span>
+                    <span>@(Model?.CustomerSpecialRequest ?? "N/A")</span>
                 </div>
-            }
-            <div class="col-12 @colClass d-flex justify-content-md-end justify-content-start text-md-end text-start">
+                @if (!string.IsNullOrEmpty(Model?.StatusReport))
+                {
+                    var rawText = WebUtility.HtmlDecode(Model?.StatusReport ?? "-");         // Step 1: Decode entities like &#x12DD;
+                    var cleanText = Regex.Replace(rawText, "<.*?>", string.Empty);          // Step 2: Strip any actual HTML tags
+                                                                                            <div>
+                                                                                                <span><strong>Status Report:</strong></span>
+                                                                                                <span>@cleanText</span>
+                                                                                            </div>
+                }
+                @if (!string.IsNullOrEmpty(Model?.PreparationTime?.ToString()))
+                {
+                    <div>
+                        <span><strong>Preparation Time:</strong></span>
+                        <span>@(Model?.PreparationTime) min</span>
+                    </div>
+                }
+            </div>
+            <div class="col-12 col-md-4 d-flex justify-content-md-end justify-content-start text-md-end text-start">
                 <div class="d-flex flex-column">
                     <div class="mb-1">
                         <span>
@@ -124,7 +112,7 @@
                             }
                             else
                             {
-                                <a class="btn btn-dark" href="/driverdetail/@phoneNumber">Check Order Status</a>
+                                <a class="btn btn-dark" href="/driverdetail/@phoneNumber">Track Driver</a>
                             }
                         }
                     </div>
@@ -155,12 +143,12 @@
             <div class="col-md-3 mb-3">
                 <h4 style="margin-bottom: 5px;"><i class="bi bi-building icon"></i>Company</h4>
                 <div>
-                    <span id="letters">Branch:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.BranchName)</span>
-                </div>
-                <div>
                     <span id="letters">Name:</span>
                     <span id="outputs">@Html.DisplayFor(model => model.CompanyName)</span>
+                </div>
+                <div>
+                    <span id="letters">Branch:</span>
+                    <span id="outputs">@Html.DisplayFor(model => model.BranchName)</span>
                 </div>
                 <div>
                     <span id="letters">TIN:</span>
