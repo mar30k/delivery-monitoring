@@ -14,6 +14,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="~/images/hulubeje.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
@@ -24,43 +25,129 @@
     <div class="container-fluid dashboard-container">
         <div class="row vh-100 animated-row pt-3 " id="firstRow">
             <div class="row">
-                <div class="col-12 col-md-4 mb-3">
-                    <div class="card border-1" id="orderCard">
-                        <div class="row">
-                            <div class="col-3" id="dashboardIcon">
-                                <i class="bi bi-truck"></i>
-                            </div>
-                            <div class="card-body col-7">
-                                <p class="card-title">Total Drivers</p>
-                                <h1 class="card-text">@Model.Drivers.Count</h1>
+                <div class="d-flex flex-wrap justify-content-between gap-3">
+                    <div class="card flex-grow-1">
+                        <div class="card border-1" id="orderCard">
+                            <div class="row">
+                                <div class="col-3" id="dashboardIcon">
+                                    <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i>
+                                </div>
+                                <div class="card-body col-7">
+                                    <a class="card-title fw-semibold  text-decoration-none" href="/drivers">Total Drivers</a>
+
+                                    <div class="d-flex align-items-center gap-4 flex-wrap">
+                                        <div class="text-center">
+                                            <h1 class="mb-0 fw-bold text-primary" id="totalDrivers">
+                                                @(Model?.Drivers?.Count ?? 0)
+                                            </h1>
+                                            <small class="text-black">Total</small>
+                                        </div>
+
+                                        <div class="text-center">
+                                            <h5 class="mb-0 text-info" id="activeDrivers">
+                                                @(Model?.Drivers?.Count(x => x.IsDisabled != true) ?? 0)
+                                            </h5>
+                                            <small class="text-muted">Active</small>
+                                        </div>
+
+                                        <div class="text-center">
+                                            <h5 class="mb-0 text-success" id="readyDrivers">
+                                                @(Model?.Drivers?.Count(x => x.Status?.ToLower() == "ready") ?? 0)
+                                            </h5>
+                                            <small class="text-muted">Ready</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                    <div class="card border-1" id="orderCard">
-                        <div class="row">
-                            <div class="col-3" id="dashboardIcon">
-                                <i class="bi bi-cart2"></i>
-                            </div>
-                            <div class="card-body col-7">
-                                <p class="card-title">Total Orders</p>
-                                <h1 class="card-text">@Model.Orders.Count</h1>
+                    <div class="card flex-grow-1">
+                        <div class="card border-1" id="orderCard">
+                            <div class="row">
+                                <div class="col-3" id="dashboardIcon">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                </div>
+                                <div class="card-body col-7">
+                                    <a class="card-title fw-semibold  text-decoration-none" href="/orders">Total Orders</a>
+                                    <h1 class="card-text" id="orderCount">@Model?.Orders?.Count</h1>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="col-12 col-md-4 mb-3">
-                    <div class="card border-1" id="orderCard">
-                        <div class="row">
-                            <div class="col-3" id="dashboardIcon">
-                                <i class="bi bi-building"></i>
+                    <div class="card flex-grow-1">
+                        <div class="card border-1" id="orderCard">
+                            <div class="row">
+                                <div class="col-3" id="dashboardIcon">
+                                    <i class="fa-regular fa-building"></i>
+                                </div>
+                                <div class="card-body col-7">
+                                    <a class="card-title fw-semibold  text-decoration-none" href="/companies">Companies</a>
+                                    <h1 class="card-text">@(Model?.Comps?.companyTins?.Count ?? 0)</h1>
+                                </div>
                             </div>
-                            <div class="card-body col-7">
-                                <p class="card-title">Companies</p>
-                                <h1 class="card-text">@Model.Comps.companyTins.Count</h1>
+                        </div>
+                    </div>
+                    <div class="card flex-grow-1">
+                        <div class="card border-1" id="orderCard">
+                            <div class="row">
+                                <div class="col-3" id="dashboardIcon">
+                                    <i class="fas fa-cash-register"></i>
+                                </div>
+                                <div class="card-body col-7">
+                                    <div class="mb-1">
+                                        <a class="card-title fw-semibold  text-decoration-none"
+                                           href="/deviceControl?date=@DateTime.Today.ToString("yyyy-MM-dd")">
+                                            KOT Status
+                                        </a><br />
+                                        <small class="text-muted">@DateTime.Today.ToString("yyyy-MM-dd")</small>
+                                    </div>
+                                    <h1 class="card-text fw-bold mb-0" id="kotStatus">@Model?.DeviceControl?.Count</h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card flex-grow-1">
+                        <div class="card border-1" id="orderCard">
+                            <div class="row">
+                                <div class="col-3" id="dashboardIcon">
+                                    <i class="fa-duotone fa-solid fa-user"></i>
+                                </div>
+                                @* <div class="card-body col-7">
+                                        <p class="card-title">Supervisors</p>
+                                        <h1 class="card-text">@(Model?.Supervisors?.Count ?? 0)</h1>
+                                   </div> 
+                                *@
+                                <div class="card-body col-7">
+                                    @*
+                                        <p class="card-title">Supervisors</p>
+                                    *@
+                                    <a class="card-title fw-semibold  text-decoration-none"
+                                                                 href="/supervisors">
+                                        Supervisors
+                                    </a><br />
+                                    <div class="d-flex align-items-center gap-4 flex-wrap">
+                                        <div class="text-center">
+                                            <h1 class="mb-0 fw-bold text-primary" id="totalSupervisors">
+                                                @(Model?.Supervisors?.Count ?? 0)
+                                            </h1>
+                                            <small class="text-black">Total</small>
+                                        </div>
+
+                                        @* <div class="text-center">
+                                                <h5 class="mb-0 text-success">
+                                                    @(Model?.Supervisors?.Count(x => x.IsActive == true) ?? 0)
+                                                </h5>
+                                                <small class="text-muted">Active</small>
+                                            </div> 
+                                        *@
+                                        <div class="text-center">
+                                            <h5 class="mb-0 text-info" id="loggedinSupervisors">
+                                                @(Model?.Supervisors?.Count(x => x.LoggedInStatus == true) ?? 0)
+                                            </h5>
+                                            <small class="text-muted">Logged In</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -72,9 +159,6 @@
                 <!--The Donut Chart and the Map Starts Here-->
                 <div class="col-md-6">
                     <div class="card border-1 pb-2">
-                        <div id="donut">
-                            <h4 class="px-4 pt-2">Drivers Status</h4>
-                        </div>
                         <div class="d-flex justify-content-center align-items-center" >
                             <!-- Centering wrapper -->
                             <div class="collapse show col-12" id="donutchart">
@@ -86,9 +170,6 @@
                 </div>
                 <div class="col-md-6">
                     <div class="card border-1 pb-2" >
-                        <div id="donut">
-                            <h4 class="px-4 pt-2">Orders Status</h4>
-                        </div>
                         <div class="d-flex justify-content-center align-items-center">
                             <div class="collapse show col-12" id="donutchart">
                                 <canvas id="ordersChart" ></canvas>
@@ -107,72 +188,87 @@
     </div>
 </div>
 @{
-    //counts related to driver
+    //counts related to drivers
     int offlineCount = Model.Drivers.Count(d => d.Status == "offline");
     int readyCount = Model.Drivers.Count(d => d.Status == "ready");
     int acceptedCount = Model.Drivers.Count(d => d.Status == "accepted");
     int deliveringCount = Model.Drivers.Count(d => d.Status == "delivering");
     int completedCount = Model.Drivers.Count(d => d.Status == "completed");
     int arrivedatbranchCount = Model.Drivers.Count(d => d.Status?.ToLower() == "arrivedatbranch");
-    //counts related to order
-    int completedOrdersCount = Model.Orders.Count(d => d.Status == "completed"); 
+    int arrivedCount = Model.Drivers.Count(d => d.Status?.ToLower() == "arrived");
+    //counts related to orders
+    int completedOrdersCount = Model.Orders.Count(d => d.Status == "completed");
     int requestedOrdersCount = Model.Orders.Count(d => d.Status == "requested");
     int assignedOrdersCount = Model.Orders.Count(d => d.Status == "assigned");
     int acceptedOrdersCount = Model.Orders.Count(d => d.Status == "accepted");
-    int onTheWayOrdersCount = Model.Orders.Count(d => d.Status == "ontheway");
+    int onTheWayOrdersCount = Model.Orders.Count(d => d.Status?.ToLower() == "ontheway");
     int declinedOrdersCount = Model.Orders.Count(d => d.Status == "declined");
     int driverNotFoundOrdersCount = Model.Orders.Count(d => d.Status == "driverNotFound");
     int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrived");
+    int arrivedAtBranchOrdersCount = Model.Orders.Count(d => d.Status == "arrivedAtBranch");
     int sosOrdersCount = Model.Orders.Count(d => d.Status == "sos");
 }
 <div id="toastContainer" class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;"></div>
-<!--code to display the donught chart starts here-->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    var driverDataSet = [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount , @arrivedatbranchCount, @arrivedCount];
+    var orderDataSet = [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
+                         @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedAtBranchOrdersCount,@arrivedOrdersCount,@sosOrdersCount ];
+    var map;
+    const driverMarkerMap = new Map();
     $(document).ready(function () {
         autoScrollDashboard();
         fetchOrders();
-        setInterval(fetchOrders, 10000);
+        fetchSupervisors();
+        fetchKotStatus();
+        setInterval(fetchOrders, 20000);
+        setInterval(fetchSupervisors, 60000);
+        setInterval(fetchKotStatus, 60000);
         // playAlertSound();
-        setTimeout(function () {
-            window.location.reload(); // Reloads the current page
-        }, 300000);
     });
     const ctx = document.getElementById('driversChart');
-    new Chart(ctx, {
+    const driverChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch'],
+            labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
             datasets: [{
                 label: 'Drivers',
-                data: [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount, @arrivedatbranchCount],
+                data: driverDataSet,
                 backgroundColor: [
                     '#dc3545', // Offline
                     '#28a745', // Ready
-                    '#007bff', // Accepted
-                    '#fd7e14', // Delivering
+                    'seagreen', // Accepted
+                    'darkorange', // Delivering
                     '#20c997', // Completed
-                    '#17a2b8'  // ArrivedAtBranch
+                    'coral' , // ArrivedAtBranch
+                    '#F7BEA2' , // Arrived
                 ],
                 hoverOffset: 4
             }]
         },
         options: {
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 14 // Increase font size of legend
+                            }
+                        }
+                    },
+                    title:{
+                        display: true,
+                        text: 'Drivers Status',
                         font: {
-                            size: 14 // Increase font size of legend
+                            size: 20 // Title font size
                         }
                     }
                 }
             }
-        }
     });
     const orderctx = document.getElementById('ordersChart');
 
-    new Chart(orderctx, {
+     const orderChart = new Chart(orderctx, {
         type: 'doughnut',
         data: {
             labels: [
@@ -183,21 +279,13 @@
                 'On The Way',
                 'Declined',
                 'Driver Not Found',
-                'Arrived'
+                'ArrivedAtBranch',
+                'Arrived',
+                'sos'
             ],
             datasets: [{
                 label: 'Orders',
-                data: [
-                    @completedOrdersCount,
-                    @requestedOrdersCount,
-                    @assignedOrdersCount,
-                    @acceptedOrdersCount,
-                    @onTheWayOrdersCount,
-                    @declinedOrdersCount,
-                    @driverNotFoundOrdersCount,
-                    @arrivedOrdersCount,
-                    @sosOrdersCount
-                ],
+                data: orderDataSet,
                 backgroundColor: [
                     'green',       // Completed (fallback/default)
                     'deepskyblue',  // Requested
@@ -206,153 +294,141 @@
                     'darkorange',   // On The Way
                     'red',          // Declined
                     'firebrick',    // Driver Not Found (alternative to red)
-                    'coral',        // Arrived
+                    'coral',        // ArrivedAtBranch
+                    '#F7BEA2',      // Arrived
                     'darkred'       // sos
                 ],
                 hoverOffset: 6
             }]
         },
         options: {
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 14 // Bigger legend font
+                            }
+                        }
+                    },
+                    title:{
+                        display: true,
+                        text: 'Orders Status',
                         font: {
-                            size: 14 // Bigger legend font
+                            size: 20 // ✅ Title font size
                         }
                     }
                 }
             }
-        }
     });
 
-    fetch('/Map/GetMapData')
-        .then(response => response.text())
-        .then(script => {
-            // Execute the received script
-            eval(script);
-        })
-        .catch(error => console.error('Error loading Google Maps API:', error));
+    function loadMapScript(retries = 3, delay = 1000) {
+        fetch('/Map/GetMapData')
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.text();
+            })
+            .then(script => {
+                eval(script);
+            })
+            .catch(error => {
+                if (retries > 1) {
+                    console.warn(`Retrying... attempts left: ${retries - 1}`);
+                    setTimeout(() => loadMapScript(retries - 1, delay), delay);
+                } else {
+                    console.error('Error loading Google Maps API after retries:', error);
+                }
+            });
+    }
+    loadMapScript();
 
-    var map;
-    var count = 0;
-    var marker;
-    var totalLat = 0;
-    var totalLng = 0;
-    var markers = [];
     function initMap() {
         // Default center coordinates
-        const defaultLat = 8.9660573; // Replace with your default latitude
-        const defaultLng = 38.8404793; // Replace with your default longitude
+        const defaultLat = 9.0003776;
+        const defaultLng = 38.7828502;
 
         map = new google.maps.Map(document.getElementById("map"), {
             center: { lat: defaultLat, lng: defaultLng },
             zoom: 13,
-            mapTypeId: google.maps.MapTypeId.ROADMAP
+            mapTypeId: google.maps.MapTypeId.HYBRID
         });
         // map.setCenter();
+        fetchDataAndUpdateMarkers();
+        setInterval(fetchDataAndUpdateMarkers, 20000);
+    }
 
-        function fetchDataAndUpdateMarkers() {
-            // index++;
-            fetch(`/Driver/LiveLocation`)
-                .then(response => response.json())
-                .then(data => {
-                    // Iterate over each object in the array
-                    var places = [];
-                    data.forEach(driver => {
-                             
-                        // Extract the relevant information from each object
-                        if (driver.latLng && typeof driver.latLng === 'object' && driver.latLng.lat !== undefined && driver.latLng.lng !== undefined) {
-                            var placeInfo = {
-                                Name: driver.firstName,
-                                lat: driver.latLng.lat,
-                                lng: driver.latLng.lng,
-                                Phone: driver.phoneNumber,
-                                Status: driver.status
-                            };
-                        }
-                        places.push(placeInfo);
-                        totalLat += driver.latLng.lat;
-                        totalLng += driver.latLng.lng;
-                        count++;
-                    })
-                    if (count > 0) {
-                        var avgLat = totalLat / count;
-                        var avgLng = totalLng / count;
-
-
-                        // Function to calculate simple Euclidean distance (works fine for small areas like a city)
-                        function getDistance(lat1, lng1, lat2, lng2) {
-                            return Math.sqrt(Math.pow(lat1 - lat2, 2) + Math.pow(lng1 - lng2, 2));
-                        }
-
-                        // Find driver closest to average point
-                        let closestDriver = places[0];
-                        let minDistance = getDistance(places[0].lat, places[0].lng, avgLat, avgLng);
-
-                        places.forEach(driver => {
-                            let distance = getDistance(driver.lat, driver.lng, avgLat, avgLng);
-                            if (distance < minDistance) {
-                                minDistance = distance;
-                                closestDriver = driver;
-                            }
-                        });
-                        // Center the map on this driver's location
-                        map.setCenter({ lat: closestDriver.lat, lng: closestDriver.lng });
-
-                    } else {
-                        console.log("No valid driver locations to center map.");
+    function fetchDataAndUpdateMarkers() {
+        // index++;
+        fetch(`/Driver/LiveLocation`)
+            .then(response => response.json())
+            .then(data => {
+                updateDriverChart(data);
+                // Iterate over each object in the array
+                var places = [];
+                data.forEach(driver => {
+                    // Extract the relevant information from each object
+                    if (driver.latLng && typeof driver.latLng === 'object' && driver.latLng.lat !== undefined && driver.latLng.lng !== undefined) {
+                        var placeInfo = {
+                            Name: driver.firstName,
+                            lat: driver.latLng.lat,
+                            lng: driver.latLng.lng,
+                            Phone: driver.phoneNumber,
+                            LastUpdatedAt: driver.updatedAt,
+                            Status: driver.status
+                        };
                     }
+                    places.push(placeInfo);
+                })
+                // Push the extracted information into the places array
+                // Filter out undefined values
+                places = places.filter(place => place !== undefined);
+                places.forEach(place => {
+                    const existing = driverMarkerMap.get(place.Phone);
 
-                        
-                    // Push the extracted information into the places array
-                    // Filter out undefined values
-                    places = places.filter(place => place !== undefined);
-                    // Process the places array after fetching the data
+                    // Check if position changed
+                    if (
+                        !existing ||
+                        existing.lat !== place.lat ||
+                        existing.lng !== place.lng
+                    ) {
+                        // If marker exists, remove old one
+                        if (existing?.marker) {
+                            existing.marker.setMap(null);
+                        }
 
-                    markers.forEach(marker => marker.setMap(null));
-                    markers = []; // Reset the array
-
-                    places.forEach(place => {
-                        marker = new google.maps.Marker({
+                        // Create new marker
+                        const newMarker = new google.maps.Marker({
                             position: { lat: place.lat, lng: place.lng },
                             title: place.Name,
                             map: map,
                             icon: {
-                                url: '/images/motor.png',
-                                scaledSize: new google.maps.Size(20, 61) // Adjust the size as needed
+                                url: place.Status !== "offline" ? '/images/motor.png' : '/images/offline_motors.png',
+                                scaledSize: new google.maps.Size(51, 61)
                             }
                         });
 
-                        markers.push(marker);
+                        // Update InfoWindow events
+                        const content = `<b>Name:</b> ${place.Name}<br/><b>Phone:</b> ${place.Phone}<br/><b>Status:</b> ${place.Status}`;
+                        const infowindow = new google.maps.InfoWindow();
 
-                        // Add a listener for the marker
-                        var content = "<b>Name:</b> " + place.Name + "<br/><b>Phone:</b> " + place.Phone + "<br/><b>Status:</b> " + place.Status;
+                        google.maps.event.addListener(newMarker, 'mouseover', function () {
+                            infowindow.setContent(content);
+                            infowindow.open(map, newMarker);
+                        });
+                        google.maps.event.addListener(newMarker, 'mouseout', function () {
+                            infowindow.close();
+                        });
 
-                        var infowindow = new google.maps.InfoWindow();
-
-                        google.maps.event.addListener(marker, 'mouseover', (function (marker, content, infowindow) {
-                            return function () {
-                                infowindow.setContent(content);
-                                infowindow.open(map, marker);
-                            };
-                        })(marker, content, infowindow));
-
-                        google.maps.event.addListener(marker, 'mouseout', (function (infowindow) {
-                            return function () {
-                                infowindow.close();
-                            };
-                        })(infowindow));
-                    });
-                    // console.log(places);
-                    // console.log(index);
-
-                })
-                .catch(error => console.error('Error fetching live location:', error, error.responseText));
-        }
-        // Call the function immediately to show the initial view
-        fetchDataAndUpdateMarkers();
-        setInterval(fetchDataAndUpdateMarkers, 60000);
+                        // Store in the map
+                        driverMarkerMap.set(place.Phone, {
+                            marker: newMarker,
+                            lat: place.lat,
+                            lng: place.lng
+                        });
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching live location:', error, error.responseText));
     }
 
 
@@ -375,37 +451,160 @@
 
     const seenOrders = new Set();
     let isFirstFetch = true;
+    let orders = null;
     async function fetchOrders() {
         try {
             const response = await fetch('/getorders');
-            const orders = await response.json();
-            // const orders = [
-            //     { voucherCode: 'ABC123', customer: { firstName: 'John' } },
-            //     { voucherCode: 'XYZ456', customer: { firstName: 'Jane' } }
-            // ];
-            orders.forEach(order => {
-                const code = order.voucherCode;
-                if (code && !seenOrders.has(code)) {
-                    if (!isFirstFetch) {
-                        showToast(order); // Show toast ONLY if not first fetch
+            orders = await response.json();
+            if(Array.isArray(orders) || orders != null ){
+                orders.forEach(order => {
+                    const code = order.voucherCode;
+                    if (code && !seenOrders.has(code)) {
+                        if (!isFirstFetch) {
+                            showToast(order); // Show toast ONLY if not first fetch
+                        }
+                        seenOrders.add(code); // Track as seen
                     }
-                    seenOrders.add(code); // Track as seen
-                }
-            });
-            isFirstFetch = false;
+                });
+                isFirstFetch = false;
+                $("#orderCount").text(orders.length);
+                updateChart();
+            }
         } catch (error) {
             console.error("Error fetching alerts:", error);
         }
     }
 
+    async function fetchSupervisors(){
+        try {
+            const response = await fetch('order/getAvailableSupervisors');
+            let supervisors = await response.json();
+            if(!Array.isArray(supervisors)) return;
+            $("#totalSupervisors").text(supervisors.length);
+            $("#loggedinSupervisors").text(supervisors.filter(s=> s.loggedInStatus).length);
+        }
+        catch (error){
+            console.error("Error fetching alerts:", error);
+        }
+    }
 
+    async function fetchKotStatus(){
+        try {
+            const response = await fetch('/getDeviceControl');
+            const kotStatus = await response.json();
+            if(!Array.isArray(kotStatus)) return;
+            $("#kotStatus").text(kotStatus.length);
+        }
+        catch (error){
+            console.error("Error fetching alerts:", error);
+        }
+    }
+
+    function updateChart() {
+        const statusCounts = {
+            completed: 0,
+            requested: 0,
+            assigned: 0,
+            accepted: 0,
+            ontheway: 0,
+            declined: 0,
+            driverNotFound: 0,
+            arrivedAtBranch: 0,
+            arrived: 0,
+            sos: 0
+        };
+
+        // Count orders by status
+        orders.forEach(order => {
+            if (statusCounts.hasOwnProperty(order.status)) {
+                statusCounts[order.status]++;
+            }
+        });
+        // Update chart data
+        orderChart.data.datasets[0].data = [
+            statusCounts.completed,
+            statusCounts.requested,
+            statusCounts.assigned,
+            statusCounts.accepted,
+            statusCounts.ontheway,
+            statusCounts.declined,
+            statusCounts.driverNotFound,
+            statusCounts.arrivedAtBranch,
+            statusCounts.arrived,
+            statusCounts.sos
+        ];
+
+        orderChart.update();
+    }
+
+    function updateDriverChart(data) {
+        if (!Array.isArray(data) || data == null) return;
+
+        const activeCount = data.filter(driver => !driver.isDisabled).length;
+        const readyCount = data.filter(driver => driver.status=== 'ready').length;
+        $("#totalDrivers").text(data.length);
+        $("#activeDrivers").text(activeCount);
+        $("#readyDrivers").text(readyCount);
+
+
+        const statusCounts = {
+            offline: 0,
+            ready: 0,
+            accepted: 0,
+            delivering: 0,
+            completed: 0,
+            arrivedAtBranch: 0, 
+            arrived: 0, 
+        };
+
+        data.forEach(driver => {
+            switch (driver.status) {
+                case 'offline':
+                    statusCounts.offline++;
+                    break;
+                case 'ready':
+                    statusCounts.ready++;
+                    break;
+                case 'accepted':
+                    statusCounts.accepted++;
+                    break;
+                case 'delivering':
+                    statusCounts.delivering++;
+                    break;
+                case 'completed':
+                    statusCounts.completed++;
+                    break;
+                case 'arrivedAtBranch':
+                    statusCounts.arrivedAtBranch++;
+                    break;
+                case 'arrived':
+                    statusCounts.arrived;
+                    break;
+                default:
+                    statusCounts.offline++; // fallback if status is unknown but not disabled
+                    break;
+            }
+        });
+        // Update chart data
+        driverChart.data.datasets[0].data = [
+            statusCounts.offline,
+            statusCounts.ready,
+            statusCounts.accepted,
+            statusCounts.delivering,
+            statusCounts.completed,
+            statusCounts.arrivedAtBranch,
+            statusCounts.arrived,
+        ];
+
+        driverChart.update();
+    }
 
     function showToast(order) {
         const toastHTML = `
             <div class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body">
-                        New Order: ${order.voucherCode} <br> Customer: ${order.customer?.firstName || 'Unknown'}
+                        New Order: ${order.voucherCode} <br> Customer: ${order.customerFirstName || 'Unknown'} <br>
                     </div>
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-dismiss="toast" aria-label="Close"></button>
                 </div>
@@ -414,7 +613,7 @@
         toastContainer.insertAdjacentHTML('beforeend', toastHTML);
 
         const toastEl = toastContainer.lastElementChild;
-        const toast = new bootstrap.Toast(toastEl, { delay: 30000 });
+        const toast = new bootstrap.Toast(toastEl, { delay: 45000 });
         toast.show();
 
         // Attach click event to close button to hide toast
@@ -422,8 +621,6 @@
         console.log(closeButton);
         closeButton.addEventListener('click', () => toast.hide());
     }
-
-
 
     let alertAudio = null;
 

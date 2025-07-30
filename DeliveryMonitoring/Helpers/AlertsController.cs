@@ -24,7 +24,7 @@ namespace DeliveryMonitoring.Helpers
                 var _client = _httpClientFactory.CreateClient("Delivery");
                 var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
-                if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin)) { return new List<OrderDetail>(); }
+                if (string.IsNullOrWhiteSpace(companyTin)) { return new List<OrderDetail>(); }
 
                 HttpResponseMessage responseMessage = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
                 if (responseMessage.IsSuccessStatusCode)
