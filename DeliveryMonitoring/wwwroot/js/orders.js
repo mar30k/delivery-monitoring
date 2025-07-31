@@ -131,9 +131,6 @@ function updateOrders() {
             supervisor = supervisors.find(x => x.userName === order.supervisedBy);
         }
 
-        let assignedDriverPhoneNumber = order.assignedDriverPhoneNumber
-            ? `<a href="tel:${order.assignedDriverPhoneNumber}">${order.assignedDriverPhoneNumber}</a>`
-            : "N/A";
         let orderJson = JSON.stringify(order).replace(/"/g, '&quot;'); // Escape double quotes for HTML
         let redispatch = (order.status.toLowerCase() === "drivernotfound" || order.status.toLowerCase() === "declined" || order.status.toLowerCase() === "requested"
             || order.status.toLowerCase() === "sos" || order.status.toLowerCase() === "assigned")
@@ -147,7 +144,16 @@ function updateOrders() {
                     <td class="text-center">${order.companyName || 'N/A'}</td>
                     <td class="text-center">${order.branchName || 'N/A'}</td>
                     <td class="text-center">${order.customerFirstName || 'N/A'}</td>
-                    <td class="text-center"><a href="tel:${order.customerPhoneNumber}">${order.customerPhoneNumber || 'N/A'}</a></td>
+                    <td class="text-center">
+                        <div class="d-inline-flex align-items-center gap-1">
+                            <a href="tel:${order.customerPhoneNumber}">${order.customerPhoneNumber || 'N/A'}</a>
+                                ${order.customerPhoneNumber ? `
+                                    <a href="#" onclick="copyToClipboard('${order.customerPhoneNumber}')" title="Copy to clipboard" >
+                                        <i class="bi bi-clipboard"></i>
+                                    </a>` : ''
+                                }
+                        </div>
+                    </td>
                     <td class="text-center">${order.customerGeocodeAddress} - ${order.customerSpecificAddress}</td>
 
                     <td data-order="${order.createdAt}" data-iso="${order.createdAtString}" class="text-center">
@@ -156,7 +162,16 @@ function updateOrders() {
                     <td class="status-cell text-center  ${textColorClass}" style="background: ${color}">${order.status}</td>
                     <td class="text-center">${clean(order.statusReport ?? '-')}</td>
                     <td class="text-center ${order.alert !=null ? 'bg-danger' : ''}">${order.alert ?? '-'}</td>
-                    <td class="driver-cell text-center" >${assignedDriverPhoneNumber}</td>
+                    <td class="driver-cell text-center" >
+                        <div class="d-inline-flex align-items-center gap-1">
+                            <a href="tel:${order.assignedDriverPhoneNumber}">${order.assignedDriverPhoneNumber || 'N/A'}</a>
+                                ${order.assignedDriverPhoneNumber ? `
+                                    <a href="#" onclick="copyToClipboard('${order.assignedDriverPhoneNumber}')" title="Copy to clipboard" >
+                                        <i class="bi bi-clipboard"></i>
+                                    </a>` : ''
+                                }
+                        </div>
+                    </td>
                     <td class="text-center">${assign}</td>
                     <td class="text-center">${order.grandTotal?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}</td>
                     <td style="text-align: center; vertical-align: middle;">
