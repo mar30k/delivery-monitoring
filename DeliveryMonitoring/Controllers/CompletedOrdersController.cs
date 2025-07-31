@@ -26,15 +26,15 @@ namespace DeliveryMonitoring.Controllers
             try
             {
                 var result = await FetchCompletedOrders(_client);
-                if (result == null || result.Data == null)
-                {
-                    ViewBag.ErrorMessage = "Failed to retrieve or parse completed orders.";
-                    return View(null);
-                }
+                //if (result == null || result.Data == null)
+                //{
+                //    ViewBag.ErrorMessage = "Failed to retrieve or parse completed orders.";
+                //    return View(null);
+                //}
 
                 if (companyTin != "0076217301")
                 {
-                    result.Data = result.Data.Where(order => order.Tin == companyTin).ToList();
+                    result.Data = result.Data?.Where(order => order.Tin == companyTin).ToList();
                 }
 
                 var purposeResponse = await _client.GetAsync("delivery/getpurpose");
@@ -47,10 +47,34 @@ namespace DeliveryMonitoring.Controllers
                 
                 var purposeResponseData = await purposeResponse.Content.ReadAsStringAsync();
                 var purposeResult = JsonConvert.DeserializeObject<Dictionary<int, string>>(purposeResponseData);
+                var dineInResponse = await _client.GetAsync("voucher/getordersbytype?type=3203");
+                if (!dineInResponse.IsSuccessStatusCode)
+                {
+                    var errorContent = await dineInResponse.Content.ReadAsStringAsync();
+                    ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
+                }
+
+                
+                var dineInResponseData = await dineInResponse.Content.ReadAsStringAsync();
+                var dineIneResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(dineInResponseData);
+
+                var takeAwayResponse = await _client.GetAsync("voucher/getordersbytype?type=2076");
+                if (!takeAwayResponse.IsSuccessStatusCode)
+                {
+                    var errorContent = await takeAwayResponse.Content.ReadAsStringAsync();
+                    ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
+                }
+
+                
+                var takeAwayResponseData = await takeAwayResponse.Content.ReadAsStringAsync();
+                var takeAwayResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(takeAwayResponseData);
+
                 
                 var CompletedOrdersViewModel = new CompletedOrdersViewModel
                 {
                     CompletedOrders = result,
+                    DineInOders = dineIneResult,
+                    TakeAwayOrders = takeAwayResult,
                     PurposeOptions = purposeResult
                 };
                 return View(CompletedOrdersViewModel); 
