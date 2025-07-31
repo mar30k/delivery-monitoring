@@ -170,9 +170,15 @@
                                     @(order?.CustomerFirstName ?? "N/A")
                                 </td>
                                 <td class="text-center">
-                                    <a href="tel:@order?.CustomerPhoneNumber">
-                                        @(order?.CustomerPhoneNumber ?? "N/A")
-                                    </a>
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <a href="tel:@order?.CustomerPhoneNumber">@(order?.CustomerPhoneNumber ?? "N/A")</a> 
+                                        @if (!string.IsNullOrEmpty(order?.CustomerPhoneNumber))
+                                        {
+                                            <a onclick="copyToClipboard('@order.CustomerPhoneNumber')" title="Copy to clipboard"  class="text-primary text-decoration-none">
+                                                <i class="bi bi-clipboard"></i>
+                                            </a>
+                                        }
+                                    </div>
                                 </td>
                                 <td class="text-center">
                                     @($"{order?.CustomerGeocodeAddress} - {order?.CustomerSpecificAddress}")
@@ -195,14 +201,15 @@
                                     @(order?.Alert ?? "-")
                                 </td>
                                 <td class="driver-cell text-center" >
-                                    @if (!string.IsNullOrWhiteSpace(order?.AssignedDriverPhoneNumber))
-                                    {
-                                        <a href="tel:@order.AssignedDriverPhoneNumber">@order.AssignedDriverPhoneNumber</a>
-                                    }
-                                    else
-                                    {
-                                        @:N/A
-                                    }
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <a href="tel:@order?.AssignedDriverPhoneNumber">@(order?.AssignedDriverPhoneNumber ?? "N/A")</a> 
+                                        @if (!string.IsNullOrEmpty(order?.AssignedDriverPhoneNumber))
+                                        {
+                                            <a onclick="copyToClipboard('@order.AssignedDriverPhoneNumber')" title="Copy to clipboard"  class="text-primary text-decoration-none">
+                                                <i class="bi bi-clipboard"></i>
+                                            </a>
+                                        }
+                                    </div>
                                 </td>
                                 <td class="text-center">
                                     @if (order?.SupervisedBy == null)
