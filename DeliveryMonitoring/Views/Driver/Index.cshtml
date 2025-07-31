@@ -106,9 +106,15 @@
                                         : "")
                                 </td>
                                 <td class="text-center">
-                                    <a href="tel:@driver?.PhoneNumber">
-                                        @driver?.PhoneNumber
-                                    </a>
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <a href="tel:@driver?.PhoneNumber">@(driver?.PhoneNumber ?? "N/A")</a>
+                                        @if (!string.IsNullOrEmpty(driver?.PhoneNumber))
+                                        {
+                                            <a onclick="copyToClipboard('@driver?.PhoneNumber')" title="Copy to clipboard" class="text-primary text-decoration-none">
+                                                    <i class="bi bi-clipboard"></i>
+                                            </a>
+                                        }
+                                    </div>
                                 </td>
                                 <td class="text-center" data-status style="background: @bgColor; color: white;" data-order="@priority">
                                     @driver?.Status
