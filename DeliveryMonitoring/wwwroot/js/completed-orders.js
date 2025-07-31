@@ -21,7 +21,7 @@ js(() => {
     tablelist = js('#tablelist').DataTable({
         responsive: true,
         order: [[5, "desc"]],
-        pageLength: 15,
+        pageLength: 50,
         lengthMenu: [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
         columnDefs: [
             { orderable: false, targets: [0, 4, 9, 13, 12] }
