@@ -1,0 +1,90 @@
+﻿@model List<CompletedOrders>
+@{
+    var tableId = ViewData["TableId"] as string ?? "defaultTableId";
+}
+<div class="row card">
+    <div class="table-responsive pt-3 pb-3">
+        <table class="table compact stripe hover pt-3" id="@tableId" style="font-size: 13px;">
+            <thead class="">
+                <tr>
+                    <th class="text-center">
+                        Order Number
+                    </th>
+                    <th class="text-center">
+                        Company
+                    </th>
+                    <th class="text-center">
+                        Branch
+                    </th>
+                    <th class="text-center">
+                        Customer
+                    </th>
+                    <th class="text-center">
+                        Phone
+                    </th>
+                    <th class="text-center">
+                        Order DateTime
+                    </th>
+                    <th class="text-center">
+                        Total
+                    </th>
+                    <th class="text-center">
+                        Activities
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var time = Model?.FirstOrDefault(o => o.VoucherCode == "0924438476-131018-938")?.RequestCreatedAt;
+                    var today = DateTime.Today.ToString("yyyy-MM-dd");
+                    foreach (var order in Model ?? new List<CompletedOrders>())
+                    {
+                        var orderDate = order?.RequestCreatedAt.ToString("yyyy-MM-dd");
+                        var isToday = orderDate == today;
+                        var rowClass = isToday ? "" : "initial-hide";
+
+                        <tr class="@rowClass" data-voucher="@order?.VoucherCode">
+                            <td class="text-center">
+                                @(order?.VoucherCode ?? "N/A")
+                            </td>
+                            <td class="text-center">
+                                @(order?.CompanyName ?? "N/A")
+                            </td>
+                            <td class="text-center">
+                                @(order?.BranchName ?? "N/A")
+                            </td>
+                            <td class="text-center">
+                                @(order?.FirstName ?? "N/A")
+                            </td>
+                            <td class="text-center">
+                                <a href="tel:@order?.PhoneNumber">@(order?.PhoneNumber ?? "N/A")</a>
+                            </td>
+                            <td data-order="@order?.RequestCreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")" data-iso="@order?.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss")" class="text-center">
+                                @order?.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss")
+                            </td>
+                            <td class="text-center">
+                                @(order?.TotalAmount.ToString("N2") ?? "N/A")
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-outline-secondary activityBtn btn-sm"
+                                        data-voucher="@order?.VoucherCode"
+                                        data-company-code="@order?.CompanyCode"
+                                        onclick="showActivity(this)">
+                                    Show
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="6" class="text-end">Page Total:</th>
+                    <th class="text-center"></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
