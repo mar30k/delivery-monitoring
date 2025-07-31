@@ -388,9 +388,6 @@ async function fetchCompletedOrders() {
         data.forEach(order => {
             const requestCreatedAt = order.requestCreatedAtString || "N/A";
             const purposeKey = Object.entries(purposeOptions).find(([key, val]) => val === order.purpose)?.[0];
-            const driverPhone = order.driverPhoneNumber
-                ? `<a href="tel:${order.driverPhoneNumber}">${order.driverPhoneNumber}</a>`
-                : "N/A";
 
             const reviewButton = order.purpose
                 ? `<button class="btn btn-outline-secondary btn-sm"
@@ -424,12 +421,30 @@ async function fetchCompletedOrders() {
                 <td class="text-center">${order.companyName || 'N/A'}</td>
                 <td class="text-center">${order.branchName || 'N/A'}</td>
                 <td class="text-center">${order.firstName || 'N/A'}</td>
-                <td class="text-center"><a href="tel:${order.phoneNumber}">${order.phoneNumber || 'N/A'}</a></td>
+                <td class="text-center">
+                    <div class="d-inline-flex align-items-center gap-1">
+                        <a href="tel:${order.phoneNumber}">${order.phoneNumber || 'N/A'}</a>
+                            ${order.phoneNumber ? `
+                                <a href="#" onclick="copyToClipboard('${order.phoneNumber}')" title="Copy to clipboard" >
+                                    <i class="bi bi-clipboard"></i>
+                                </a>` : ''
+                            }
+                    </div>
+                </td>
                 <td data-order="${order.requestCreatedAt}" data-iso="${requestCreatedAt}" class="text-center">${requestCreatedAt}</td>
                 <td data-order="${order.distance}" class="text-center">${order.distance ?? 'N/A'} K.M</td>
                 <td data-order="${order.duration}" class="text-center">${order.duration ?? 'N/A'} Min</td>
                 <td data-order="${order.eta}" class="text-center">${order.eta ?? 'N/A'} Min</td>
-                <td class="driver-cell text-center">${driverPhone}</td>
+                <td class="driver-cell text-center">
+                    <div class="d-inline-flex align-items-center gap-1">
+                        <a href="tel:${order.driverPhoneNumber}">${order.driverPhoneNumber || 'N/A'}</a>
+                            ${order.driverPhoneNumber ? `
+                                <a href="#" onclick="copyToClipboard('${order.driverPhoneNumber}')" title="Copy to clipboard" class="text-decoration-none">
+                                    <i class="bi bi-clipboard"></i>
+                                </a>` : ''
+                            }
+                    </div>
+                </td>
                 <td class="text-center">${order.supervisorName || 'N/A'}</td>
                 <td class="text-center">
                   ${order.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}
