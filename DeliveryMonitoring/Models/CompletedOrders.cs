@@ -29,6 +29,8 @@ namespace DeliveryMonitoring.Models
     public class CompletedOrdersViewModel
     {
         public HulubejeResponse<List<CompletedOrders>>? CompletedOrders { get; set; }
+        public HulubejeResponse<List<CompletedOrders>>? DineInOders { get; set; }
+        public HulubejeResponse<List<CompletedOrders>>? TakeAwayOrders { get; set; }
         public Dictionary<int, string>? PurposeOptions { get; set; }
     }
 }
