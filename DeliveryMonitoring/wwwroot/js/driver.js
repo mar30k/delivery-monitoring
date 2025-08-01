@@ -112,7 +112,7 @@ function fetchDataAndUpdateMarkers() {
             let currentPage = tablelist.page.info().page;
 
             // Order by the first column (1) in descending order
-            tablelist.order([[4, 'desc']]).draw(false);
+            tablelist.order(tablelist.order()).draw(false);
 
             // Go back to the original page
             tablelist.page(currentPage).draw(false);
@@ -168,5 +168,4 @@ function fetchDataAndUpdateMarkers() {
         })
         .catch(error => console.error('Error fetching live location:', error, error.responseText));
 
-        tablelist.order([4, 'desc']).draw(false);
 }
