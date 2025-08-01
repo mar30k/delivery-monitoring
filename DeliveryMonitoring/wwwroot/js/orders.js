@@ -19,14 +19,35 @@ js(() => {
     tablelist = js('#tablelist').DataTable({
         responsive: true,
         order: [[6, "desc"]],
-        pageLength: 15,
+        pageLength: 50,
         lengthMenu: [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
         columnDefs: [
             { orderable: false, targets: [0, 4, 7, 8, 9, 10, 11, 13] }
         ],
         language: {
             emptyTable: "No orders to display at the moment."
-        }
+        },
+        footerCallback: function (row, data, start, end, display) {
+            var api = this.api();
+
+            var parseValue = function (i) {
+                if (typeof i === "string") {
+                    return parseFloat(i.replace(/[^0-9.-]+/g, "")) || 0;
+                } else if (typeof i === "number") {
+                    return i;
+                }
+                return 0;
+            };
+
+            var columnData = api.column(12, { page: "current" }).data();
+            var pageTotal = columnData.reduce(function (a, b) {
+                return parseValue(a) + parseValue(b);
+            }, 0);
+
+            js(api.column(12).footer()).html(
+                pageTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            );
+        },
     });
 
     // Safe to register custom filter here
