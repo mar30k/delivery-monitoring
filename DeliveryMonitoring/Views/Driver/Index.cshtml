@@ -72,6 +72,9 @@
                                 Status
                             </th>
                             <th class="text-center">
+                                Is Active
+                            </th>
+                            <th class="text-center">
                                 Driver Details
                             </th>
                         </tr>
@@ -118,6 +121,9 @@
                                 </td>
                                 <td class="text-center" data-status style="background: @bgColor; color: white;" data-order="@priority">
                                     @driver?.Status
+                                </td>
+                                <td class="text-center">
+                                    @((driver !=null && driver.IsDisabled) ? "no" : "yes")
                                 </td>
                                 <td class="text-center">
                                     <a class="btn btn-outline-dark btn-sm" href="/driverdetail/@driver?.PhoneNumber">Details</a>

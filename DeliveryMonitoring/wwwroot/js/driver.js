@@ -17,7 +17,7 @@ js( ()=> {
             pageLength: 13,
             "lengthMenu": [[10, 13, 25, 50, 100], [10, 13, 25, 50, 100]],
             columnDefs: [
-                { orderable: false, targets: [3, 5, 1] } // Disable sorting on specified columns
+                { orderable: false, targets: [3, 1, 6] } // Disable sorting on specified columns
             ],
             order: [[4, 'desc']]
         });
