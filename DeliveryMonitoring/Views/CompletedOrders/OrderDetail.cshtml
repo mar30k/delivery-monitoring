@@ -1,0 +1,74 @@
+﻿@model OrderDetail
+<link rel="stylesheet" href="~/css/orderDetail.css" />
+<div class="px-4 mt-2">
+
+    <h3>Order Details</h3>
+
+    <div class="card" id="orderCard">
+        <div class="row px-4 pt-4 pb-2" >
+            <!-- Customer Section -->
+            <div class="col-md-4">
+                <h4 class="mb-2"><i class="bi bi-person-circle icon"></i> Customer</h4>
+                <div>
+                    <strong class="text-muted">Name:</strong>
+                    <span>@(Model?.CustomerFirstName ?? "N/A")</span>
+                </div>
+                <div>
+                    <strong class="text-muted">Phone:</strong>
+                    <span>@(Model?.LineItemsDetail?.PhoneNumber ?? "N/A")</span>
+                </div>
+            </div>
+
+            <!-- Company Section -->
+            <div class="col-md-4">
+                <h4 class="mb-2"><i class="bi bi-building icon"></i> Company</h4>
+                <div>
+                    <strong class="text-muted">Name:</strong>
+                    <span>@(Model?.LineItemsDetail?.CompanyName ?? "N/A")</span>
+                </div>
+                <div>
+                    <strong class="text-muted">Branch:</strong>
+                    <span>@(Model?.BranchName ?? "N/A")</span>
+                </div>
+                <div>
+                    <strong class="text-muted">TIN:</strong>
+                    <span>
+                        @if (!string.IsNullOrEmpty(Model?.LineItemsDetail?.ExtraData?.Tin))
+                        {
+                            <a href="/company/@Model.LineItemsDetail.ExtraData.Tin">
+                                @Model.LineItemsDetail.ExtraData.Tin
+                            </a>
+                        }
+                        else
+                        {
+                            <span>N/A</span>
+                        }
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div>
+                    <span><strong>VoucherCode:</strong></span>
+                    <span>@Model?.LineItemsDetail?.VoucherCode</span>
+                </div>
+                <div>
+                    <span><strong>Order Date Time:</strong></span>
+                    <span>@Model?.Activities?.StartTime?.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
+                </div>
+                <div>
+                    <span><strong>Current Time:</strong></span>
+                    <span>@Model?.Activities?.CurrentTime?.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
+                </div>
+                @if (Model?.LineItemsDetail?.ExtraInformation != null && Model.LineItemsDetail.ExtraInformation.ContainsKey("Delivery Method:"))
+                {
+                    <div>
+                        <span><strong>Delivery Method:</strong></span>
+                        <span>@Model.LineItemsDetail.ExtraInformation["Delivery Method:"]</span>
+                    </div>
+                }
+            </div>
+        </div>
+        @await Html.PartialAsync("_LineItemDetail", Model?.LineItemsDetail ?? new LineItemsDetail())
+    </div>
+</div>
+@await Html.PartialAsync("_DeliveryActivity", Model?.Activities ?? new DeliveryMonitoring.Models.Activities())
