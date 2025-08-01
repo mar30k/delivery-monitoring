@@ -25,17 +25,7 @@ namespace DeliveryMonitoring.Controllers
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             try
             {
-                var result = await FetchCompletedOrders(_client);
-                //if (result == null || result.Data == null)
-                //{
-                //    ViewBag.ErrorMessage = "Failed to retrieve or parse completed orders.";
-                //    return View(null);
-                //}
-
-                if (companyTin != "0076217301")
-                {
-                    result.Data = result.Data?.Where(order => order.Tin == companyTin).ToList();
-                }
+                var completedResult = await FetchCompletedOrders(_client);
 
                 var purposeResponse = await _client.GetAsync("delivery/getpurpose");
                 if (!purposeResponse.IsSuccessStatusCode)
@@ -56,7 +46,7 @@ namespace DeliveryMonitoring.Controllers
 
                 
                 var dineInResponseData = await dineInResponse.Content.ReadAsStringAsync();
-                var dineIneResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(dineInResponseData);
+                var dineIneResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(dineInResponseData) ?? new HulubejeResponse<List<CompletedOrders>>();
 
                 var takeAwayResponse = await _client.GetAsync("voucher/getordersbytype?type=2076");
                 if (!takeAwayResponse.IsSuccessStatusCode)
@@ -67,12 +57,17 @@ namespace DeliveryMonitoring.Controllers
 
                 
                 var takeAwayResponseData = await takeAwayResponse.Content.ReadAsStringAsync();
-                var takeAwayResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(takeAwayResponseData);
-
+                var takeAwayResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(takeAwayResponseData) ?? new HulubejeResponse<List<CompletedOrders>>();
+                if (companyTin != "0076217301")
+                {
+                    completedResult.Data = completedResult.Data?.Where(order => order.Tin == companyTin).ToList();
+                    dineIneResult.Data = dineIneResult.Data?.Where(order => order.Tin == companyTin).ToList();
+                    takeAwayResult.Data = takeAwayResult.Data?.Where(order => order.Tin == companyTin).ToList();
+                }
                 
                 var CompletedOrdersViewModel = new CompletedOrdersViewModel
                 {
-                    CompletedOrders = result,
+                    CompletedOrders = completedResult,
                     DineInOders = dineIneResult,
                     TakeAwayOrders = takeAwayResult,
                     PurposeOptions = purposeResult
