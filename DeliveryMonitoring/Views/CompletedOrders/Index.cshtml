@@ -385,6 +385,6 @@
     <script>
         const purposeOptions = @Html.Raw(Json.Serialize(Model?.PurposeOptions ?? new Dictionary<int, string>()));
     </script>
-    <script src="~/js/completed-orders.js"></script>
+    <script src="~/js/completed-orders.js" asp-append-version="true"></script>
 }
 
