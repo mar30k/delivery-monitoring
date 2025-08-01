@@ -64,7 +64,7 @@ namespace DeliveryMonitoring.Controllers
                     dineIneResult.Data = dineIneResult.Data?.Where(order => order.Tin == companyTin).ToList();
                     takeAwayResult.Data = takeAwayResult.Data?.Where(order => order.Tin == companyTin).ToList();
                 }
-                
+
                 var CompletedOrdersViewModel = new CompletedOrdersViewModel
                 {
                     CompletedOrders = completedResult,
@@ -103,9 +103,51 @@ namespace DeliveryMonitoring.Controllers
             }
             return Ok(result);
         }
+        [Route("/orderdetail")]
+        public async Task<IActionResult> OrderDetail(string voucher, string name, string branch, int companyCode)
+        {
+            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+
+            // 1. Fetch voucher detail
+            var voucherResponse = await client.GetAsync($"voucher/gethistorydetail?voucherCode={voucher}&companyCode={companyCode}&industryType=1992");
+            if (!voucherResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await voucherResponse.Content.ReadAsStringAsync();
+                ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
+            }
+
+            var voucherContent = await voucherResponse.Content.ReadAsStringAsync();
+            var voucherDetail = JsonConvert.DeserializeObject<HulubejeResponse<LineItemsDetail>>(voucherContent)
+                                ?? new HulubejeResponse<LineItemsDetail>();
+
+            // 2. Fetch driver activity
+            var driverResponse = await client.GetAsync($"driveractivity/get?voucherCode={voucher}&companyCode={companyCode}");
+            if (!driverResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await driverResponse.Content.ReadAsStringAsync();
+                ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
+            }
+
+            var driverContent = await driverResponse.Content.ReadAsStringAsync();
+            var driverActivity = JsonConvert.DeserializeObject<HulubejeResponse<Activities>>(driverContent)
+                                 ?? new HulubejeResponse<Activities>();
+
+            // Combine both results into a view model
+            var viewModel = new OrderDetail
+            {
+                CustomerFirstName = name,
+                BranchName = branch,
+                LineItemsDetail = voucherDetail.Data,
+                Activities = driverActivity.Data
+            };
+
+            return View(viewModel);
+        }
 
 
-        private async Task<HulubejeResponse<List<CompletedOrders>>> FetchCompletedOrders(HttpClient client)
+        private static async Task<HulubejeResponse<List<CompletedOrders>>> FetchCompletedOrders(HttpClient client)
         {
             try
             {
@@ -116,7 +158,7 @@ namespace DeliveryMonitoring.Controllers
                 }
 
                 var responseData = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(responseData);
+                return JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(responseData) ?? new HulubejeResponse<List<CompletedOrders>>();
             }
             catch (Exception)
             {
