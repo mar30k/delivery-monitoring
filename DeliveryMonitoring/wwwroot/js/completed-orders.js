@@ -388,7 +388,12 @@ async function fetchCompletedOrders() {
         data.forEach(order => {
             const requestCreatedAt = order.requestCreatedAtString || "N/A";
             const purposeKey = Object.entries(purposeOptions).find(([key, val]) => val === order.purpose)?.[0];
-
+            const detailUrl = `orderDetail?` + new URLSearchParams({
+                voucher: order.voucherCode,
+                companyCode: order.companyCode,
+                name: order.firstName,
+                branch: order.branchName
+            }).toString();
             const reviewButton = order.purpose
                 ? `<button class="btn btn-outline-secondary btn-sm"
                             data-note="${order.note ?? ''}"
@@ -451,6 +456,9 @@ async function fetchCompletedOrders() {
                 </td>
                 <td class="text-center">${reviewButton}</td>
                 <td class="text-center">${activityButton}</td>
+                <td class="text-center">
+                    <a id="detailsLink" class="btn btn-outline-secondary activityBtn btn-sm" href="${detailUrl}" target="_blank">Details</a>
+                </td>
             `;
 
             tbody.appendChild(row);
