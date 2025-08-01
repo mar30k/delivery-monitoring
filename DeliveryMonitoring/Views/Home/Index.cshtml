@@ -134,25 +134,48 @@
     </div>
 
 
-    <div class="row mt-3">
-        <!--The Donut Chart and the Map Starts Here-->
-        <div class="col-md-6">
+    <div class="row mt-3 gy-2">
+        <!-- Chart 1 -->
+        <div class="col-md-6 mb-2">
             <div class="card border-1 pb-2" id="driverCard">
                 <div class="d-flex justify-content-center align-items-center">
-                    <!-- Centering wrapper -->
                     <div class="collapse show col-12" id="donutchart">
-                        <!-- Optional max width -->
                         <canvas id="driversChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Chart 2 -->
         <div class="col-md-6">
             <div class="card border-1 pb-2">
                 <div class="d-flex justify-content-center align-items-center">
                     <div class="collapse show col-12" id="donutchart">
                         <canvas id="ordersChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <!-- Chart 3 -->
+        <div class="col-md-6 mb-3">
+            <div class="card border-1 pb-2">
+                <div class="d-flex justify-content-center align-items-center">
+                    <div class="collapse show col-12" id="donutchart">
+                        <canvas id="completdChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 4 -->
+        <div class="col-md-6">
+            <div class="card border-1 pb-2">
+                <div class="d-flex justify-content-center align-items-center">
+                    <div class="collapse show col-12" id="donutchart">
+                        <canvas id="completedTotalChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -181,107 +204,155 @@
         int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrived");
         int arrivedAtBranchOrdersCount = Model.Orders.Count(d => d.Status == "arrivedAtBranch");
         int sosOrdersCount = Model.Orders.Count(d => d.Status == "sos");
+
+        //counts related to completed ordres
+        var today = DateTime.Today;
+
+        int deliveryOrdersCount = Model?.CompletedOrders?.Data?
+        .Count(x => x.RequestCreatedAt.Date == today) ?? 0;
+
+        int dineinOrdersCount = Model?.DineInOrders?.Data?
+        .Count(x => x.RequestCreatedAt.Date == today) ?? 0;
+
+        int takeawayOrdersCount = Model?.TakeAwayOrders?.Data?
+        .Count(x => x.RequestCreatedAt.Date == today) ?? 0;
+
+        double deliveryOrdersTotalCount = Model?.CompletedOrders?.Data?
+        .Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
+
+        double dineinOrdersTotalCount = Model?.DineInOrders?.Data?
+        .Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
+
+        double takeawayOrdersTotalCount = Model?.TakeAwayOrders?.Data?
+        .Where(x => x.RequestCreatedAt.Date == today).Sum(x=> x.TotalAmount)?? 0;
     }
     <script>
         const ctx = document.getElementById('driversChart');
-        var driverDataSet = [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount , @arrivedatbranchCount, @arrivedCount];
+        const completedChart = document.getElementById('completdChart');
+        const completedTotalChart = document.getElementById('completedTotalChart');
+        const orderChart = document.getElementById('ordersChart');
+        var driverDataSet = [ @readyCount,@offlineCount, @acceptedCount, @deliveringCount, @completedCount , @arrivedatbranchCount, @arrivedCount];
+        var completeDataSet = [ @takeawayOrdersCount, @deliveryOrdersCount, @dineinOrdersCount];
+        var completeTotalAmountDataSet = [ @takeawayOrdersTotalCount, @deliveryOrdersTotalCount, @dineinOrdersTotalCount];
         var orderDataSet = [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
                             @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedAtBranchOrdersCount,@arrivedOrdersCount,@sosOrdersCount ];
-        const driverChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
-                datasets: [{
-                    label: 'Drivers',
-                    data: driverDataSet,
-                    backgroundColor: [
-                        '#dc3545', // Offline
-                        '#28a745', // Ready
-                        'seagreen', // Accepted
-                        'darkorange', // Delivering
-                        '#20c997', // Completed
-                        'coral' , // ArrivedAtBranch
-                        '#F7BEA2' , // Arrived
-                    ],
-                    hoverOffset: 4
-                }]
-            }, 
-            options: {
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                size: 14 // Increase font size of legend
+
+
+         function createDoughnutChart(ctx, label, labels, dataSet, colors, titleText) {
+            return new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: dataSet,
+                        backgroundColor: colors,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
                             }
-                        }
-                    },
-                    title:{
-                        display: true,
-                        text: 'Drivers Status',
-                        font: {
-                            size: 20 // Title font size
+                        },
+                        title: {
+                            display: true,
+                            text: titleText,
+                            font: {
+                                size: 18
+                            }
                         }
                     }
                 }
-            }
+            });
+        }
+        const driverChart = createDoughnutChart(
+            ctx,
+            'Drivers',
+            ['Ready', 'Offline', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
+            driverDataSet,
+            [
+                '#28a745',     // Ready
+                '#dc3545',     // Offline
+                'seagreen',    // Accepted
+                'darkorange',  // Delivering
+                '#20c997',     // Completed
+                'coral',       // ArrivedAtBranch
+                '#F7BEA2'      // Arrived
+            ],
+            'Drivers Status'
+        );
 
-        });
+        // Completed Orders Chart
+        const completdOrderschart = createDoughnutChart(
+            completedChart,
+            'Orders',
+            ['Takeaway (@takeawayOrdersCount)', 'Delivery (@deliveryOrdersCount)', 'Dine-in (@dineinOrdersCount)'],
+            completeDataSet,
+            [
+                '#17a2b8', // Takeaway
+                '#007bff', // Delivery
+                '#ffc107'  // Dine-in
+            ],
+            'Completed Orders @(DateTime.Today.ToString("yyyy-MM-dd"))'
+        );
 
-        const orderctx = document.getElementById('ordersChart');
-        const orderChart = new Chart(orderctx, {
-            type: 'doughnut',
-            data: {
-                labels: [
-                    'Completed',
-                    'Requested',
-                    'Assigned',
-                    'Accepted',
-                    'On The Way',
-                    'Declined',
-                    'Driver Not Found',
-                    'ArrivedAtBranch',
-                    'Arrived',
-                    'sos'
-                ],
-                datasets: [{
-                    label: 'Orders',
-                    data: orderDataSet,
-                    backgroundColor: [
-                        'green',       // Completed (fallback/default)
-                        'deepskyblue',  // Requested
-                        'lawngreen',    // Assigned
-                        'seagreen',     // Accepted
-                        'darkorange',   // On The Way
-                        'red',          // Declined
-                        'firebrick',    // Driver Not Found (alternative to red)
-                        'coral',        // ArrivedAtBranch
-                        '#F7BEA2',      // Arrived
-                        'darkred'       // sos
-                    ],
-                    hoverOffset: 6
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                size: 14 // Bigger legend font
-                            }
-                        }
-                    },
-                    title:{
-                        display: true,
-                        text: 'Orders Status',
-                        font: {
-                            size: 20 // ✅ Title font size
-                        }
-                    }
-                }
-            }
-        });
+
+        // Completed Orders Total Chart
+        const completedOrdersTotalChart = createDoughnutChart(
+            completedTotalChart,
+            'Orders',
+            [
+                'Takeaway (@takeawayOrdersTotalCount.ToString("N2"))',
+                'Delivery (@deliveryOrdersTotalCount.ToString("N2"))',
+                'Dine-in (@dineinOrdersTotalCount.ToString("N2"))'
+            ],
+            completeTotalAmountDataSet,
+            [
+                '#17a2b8', // Takeaway
+                '#007bff', // Delivery
+                '#ffc107'  // Dine-in
+            ],
+            'Completed Orders Total'
+        );
+
+        // Orders Status Chart
+        const ordersStatusChart = createDoughnutChart(
+            orderChart,
+            'Orders',
+            [
+                'Completed',
+                'Requested',
+                'Assigned',
+                'Accepted',
+                'On The Way',
+                'Declined',
+                'Driver Not Found',
+                'ArrivedAtBranch',
+                'Arrived',
+                'sos'
+            ],
+            orderDataSet,
+            [
+                'green',       // Completed
+                'deepskyblue', // Requested
+                'lawngreen',   // Assigned
+                'seagreen',    // Accepted
+                'darkorange',  // On The Way
+                'red',         // Declined
+                'firebrick',   // Driver Not Found
+                'coral',       // ArrivedAtBranch
+                '#F7BEA2',     // Arrived
+                'darkred'      // SOS
+            ],
+            'Orders Status'
+        );
+
         function updateChart() {
             const statusCounts = {
                 completed: 0,
@@ -304,7 +375,7 @@
             });
 
             // Update chart data
-            orderChart.data.datasets[0].data = [
+            ordersStatusChart.data.datasets[0].data = [
                 statusCounts.completed,
                 statusCounts.requested,
                 statusCounts.assigned,
@@ -317,7 +388,7 @@
                 statusCounts.sos
             ];
 
-            orderChart.update();
+            ordersStatusChart.update();
         }
 
         setInterval(function () {
