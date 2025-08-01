@@ -1,0 +1,45 @@
+﻿@model Activities
+<div class="uk-container uk-padding">
+    <div class="uk-timeline">
+        @foreach (var activity in Model?.ActivityResponse ?? new List<ActivityResponse>())
+        {
+            <div class="uk-timeline-item">
+                <div class="uk-timeline-icon">
+                    <span class="uk-badge"><span uk-icon="check"></span></span>
+                </div>
+                <div class="uk-timeline-content">
+                    <div class="uk-card uk-card-default uk-margin-medium-bottom uk-overflow-auto">
+                        <div class="uk-card-header">
+                            <div class="uk-grid-small uk-flex-middle" uk-grid>
+
+                                <!-- Column 1: Date and Time -->
+                                <div class="uk-width-1-1@s uk-width-1-3@m uk-text-center">
+                                    <p class="uk-card-title uk-margin-remove-bottom">
+                                        <time datetime="@activity?.Time?.ToString("yyyy-MM-ddTHH:mm:ss")">
+                                            @activity?.Time?.ToString("ddd MMM, dd yyyy hh:mm:ss tt")
+                                        </time>
+                                    </p>
+                                </div>
+
+                                <!-- Column 2: Elapsed Time -->
+                                <div class="uk-width-1-1@s uk-width-1-3@m uk-text-center">
+                                    @if (!string.IsNullOrEmpty(activity?.TimeElapsed))
+                                    {
+                                        <span class="uk-label uk-label-warning">@activity.TimeElapsed</span>
+                                    }
+                                </div>
+
+                                <!-- Column 3: Activity Name -->
+                                <div class="uk-width-1-1@s uk-width-1-3@m uk-text-center">
+                                    <span class="uk-label uk-label-success" style="white-space: normal; word-break: break-word;">
+                                        @activity?.Name
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
