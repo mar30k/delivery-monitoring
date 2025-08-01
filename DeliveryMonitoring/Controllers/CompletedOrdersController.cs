@@ -23,6 +23,8 @@ namespace DeliveryMonitoring.Controllers
         {
             var _client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            var dineIneResult = new HulubejeResponse<List<CompletedOrders>>();
+            var takeAwayResult = new HulubejeResponse<List<CompletedOrders>>();
             try
             {
                 var completedResult = await FetchCompletedOrders(_client);
@@ -43,10 +45,13 @@ namespace DeliveryMonitoring.Controllers
                     var errorContent = await dineInResponse.Content.ReadAsStringAsync();
                     ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
                 }
+                else
+                {
+                    var dineInResponseData = await dineInResponse.Content.ReadAsStringAsync();
+                    dineIneResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(dineInResponseData) ?? new HulubejeResponse<List<CompletedOrders>>();
+                }
 
-                
-                var dineInResponseData = await dineInResponse.Content.ReadAsStringAsync();
-                var dineIneResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(dineInResponseData) ?? new HulubejeResponse<List<CompletedOrders>>();
+                    
 
                 var takeAwayResponse = await _client.GetAsync("voucher/getordersbytype?type=2076");
                 if (!takeAwayResponse.IsSuccessStatusCode)
@@ -54,10 +59,13 @@ namespace DeliveryMonitoring.Controllers
                     var errorContent = await takeAwayResponse.Content.ReadAsStringAsync();
                     ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
                 }
+                else
+                {
+                    var takeAwayResponseData = await takeAwayResponse.Content.ReadAsStringAsync();
+                    takeAwayResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(takeAwayResponseData) ?? new HulubejeResponse<List<CompletedOrders>>();
+                }
 
-                
-                var takeAwayResponseData = await takeAwayResponse.Content.ReadAsStringAsync();
-                var takeAwayResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(takeAwayResponseData) ?? new HulubejeResponse<List<CompletedOrders>>();
+                    
                 if (companyTin != "0076217301")
                 {
                     completedResult.Data = completedResult.Data?.Where(order => order.Tin == companyTin).ToList();
