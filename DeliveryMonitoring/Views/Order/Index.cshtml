@@ -202,7 +202,7 @@
                                 </td>
                                 <td class="driver-cell text-center" >
                                     <div class="d-inline-flex align-items-center gap-1">
-                                        <a href="tel:@order?.AssignedDriverPhoneNumber">@(order?.AssignedDriverPhoneNumber ?? "N/A")</a> 
+                                        <a href="tel:@order?.AssignedDriverPhoneNumber">@(!string.IsNullOrEmpty(order?.AssignedDriverPhoneNumber) ? order?.AssignedDriverPhoneNumber: "N/A")</a> 
                                         @if (!string.IsNullOrEmpty(order?.AssignedDriverPhoneNumber))
                                         {
                                             <a onclick="copyToClipboard('@order.AssignedDriverPhoneNumber')" title="Copy to clipboard"  class="text-primary text-decoration-none">
@@ -219,7 +219,8 @@
                                     else
                                     {
                                         var supervisor = Model?.Supervisors?.FirstOrDefault(x => x.UserName == @order?.SupervisedBy);
-                                        <a href="tel: @order?.SupervisedBy">@(supervisor!=null ?@supervisor?.FirstName  + " "+ supervisor?.SecondName : @order?.SupervisedBy) </a> <a onclick="openAssignSupervisorModal('@order?.VoucherCode')"> <i class="fa-solid fa-pen-to-square"></i></a>
+                                        <a href="tel: @order?.SupervisedBy">@(supervisor!=null ?@supervisor?.FirstName  + " "+ supervisor?.SecondName : @order?.SupervisedBy) </a>
+                                        <a onclick="openAssignSupervisorModal('@order?.VoucherCode')"> <i class="fa-solid fa-pen-to-square"></i></a>
                                     }
                                 </td>
                                 <td class="text-center">
@@ -262,6 +263,13 @@
                         }
                     }
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="12" class="text-end">Page Total:</th>
+                        <th class="text-center"></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
             </table>
 @*             <a class="btn btn-outline-dark btn-sm"
                data-order='@Html.Raw(testJsonOrder)'
