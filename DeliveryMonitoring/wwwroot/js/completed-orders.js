@@ -322,12 +322,13 @@ async function showActivity(button) {
             summary.innerHTML = `
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Start Time:</strong> ${new Date(data.startTime).toLocaleString()}</p>
-                        <p><strong>ETA:</strong> ${new Date(data.eta).toLocaleString()}</p>
+                        ${data.startTime ? `<p><strong>Start Time:</strong> ${new Date(data.startTime).toLocaleString()}</p>` : ''}
+                        ${data.eta ? `<p><strong>ETA:</strong> ${new Date(data.eta).toLocaleString()}</p>` : ''}
+                        ${data.etaDifference ? `<p><strong>ETA Difference:</strong> ${data.etaDifference}</p>` : ''}
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Actual Arrival:</strong> ${new Date(data.actualArrival).toLocaleString()}</p>
-                        <p><strong>Current Time:</strong> ${new Date(data.currentTime).toLocaleString()}</p>
+                        ${data.actualArrival ? `<p><strong>Actual Arrival:</strong> ${new Date(data.actualArrival).toLocaleString()}</p>` : ''}
+                        ${data.currentTime ? `<p><strong>Current Time:</strong> ${new Date(data.currentTime).toLocaleString()}</p>` : ''}
                     </div>
                 </div>
             `;

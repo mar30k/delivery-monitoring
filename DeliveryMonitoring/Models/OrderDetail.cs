@@ -192,6 +192,25 @@ namespace DeliveryMonitoring.Models
         [DisplayName("Alert")]
         public string? Alert { get; set; }
 
+        [DisplayName("ETA Difference")]
+        public string? EtaDifference
+        {
+            get
+            {
+                if (Eta.HasValue && ActualArrival.HasValue)
+                {
+                    var diff = ActualArrival.Value - Eta.Value;
+                    if (diff.TotalMinutes < -1)
+                        return $"Arrived {Math.Abs(diff.TotalMinutes):0} minutes early.";
+                    if (diff.TotalMinutes > 1)
+                        return $"Arrived {diff.TotalMinutes:0} minutes late.";
+                    return "Arrived on time.";
+                }
+
+                return null; // or "Not enough data"
+            }
+        }
+
         [DisplayName("Activity Response")]
         public List<ActivityResponse>? ActivityResponse { get; set; }
     }
