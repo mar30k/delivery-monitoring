@@ -31,6 +31,9 @@
                     <th class="text-center">
                         Activities
                     </th>
+                    <th class="text-center">
+                        Details
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -57,7 +60,15 @@
                                 @(order?.FirstName ?? "N/A")
                             </td>
                             <td class="text-center">
-                                <a href="tel:@order?.PhoneNumber">@(order?.PhoneNumber ?? "N/A")</a>
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <a href="tel:@order?.PhoneNumber">@(order?.PhoneNumber ?? "N/A")</a>
+                                    @if (!string.IsNullOrEmpty(order?.PhoneNumber))
+                                    {
+                                        <a onclick="copyToClipboard('@order.PhoneNumber')" title="Copy to clipboard" class="text-primary text-decoration-none">
+                                            <i class="bi bi-clipboard"></i>
+                                        </a>
+                                    }
+                                </div>
                             </td>
                             <td data-order="@order?.RequestCreatedAt.ToString("yyyy-MM-ddTHH:mm:ss")" data-iso="@order?.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss")" class="text-center">
                                 @order?.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss")
@@ -72,6 +83,12 @@
                                         onclick="showActivity(this)">
                                     Show
                                 </button>
+                            </td>
+                            <td class="text-center">
+                                <a class="btn btn-outline-secondary activityBtn btn-sm" target="_blank"
+                                   href="completedorders/orderDetail?voucher=@order?.VoucherCode&companyCode=@order?.CompanyCode&name=@order?.FirstName&branch=@order?.BranchName">
+                                Details
+                                </a>
                             </td>
                         </tr>
                     }
