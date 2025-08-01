@@ -186,74 +186,7 @@
                 }
             </div>
         </div>
-        <!--Order Items Table-->
-        <h4 style="margin-left: 28px; margin-bottom: 10px;">Products</h4>
-        <div class="px-4 table-responsive table-bordered">
-            <table class="table" id="orderTable">
-                <thead class="table-secondary">
-                    <tr>
-                        <th>
-                            Item Name
-                        </th>
-                        <th class="text-center">
-                            Quantity
-                        </th>
-                        <th class="text-center">
-                            Unit Amount
-                        </th>
-                        <th class="text-center">
-                            Taxable Amount
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model?.LineItemsDetail?.LineItems ?? new List<LineItem>())
-                    {
-                        <tr>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.Name)
-                            </td>
-                            <td class="text-center">
-                                @Html.DisplayFor(modelItem => item.Quantity)
-                            </td>
-                            <td class="text-center">
-                                @String.Format("{0:F2} ETB", item.UnitAmount)
-                            </td>
-                            <td class="text-center">
-                                @String.Format("{0:F2} ETB", item.TaxableAmount)
-                            </td>
-                        </tr>
-                    }
-                    @foreach (var charge in Model?.LineItemsDetail?.ExtraCharge ?? new Dictionary<string, decimal>())
-                    {
-                        <tr>
-                            <td>
-                                @charge.Key
-                            </td>
-                            <td>
-                            </td>
-                            <td>
-                            </td>
-                            <td class="text-center">
-                                @String.Format("{0:F2} ETB", @charge.Value)
-                            </td>
-                        </tr>
-                    }
-                    <tr class="table-secondary bold-borders">
-                        <td>
-                            <h4><b>TOTAL</b></h4>
-                        </td>
-                        <td>
-                        </td>
-                        <td>
-                        </td>
-                        <td class="text-center">
-                            <h4><b>@String.Format("{0:F2} ETB", Model?.LineItemsDetail?.GrandTotal)</b></h4>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <br/>
+        @await Html.PartialAsync("_LineItemDetail", Model?.LineItemsDetail ?? new LineItemsDetail())
         </div>
     </div>
 </div>
