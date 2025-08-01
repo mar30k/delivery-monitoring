@@ -1,89 +1,119 @@
 ﻿var js = jQuery.noConflict(true);
-var tablelist;
-
-js(() => {
-    let startDate = moment().startOf('day');
-    let endDate = moment().endOf('day');
-
-    // Add DataTables custom filter logic BEFORE initializing the table
-    js.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-        if (!startDate || !endDate) return true;
-
-        var orderDateStr = data[5]; // column with Order DateTime
-        var orderDate = moment(orderDateStr, "YYYY-MM-DD HH:mm:ss");
-
-        return orderDate.isBetween(startDate, endDate, undefined, '[]');
-    });
-
-    // Temporarily unhide all rows so DataTables can register them
-    js('#tablelist tbody tr.initial-hide').removeClass('initial-hide');
-    // Initialize DataTable
-    tablelist = js('#tablelist').DataTable({
+var dineInTable, takeAwayTable, tablelist;
+var dateFilterMappings = [
+    { id: "dineInDateRange", tableName: "dineInTable" },
+    { id: "dateRange", tableName: "tablelist" },
+    { id: "takeAwayDateRange", tableName: "takeAwayTable" }
+];
+function initOrderTable(selector, emptyMessage, totalColumnIndex, nonOrderableTargets = [0]) {
+    return js(selector).DataTable({
         responsive: true,
         order: [[5, "desc"]],
         pageLength: 50,
         lengthMenu: [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
-        columnDefs: [
-            { orderable: false, targets: [0, 4, 9, 13, 12] }
-        ],
-        language: {
-            emptyTable: "No orders history to display at the moment."
-        },
+        columnDefs: [{ orderable: false, targets: nonOrderableTargets }],
+        language: { emptyTable: emptyMessage },
         footerCallback: function (row, data, start, end, display) {
             var api = this.api();
-            var columnIndex = 11; // <-- Update this to match the TotalAmount column
 
             var parseValue = function (i) {
-                const parsed = typeof i === 'string'
-                    ? parseFloat(i.replace(/[^0-9.-]+/g, '')) || 0
-                    : typeof i === 'number'
-                        ? i
-                        : 0;
-                return parsed;
+                if (typeof i === "string") {
+                    return parseFloat(i.replace(/[^0-9.-]+/g, "")) || 0;
+                } else if (typeof i === "number") {
+                    return i;
+                }
+                return 0;
             };
 
-            var columnData = api.column(columnIndex, { page: 'current' }).data();
+            var columnData = api.column(totalColumnIndex, { page: "current" }).data();
             var pageTotal = columnData.reduce(function (a, b) {
                 return parseValue(a) + parseValue(b);
             }, 0);
-            js(api.column(columnIndex).footer()).html(
+
+            js(api.column(totalColumnIndex).footer()).html(
                 pageTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
             );
-        }
+        },
+    });
+}
+js(() => {
+    let startDate = moment().startOf('day');
+    let endDate = moment().endOf('day');
+
+    js.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        if (!startDate || !endDate) return true;
+
+        var orderDateStr = data[5]; // Adjust as needed for different tables
+        var orderDate = moment(orderDateStr, "YYYY-MM-DD HH:mm:ss");
+
+        return orderDate.isValid() && orderDate.isBetween(startDate, endDate, undefined, '[]');
+    });
+    dateFilterMappings.forEach(({ id, tableName }) => {
+        js(`#${tableName} tbody tr.initial-hide`).removeClass('initial-hide');
     });
 
-    // Initialize Date Range Picker with today's date preselected
-    js('#dateRange').daterangepicker({
-        startDate: startDate,
-        endDate: endDate,
-        maxDate: moment(),
-        autoUpdateInput: true,
-        locale: {
-            cancelLabel: 'Clear',
-            format: 'YYYY-MM-DD'
-        }
-    });
+    dineInTable = initOrderTable(
+        "#dineInTable",
+        "No dine-in orders available.",
+        6,
+        [0, 4, 7, 8]
+    );
 
-    // Set the input manually (because autoUpdateInput may not trigger redraw)
-    js('#dateRange').val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
+    takeAwayTable = initOrderTable(
+        "#takeAwayTable",
+        "No takeaway orders available.",
+        6,
+        [0, 4, 7, 8]
+    );
 
-    // Initial draw to apply default today's filter
-    tablelist.draw();
+    tablelist = initOrderTable(
+        "#tablelist",
+        "No orders history to display at the moment.",
+        11,
+        [0, 4, 9, 12, 13, 14]
+    );
 
-    // On apply
-    js('#dateRange').on('apply.daterangepicker', function (ev, picker) {
-        startDate = picker.startDate.startOf('day');
-        endDate = picker.endDate.endOf('day');
-        js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
-        tablelist.draw();
-    });
+    // Apply date filters to corresponding tables
+    dateFilterMappings.forEach(({ id, tableName }) => {
+        const selector = `#${id}`;
+        const tableRef = (tableName === "dineInTable") ? dineInTable :
+            (tableName === "takeAwayTable") ? takeAwayTable :
+                (tableName === "tablelist") ? tablelist : null;
 
-    // On clear
-    js('#dateRange').on('cancel.daterangepicker', function (ev, picker) {
-        startDate = null;
-        endDate = null;
-        js(this).val('');
-        tablelist.draw();
+        if (!tableRef) return;
+
+        js(selector).daterangepicker({
+            startDate: startDate,
+            endDate: endDate,
+            maxDate: moment(),
+            autoUpdateInput: true,
+            locale: {
+                cancelLabel: 'Clear',
+                format: 'YYYY-MM-DD'
+            }
+        });
+
+        // Set initial date range text
+        js(selector).val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
+
+        // Trigger initial draw
+        tableRef.draw();
+
+        // Handle apply
+        js(selector).on('apply.daterangepicker', function (ev, picker) {
+            startDate = picker.startDate.startOf('day');
+            endDate = picker.endDate.endOf('day');
+            js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+            tableRef.draw();
+        });
+
+        // Handle clear
+        js(selector).on('cancel.daterangepicker', function () {
+            startDate = null;
+            endDate = null;
+            js(this).val('');
+            tableRef.draw();
+        });
     });
 });
 async function showDetailsModal(button) {
@@ -321,7 +351,7 @@ async function showActivity(button) {
 
             summary.innerHTML = `
                 <div class="row">
-                    <div class="col-md-6">
+                   <div class="col-md-6">
                         ${data.startTime ? `<p><strong>Start Time:</strong> ${new Date(data.startTime).toLocaleString()}</p>` : ''}
                         ${data.eta ? `<p><strong>ETA:</strong> ${new Date(data.eta).toLocaleString()}</p>` : ''}
                         ${data.etaDifference ? `<p><strong>ETA Difference:</strong> ${data.etaDifference}</p>` : ''}
