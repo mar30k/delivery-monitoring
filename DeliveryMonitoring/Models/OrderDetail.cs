@@ -130,7 +130,7 @@ namespace DeliveryMonitoring.Models
         public ExtraData? ExtraData { get; set; }
 
         [DisplayName("Issued Date")]
-        public DateTime? IssuedDate { get; set; }
+        public DateTime IssuedDate { get; set; }
 
         [DisplayName("Branch Code")]
         public int? BranchCode { get; set; }
@@ -160,7 +160,7 @@ namespace DeliveryMonitoring.Models
         public decimal? UnitAmount { get; set; }
 
         [DisplayName("Quantity")]
-        public int? Quantity { get; set; }
+        public decimal? Quantity { get; set; }
 
         [DisplayName("Taxable Amount")]
         public decimal? TaxableAmount { get; set; }
