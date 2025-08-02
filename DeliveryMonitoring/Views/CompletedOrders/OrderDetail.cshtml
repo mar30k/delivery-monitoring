@@ -7,7 +7,7 @@
     <div class="card" id="orderCard">
         <div class="row px-4 pt-4 pb-2" >
             <!-- Customer Section -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <h4 class="mb-2"><i class="bi bi-person-circle icon"></i> Customer</h4>
                 <div>
                     <strong class="text-muted">Name:</strong>
@@ -20,7 +20,7 @@
             </div>
 
             <!-- Company Section -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <h4 class="mb-2"><i class="bi bi-building icon"></i> Company</h4>
                 <div>
                     <strong class="text-muted">Name:</strong>
@@ -54,16 +54,45 @@
                 <div>
                     <span><strong>Order Date Time:</strong></span>
                     <span>@Model?.Activities?.StartTime?.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
-                </div>
-                <div>
-                    <span><strong>Current Time:</strong></span>
-                    <span>@Model?.Activities?.CurrentTime?.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
-                </div>
+                </div>               
                 @if (Model?.LineItemsDetail?.ExtraInformation != null && Model.LineItemsDetail.ExtraInformation.ContainsKey("Delivery Method:"))
                 {
                     <div>
                         <span><strong>Delivery Method:</strong></span>
                         <span>@Model.LineItemsDetail.ExtraInformation["Delivery Method:"]</span>
+                    </div>
+                }
+            </div>
+            <div class="col-md-3">
+                <div>
+                    <span><strong>Current Time:</strong></span>
+                    <span>@Model?.Activities?.CurrentTime?.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
+                </div>
+                @{
+                    var activities = Model?.Activities;
+                }
+
+                @if (activities?.Eta is DateTime eta)
+                {
+                    <div>
+                        <span><strong>ETA:</strong></span>
+                        <span>@eta.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
+                    </div>
+                }
+
+                @if (activities?.ActualArrival is DateTime actual)
+                {
+                    <div>
+                        <span><strong>Actual Time Of Arrival:</strong></span>
+                        <span>@actual.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(activities?.EtaDifference))
+                {
+                    <div>
+                        <span><strong>ETA Difference:</strong></span>
+                        <span>@activities.EtaDifference</span>
                     </div>
                 }
             </div>
