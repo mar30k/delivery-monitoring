@@ -401,11 +401,13 @@ function showActivityAlert(message, type = 'danger') {
 
 
 
-setInterval(fetchCompletedOrders, 30000); // every 30 seconds
+setInterval(fetchDeliveryOrders, 30000); // every 30 seconds
+setInterval(()=> fetchOrdersByType(2076), 30000); // every 30 seconds
+setInterval(()=> fetchOrdersByType(3203), 30000); // every 30 seconds
 
-async function fetchCompletedOrders() {
+async function fetchDeliveryOrders() {
     try {
-        const response = await fetch('/completedOrders/getcompletedorders');
+        const response = await fetch('/getcompletedorders');
         if (!response.ok) {
             console.error("Failed to fetch completed orders");
             return;
@@ -421,9 +423,6 @@ async function fetchCompletedOrders() {
             const purposeKey = Object.entries(purposeOptions).find(([key, val]) => val === order.purpose)?.[0];
             const detailUrl = `orderDetail?` + new URLSearchParams({
                 voucher: order.voucherCode,
-                companyCode: order.companyCode,
-                name: order.firstName,
-                branch: order.branchName
             }).toString();
             const reviewButton = order.purpose
                 ? `<button class="btn btn-outline-secondary btn-sm"
@@ -501,6 +500,92 @@ async function fetchCompletedOrders() {
         // Redraw the table and retain the current page
         tablelist.draw();
         tablelist.page(currentPage).draw(false);
+    } catch (err) {
+        console.error("Error rendering completed orders:", err);
+    }
+}
+async function fetchOrdersByType(type) {
+    try {
+        const response = await fetch(`/getordersbytype?type=${type}`);
+        if (!response.ok) {
+            console.error("Failed to fetch completed orders");
+            return;
+        }
+        var table = type === 2076 ? "takeAwayTable" : "dineInTable";
+        const tableInstance = type === 2076 ? takeAwayTable : dineInTable;  
+
+        const result = await response.json();
+        const data = result.data || [];
+        let currentPage = tableInstance.page.info().page;
+        const tbody = document.querySelector(`#${table} tbody`);
+        tbody.innerHTML = ''; // Clear old rows
+        data.forEach(order => {
+            const requestCreatedAt = order.requestCreatedAtString || "N/A";
+            const purposeKey = Object.entries(purposeOptions).find(([key, val]) => val === order.purpose)?.[0];
+            const detailUrl = `orderDetail?` + new URLSearchParams({
+                voucher: order.voucherCode,
+                type: table,
+            }).toString();
+            const reviewButton = order.note
+                ? `<button class="btn btn-outline-secondary btn-sm"
+                            data-note="${order.note ?? ''}"
+                            data-purpose="${order.purpose ?? ''}"
+                            data-purpose-key="${purposeKey}"
+                            data-voucher-code="${order.voucherCode ?? ''}"
+                            data-customer-phone="${order.phoneNumber ?? ''}"
+                            data-phone-number="${order.driverPhoneNumber ?? ''}"
+                            onclick="showDetailsModal(this)">Show</button>`
+                : `<button class="btn btn-outline-secondary btn-sm"
+                            data-voucher-code="${order.voucherCode ?? ''}"
+                            data-phone-number="${order.driverPhoneNumber ?? ''}"
+                            data-customer-phone="${order.phoneNumber ?? ''}"
+                            onclick="showReviewModal(this)">Review</button>`;
+            const activityButton = `<button class="btn btn-outline-secondary activityBtn btn-sm"
+                                      data-voucher="${order.voucherCode ?? ''}"
+                                      data-company-code="${order.companyCode}"
+                                      onclick="showActivity(this)"
+                                      >
+                                      Show
+                                    </button>`;
+
+            let row = document.createElement('tr');
+            row.setAttribute('data-voucher', order.voucherCode);
+            row.style.fontSize = "13px";
+
+            row.innerHTML = `
+                <td class="text-center">${order.voucherCode || 'N/A'}</td>
+                <td class="text-center">${order.companyName || 'N/A'}</td>
+                <td class="text-center">${order.branchName || 'N/A'}</td>
+                <td class="text-center">${order.firstName || 'N/A'}</td>
+                <td class="text-center">
+                    <div class="d-inline-flex align-items-center gap-1">
+                        <a href="tel:${order.phoneNumber}">${order.phoneNumber || 'N/A'}</a>
+                            ${order.phoneNumber ? `
+                                <a href="#" onclick="copyToClipboard('${order.phoneNumber}')" title="Copy to clipboard" >
+                                    <i class="bi bi-clipboard"></i>
+                                </a>` : ''
+                }
+                    </div>
+                </td>
+                <td data-order="${order.requestCreatedAt}" data-iso="${requestCreatedAt}" class="text-center">${requestCreatedAt}</td>
+                <td class="text-center">
+                  ${order.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}
+                </td>
+                <td class="text-center">${activityButton}</td>
+                <td class="text-center">
+                    <a id="detailsLink" class="btn btn-outline-secondary activityBtn btn-sm" href="${detailUrl}" target="_blank">Details</a>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        });
+
+        // Reinitialize DataTable without destroying it
+        tableInstance.clear();
+        tableInstance.rows.add(js(`#${table} tbody tr`));  // Add the newly updated rows
+        // Redraw the table and retain the current page
+        tableInstance.draw();
+        tableInstance.page(currentPage).draw(false);
     } catch (err) {
         console.error("Error rendering completed orders:", err);
     }
