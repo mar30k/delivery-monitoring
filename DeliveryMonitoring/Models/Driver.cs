@@ -19,6 +19,7 @@ namespace DeliveryMonitoring.Models
         public double? TotalKm { get; set; }
         public int? WeekDelivery { get; set; }
         public int? TodayDelivery { get; set; }
+        public string? IdAttachment { get; set; }
     }
     public class Review
     {
