@@ -43,13 +43,13 @@ namespace DeliveryMonitoring.Controllers
                 if (companyTin != "0076217301")
                 {
                     if (completedResult != null)
-                    completedResult.Data = completedResult.Data?.Where(order => order.Tin == companyTin).ToList();
+                        completedResult.Data = completedResult.Data?.Where(order => order.Tin == companyTin).ToList();
 
                     if (dineIneResult != null)
-                    dineIneResult.Data = dineIneResult.Data?.Where(order => order.Tin == companyTin).ToList();
+                        dineIneResult.Data = dineIneResult.Data?.Where(order => order.Tin == companyTin).ToList();
 
                     if (takeAwayResult != null)
-                    takeAwayResult.Data = takeAwayResult.Data?.Where(order => order.Tin == companyTin).ToList();
+                        takeAwayResult.Data = takeAwayResult.Data?.Where(order => order.Tin == companyTin).ToList();
                 }
 
                 var CompletedOrdersViewModel = new CompletedOrdersViewModel
@@ -68,7 +68,7 @@ namespace DeliveryMonitoring.Controllers
             }
         }
 
-        [HttpGet("getCompletedOrders")]
+        [HttpGet("/getCompletedOrders")]
         public async Task<IActionResult> GetCompletedOrdersApi()
         {
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
@@ -90,15 +90,59 @@ namespace DeliveryMonitoring.Controllers
             }
             return Ok(result);
         }
-        [Route("/orderdetail")]
-        public async Task<IActionResult> OrderDetail(string voucher, string name, string branch, int companyCode)
+
+        [HttpGet("/getordersbytype")]
+        public async Task<IActionResult> GetOrdersByType(string type)
         {
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
-            // 1. Fetch voucher detail
-            var voucherResponse = await client.GetAsync($"voucher/gethistorydetail?voucherCode={voucher}&companyCode={companyCode}&industryType=1992");
+            var getordersbytypeData = await FetchCompletedOrders(client, "voucher/getordersbytype?type=3203");
+
+            if (getordersbytypeData == null || getordersbytypeData.Data == null)
+            {
+                return NotFound("Failed to retrieve or parse completed orders.");
+            }
+
+            if (companyTin != "0076217301")
+            {
+                getordersbytypeData.Data = getordersbytypeData.Data.Where(order => order.Tin == companyTin).ToList();
+            }
+            foreach (var item in getordersbytypeData.Data)
+            {
+                item.RequestCreatedAtString = item.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss");
+            }
+            return Ok(getordersbytypeData);
+        }
+        [Route("/orderdetail")]
+        public async Task<IActionResult> OrderDetail(string voucher ,string type)
+        {
+            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            var supervisors = new List<SupervisorsDTO>();
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            string url = "voucher/getcompletedorders";
+            if (type == "dineInTable")
+            {
+                url = "voucher/getordersbytype?type=3203";
+            }
+            else if (type == "takeAwayTable")
+            {
+                url = "voucher/getordersbytype?type=2076";
+            }
+            var result = await FetchCompletedOrders(client, url);
+            if (result == null)
+            {
+                TempData["Message"] = $"Unable to fetch details of Order: {voucher}.";
+                return RedirectToAction("index");
+            }
+            CompletedOrders? order = result != null ? result.Data?.FirstOrDefault(o => o.VoucherCode == voucher) : new CompletedOrders();
+
+            if (companyTin != "0076217301" && companyTin != order?.Tin)
+            {
+                TempData["Message"] = $"You do not have the necessary permissions to view Order: {voucher}.";
+                return RedirectToAction("index");
+            }
+            var voucherResponse = await client.GetAsync($"voucher/gethistorydetail?voucherCode={voucher}&companyCode={order?.CompanyCode}&industryType=1992");
             if (!voucherResponse.IsSuccessStatusCode)
             {
                 var errorContent = await voucherResponse.Content.ReadAsStringAsync();
@@ -110,13 +154,24 @@ namespace DeliveryMonitoring.Controllers
                                 ?? new HulubejeResponse<LineItemsDetail>();
 
             // 2. Fetch driver activity
-            var driverResponse = await client.GetAsync($"driveractivity/get?voucherCode={voucher}&companyCode={companyCode}");
+            var driverResponse = await client.GetAsync($"driveractivity/get?voucherCode={voucher}&companyCode={order?.CompanyCode}");
             if (!driverResponse.IsSuccessStatusCode)
             {
                 var errorContent = await driverResponse.Content.ReadAsStringAsync();
                 ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
             }
 
+            var getsupervisors = await client.GetAsync(client.BaseAddress + "auth/getsupervisors");
+            if (getsupervisors.IsSuccessStatusCode)
+            {
+                string Supervisordata = await getsupervisors.Content.ReadAsStringAsync();
+                supervisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(Supervisordata);
+                var supervisor = supervisors?.FirstOrDefault(s => s.UserName == order?.SupervisorPhoneNumber);
+                if (order != null)
+                {
+                    order.SupervisorName = $"{supervisor?.FirstName} {supervisor?.SecondName}";
+                }
+            }
             var driverContent = await driverResponse.Content.ReadAsStringAsync();
             var driverActivity = JsonConvert.DeserializeObject<HulubejeResponse<Activities>>(driverContent)
                                  ?? new HulubejeResponse<Activities>();
@@ -124,8 +179,11 @@ namespace DeliveryMonitoring.Controllers
             // Combine both results into a view model
             var viewModel = new OrderDetail
             {
-                CustomerFirstName = name,
-                BranchName = branch,
+                CustomerFirstName = order?.FirstName,
+                BranchName = order?.BranchName,
+                SupervisedBy = order?.SupervisorPhoneNumber,
+                SupervisorName = order?.SupervisorName,
+                AssignedDriverPhoneNumber = order?.DriverPhoneNumber,
                 LineItemsDetail = voucherDetail.Data,
                 Activities = driverActivity.Data
             };
