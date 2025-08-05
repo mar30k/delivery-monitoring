@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="~/css/orderDetail.css" />
 @{
     ViewData["Title"] = "OrderDetail";
+    var colClass = ((!string.IsNullOrEmpty(Model?.SupervisedBy) || !string.IsNullOrEmpty(Model?.SupervisorName)) && !string.IsNullOrEmpty(Model?.AssignedDriverPhoneNumber)) ? "col-md-6" : "col-md-3";
 }
 <div class="px-4 mt-2">
 
@@ -10,7 +11,7 @@
     <div class="card" id="orderCard">
         <div class="row px-4 pt-4 pb-2" >
             <!-- Customer Section -->
-            <div class="col-md-3">
+            <div class="col-md-3 mb-3">
                 <h4 class="mb-2"><i class="bi bi-person-circle icon"></i> Customer</h4>
                 <div>
                     <strong class="text-muted">Name:</strong>
@@ -23,7 +24,7 @@
             </div>
 
             <!-- Company Section -->
-            <div class="col-md-3">
+            <div class="col-md-3 mb-3 ">
                 <h4 class="mb-2"><i class="bi bi-building icon"></i> Company</h4>
                 <div>
                     <strong class="text-muted">Name:</strong>
@@ -49,24 +50,46 @@
                     </span>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div>
-                    <span><strong>VoucherCode:</strong></span>
-                    <span>@Model?.LineItemsDetail?.VoucherCode</span>
-                </div>
-                <div>
-                    <span><strong>Order Date Time:</strong></span>
-                    <span>@Model?.Activities?.StartTime?.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
-                </div>               
-                @if (Model?.LineItemsDetail?.ExtraInformation != null && Model.LineItemsDetail.ExtraInformation.ContainsKey("Delivery Method:"))
-                {
+
+            <!-- Supervisor Section -->
+            @if (!string.IsNullOrEmpty(Model?.SupervisedBy) || !string.IsNullOrEmpty(Model?.SupervisorName))
+            {
+                <div class="col-md-3 mb-3">
+                    <h4 style="margin-bottom: 5px;"><i class="bi bi-person-circle icon"></i>Supervisor</h4>
                     <div>
-                        <span><strong>Delivery Method:</strong></span>
-                        <span>@Model.LineItemsDetail.ExtraInformation["Delivery Method:"]</span>
+                        <span id="letters">Phone:</span>
+                        <span id="outputs">
+                            @(Model?.SupervisedBy ?? "Not Assigned")
+                        </span>
                     </div>
-                }
-            </div>
-            <div class="col-md-3">
+                    @if (!string.IsNullOrWhiteSpace(Model?.SupervisorName))
+                    {
+                        <div>
+                            <span id="letters">Name:</span>
+                            <span id="outputs">
+                                @Model?.SupervisorName
+                            </span>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Driver Section -->
+            @if (!string.IsNullOrEmpty(Model?.AssignedDriverPhoneNumber))
+            {
+                <div class="col-md-3 mb-3">
+                    <h4 style="margin-bottom: 5px;"> <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Driver</h4>
+                    <div>
+                        <span id="letters">Phone:</span>
+                        <span id="outputs">
+                            @Html.DisplayFor(model => model.AssignedDriverPhoneNumber)
+                        </span>
+                    </div>
+                </div>
+            }
+
+            <!-- ETA Section -->
+            <div class="@colClass mb-3">
                 <div>
                     <span><strong>Current Time:</strong></span>
                     <span>@Model?.Activities?.CurrentTime?.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
@@ -99,6 +122,26 @@
                     </div>
                 }
             </div>
+
+            <!-- Voucher Section -->
+            <div class="@colClass mb-3">
+                <div>
+                    <span><strong>VoucherCode:</strong></span>
+                    <span>@Model?.LineItemsDetail?.VoucherCode</span>
+                </div>
+                <div>
+                    <span><strong>Order Date Time:</strong></span>
+                    <span>@Model?.Activities?.StartTime?.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
+                </div>               
+                @if (Model?.LineItemsDetail?.ExtraInformation != null && Model.LineItemsDetail.ExtraInformation.ContainsKey("Delivery Method:"))
+                {
+                    <div>
+                        <span><strong>Delivery Method:</strong></span>
+                        <span>@Model.LineItemsDetail.ExtraInformation["Delivery Method:"]</span>
+                    </div>
+                }
+            </div>
+            
         </div>
         @await Html.PartialAsync("_LineItemDetail", Model?.LineItemsDetail ?? new LineItemsDetail())
     </div>
