@@ -9,6 +9,24 @@
     }
 </style>
 <div class="p-4 mt-2">
+    @if (TempData["Message"] != null)
+    {
+        <div id="tempAlert" class="alert alert-warning alert-dismissible fade show" role="alert" >
+            @TempData["Message"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <script>
+            setTimeout(function () {
+                var alertBox = document.getElementById('tempAlert');
+                if (alertBox) {
+                    alertBox.classList.remove('show');
+                    alertBox.classList.add('fade');
+                    alertBox.style.display = 'none';
+                }
+            }, 5000);
+        </script>
+    }
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item">
             <a class="nav-link active text-decoration-none" id="home-tab" data-toggle="tab" href="#home" role="tab"
