@@ -45,7 +45,7 @@
     <!--Map ends here-->
 
     <div class="container-fluid col-11 col-lg-7 pt-3">
-        <div class="card border-1" id="orderCard">
+        <div class="card border-1 p-2" id="orderCard">
             <div class="row pt-3" id="orderDetail">
                 <div class="col-4">
                     <h4><i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Driver</h4>
@@ -68,6 +68,7 @@
             <div class="row" id="orderDetail">               
                 <div class="col-6">
                     <img src="@Model?.Detail?.ProfilePicture" alt="" class="half-size-img">
+                    <img src="@Model?.Detail?.IdAttachment" alt="" class="half-size-img">
                 </div>
                 <div class="col-6">
                     <div class="mb-2">
@@ -279,6 +280,10 @@
                     icon: {
                         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                         scale: 4,
+                        strokeColor: "#FF0000", // Outline color
+                        fillColor: "#FF0000",   // Fill color
+                        fillOpacity: 1,         // Optional: controls fill transparency
+                        rotation: 90            // Optional: rotate the arrow if needed
                     },
                 });
 
@@ -443,6 +448,9 @@
                             marker.setIcon({
                                 path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                                 scale: 4,
+                                strokeColor: "#FF0000", // Outline color
+                                fillColor: "#FF0000",   // Fill color
+                                fillOpacity: 1,         // Optional: controls fill transparency
                                 rotation: bearing,
                             });
 
@@ -480,7 +488,7 @@
             }
         }
         async function getCompletedOrders(phoneNumber){
-            const response = await fetch('/completedOrders/getcompletedorders');
+            const response = await fetch('/getcompletedorders');
             const completedOrders = await response.json();
             if (!Array.isArray(completedOrders.data)) {
                 return ;
