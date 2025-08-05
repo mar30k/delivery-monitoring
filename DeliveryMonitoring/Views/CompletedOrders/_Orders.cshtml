@@ -1,6 +1,7 @@
 ﻿@model List<CompletedOrders>
 @{
     var tableId = ViewData["TableId"] as string ?? "defaultTableId";
+    var purposeOptions = ViewData["PurposeOptions"] as Dictionary<int, string> ?? new Dictionary<int, string>();
 }
 <div class="row card">
     <div class="table-responsive pt-3 pb-3">

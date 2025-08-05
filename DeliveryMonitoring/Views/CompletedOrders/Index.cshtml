@@ -214,7 +214,7 @@
                                         </td>
                                         <td class="text-center">
                                             <a class="btn btn-outline-secondary activityBtn btn-sm"  target="_blank"
-                                               href="orderdetail?voucher=@order?.VoucherCode&companyCode=@order?.CompanyCode&name=@order?.FirstName&branch=@order?.BranchName" >
+                                               href="orderdetail?voucher=@order?.VoucherCode" >
                                             Details
                                             </a>
                                         </td>
@@ -249,9 +249,11 @@
                 </div>
             </div>
             @await Html.PartialAsync("_Orders", Model?.DineInOders?.Data,
-            new ViewDataDictionary(ViewData) {
+            new ViewDataDictionary(ViewData)
+            {
                 ["TableId"] = "dineInTable",
-                ["Title"] = "Dine-in Orders"
+                ["Title"] = "Dine-in Orders",
+                ["PurposeOptions"] = Model?.PurposeOptions
             })
         </div>
 
@@ -271,7 +273,8 @@
             @await Html.PartialAsync("_Orders", Model?.TakeAwayOrders?.Data,
                     new ViewDataDictionary(ViewData) {
                          ["TableId"] = "takeAwayTable" ,
-                         ["Title"] = "Takeaway Orders" 
+                         ["Title"] = "Takeaway Orders",
+                         ["PurposeOptions"] = Model?.PurposeOptions
                     })
         </div>
     </div>
