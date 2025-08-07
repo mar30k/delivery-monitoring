@@ -101,7 +101,9 @@
                                 <th class="text-center">
                                     Total
                                 </th>
-
+                                <th class="text-center">
+                                    Tip
+                                </th>
                                 <th class="text-center">
                                     Review
                                 </th>
@@ -175,6 +177,9 @@
                                         </td>
                                         <td class="text-center">
                                             @(order?.TotalAmount.ToString("N2") ?? "N/A")
+                                        </td>
+                                        <td class="text-center">
+                                            @(order?.Tip.ToString("N2") ?? "N/A")
                                         </td>
 
 

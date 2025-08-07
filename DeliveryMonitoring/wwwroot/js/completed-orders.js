@@ -70,7 +70,7 @@ js(() => {
         "#tablelist",
         "No orders history to display at the moment.",
         11,
-        [0, 4, 9, 12, 13, 14]
+        [0, 4, 9, 13, 14, 15]
     );
 
     // Apply date filters to corresponding tables
@@ -483,6 +483,9 @@ async function fetchDeliveryOrders() {
                 <td class="text-center">${order.supervisorName || 'N/A'}</td>
                 <td class="text-center">
                   ${order.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}
+                </td>
+                <td class="text-center">
+                  ${order.tip?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0'}
                 </td>
                 <td class="text-center">${reviewButton}</td>
                 <td class="text-center">${activityButton}</td>
