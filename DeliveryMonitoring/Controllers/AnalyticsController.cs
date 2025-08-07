@@ -34,7 +34,9 @@ namespace DeliveryMonitoring.Controllers
             Companies company = new();
             List<DeviceControl> deviceControl = new();
             List<SupervisorsDTO> superVisors = new();
-
+            HulubejeResponse<List<CompletedOrders>> completedOrders = new();
+            HulubejeResponse<List<CompletedOrders>> dineInOders = new();
+            HulubejeResponse<List<CompletedOrders>> takeAwayOrders = new();
             try
             {
                 var startDate = DateTime.Today.ToString("yyyy-MM-dd");
@@ -44,6 +46,9 @@ namespace DeliveryMonitoring.Controllers
                 company = await FetchData<Companies>(client, $"/companies") ?? new Companies();
                 superVisors = await FetchData<List<SupervisorsDTO>>(v7Client, $"auth/getsupervisors") ?? new List<SupervisorsDTO>();
                 deviceControl = await FetchData<List<DeviceControl>>(httpClient, $"deviceControl?StartDate={startDate}&EndDate={startDate}") ?? new List<DeviceControl>();
+                takeAwayOrders = await FetchData<HulubejeResponse<List<CompletedOrders>>>(v7Client, $"voucher/getordersbytype?type=2076") ?? new HulubejeResponse<List<CompletedOrders>>();
+                completedOrders = await FetchData<HulubejeResponse<List<CompletedOrders>>>(v7Client, $"voucher/getcompletedorders") ?? new HulubejeResponse<List<CompletedOrders>>();
+                dineInOders = await FetchData<HulubejeResponse<List<CompletedOrders>>>(v7Client, $"voucher/getordersbytype?type=3203") ?? new HulubejeResponse<List<CompletedOrders>>();
             }
             catch (HttpRequestException)
             {
@@ -56,8 +61,11 @@ namespace DeliveryMonitoring.Controllers
                 Orders = orders,
                 Comps = company,
                 CompanyTin = companyTin,
-                DeviceControl = deviceControl,
-                Supervisors = superVisors
+                DeviceControl = latestByTinAndBranch,
+                Supervisors = superVisors,
+                CompletedOrders = completedOrders,
+                DineInOrders = dineInOders,
+                TakeAwayOrders = takeAwayOrders
             };
             return View(viewModel);
         }
