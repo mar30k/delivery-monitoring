@@ -180,12 +180,35 @@
                 </div>
                 <!--The Bar Chart and the Map Ends Here-->
             </div>
+                <div class="row mt-2 d-none">
+                    <!-- Chart 3 -->
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-1 pb-2">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <div class="collapse show col-12" id="donutchart">
+                                    <canvas id="completdChart"></canvas>
         </div>
+                            </div>
+                        </div>
+                    </div>
 
-        <div class="row vh-100 my-5 animated-row px-3" id="secondRow">
+                    <!-- Chart 4 -->
+                    <div class="col-md-6">
+                        <div class="card border-1 pb-2">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <div class="collapse show col-12" id="donutchart">
+                                    <canvas id="completedTotalChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row vh-100 my-5 px-3" id="secondRow">
             <div class="col-12 col-xl-12 pb-3" id="map">
             </div>
         </div>
+
     </div>
 </div>
 @{
