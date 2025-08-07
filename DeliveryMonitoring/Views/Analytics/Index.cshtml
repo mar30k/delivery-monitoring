@@ -243,6 +243,7 @@
     var map;
     const driverMarkerMap = new Map();
     $(document).ready(function () {
+            loadMapScript();
         autoScrollDashboard();
         fetchOrders();
         fetchSupervisors();
@@ -253,22 +254,16 @@
         // playAlertSound();
     });
     const ctx = document.getElementById('driversChart');
-    const driverChart = new Chart(ctx, {
+        const orderChart = document.getElementById('ordersChart');
+        function createDoughnutChart(ctx, label, labels, dataSet, colors, titleText) {
+            return new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
+                    labels: labels,
             datasets: [{
-                label: 'Drivers',
-                data: driverDataSet,
-                backgroundColor: [
-                    '#dc3545', // Offline
-                    '#28a745', // Ready
-                    'seagreen', // Accepted
-                    'darkorange', // Delivering
-                    '#20c997', // Completed
-                    'coral' , // ArrivedAtBranch
-                    '#F7BEA2' , // Arrived
-                ],
+                        label: label,
+                        data: dataSet,
+                        backgroundColor: colors,
                 hoverOffset: 4
             }]
         },
@@ -278,26 +273,76 @@
                         position: 'bottom',
                         labels: {
                             font: {
-                                size: 14 // Increase font size of legend
+                                    size: 14
                             }
                         }
                     },
-                    title:{
+                        title: {
                         display: true,
-                        text: 'Drivers Status',
+                            text: titleText,
                         font: {
-                            size: 20 // Title font size
+                                size: 18
                         }
                     }
                 }
             }
     });
-    const orderctx = document.getElementById('ordersChart');
+        }
+        const driverChart = createDoughnutChart(
+            ctx,
+            'Drivers',
+            ['Ready', 'Offline', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
+            driverDataSet,
+            [
+                '#28a745',     // Ready
+                '#dc3545',     // Offline
+                'seagreen',    // Accepted
+                'darkorange',  // Delivering
+                '#20c997',     // Completed
+                'coral',       // ArrivedAtBranch
+                '#F7BEA2'      // Arrived
+            ],
+            'Drivers Status'
+        );
 
-     const orderChart = new Chart(orderctx, {
-        type: 'doughnut',
-        data: {
-            labels: [
+        // Completed Orders Chart
+        const completdOrderschart = createDoughnutChart(
+            completedChart,
+            'Orders',
+            ['Takeaway (@takeawayOrdersCount)', 'Delivery (@deliveryOrdersCount)', 'Dine-in (@dineinOrdersCount)'],
+            completeDataSet,
+            [
+                '#17a2b8', // Takeaway
+                '#007bff', // Delivery
+                '#ffc107'  // Dine-in
+            ],
+            'Completed Orders @(DateTime.Today.ToString("yyyy-MM-dd"))'
+        );
+
+
+        // Completed Orders Total Chart
+        const completedOrdersTotalChart = createDoughnutChart(
+            completedTotalChart,
+            'Orders',
+            [
+                'Takeaway (@takeawayOrdersTotalCount.ToString("N2"))',
+                'Delivery (@deliveryOrdersTotalCount.ToString("N2"))',
+                'Dine-in (@dineinOrdersTotalCount.ToString("N2"))'
+            ],
+            completeTotalAmountDataSet,
+            [
+                '#17a2b8', // Takeaway
+                '#007bff', // Delivery
+                '#ffc107'  // Dine-in
+            ],
+            'Completed Orders Total'
+        );
+
+        // Orders Status Chart
+        const ordersStatusChart = createDoughnutChart(
+            orderChart,
+            'Orders',
+            [
                 'Completed',
                 'Requested',
                 'Assigned',
@@ -309,44 +354,21 @@
                 'Arrived',
                 'sos'
             ],
-            datasets: [{
-                label: 'Orders',
-                data: orderDataSet,
-                backgroundColor: [
-                    'green',       // Completed (fallback/default)
-                    'deepskyblue',  // Requested
-                    'lawngreen',    // Assigned
-                    'seagreen',     // Accepted
-                    'darkorange',   // On The Way
-                    'red',          // Declined
-                    'firebrick',    // Driver Not Found (alternative to red)
-                    'coral',        // ArrivedAtBranch
-                    '#F7BEA2',      // Arrived
-                    'darkred'       // sos
+            orderDataSet,
+            [
+                'green',       // Completed
+                'deepskyblue', // Requested
+                'lawngreen',   // Assigned
+                'seagreen',    // Accepted
+                'darkorange',  // On The Way
+                'red',         // Declined
+                'firebrick',   // Driver Not Found
+                'coral',       // ArrivedAtBranch
+                '#F7BEA2',     // Arrived
+                'darkred'      // SOS
                 ],
-                hoverOffset: 6
-            }]
-        },
-        options: {
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                size: 14 // Bigger legend font
-                            }
-                        }
-                    },
-                    title:{
-                        display: true,
-                        text: 'Orders Status',
-                        font: {
-                            size: 20 // ✅ Title font size
-                        }
-                    }
-                }
-            }
-    });
+            'Orders Status'
+        );
 
     function loadMapScript(retries = 3, delay = 1000) {
         fetch('/Map/GetMapData')
@@ -366,7 +388,6 @@
                 }
             });
     }
-    loadMapScript();
 
     function initMap() {
         // Default center coordinates
@@ -475,6 +496,8 @@
         }, 15000); // Change section every 15 seconds
     }
 
+
+
     const seenOrders = new Set();
     let isFirstFetch = true;
     let orders = null;
@@ -547,7 +570,7 @@
             }
         });
         // Update chart data
-        orderChart.data.datasets[0].data = [
+            ordersStatusChart.data.datasets[0].data = [
             statusCounts.completed,
             statusCounts.requested,
             statusCounts.assigned,
@@ -560,7 +583,7 @@
             statusCounts.sos
         ];
 
-        orderChart.update();
+            ordersStatusChart.update();
     }
 
     function updateDriverChart(data) {
@@ -630,7 +653,7 @@
             <div class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body">
-                        New Order: ${order.voucherCode} <br> Customer: ${order.customerFirstName || 'Unknown'} <br>
+                            New Order: ${order.voucherCode} <br> Customer: ${order.customerFirstName || 'Unknown'} <br> Company: ${order.companyName || 'Unknown'} <br>
                     </div>
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-dismiss="toast" aria-label="Close"></button>
                 </div>
