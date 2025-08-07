@@ -52,15 +52,19 @@ namespace DeliveryMonitoring.Controllers
 
             var responseData = await response.Content.ReadAsStringAsync();
             var deviceControl = JsonConvert.DeserializeObject<List<DeviceControl>>(responseData);
-
+            var latestByTinAndBranch = deviceControl?
+                .Where(d => d.TimeStamp.HasValue) // Ensure TimeStamp is not null
+                .GroupBy(d => new { d.Tin, d.BranchName, d.DeviceName }) // Group by Tin , BranchName and DeviceName
+                .Select(g => g.OrderByDescending(d => d.TimeStamp).First()) // Get the one with latest TimeStamp
+                .ToList();
             if (companyTin != "0076217301")
             {
-                deviceControl = deviceControl?
+                latestByTinAndBranch = latestByTinAndBranch?
                     .Where(x => x?.Tin?.ToString() == companyTin?.Trim())
                     .ToList();
             }
 
-            return deviceControl;
+            return latestByTinAndBranch;
         }
     }
 }

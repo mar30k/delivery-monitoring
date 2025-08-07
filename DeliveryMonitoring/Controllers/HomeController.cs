@@ -63,20 +63,30 @@ namespace DeliveryMonitoring.Controllers
             {
                 // Optionally log the error
             }
-
+            var latestByTinAndBranch = deviceControl?
+                .Where(d => d.TimeStamp.HasValue) // Ensure TimeStamp is not null
+                .GroupBy(d => new { d.Tin, d.BranchName, d.DeviceName }) // Group by Tin , BranchName and DeviceName
+                .Select(g => g.OrderByDescending(d => d.TimeStamp).First()) // Get the one with latest TimeStamp
+                .ToList();
+            if (companyTin != "0076217301")
+            {
+                latestByTinAndBranch = latestByTinAndBranch?
+                    .Where(x => x?.Tin?.ToString() == companyTin?.Trim())
+                    .ToList();
+            }
             var viewModel = new HomeViewModel
             {
                 Drivers = drivers,
                 Orders = orders,
                 Comps = company,
                 CompanyTin = companyTin,
-                DeviceControl = deviceControl,
+                DeviceControl = latestByTinAndBranch,
                 Supervisors = superVisors,
                 TakeAwayOrders = takeAwayOrders,
                 CompletedOrders = completedOrders,
                 DineInOrders = dineInOders
             };
-
+            
             return View(viewModel);
         }
 

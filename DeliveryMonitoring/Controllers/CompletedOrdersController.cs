@@ -97,7 +97,7 @@ namespace DeliveryMonitoring.Controllers
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
-            var getordersbytypeData = await FetchCompletedOrders(client, "voucher/getordersbytype?type=3203");
+            var getordersbytypeData = await FetchCompletedOrders(client, $"voucher/getordersbytype?type={type}");
 
             if (getordersbytypeData == null || getordersbytypeData.Data == null)
             {
@@ -115,7 +115,7 @@ namespace DeliveryMonitoring.Controllers
             return Ok(getordersbytypeData);
         }
         [Route("/orderdetail")]
-        public async Task<IActionResult> OrderDetail(string voucher ,string type)
+        public async Task<IActionResult> OrderDetail(string voucher ,string type = "")
         {
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var supervisors = new List<SupervisorsDTO>();
