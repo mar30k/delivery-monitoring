@@ -1,4 +1,8 @@
 ﻿.half-size-img {
-    width: 70%;
-    height: 70%;
+    width: 100%;
+    max-height: 350px;
+}
+img{
+    margin-bottom: 10px !important;
+    object-fit: contain;
 }
