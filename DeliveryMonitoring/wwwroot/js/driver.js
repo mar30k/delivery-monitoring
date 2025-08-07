@@ -24,7 +24,32 @@ js( ()=> {
     } else {
         tablelist = js('#tablelist').DataTable();
     }
+
+    // Custom filter logic
+    js.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        const status = js('select[name="status"]').val()?.toLowerCase() || '';
+        const companyTin = js('#companyTin').val()?.toLowerCase() || '';
+
+        const rowStatus = data[4]?.toLowerCase().trim();    // status column
+        const rowCompanyTin = data[1]?.toLowerCase().trim(); // company column
+
+        const statusMatch = !status || rowStatus === status;
+        const companyMatch = !companyTin || rowCompanyTin.includes(companyTin);
+
+        return statusMatch && companyMatch;
+    });
+
+    // On submit, trigger redraw with new filters
+    js('#driverFilterForm').on('submit', function (e) {
+        e.preventDefault();
+        tablelist.draw();
+    });
 });
+function resetFilters() {
+    js('select[name="status"]').val('');
+    js('input[name="companyTin"]').val('');
+    tablelist.column(4).search('').column(1).search('').draw();
+}
 const statusColors = {
     offline: { color: "#dc3545", priority: "1" },  // Bootstrap danger - Offline
     ready: { color: "#28a745", priority: "8" },  // Bootstrap success - Ready
