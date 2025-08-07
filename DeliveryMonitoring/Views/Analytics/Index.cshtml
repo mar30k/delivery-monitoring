@@ -208,10 +208,35 @@
     int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrived");
     int arrivedAtBranchOrdersCount = Model.Orders.Count(d => d.Status == "arrivedAtBranch");
     int sosOrdersCount = Model.Orders.Count(d => d.Status == "sos");
+
+        //counts related to completed orders
+        var today = DateTime.Today;
+
+        int deliveryOrdersCount = Model?.CompletedOrders?.Data?
+        .Count(x => x.RequestCreatedAt.Date == today) ?? 0;
+
+        int dineinOrdersCount = Model?.DineInOrders?.Data?
+        .Count(x => x.RequestCreatedAt.Date == today) ?? 0;
+
+        int takeawayOrdersCount = Model?.TakeAwayOrders?.Data?
+        .Count(x => x.RequestCreatedAt.Date == today) ?? 0;
+
+        double deliveryOrdersTotalCount = Model?.CompletedOrders?.Data?
+        .Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
+
+        double dineinOrdersTotalCount = Model?.DineInOrders?.Data?
+        .Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
+
+        double takeawayOrdersTotalCount = Model?.TakeAwayOrders?.Data?
+        .Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
 }
 <div id="toastContainer" class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;"></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+        const completedChart = document.getElementById('completdChart');
+        const completedTotalChart = document.getElementById('completedTotalChart');
+        var completeDataSet = [ @takeawayOrdersCount, @deliveryOrdersCount, @dineinOrdersCount];
+        var completeTotalAmountDataSet = [ @takeawayOrdersTotalCount, @deliveryOrdersTotalCount, @dineinOrdersTotalCount];
     var driverDataSet = [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount , @arrivedatbranchCount, @arrivedCount];
     var orderDataSet = [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
                          @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedAtBranchOrdersCount,@arrivedOrdersCount,@sosOrdersCount ];
