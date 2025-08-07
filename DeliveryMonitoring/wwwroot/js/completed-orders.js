@@ -574,6 +574,7 @@ async function fetchOrdersByType(type) {
                 <td class="text-center">
                   ${order.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}
                 </td>
+                <td class="text-center">${reviewButton}</td>
                 <td class="text-center">${activityButton}</td>
                 <td class="text-center">
                     <a id="detailsLink" class="btn btn-outline-secondary activityBtn btn-sm" href="${detailUrl}" target="_blank">Details</a>
