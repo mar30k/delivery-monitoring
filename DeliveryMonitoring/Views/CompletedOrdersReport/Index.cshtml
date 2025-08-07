@@ -1,0 +1,159 @@
+﻿@model CompletedOrdersViewModel
+@{
+    ViewData["Title"] = "Report";
+}
+<div class="p-4">
+    <button class="btn btn-success btn-sm mb-2" id="exportToEcelBtn">Export Table</button>
+    <div class="row card">
+        <div class="table-responsive pt-3 pb-3">
+            <table class="table compact stripe hover pt-3" id="competedOrders" style="font-size: 13px;">
+                <thead class="">
+                    <tr>
+                        <th class="text-center">
+                            Order Number
+                        </th>
+                        <th class="text-center">
+                            Company
+                        </th>
+                        <th class="text-center">
+                            Branch
+                        </th>
+                        <th class="text-center">
+                            Customer
+                        </th>
+                        <th class="text-center">
+                            Phone
+                        </th>
+                        <th class="text-center">
+                            Order DateTime
+                        </th>
+                        <th class="text-center">
+                            Distance
+                        </th>
+                        <th class="text-center">
+                            Duration
+                        </th>
+                        <th class="text-center">
+                            Eta
+                        </th>
+
+                        <th class="text-center">
+                            Driver
+                        </th>
+                        <th class="text-center">
+                            Supervisor
+                        </th>
+                        <th class="text-center">
+                            Total
+                        </th>
+                        <th class="text-center">
+                            Tip
+                        </th>
+                        <th class="text-center">
+                            Purpose
+                        </th>
+                        <th class="text-center">
+                            Note
+                        </th>
+                        <th class="text-center">
+                            Review
+                        </th>
+                        <th class="text-center">
+                            Rating
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        foreach (var order in Model?.CompletedOrders?.Data ?? new List<CompletedOrders>())
+                        {
+
+                            <tr data-voucher="@order?.VoucherCode">
+                                <td class="text-center dtr-control">
+                                    @(order?.VoucherCode ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.CompanyName ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.BranchName ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.FirstName ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.PhoneNumber ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @order?.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss")
+                                </td>
+                                <td data-order="@order?.Distance" class="text-center">
+                                    @(order?.Distance) K.M
+                                </td>
+                                <td data-order="@order?.Duration" class="text-center">
+                                    @(order?.Duration) Min
+                                </td>
+                                <td data-order="@order?.Eta" class="text-center">
+                                    @(order?.Eta) Min
+                                </td>
+                                <td class="driver-cell text-center">
+                                    @(order?.DriverPhoneNumber ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.SupervisorName ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.TotalAmount.ToString("N2") ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.Tip.ToString("N2") ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.Purpose ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.Note ?? "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @((!string.IsNullOrEmpty(order?.Review)) ? @order.Review : "N/A")
+                                </td>
+                                <td class="text-center">
+                                    @(order?.Rating.ToString() ?? "N/A")
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        document.getElementById("exportToEcelBtn").addEventListener("click", function () {
+            var table = document.getElementById("competedOrders");
+
+            // Convert table to workbook
+            var workbook = XLSX.utils.table_to_book(table, { sheet: "Completed Orders" });
+
+            var worksheet = workbook.Sheets["Completed Orders"];
+
+            // Set column widths
+            worksheet['!cols'] = [
+                { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 22 },
+                { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 12 },
+                { wch: 10 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, { wch: 10 }
+            ];
+            // Generate timestamp using Moment.js (format: YYYY-MM-DD_HH-mm-ss)
+            var timestamp = moment().format("YYYY-MM-DD_HH-mm-ss");
+
+            // Set filename
+            var filename = "CompletedOrders_" + timestamp + ".xlsx";
+
+            // Export to Excel
+            XLSX.writeFile(workbook, filename);
+        });
+    </script>
+}
