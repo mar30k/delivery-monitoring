@@ -228,10 +228,10 @@
     }
     <script>
         const ctx = document.getElementById('driversChart');
-        const completedChart = document.getElementById('completdChart');
-        const completedTotalChart = document.getElementById('completedTotalChart');
         const orderChart = document.getElementById('ordersChart');
         var driverDataSet = [ @readyCount,@offlineCount, @acceptedCount, @deliveringCount, @completedCount , @arrivedatbranchCount, @arrivedCount];
+        const completedChart = document.getElementById('completdChart');
+        const completedTotalChart = document.getElementById('completedTotalChart');
         var completeDataSet = [ @takeawayOrdersCount, @deliveryOrdersCount, @dineinOrdersCount];
         var completeTotalAmountDataSet = [ @takeawayOrdersTotalCount, @deliveryOrdersTotalCount, @dineinOrdersTotalCount];
         var orderDataSet = [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
@@ -394,7 +394,5 @@
         setInterval(function () {
             updateChart();
         }, 10000);
-        </script>
-    <!--code to display the donught chart ends here-->
-    
+        </script>    
 </div>

@@ -230,7 +230,7 @@
 
                                 <td style="text-align: center; vertical-align: middle;">
                                     <div style="display: inline-block;">
-                                        <a href="/order/@order?.VoucherCode">Details</a>
+                                        <a href="/order/@order?.VoucherCode">Details</a> @* class="btn btn-outline-secondary btn-sm"*@
 
                                         @if (order?.Status?.ToLower() == "drivernotfound" || order?.Status?.ToLower() == "declined" ||
                                          order?.Status?.ToLower() == "requested" || order?.Status?.ToLower() == "sos" || order?.Status?.ToLower() == "assigned")
