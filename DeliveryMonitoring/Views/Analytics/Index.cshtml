@@ -1,5 +1,6 @@
 ﻿@model DeliveryMonitoring.Models.HomeViewModel
-
+@using Microsoft.AspNetCore.Hosting
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @{
     ViewData["Title"] = "Dashboard";
     Layout = null;
