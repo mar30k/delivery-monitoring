@@ -4,7 +4,6 @@
 }
 <div class="p-4 mt-2">
     <h3 class="mb-4">Supervisors</h3>
-
     @if (Model == null || !Model.Supervisors.Any())
     {
         <div class="alert alert-info">
@@ -54,11 +53,16 @@
             </div>
         </div>
     }
-
-
 </div>
 @section Scripts {
     <script>
+        $(document).ready(function (){
+            fetchLoop();
+        });
+        async function fetchLoop() {
+            await fetchSupervisors();         // wait until done
+            setTimeout(fetchLoop, 30000);     // run again in 1 min
+        }
         var js = jQuery.noConflict(true);
         var tablelist;
         js(document).ready(function () {
@@ -66,7 +70,7 @@
                 responsive: true,
                 "order": [[0, "asc"]],
                 columnDefs: [
-                    { orderable: false, targets: [1, 2, 3,4] },
+                    { orderable: false, targets: [1, 2, 3, 5] },
                     { width: "35%", targets: 5 },
                     { width: "15%", targets: 0 }
                 ],
@@ -75,5 +79,53 @@
                 }
             });
         });
+        async function fetchSupervisors(){
+            try {
+                const response = await fetch('order/getAvailableSupervisors');
+                let supervisors = await response.json();
+                if(!Array.isArray(supervisors), !Array.isArray(data)) return;
+                updateSupervisorsTable(supervisors, data);
+                console.log(supervisors)
+            }
+            catch (error){
+                console.error("Error fetching alerts:", error);
+            }
+        }
+        function updateSupervisorsTable(supervisors, orderDetails) {
+            let tbody = js('#tablelist tbody');
+            tbody.empty(); // Clear old rows
+
+            supervisors.forEach(sup => {
+                let orders = orderDetails.filter(o => o.supervisedBy === sup.userName);
+                let ordersCount = orders.length;
+
+                let ordersAssigned = ordersCount
+                    ? orders.map(o => `<a href="/order/${o.voucherCode}">${o.voucherCode}</a>`).join(", ")
+                    : `<span class="text-danger">-</span>`;
+
+                let newRowHtml = `
+                    <tr style="font-size:13px;">
+                        <td>${sup.firstName ?? ''} ${sup.secondName ?? ''}</td>
+                        <td class="text-center"><a href="tel:${sup.userName ?? ''}">${sup.userName ?? ''}</a></td>
+                        <td class="text-center">${sup.loggedInStatus ? "Yes" : "No"}</td>
+                        <td class="text-center">${sup.totalSupervisedOrders ?? 0}</td>
+                        <td class="text-center">${ordersCount}</td>
+                        <td class="text-center">${ordersAssigned}</td>
+                    </tr>
+                `;
+
+                tbody.append(newRowHtml);
+            });
+
+            // Preserve current page before redraw
+            let currentPage = tablelist.page();
+
+            // Clear DataTable data and re-add rows from updated tbody
+            tablelist.clear();
+            tablelist.rows.add(tbody.find('tr')).draw(false);
+
+            // Restore the current page and redraw without resetting paging
+            tablelist.page(currentPage).draw(false);
+        }
     </script>
 }
