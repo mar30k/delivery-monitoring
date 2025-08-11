@@ -24,9 +24,19 @@
                 }
             </div>
             <hr />
-
             @if (Model?.Reviews != null && Model.Reviews.Any())
             {
+                <div class="mb-3">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(0)">All</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(5)">5 <i class="bi bi-star-fill text-warning"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(4)">4 <i class="bi bi-star-fill text-warning"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(3)">3 <i class="bi bi-star-fill text-warning"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(2)">2 <i class="bi bi-star-fill text-warning"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(1)">1 <i class="bi bi-star-fill text-warning"></i></button>
+                </div>
+                <div id="noReviewsMessage" class="alert alert-info d-none">
+                    No reviews found for the selected rating.
+                </div>
                 <div class="row">
                     @for (int i = 0; i < Model.Reviews.Count; i++)
                     {
@@ -37,7 +47,7 @@
                             imageUrl = "/images/default-avatar.png";
                         }
 
-                        <div class="col-md-6 mb-4">
+                        <div class="col-md-6 mb-4" data-rating="@review.Rating">
                             <div class="card shadow-sm border-0 h-100">
                                 <div class="card-body d-flex">
                                     <div class="me-4">
@@ -95,3 +105,27 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    <script>
+        function filterByRating(rating) {
+            let found = false;
+            document.querySelectorAll('[data-rating]').forEach(card => {
+                const cardRating = parseInt(card.getAttribute('data-rating'), 10);
+                if (rating === 0 || cardRating === rating) {
+                    card.style.display = '';
+                    found = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show or hide "No reviews" message
+            const msg = document.getElementById('noReviewsMessage');
+            if (!found) {
+                msg.classList.remove('d-none');
+            } else {
+                msg.classList.add('d-none');
+            }
+        }
+    </script>
+}
