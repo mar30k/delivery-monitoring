@@ -9,6 +9,11 @@
         public string? FirstName { get; set; }
         public string? SecondName { get; set; }
         public string? ThirdName { get; set; }
+        public int? TotalSupervisedOrders { get; set; }
     }
-
+    public class AssignSuperVisorDTO
+    {
+        public string? voucherCode { get; set; }
+        public string? phoneNumber { get; set; }
+    }
 }
