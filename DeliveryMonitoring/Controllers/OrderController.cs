@@ -1,4 +1,6 @@
-﻿using CNET_ERP_V7.WebConstants;
+﻿using Bogus;
+using Bogus.DataSets;
+using CNET_ERP_V7.WebConstants;
 using DeliveryMonitoring.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +8,6 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;
 using static NuGet.Packaging.PackagingConstants;
-using Bogus;
 namespace DeliveryMonitoring.Controllers
 {
     [Authorize]
@@ -131,12 +132,12 @@ namespace DeliveryMonitoring.Controllers
             }
         }
 
-        private OrderDetail GetSampleOrder()
+        private static OrderDetail GetSampleOrder()
         {
             return new OrderDetail
             {
                 Id = "ORD123456",
-                AssignedDriverPhoneNumber = "0912345678",
+                AssignedDriverPhoneNumber = "0990002862",
                 BranchName = "Addis Branch",
                 CompanyCode = 1001,
                 CompanyName = "Tech Logistics",
@@ -380,7 +381,50 @@ namespace DeliveryMonitoring.Controllers
                 string data = await response.Content.ReadAsStringAsync();
                 var supervisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data) ?? new List<SupervisorsDTO>();
 
+                HttpResponseMessage getCompletedOrders = await _client.GetAsync(_client.BaseAddress + "voucher/getcompletedorders");
+                var completedOrders = new HulubejeResponse<List<CompletedOrders>>();
+
+                if (getCompletedOrders.IsSuccessStatusCode)
+                {
+                    string ordersdata = await getCompletedOrders.Content.ReadAsStringAsync();
+                    completedOrders = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(ordersdata);
+                }
+                foreach (var supervisor in supervisors ?? new List<SupervisorsDTO>())
+                {
+                    supervisor.TotalSupervisedOrders = completedOrders?.Data?.Count(x => x.SupervisorPhoneNumber == supervisor.UserName) ?? 0;
+                }
                 return Ok(supervisors ?? new List<SupervisorsDTO>());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Exception: {ex.Message}");
+            }
+        }
+        [Route("/sendAlertMessage")]
+        public async Task<IActionResult> SendAlertMessage([FromBody] AlertMessageDto messageDto)
+        {
+            var requestPayload = new
+            {
+                id = messageDto.Id,
+                body = messageDto.Body,
+                title = messageDto.Title,
+            };
+
+            var content = new StringContent(JsonConvert.SerializeObject(requestPayload), Encoding.UTF8, "application/json");
+
+            var _client = _httpClientFactory.CreateClient("Delivery");
+            try
+            {
+                HttpResponseMessage response = await _client.PostAsync(_client.BaseAddress + "/messaging/sendMessage", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"failed: {error}");
+                }
+                string data = await response.Content.ReadAsStringAsync();
+
+                return Ok(data);
             }
             catch (Exception ex)
             {
@@ -418,9 +462,9 @@ namespace DeliveryMonitoring.Controllers
                 {
                     DeviceId = driver.DeviceId
                 });
-        }
+            }
             catch (Exception ex)
-        {
+            {
                 return StatusCode(500, $"Server error: {ex.Message}");
             }
         }
