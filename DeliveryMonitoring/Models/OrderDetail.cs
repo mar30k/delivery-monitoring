@@ -225,10 +225,16 @@ namespace DeliveryMonitoring.Models
         public string? TimeElapsed { get; set; }
     }
 
-
+    public class AlertMessageDto
+    {
+        public string? Id { get; set; }
+        public string? Title { get; set; }
+        public string? Body { get; set; }
+    }
     public class OrderViewModel
     {
         public List<OrderDetail>? OrderDetail { get; set; }
         public List<SupervisorsDTO>? Supervisors { get; set; }
+        public List<CompletedOrders>? CompletedOrders { get; set; }
     }
 }
