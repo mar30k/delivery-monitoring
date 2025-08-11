@@ -387,10 +387,42 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500, $"Exception: {ex.Message}");
             }
         }
-        public class AssignSuperVisorDTO
+
+        [HttpGet]
+        [Route("/getDeviceID/{phoneNumber}")]
+        public async Task<IActionResult> GetDriverDeviceId(string phoneNumber)
         {
-            public string? voucherCode { get; set; }
-            public string? phoneNumber { get; set; }
+            var _client = _httpClientFactory.CreateClient("Delivery");
+
+            try
+            {
+                HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + $"/drivers/{phoneNumber}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"Failed to fetch driver: {error}");
+                }
+
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                // Deserialize into Driver object
+                var driver = JsonConvert.DeserializeObject<Driver>(responseString);
+
+                if (driver == null || string.IsNullOrWhiteSpace(driver.DeviceId))
+                {
+                    return NotFound("Driver not found or DeviceId missing.");
+                }
+
+                return Ok(new
+                {
+                    DeviceId = driver.DeviceId
+                });
+        }
+            catch (Exception ex)
+        {
+                return StatusCode(500, $"Server error: {ex.Message}");
+            }
         }
         [HttpPost]
         public async Task<IActionResult> AssignSupervisor([FromBody] AssignSuperVisorDTO assignSuperVisorDTO)
