@@ -21,21 +21,21 @@
 
                         <div class="d-flex align-items-center gap-4 flex-wrap">
                             <div class="text-center">
-                                <h1 class="mb-0 fw-bold text-primary">
+                                <h1 class="mb-0 fw-bold text-primary" id="totalDrivers">
                                     @(Model?.Drivers?.Count ?? 0)
                                 </h1>
                                 <small class="text-black">Total</small>
                             </div>
-        
+
                             <div class="text-center">
-                                <h5 class="mb-0 text-info">
+                                <h5 class="mb-0 text-info" id="activeDrivers">
                                     @(Model?.Drivers?.Count(x => x.IsDisabled != true) ?? 0)
                                 </h5>
                                 <small class="text-muted">Active</small>
                             </div>
 
                             <div class="text-center">
-                                <h5 class="mb-0 text-success">
+                                <h5 class="mb-0 text-success" id="readyDrivers">
                                     @(Model?.Drivers?.Count(x => x.Status?.ToLower() == "ready") ?? 0)
                                 </h5>
                                 <small class="text-muted">Ready</small>
@@ -353,7 +353,7 @@
             'Orders Status'
         );
 
-        function updateChart() {
+        function updateOrdersChart() {
             const statusCounts = {
                 completed: 0,
                 requested: 0,
@@ -390,9 +390,51 @@
 
             ordersStatusChart.update();
         }
+        function updateDriversChart(){
+            const statusCounts = {
+                ready: 0,
+                offline: 0,
+                accepted: 0,
+                delivering: 0,
+                completed: 0,
+                arrivedAtBranch: 0,
+                arrived: 0,
+            };
+            fetch(`/Driver/LiveLocation`)
+            .then(response => response.json())
+            .then(data => {
+                if (!Array.isArray(data) || data == null) return;
+                const activeCount = data.filter(driver => !driver.isDisabled).length;
+                const readyCount = data.filter(driver => driver.status=== 'ready').length;
+                $("#totalDrivers").text(data.length);
+                $("#activeDrivers").text(activeCount);
+                $("#readyDrivers").text(readyCount);
+                // Count orders by status
+                data.forEach(driver => {
+                    if (statusCounts.hasOwnProperty(driver.status)) {
+                        statusCounts[driver.status]++;
+                    }
+                });
 
+                // Update chart data
+                driverChart.data.datasets[0].data = [
+                    statusCounts.ready,
+                    statusCounts.offline,
+                    statusCounts.accepted,
+                    statusCounts.delivering,
+                    statusCounts.completed,
+                    statusCounts.arrivedAtBranch,
+                    statusCounts.arrived,
+                ];
+
+                driverChart.update();
+            });
+        }
         setInterval(function () {
-            updateChart();
+            updateOrdersChart();
         }, 10000);
+        setInterval(function () {
+            updateDriversChart();
+        }, 30000);
         </script>    
 </div>
