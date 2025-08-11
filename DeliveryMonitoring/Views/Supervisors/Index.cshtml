@@ -53,6 +53,72 @@
             </div>
         </div>
     }
+
+    <div class="row g-3 mt-3">
+        @{
+            var activeSupervisorPhones = Model?.Supervisors?
+                .Select(s => s.UserName)
+                .ToHashSet() ?? new HashSet<string?>();
+
+            foreach (var sup in Model?.CompletedOrders?
+                .GroupBy(x => x.SupervisorPhoneNumber)
+                .OrderByDescending(s => activeSupervisorPhones.Contains(s.Key)) // Active first
+                .ThenBy(s => s.FirstOrDefault()?.SupervisorName) // Then sort alphabetically
+                .ToList() ?? new List<IGrouping<string?, CompletedOrders>>())
+            {
+                var now = DateTime.Now;
+                int currentYear = now.Year;
+                int currentMonth = now.Month;
+                int currentDay = now.DayOfYear;
+                var supervisorPhone = sup.FirstOrDefault()?.SupervisorPhoneNumber ?? "Unknown";
+                var orders = Model?.OrderDetail?.Where(o => o.SupervisedBy == supervisorPhone).ToList();
+                int pendingOrders = orders?.Count ?? 0;
+                var supervisorName = sup.FirstOrDefault()?.SupervisorName ?? "Unknown";
+                var completedOrders = sup.Count(o => o.Status?.ToLower() == "completed");
+                // Count orders supervised THIS MONTH
+                var supervisedThisMonth = Model?.CompletedOrders?
+                .Where(o => o.SupervisorPhoneNumber == supervisorPhone
+                && o.RequestCreatedAt.Year == currentYear
+                && o.RequestCreatedAt.Month == currentMonth).Count() ?? 0;
+                // Count orders supervised Today
+                var supervisedToday= Model?.CompletedOrders?
+                .Where(o => o.SupervisorPhoneNumber == supervisorPhone
+                && o.RequestCreatedAt.Year == currentYear
+                && o.RequestCreatedAt.DayOfYear == currentDay)
+                .Count() ?? 0;
+                <div class="col-md-4 col-sm-6">
+                    <div class="card shadow-sm border-0 rounded-3 h-100">
+                        <div class="card-body text-center">
+                            <h6 style="font-size: 20px;" class="card-title fw-bold">@supervisorName (@supervisorPhone)</h6>
+                            <hr style="  margin-top: 0.25rem;
+                                 margin-bottom: 0.25rem;" />
+                            <div style="font-size: 14px;">
+                                <p class="my-1">
+                                    <i class="fas fa-hourglass-half text-warning "></i>
+                                    <span class="fw-semibold">Orders Pending:</span>
+                                    <span id="pendingOrders_@sup.Key">@pendingOrders</span>
+                                </p>
+                                <p class="my-1">
+                                    <i class="fas fa-calendar-day text-danger "></i>
+                                    <span class="fw-semibold">Orders Supervised Today:</span> @supervisedToday
+                                </p> 
+                                <p class="my-1">
+                                    <i class="fas fa-calendar-alt text-info "></i>
+                                    <span class="fw-semibold">Orders Supervised in @(now.ToString("MMM, yyyy")):</span> @supervisedThisMonth
+                                </p>
+
+                                <p class="mt-1 mb-0">
+                                    <i class="fas fa-check-circle text-success "></i>
+                                    <span class="fw-semibold">Total Orders Supervised:</span> @completedOrders
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        }
+    </div>
 </div>
 @section Scripts {
     <script>
@@ -85,7 +151,6 @@
                 let supervisors = await response.json();
                 if(!Array.isArray(supervisors), !Array.isArray(data)) return;
                 updateSupervisorsTable(supervisors, data);
-                console.log(supervisors)
             }
             catch (error){
                 console.error("Error fetching alerts:", error);
@@ -98,7 +163,7 @@
             supervisors.forEach(sup => {
                 let orders = orderDetails.filter(o => o.supervisedBy === sup.userName);
                 let ordersCount = orders.length;
-
+                $(`#pendingOrders_${sup.userName}`).text(ordersCount);
                 let ordersAssigned = ordersCount
                     ? orders.map(o => `<a href="/order/${o.voucherCode}">${o.voucherCode}</a>`).join(", ")
                     : `<span class="text-danger">-</span>`;
