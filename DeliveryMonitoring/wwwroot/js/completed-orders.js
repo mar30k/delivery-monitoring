@@ -51,19 +51,19 @@ js(() => {
     dateFilterMappings.forEach(({ id, tableName }) => {
         js(`#${tableName} tbody tr.initial-hide`).removeClass('initial-hide');
     });
-
+    
     dineInTable = initOrderTable(
         "#dineInTable",
         "No dine-in orders available.",
         6,
-        [0, 4, 7, 8]
+        [0, 4, 7, 8, 9]
     );
 
     takeAwayTable = initOrderTable(
         "#takeAwayTable",
         "No takeaway orders available.",
         6,
-        [0, 4, 7, 8]
+        [0, 4, 7, 8, 9]
     );
 
     tablelist = initOrderTable(
@@ -122,6 +122,8 @@ async function showDetailsModal(button) {
     const voucherCode = button.getAttribute('data-voucher-code');
     const phoneNumber = button.getAttribute('data-phone-number');
     const customerPhone = button.getAttribute('data-customer-phone');
+    const customerReview = button.getAttribute('data-customer-review');
+    const customerRating = button.getAttribute('data-customer-rating');
     const purposeKey = button.getAttribute('data-purpose-key');
 
 
@@ -142,6 +144,8 @@ async function showDetailsModal(button) {
         phoneNumber,
         voucherCode,
         customerPhone,
+        customerReview,
+        customerRating,
         reviewSectionId: 'customerReview',
         spinnerId: 'reviewDetailsLoadingSpinner'
     });
@@ -152,6 +156,8 @@ async function showReviewModal(button) {
     const voucherCode = button.getAttribute('data-voucher-code');
     const phoneNumber = button.getAttribute('data-phone-number');
     const customerPhone = button.getAttribute('data-customer-phone');
+    const customerReview = button.getAttribute('data-customer-review');
+    const customerRating = button.getAttribute('data-customer-rating');
     const purposeKey = button.getAttribute('data-purpose-key');
 
     // Close any open modal before opening this one
@@ -172,6 +178,8 @@ async function showReviewModal(button) {
         phoneNumber,
         voucherCode,
         customerPhone,
+        customerReview,
+        customerRating,
         reviewSectionId: 'customerReviewSection',
         spinnerId: 'reviewLoadingSpinner'
     });
@@ -180,6 +188,8 @@ async function showCustomerReview({
     phoneNumber,
     voucherCode,
     customerPhone,
+    customerReview,
+    customerRating,
     reviewSectionId,
     spinnerId,
 }) {
@@ -199,14 +209,25 @@ async function showCustomerReview({
                         <i class="fas fa-rotate-right me-1"></i>Retry
                     </button>`;
     try {
+        const noReviewFound = `
+                <div class="alert alert-warning mb-0" role="alert">
+                    No customer review found for this order.
+                </div>
+            `;
+        if (!phoneNumber || !customerRating) {
+            reviewSection.innerHTML = noReviewFound;
+            return;
+        }
         const foundReview = await fetchDriverReview(phoneNumber, voucherCode, customerPhone);
         if (foundReview) {
+            const rawImageUrl = foundReview.image || "";
+            const imageUrl = rawImageUrl.startsWith("http://") ? "/images/default-avatar.png" : rawImageUrl || "/images/default-avatar.png";
             reviewSection.innerHTML =
                 `<div class="card shadow-sm border-0 mb-3">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="d-flex">
-                                <img src="${foundReview.image}" alt="${foundReview.fullName}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                <img src="${imageUrl}" alt="${foundReview.fullName}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                 <div>
                                     <h6 class="mb-0 fw-bold">${foundReview.fullName}</h6>
                                     <small class="text-muted">${new Date(foundReview.date).toLocaleDateString()}</small>
@@ -214,22 +235,18 @@ async function showCustomerReview({
                             </div>
                             <div class="text-end">
                                 <span class="fw-semibold text-warning">
-                                    ${renderStars(foundReview.rating)} 
-                                    <span class="ms-1 text-dark">${foundReview.rating.toFixed(1)}</span>
+                                    ${renderStars(customerRating)} 
+                                    <span class="ms-1 text-dark">${Number(customerRating).toFixed(1)}</span>
                                 </span>
                             </div>
                         </div>
 
-                        ${foundReview.review ? `<p class="my-1"><strong class="text-muted">Review:</strong> ${foundReview.review}</p>` : ''}
+                        ${customerReview ? `<p class="my-1"><strong class="text-muted">Review:</strong> ${customerReview}</p>` : ''}
                         ${foundReview.reply ? `<p class="my-1"><strong class="text-muted">Reply:</strong> ${foundReview.reply}</p>` : ''}
                     </div>
                 </div>`;
         } else {
-            reviewSection.innerHTML = `
-                <div class="alert alert-warning mb-0" role="alert">
-                    No customer review found for this order.
-                </div>
-            `;
+            reviewSection.innerHTML = noReviewFound;
         }
 
         reviewSection.classList.remove('d-none');
@@ -431,12 +448,16 @@ async function fetchDeliveryOrders() {
                             data-purpose-key="${purposeKey}"
                             data-voucher-code="${order.voucherCode ?? ''}"
                             data-customer-phone="${order.phoneNumber ?? ''}"
+                            data-customer-review="${order.review ?? ''}"
+                            data-customer-rating="${order.rating ?? ''}"
                             data-phone-number="${order.driverPhoneNumber ?? ''}"
                             onclick="showDetailsModal(this)">Show</button>`
                 : `<button class="btn btn-outline-secondary btn-sm"
                             data-voucher-code="${order.voucherCode ?? ''}"
                             data-phone-number="${order.driverPhoneNumber ?? ''}"
-                            data-customer-phone="${order.phoneNumber ?? ''}"
+                            data-customer-phone="${order.phoneNumber ?? ''}" 
+                            data-customer-review="${order.review ?? ''}"
+                            data-customer-rating="${order.rating ?? ''}"
                             onclick="showReviewModal(this)">Review</button>`;
 
             const activityButton = `<button class="btn btn-outline-secondary activityBtn btn-sm"
@@ -536,12 +557,16 @@ async function fetchOrdersByType(type) {
                             data-purpose-key="${purposeKey}"
                             data-voucher-code="${order.voucherCode ?? ''}"
                             data-customer-phone="${order.phoneNumber ?? ''}"
+                            data-customer-review="${order.review ?? ''}"
+                            data-customer-rating="${order.rating ?? ''}"
                             data-phone-number="${order.driverPhoneNumber ?? ''}"
                             onclick="showDetailsModal(this)">Show</button>`
                 : `<button class="btn btn-outline-secondary btn-sm"
                             data-voucher-code="${order.voucherCode ?? ''}"
                             data-phone-number="${order.driverPhoneNumber ?? ''}"
                             data-customer-phone="${order.phoneNumber ?? ''}"
+                            data-customer-review="${order.review ?? ''}"
+                            data-customer-rating="${order.rating ?? ''}"
                             onclick="showReviewModal(this)">Review</button>`;
             const activityButton = `<button class="btn btn-outline-secondary activityBtn btn-sm"
                                       data-voucher="${order.voucherCode ?? ''}"

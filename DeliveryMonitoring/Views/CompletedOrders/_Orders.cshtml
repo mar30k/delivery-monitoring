@@ -90,9 +90,10 @@
                                             data-purpose-key="@purposeKey"
                                             data-voucher-code="@order?.VoucherCode"
                                             data-customer-phone="@order?.PhoneNumber"
+                                            data-customer-review="@order?.Review"
+                                            data-customer-rating="@order?.Rating"
                                             data-phone-number="@order?.DriverPhoneNumber"
                                             onclick="showDetailsModal(this)">
-                                        
                                     </button>
                                 }
                                 else
@@ -101,6 +102,8 @@
                                             data-voucher-code="@order?.VoucherCode"
                                             data-phone-number="@order?.DriverPhoneNumber"
                                             data-customer-phone="@order?.PhoneNumber"
+                                            data-customer-review="@order?.Review"
+                                            data-customer-rating="@order?.Rating"
                                             onclick="showReviewModal(this)">
                                         Review
                                     </button>
