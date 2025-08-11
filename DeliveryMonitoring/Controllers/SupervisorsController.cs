@@ -24,6 +24,7 @@ namespace DeliveryMonitoring.Controllers
             var _V7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             List<OrderDetail>? orders = new();
             List<SupervisorsDTO>? superVisors = new();
+            HulubejeResponse<List<CompletedOrders>>? completedOrders = new();
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
             {
@@ -46,12 +47,25 @@ namespace DeliveryMonitoring.Controllers
                     string data = await getsupervisors.Content.ReadAsStringAsync();
                     superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
                 }
+                HttpResponseMessage getCompletedOrders = await _V7client.GetAsync(_V7client.BaseAddress + "voucher/getcompletedorders");
+
+
+                if (getCompletedOrders.IsSuccessStatusCode)
+                {
+                    string data = await getCompletedOrders.Content.ReadAsStringAsync();
+                    completedOrders = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(data);
+                }
+                foreach (var supervisor in superVisors ?? new List<SupervisorsDTO>())
+                {
+                    supervisor.TotalSupervisedOrders = completedOrders?.Data?.Count(x => x.SupervisorPhoneNumber == supervisor.UserName) ?? 0;
+                }
             }
             
             var orderViewModel = new OrderViewModel
             {
                 OrderDetail = orders,
-                Supervisors = companyTin== "0076217301" ?superVisors : new List<SupervisorsDTO>()
+                Supervisors = companyTin== "0076217301" ?superVisors : new List<SupervisorsDTO>(),
+                CompletedOrders = completedOrders?.Data?.Where(o=>o.SupervisorPhoneNumber!=null).ToList() ?? new List<CompletedOrders>()
             };
             return View(orderViewModel);
         }
