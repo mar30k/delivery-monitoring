@@ -46,7 +46,7 @@ namespace DeliveryMonitoring.Controllers
                 .OrderByDescending(d => status.GetValueOrDefault(d.Status?.ToLower() ?? "", status["default"]).Priority)
                 .ToList();
             }
-            return View(drivers);         
+            return View(drivers);
         }
         //Driver Index Page - ends here
 
@@ -101,7 +101,7 @@ namespace DeliveryMonitoring.Controllers
             {
                 endpoint.Append($"status={status}");
             }
-            if(cookieCompanyTin != "0076217301" && companyTin==null)
+            if (cookieCompanyTin != "0076217301" && companyTin == null)
             {
                 if (endpoint.Length > 0 && status != null)
                 {
@@ -138,7 +138,7 @@ namespace DeliveryMonitoring.Controllers
         //Used for filtering Drivers Live Location based on their status & company TIN - starts here
         [HttpGet("/Driver/LiveFilter/{status?}/{companyTin?}")]
         public async Task<IActionResult> LiveFilter(string? status, string companyTin)
-         {
+        {
             string? data = null;
             var _client = _httpClientFactory.CreateClient("Delivery");
             if (string.IsNullOrEmpty(status) && string.IsNullOrEmpty(companyTin))
@@ -149,14 +149,14 @@ namespace DeliveryMonitoring.Controllers
             // Build the endpoint based on the provided filters
             var endpoint = new StringBuilder($"{_client.BaseAddress}/drivers?");
 
-            if (status != null && status!="all")
+            if (status != null && status != "all")
             {
                 endpoint.Append($"status={status}");
             }
 
             if (!string.IsNullOrEmpty(companyTin))
             {
-                if (endpoint.Length > 0 && status!=null)
+                if (endpoint.Length > 0 && status != null)
                 {
                     endpoint.Append('&');
                 }
@@ -167,7 +167,7 @@ namespace DeliveryMonitoring.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                data = await response.Content.ReadAsStringAsync();                
+                data = await response.Content.ReadAsStringAsync();
             }
 
             return Ok(data);
@@ -180,8 +180,8 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> FilterCompany(string? companyTin)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
-            
-            List<Driver> filteredDrivers = new ();
+
+            List<Driver> filteredDrivers = new();
 
             HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers?companyTin={companyTin}");
 
@@ -226,13 +226,13 @@ namespace DeliveryMonitoring.Controllers
                 return RedirectToAction("Logout", "Login");
             }
             // Fetch order data
-            List<OrderDetail> orders = new ();
+            List<OrderDetail> orders = new();
 
-            
 
-            // Fetch driver data
-            Driver? driver = new ();
-            RouteModel? getRoutedata = new ();
+
+            //Fetch driver data
+            Driver? driver = new();
+            RouteModel? getRoutedata = new();
 
             try
             {
@@ -250,8 +250,8 @@ namespace DeliveryMonitoring.Controllers
                 {
                     string data = await response.Content.ReadAsStringAsync();
                     driver = JsonConvert.DeserializeObject<Driver>(data) ?? new Driver();
-               
-                    if(companyTin!= "0076217301" && companyTin!= driver.CompanyTin)
+
+                    if (companyTin != "0076217301" && companyTin != driver.CompanyTin)
                     {
                         return NotFound();
                     }
@@ -269,19 +269,20 @@ namespace DeliveryMonitoring.Controllers
                     {
                         destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
                         destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
-                    }else if (driverOrder != null)
+                    }
+                    else if (driverOrder != null)
                     {
                         destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
                         destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
                     }
-                        HttpResponseMessage getRouteDetailResponse = await _client.GetAsync($"{_client.BaseAddress}/routing/getRouteDetail?lat1={driver.Lat}&lng1={driver.Lng}&lat2={destLat}&lng2={destLng}&profile=car");
+                    HttpResponseMessage getRouteDetailResponse = await _client.GetAsync($"{_client.BaseAddress}/routing/getRouteDetail?lat1={driver.Lat}&lng1={driver.Lng}&lat2={destLat}&lng2={destLng}&profile=car");
                     if (getRouteDetailResponse.IsSuccessStatusCode)
                     {
                         string getRouteString = await getRouteDetailResponse.Content.ReadAsStringAsync();
                         getRoutedata = JsonConvert.DeserializeObject<RouteModel>(getRouteString) ?? new RouteModel();
                     }
                     var reorderedCoordinates = getRoutedata?.Coordinates
-                        ?.Select(coord => new Location{ lat = coord[1], lng = coord[0] }) // Swap [lng, lat] → {lat, lng}
+                        ?.Select(coord => new Location { lat = coord[1], lng = coord[0] }) // Swap [lng, lat] → {lat, lng}
                         ?.ToList();
 
                     if (driver == null)
@@ -316,7 +317,7 @@ namespace DeliveryMonitoring.Controllers
             List<OrderDetail> orders = new();
             RouteModel? getRoutedata = new();
             HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers/{phoneNumber}");
-           
+
             if (response.IsSuccessStatusCode)
             {
                 data = await response.Content.ReadAsStringAsync();
@@ -408,7 +409,7 @@ namespace DeliveryMonitoring.Controllers
                 var patchContent = new StringContent(JsonConvert.SerializeObject(updateModel), Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await _client.PatchAsync($"{_client.BaseAddress}/drivers/{phoneNumber}", patchContent);
             }
-            catch(HttpRequestException)
+            catch (HttpRequestException)
             {
                 // Log detailed information about the exception
                 Console.WriteLine($"HTTP PATCH request failed with exception:");
@@ -430,7 +431,7 @@ namespace DeliveryMonitoring.Controllers
             var _client = _httpClientFactory.CreateClient("Delivery");
             List<Driver> drivers = new();
 
-            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress +  uri);
+            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + uri);
 
             if (response.IsSuccessStatusCode)
             {
