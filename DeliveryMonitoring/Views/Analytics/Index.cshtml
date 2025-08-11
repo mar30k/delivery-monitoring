@@ -180,31 +180,31 @@
                 </div>
                 <!--The Bar Chart and the Map Ends Here-->
             </div>
-                <div class="row mt-2 d-none">
-                    <!-- Chart 3 -->
-                    <div class="col-md-6 mb-3">
-                        <div class="card border-1 pb-2">
-                            <div class="d-flex justify-content-center align-items-center">
-                                <div class="collapse show col-12" id="donutchart">
-                                    <canvas id="completdChart"></canvas>
-        </div>
+            <div class="row mt-2 d-none">
+                <!-- Chart 3 -->
+                <div class="col-md-6 mb-3">
+                    <div class="card border-1 pb-2">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <div class="collapse show col-12" id="donutchart">
+                                <canvas id="completdChart"></canvas>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Chart 4 -->
-                    <div class="col-md-6">
-                        <div class="card border-1 pb-2">
-                            <div class="d-flex justify-content-center align-items-center">
-                                <div class="collapse show col-12" id="donutchart">
-                                    <canvas id="completedTotalChart"></canvas>
-                                </div>
+                <!-- Chart 4 -->
+                <div class="col-md-6">
+                    <div class="card border-1 pb-2">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <div class="collapse show col-12" id="donutchart">
+                                <canvas id="completedTotalChart"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row vh-100 my-5 px-3" id="secondRow">
+        </div>
+        <div class="row vh-100 my-5 px-3" id="secondRow">
             <div class="col-12 col-xl-12 pb-3" id="map">
             </div>
         </div>
@@ -314,11 +314,11 @@
         const driverChart = createDoughnutChart(
             ctx,
             'Drivers',
-            ['Ready', 'Offline', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
+            [ 'Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
             driverDataSet,
             [
-                '#28a745',     // Ready
-                '#dc3545',     // Offline
+                '#dc3545',  // Offline
+                '#28a745',     // Ready     
                 'seagreen',    // Accepted
                 'darkorange',  // Delivering
                 '#20c997',     // Completed
