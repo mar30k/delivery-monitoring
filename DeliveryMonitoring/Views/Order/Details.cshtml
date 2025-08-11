@@ -9,6 +9,57 @@
 <!-- Add this line to include the custom CSS -->
 <link rel="stylesheet" href="~/css/orderDetail.css" />
 <div class="px-4 mt-2">
+    <div class="modal fade" id="sendAlertModal" tabindex="-1" aria-labelledby="sendAlertModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title " id="sendAlertModalLabel">Send Alert</h5>
+                    <button type="button" class="btn-close " data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="alertContainer"></div>
+                    <!-- Recipient Choice -->
+                    <div class="mb-3">
+                        <label class="form-label">Send alert to:</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="recipient" id="toCustomer" value="customer" />
+                                <label class="form-check-label" for="toCustomer">Customer</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="recipient" id="toDriver" value="driver" />
+                                <label class="form-check-label" for="toDriver">Driver</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Fields -->
+                    <form id="alertForm" style="display: none;">
+                        <div class="mb-3">
+                            <label for="deviceId" class="form-label">Device ID</label>
+                            <input type="text" readonly class="form-control" id="deviceId" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="body" class="form-label">Body</label>
+                            <textarea class="form-control" id="body" rows="4"></textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="sendAlertBtn" disabled>Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <h3>Order Details</h3>
 
@@ -23,13 +74,10 @@
                     <span><strong>Expected Time Of Arrival:</strong></span>
                     <span>@(Model?.Activities?.Eta?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
                 </div>
-                @if (Model?.Activities?.ActualArrival != null)
-                {
-                    <div>
-                        <span><strong>Actual Arrival:</strong></span>
-                        <span id="actualArrival">@(Model?.Activities?.ActualArrival?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
-                    </div>
-                }
+                <div class="@(Model?.Activities?.ActualArrival == null ? "d-none" : "")">
+                    <span><strong>Actual Arrival:</strong></span>
+                    <span id="actualArrival">@(Model?.Activities?.ActualArrival?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
+                </div>
                 <div class="d-flex d-inline-block">
                     <div>
                         @{
@@ -72,10 +120,10 @@
                 {
                     var rawText = WebUtility.HtmlDecode(Model?.StatusReport ?? "-");         // Step 1: Decode entities like &#x12DD;
                     var cleanText = Regex.Replace(rawText, "<.*?>", string.Empty);          // Step 2: Strip any actual HTML tags
-                                                                                            <div>
-                                                                                                <span><strong>Status Report:</strong></span>
-                                                                                                <span>@cleanText</span>
-                                                                                            </div>
+                    <div>
+                        <span><strong>Status Report:</strong></span>
+                        <span>@cleanText</span>
+                    </div>
                 }
                 @if (!string.IsNullOrEmpty(Model?.PreparationTime?.ToString()))
                 {
@@ -100,21 +148,23 @@
                     </div>
                     <div>
                         @{
-                            if (phoneNumber != null && phoneNumber.Length < 10)
-                            {
-                                <div style="background-color: red;
-                                border-radius: 20px;
-                                color: black;
-                                display: inline-block;
-                                padding: 5px 5px;">
-                                    <strong>Driver Phone Not Available</strong>
-                                </div>
-                            }
-                            else
-                            {
-                                <a class="btn btn-dark btn-sm" href="/driverdetail/@phoneNumber">Track Driver</a>
-                            }
+                            var isDriverPhoneInvalid = string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10;
+                            <div id="driverPhoneWarning"
+                                 class="@(isDriverPhoneInvalid ? "" : "d-none")"
+                                 style="background-color: red; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
+                                <strong>Driver Phone Not Available</strong>
+                            </div>
+
+                            <a id="trackDriverLink"
+                               class="btn btn-outline-dark btn-sm @(isDriverPhoneInvalid ? "d-none" : "")"
+                               style="text-decoration: none"
+                               href="/driverdetail/@phoneNumber">
+                                Track Driver
+                            </a>
                         }
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#sendAlertModal">
+                            Send Alert
+                        </button>
                     </div>
                 </div>
             </div>
@@ -126,33 +176,33 @@
                 <h4 style="margin-bottom: 5px;"><i class="bi bi-person-circle icon"></i>Customer</h4>
                 <div>
                     <span id="letters">Name:</span>
-                    <span id="outputs">@Model?.Customer?.FirstName</span>
+                    <span >@Model?.Customer?.FirstName</span>
                 </div>
                 <div>
                     <span id="letters">Address:</span>
-                    <span id="outputs">
+                    <span >
                         @Model?.CustomerGeocodeAddress -
                         @Model?.CustomerSpecificAddress
                     </span>
                 </div>
                 <div>
                     <span id="letters">Phone:</span>
-                    <span id="outputs">@Model?.CustomerPhoneNumber</span>
+                    <span >@Model?.CustomerPhoneNumber</span>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
                 <h4 style="margin-bottom: 5px;"><i class="bi bi-building icon"></i>Company</h4>
                 <div>
                     <span id="letters">Name:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.CompanyName)</span>
+                    <span >@Html.DisplayFor(model => model.CompanyName)</span>
                 </div>
                 <div>
                     <span id="letters">Branch:</span>
-                    <span id="outputs">@Html.DisplayFor(model => model.BranchName)</span>
+                    <span >@Html.DisplayFor(model => model.BranchName)</span>
                 </div>
                 <div>
                     <span id="letters">TIN:</span>
-                    <span id="outputs">
+                    <span >
                         @* <a asp-controller="Company" asp-action="Details" asp-route-id="@Model.companyTin">@Html.DisplayFor(model => model.companyTin)</a> *@
                         <a>@Html.DisplayFor(model => model.CompanyTin)</a>
                     </span>
@@ -162,8 +212,8 @@
                 <h4 style="margin-bottom: 5px;"> <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Driver</h4>
                 <div>
                     <span id="letters">Phone:</span>
-                    <span id="outputs">
-                        @Html.DisplayFor(model => model.AssignedDriverPhoneNumber)
+                    <span id="driverPhoneNumber">
+                        @(!string.IsNullOrEmpty(Model?.AssignedDriverPhoneNumber) ? Model.AssignedDriverPhoneNumber: "N/A")
                     </span>
                 </div>
             </div>
@@ -171,7 +221,7 @@
                 <h4 style="margin-bottom: 5px;"><i class="bi bi-person-circle icon"></i>Supervisor</h4>
                 <div>
                     <span id="letters">Phone:</span>
-                    <span id="outputs">
+                    <span >
                         @(Model?.SupervisedBy ?? "Not Assigned")
                     </span>
                 </div>
@@ -179,7 +229,7 @@
                 {
                     <div>
                         <span id="letters">Name:</span>
-                        <span id="outputs">
+                        <span >
                             @Model?.SupervisorName
                         </span>
                     </div>
@@ -192,30 +242,155 @@
 @await Html.PartialAsync("_DeliveryActivity", Model?.Activities ?? new DeliveryMonitoring.Models.Activities())
 @section Scripts{
     <script>
+        let phoneNumber = '';
+        $(document).ready(function () {
+            var phoneText = $('#driverPhoneNumber').text().trim();
+            phoneNumber = (phoneText === "N/A" ? "" : phoneText);
+        });
         setInterval(updateOrderStatuses, 10000);
         var voucherCode  = '@Model?.VoucherCode';
         function updateOrderStatuses(){
             const matchedOrder = data.find(order => order.voucherCode === voucherCode);
             if(matchedOrder){
                 $("#orderStatus").text(matchedOrder.status);
+                $("#sosReason").text('');
+                $("#driverPhoneNumber").text(matchedOrder.assignedDriverPhoneNumber?.trim() || "N/A");
+                phoneNumber = matchedOrder.assignedDriverPhoneNumber;
+                const isDriverPhoneInvalid = !phoneNumber || phoneNumber.length < 10;
+                $("#driverPhoneWarning").toggleClass("d-none", !isDriverPhoneInvalid);
+                $("#trackDriverLink")
+                  .toggleClass("d-none", isDriverPhoneInvalid)
+                  .attr("href", isDriverPhoneInvalid ? "#" : `/driverdetail/${phoneNumber}`);
+
             }
             if (matchedOrder && matchedOrder.activities?.actualArrival) {
-                const formatted = moment("7/22/2025 11:48:31 AM")
+                const formatted = moment(matchedOrder.activities?.actualArrival)
                     .format("ddd, MMMM DD - hh:mm:ss A"); // Matches C# format
+
                 $("#actualArrival").text(formatted);
+                $("#actualArrival").closest('div').removeClass('d-none');
             } 
-            else {
-                $("#actualArrival").text("N/A");
-            }
             if(matchedOrder && matchedOrder.status === 'sos' && matchedOrder.sosReason){
                 $("#sosReason").text(matchedOrder.sosReason);
             }
-            const actualArrival = "7/22/2025 11:48:31 AM";
-            const parsed = moment(actualArrival, "M/D/YYYY hh:mm:ss A");
-            const formatted = parsed.utcOffset(180).format("ddd, MMMM DD - hh:mm:ss A");
+         }
+        function showModalAlert(message, type = "warning", timeout = 4000) {
+          const alertContainer = document.getElementById("alertContainer");
+          if (!alertContainer) return;
 
-            $("#actualArrival").text(formatted);
+          // Clear any existing alerts
+          alertContainer.innerHTML = "";
 
+          const alertDiv = document.createElement("div");
+          alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+          alertDiv.role = "alert";
+          alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          `;
+
+          alertContainer.appendChild(alertDiv);
+
+          setTimeout(() => {
+            // Trigger Bootstrap fade out and remove alert
+            alertDiv.classList.remove("show");
+            alertDiv.classList.add("hide");
+            setTimeout(() => alertDiv.remove(), 150);
+          }, timeout);
         }
+
+        document.querySelectorAll('input[name="recipient"]').forEach((radio) => {
+          radio.addEventListener('click', async () => {
+            const form = document.getElementById('alertForm');
+            const sendButton = document.getElementById('sendAlertBtn');
+            const deviceIdInput = document.getElementById('deviceId');
+
+            // Show form and enable send
+            form.style.display = 'block';
+            sendButton.disabled = false;
+
+            if (radio.value === 'customer') {
+              // Use Razor to fill in customer's device ID
+              deviceIdInput.value = '@Model?.CustomerDeviceID';
+            } else if (radio.value === 'driver') {
+
+              if (!phoneNumber || phoneNumber.trim() === '') {
+                showModalAlert("No driver has been assigned to this order yet.");
+                form.style.display = 'none';
+                sendButton.disabled = true;
+                return;
+              }
+
+              try {
+                // Call API to get driver device ID
+                const response = await fetch(`/getDeviceID/${encodeURIComponent(phoneNumber)}`);
+
+                if (!response.ok) {
+                  showModalAlert(`Failed to fetch driver info`);
+                  form.style.display = 'none';
+                  sendButton.disabled = true;
+                  return;
+                }
+
+                const data = await response.json();
+                deviceIdInput.value = data.deviceId || '';
+
+                if (!data.deviceId) {
+                  showModalAlert("Driver device ID not found.");
+                  form.style.display = 'none';
+                  sendButton.disabled = true;
+                }
+              } catch (error) {
+                showModalAlert('Error fetching driver info: ' + error.message);
+                form.style.display = 'none';
+                sendButton.disabled = true;
+              }
+            }
+          });
+        });
+
+
+        document.getElementById('sendAlertBtn').addEventListener('click', async () => {
+          const recipient = document.querySelector('input[name="recipient"]:checked')?.value;
+          const deviceId = document.getElementById('deviceId').value;
+          const title = document.getElementById('title').value.trim();
+          const body = document.getElementById('body').value.trim();
+
+          if (!recipient || !title || !body) {
+            showModalAlert("Please fill in all fields.");
+            return;
+          }
+
+          const payload = {
+            id: deviceId,
+            title: title,
+            body: body
+          };
+
+          try {
+            const response = await fetch('/sendAlertMessage', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              showModalAlert('Failed to send alert: ');
+            } else {
+              const result = await response.text();
+              console.log('Alert sent successfully:', result);
+              showModalAlert('Alert sent successfully!');
+
+              // Close modal
+              const modal = bootstrap.Modal.getInstance(document.getElementById('sendAlertModal'));
+              modal.hide();
+            }
+          } catch (error) {
+            showModalAlert('Error sending alert: ' + error.message);
+          }
+        });
     </script>
 }
