@@ -50,6 +50,11 @@ namespace DeliveryMonitoring.Controllers
 
                     if (takeAwayResult != null)
                         takeAwayResult.Data = takeAwayResult.Data?.Where(order => order.Tin == companyTin).ToList();
+                    foreach(var order in completedResult?.Data ?? new List<CompletedOrders>())
+                    {
+                        order.SupervisorName = null;
+                        order.SupervisorPhoneNumber = null;
+                }
                 }
 
                 var CompletedOrdersViewModel = new CompletedOrdersViewModel
@@ -57,7 +62,8 @@ namespace DeliveryMonitoring.Controllers
                     CompletedOrders = completedResult,
                     DineInOders = dineIneResult,
                     TakeAwayOrders = takeAwayResult,
-                    PurposeOptions = purposeResult
+                    PurposeOptions = purposeResult,
+                    CompanyTin = companyTin
                 };
                 return View(CompletedOrdersViewModel); 
             }
