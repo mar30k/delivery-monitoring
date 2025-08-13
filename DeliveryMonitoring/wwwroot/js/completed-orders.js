@@ -468,6 +468,9 @@ async function fetchDeliveryOrders() {
                                       Show
                                     </button>`;
 
+            const supervisorName = isRedCloud ? `${order.supervisorName || 'N/A'}` : '<p class="text-muted mb-0">N/A</p>';
+            const reviews = isRedCloud ? `${reviewButton}` : '<p class="text-muted mb-0">N/A</p>';
+            const details = isRedCloud ? `<a id="detailsLink" class="btn btn-outline-secondary activityBtn btn-sm" href="${detailUrl}" target="_blank">Details</a>` : '<p class="text-muted mb-0">N/A</p>';
             let row = document.createElement('tr');
             row.setAttribute('data-voucher', order.voucherCode);
             row.style.fontSize = "13px";
@@ -501,17 +504,17 @@ async function fetchDeliveryOrders() {
                             }
                     </div>
                 </td>
-                <td class="text-center">${order.supervisorName || 'N/A'}</td>
+                <td class="text-center">${supervisorName}</td>
                 <td class="text-center">
                   ${order.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}
                 </td>
                 <td class="text-center">
                   ${order.tip?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0'}
                 </td>
-                <td class="text-center">${reviewButton}</td>
+                <td class="text-center">${reviews}</td>
                 <td class="text-center">${activityButton}</td>
                 <td class="text-center">
-                    <a id="detailsLink" class="btn btn-outline-secondary activityBtn btn-sm" href="${detailUrl}" target="_blank">Details</a>
+                    ${details}
                 </td>
             `;
 
@@ -575,6 +578,8 @@ async function fetchOrdersByType(type) {
                                       >
                                       Show
                                     </button>`;
+            const reviews = isRedCloud ? `${reviewButton}` : '<p class="text-muted mb-0">N/A</p>';
+            const details = isRedCloud ? `<a id="detailsLink" class="btn btn-outline-secondary activityBtn btn-sm" href="${detailUrl}" target="_blank">Details</a>` : '<p class="text-muted mb-0">N/A</p>';
 
             let row = document.createElement('tr');
             row.setAttribute('data-voucher', order.voucherCode);
@@ -599,10 +604,10 @@ async function fetchOrdersByType(type) {
                 <td class="text-center">
                   ${order.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}
                 </td>
-                <td class="text-center">${reviewButton}</td>
+                <td class="text-center">${reviews}</td>
                 <td class="text-center">${activityButton}</td>
                 <td class="text-center">
-                    <a id="detailsLink" class="btn btn-outline-secondary activityBtn btn-sm" href="${detailUrl}" target="_blank">Details</a>
+                    ${details}
                 </td>
             `;
 

@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Completed Orders";
     var disTinctSupervisors = Model?.CompletedOrders?.Data?.DistinctBy(x => x.SupervisorPhoneNumber).Where(x => x.SupervisorPhoneNumber != null).ToList();
+    var isRedCloud = Model?.CompanyTin == "0076217301";
 }
 <style>
     .initial-hide {
@@ -173,7 +174,14 @@
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            @(order?.SupervisorName ?? "N/A")
+                                            @if (isRedCloud)
+                                            {
+                                                @(order?.SupervisorName ?? "N/A")
+                                            }
+                                            else
+                                            {
+                                                <p class="text-muted mb-0">N/A</p>
+                                            }
                                         </td>
                                         <td class="text-center">
                                             @(order?.TotalAmount.ToString("N2") ?? "N/A")
@@ -184,34 +192,42 @@
 
 
                                         <td class="text-center">
-                                            @if (order?.Purpose != null)
+                                            @if (isRedCloud)
                                             {
-                                                var purposeKey = Model?.PurposeOptions?.FirstOrDefault(x => x.Value == order.Purpose).Key;
-                                                <button class="btn btn-outline-secondary btn-sm"
-                                                        data-note="@order.Note"
-                                                        data-purpose="@order.Purpose"
-                                                        data-purpose-key="@purposeKey"
-                                                        data-voucher-code="@order?.VoucherCode"
-                                                        data-customer-phone="@order?.PhoneNumber"
-                                                        data-customer-review="@order?.Review"
-                                                        data-customer-rating="@order?.Rating"
-                                                        data-phone-number="@order?.DriverPhoneNumber"
-                                                        onclick="showDetailsModal(this)">
-                                                    Show
-                                                </button>
+                                                @if (order?.Purpose != null)
+                                                {
+                                                    var purposeKey = Model?.PurposeOptions?.FirstOrDefault(x => x.Value == order.Purpose).Key;
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                            data-note="@order.Note"
+                                                            data-purpose="@order.Purpose"
+                                                            data-purpose-key="@purposeKey"
+                                                            data-voucher-code="@order?.VoucherCode"
+                                                            data-customer-phone="@order?.PhoneNumber"
+                                                            data-customer-review="@order?.Review"
+                                                            data-customer-rating="@order?.Rating"
+                                                            data-phone-number="@order?.DriverPhoneNumber"
+                                                            onclick="showDetailsModal(this)">
+                                                        Show
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                            data-voucher-code="@order?.VoucherCode"
+                                                            data-phone-number="@order?.DriverPhoneNumber"
+                                                            data-customer-phone="@order?.PhoneNumber"
+                                                            data-customer-review="@order?.Review"
+                                                            data-customer-rating="@order?.Rating"
+                                                            onclick="showReviewModal(this)">
+                                                        Review
+                                                    </button>
+                                                }
                                             }
                                             else
                                             {
-                                                <button class="btn btn-outline-secondary btn-sm"
-                                                        data-voucher-code="@order?.VoucherCode"
-                                                        data-phone-number="@order?.DriverPhoneNumber"
-                                                        data-customer-phone="@order?.PhoneNumber"
-                                                        data-customer-review="@order?.Review"
-                                                        data-customer-rating="@order?.Rating"
-                                                        onclick="showReviewModal(this)">
-                                                    Review
-                                                </button>
+                                                <p class="text-muted mb-0">N/A</p>
                                             }
+
                                         </td>
                                         <td class="text-center">
                                             <button class="btn btn-outline-secondary activityBtn btn-sm"
@@ -222,10 +238,15 @@
                                             </button>
                                         </td>
                                         <td class="text-center">
-                                            <a class="btn btn-outline-secondary activityBtn btn-sm"  target="_blank"
-                                               href="orderdetail?voucher=@order?.VoucherCode" >
-                                            Details
-                                            </a>
+                                            @if(isRedCloud){
+                                                <a class="btn btn-outline-secondary activityBtn btn-sm"  target="_blank"
+                                                   href="orderdetail?voucher=@order?.VoucherCode" >
+                                                Details
+                                                </a>
+                                            }
+                                            else{
+                                                <p class="text-muted mb-0">N/A</p>
+                                            }
                                         </td>
                                     </tr>
                                 }
@@ -235,9 +256,7 @@
                             <tr>
                                 <th colspan="11" class="text-end">Page Total:</th>
                                 <th class="text-center"></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
+                                <th colspan="4"></th>
                             </tr>
                         </tfoot>
                     </table>
@@ -262,6 +281,7 @@
             {
                 ["TableId"] = "dineInTable",
                 ["Title"] = "Dine-in Orders",
+                ["IsRedCloud"] = isRedCloud,
                 ["PurposeOptions"] = Model?.PurposeOptions
             })
         </div>
@@ -283,6 +303,7 @@
                     new ViewDataDictionary(ViewData) {
                          ["TableId"] = "takeAwayTable" ,
                          ["Title"] = "Takeaway Orders",
+                         ["IsRedCloud"] = isRedCloud,
                          ["PurposeOptions"] = Model?.PurposeOptions
                     })
         </div>
@@ -413,7 +434,8 @@
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script>
         const purposeOptions = @Html.Raw(Json.Serialize(Model?.PurposeOptions ?? new Dictionary<int, string>()));
+        var isRedCloud = @((isRedCloud) ? "true" : "false");
     </script>
-    <script src="~/js/completed-orders.js" asp-append-version="true"></script>
+    <script src="~/js/completed-orders.js" asp-append-version="true"></script>   
 }
 
