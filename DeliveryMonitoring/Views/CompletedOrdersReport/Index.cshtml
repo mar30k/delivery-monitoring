@@ -132,7 +132,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         document.getElementById("exportToEcelBtn").addEventListener("click", function () {
-            var table = document.getElementById("competedOrders");
+            var table = document.getElementById("completedOrders");
 
             // Convert table to workbook
             var workbook = XLSX.utils.table_to_book(table, { sheet: "Completed Orders" });
@@ -149,8 +149,11 @@
             var timestamp = moment().format("YYYY-MM-DD_HH-mm-ss");
 
             // Set filename
-            var filename = "CompletedOrders_" + timestamp + ".xlsx";
+           // Use startDate and endDate for filename (default to 'AllDates' if null)
+           var startStr = startDate ? startDate.format("YYYY-MM-DD")  + "_to_" : "all_dates";
+           var endStr = endDate ? endDate.format("YYYY-MM-DD") : " ";
 
+           var filename = "report_" + startStr + endStr + ".xlsx";
             // Export to Excel
             XLSX.writeFile(workbook, filename);
         });
