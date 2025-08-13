@@ -49,12 +49,12 @@ namespace DeliveryMonitoring.Controllers
                         dineIneResult.Data = dineIneResult.Data?.Where(order => order.Tin == companyTin).ToList();
 
                     if (takeAwayResult != null)
-                        takeAwayResult.Data = takeAwayResult.Data?.Where(order => order.Tin == companyTin).ToList();
+                        takeAwayResult.Data = takeAwayResult.Data?.Where(order => order.Tin == companyTin).ToList();      
                     foreach(var order in completedResult?.Data ?? new List<CompletedOrders>())
                     {
                         order.SupervisorName = null;
                         order.SupervisorPhoneNumber = null;
-                }
+                    }
                 }
 
                 var CompletedOrdersViewModel = new CompletedOrdersViewModel
@@ -191,7 +191,8 @@ namespace DeliveryMonitoring.Controllers
                 SupervisorName = order?.SupervisorName,
                 AssignedDriverPhoneNumber = order?.DriverPhoneNumber,
                 LineItemsDetail = voucherDetail.Data,
-                Activities = driverActivity.Data
+                Activities = driverActivity.Data,
+                VoucherCode = voucher
             };
 
             return View(viewModel);
