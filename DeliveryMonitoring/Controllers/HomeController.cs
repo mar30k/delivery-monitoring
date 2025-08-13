@@ -73,6 +73,14 @@ namespace DeliveryMonitoring.Controllers
                 latestByTinAndBranch = latestByTinAndBranch?
                     .Where(x => x?.Tin?.ToString() == companyTin?.Trim())
                     .ToList();
+                if (completedOrders != null)
+                    completedOrders.Data = completedOrders.Data?.Where(order => order.Tin == companyTin).ToList();
+
+                if (dineInOders != null)
+                    dineInOders.Data = dineInOders.Data?.Where(order => order.Tin == companyTin).ToList();
+
+                if (takeAwayOrders != null)
+                    takeAwayOrders.Data = takeAwayOrders.Data?.Where(order => order.Tin == companyTin).ToList();
             }
             var viewModel = new HomeViewModel
             {
@@ -84,7 +92,7 @@ namespace DeliveryMonitoring.Controllers
                 Supervisors = superVisors,
                 TakeAwayOrders = takeAwayOrders,
                 CompletedOrders = completedOrders,
-                DineInOrders = dineInOders
+                DineInOrders = dineInOders,
             };
             
             return View(viewModel);
