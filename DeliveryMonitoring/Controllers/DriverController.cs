@@ -81,60 +81,6 @@ namespace DeliveryMonitoring.Controllers
         //Used for fetching the all driver's location regularly - ends here       
 
 
-        //Used for filtering Drivers based on their status & company TIN - starts here
-        [HttpGet]
-        public async Task<IActionResult> Filter(string status, string companyTin)
-        {
-            var cookieCompanyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-
-            var _client = _httpClientFactory.CreateClient("Delivery");
-            if (string.IsNullOrEmpty(status) && string.IsNullOrEmpty(companyTin))
-            {
-                return RedirectToAction("Index");
-            }
-
-            List<Driver> filteredDrivers = new();
-
-            // Build the endpoint based on the provided filters
-            StringBuilder endpoint = new($"{_client.BaseAddress}/drivers?");
-            if (!string.IsNullOrEmpty(status))
-            {
-                endpoint.Append($"status={status}");
-            }
-            if (cookieCompanyTin != "0076217301" && companyTin == null)
-            {
-                if (endpoint.Length > 0 && status != null)
-                {
-                    endpoint.Append('&');
-                }
-                endpoint.Append($"companyTin={cookieCompanyTin}");
-            }
-
-            if (!string.IsNullOrEmpty(companyTin))
-            {
-                if (endpoint.Length > 0 && status != null)
-                {
-                    endpoint.Append('&');
-                }
-                endpoint.Append($"companyTin={companyTin}");
-            }
-
-            HttpResponseMessage response = await _client.GetAsync(endpoint.ToString());
-
-            if (response.IsSuccessStatusCode)
-            {
-                string data = await response.Content.ReadAsStringAsync();
-                filteredDrivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
-                var driverStatus = StatusInfo.StatusMap;
-                filteredDrivers = filteredDrivers
-                .OrderByDescending(d => driverStatus.GetValueOrDefault(d.Status?.ToLower() ?? "", driverStatus["default"]).Priority)
-                .ToList();
-            }
-
-            return View(filteredDrivers);
-        }
-        //Used for filtering Drivers based on their status & company TIN - ends here
-
         //Used for filtering Drivers Live Location based on their status & company TIN - starts here
         [HttpGet("/Driver/LiveFilter/{status?}/{companyTin?}")]
         public async Task<IActionResult> LiveFilter(string? status, string companyTin)
@@ -172,31 +118,6 @@ namespace DeliveryMonitoring.Controllers
 
             return Ok(data);
         }
-        //Used for filtering Drivers based on their status & company TIN - ends here
-
-
-        //Used for filtering Drivers based on their CompanyTIN - starts here
-        [HttpGet("/Drivers/FilterCompany/{companyTin}")]
-        public async Task<IActionResult> FilterCompany(string? companyTin)
-        {
-            var _client = _httpClientFactory.CreateClient("Delivery");
-
-            List<Driver> filteredDrivers = new();
-
-            HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/drivers?companyTin={companyTin}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                string data = await response.Content.ReadAsStringAsync();
-                filteredDrivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
-                var status = StatusInfo.StatusMap;
-                filteredDrivers = filteredDrivers
-                .OrderByDescending(d => status.GetValueOrDefault(d.Status?.ToLower() ?? "", status["default"]).Priority)
-                .ToList();
-            }
-            return View(filteredDrivers);
-        }
-        //Used for filtering Drivers based on their CompanyTIN - ends here
 
         //Used for fetching the driver's location regularly - starts here
         [HttpGet("/Driver/LiveLocationByCompany/{companyTin}")]
