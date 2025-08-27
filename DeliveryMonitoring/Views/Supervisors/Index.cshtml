@@ -59,64 +59,72 @@
             var activeSupervisorPhones = Model?.Supervisors?
                 .Select(s => s.UserName)
                 .ToHashSet() ?? new HashSet<string?>();
+            var now = DateTime.Now;
+            int currentYear = now.Year;
+            int currentMonth = now.Month;
+            int currentDay = now.DayOfYear;
 
-            foreach (var sup in Model?.CompletedOrders?
-                .GroupBy(x => x.SupervisorPhoneNumber)
-                .OrderByDescending(s => activeSupervisorPhones.Contains(s.Key)) // Active first
-                .ThenBy(s => s.FirstOrDefault()?.SupervisorName) // Then sort alphabetically
-                .ToList() ?? new List<IGrouping<string?, CompletedOrders>>())
+            var supervisors = (Model?.CompletedOrders ?? Enumerable.Empty<CompletedOrders>())
+            .GroupBy(x => x.SupervisorPhoneNumber)
+            .Select(s =>
             {
-                var now = DateTime.Now;
-                int currentYear = now.Year;
-                int currentMonth = now.Month;
-                int currentDay = now.DayOfYear;
-                var supervisorPhone = sup.FirstOrDefault()?.SupervisorPhoneNumber ?? "Unknown";
+                var supervisorPhone = s.FirstOrDefault()?.SupervisorPhoneNumber ?? "Unknown";
+                var supervisorName = s.FirstOrDefault()?.SupervisorName ?? "Unknown";
                 var orders = Model?.OrderDetail?.Where(o => o.SupervisedBy == supervisorPhone).ToList();
                 int pendingOrders = orders?.Count ?? 0;
-                var supervisorName = sup.FirstOrDefault()?.SupervisorName ?? "Unknown";
-                var completedOrders = sup.Count(o => o.Status?.ToLower() == "completed");
-                // Count orders supervised THIS MONTH
-                var supervisedThisMonth = Model?.CompletedOrders?
-                .Where(o => o.SupervisorPhoneNumber == supervisorPhone
-                && o.RequestCreatedAt.Year == currentYear
-                && o.RequestCreatedAt.Month == currentMonth).Count() ?? 0;
-                // Count orders supervised Today
-                var supervisedToday= Model?.CompletedOrders?
-                .Where(o => o.SupervisorPhoneNumber == supervisorPhone
-                && o.RequestCreatedAt.Year == currentYear
-                && o.RequestCreatedAt.DayOfYear == currentDay)
-                .Count() ?? 0;
+
+                return new
+                {
+                    SupervisorPhone = supervisorPhone,
+                    SupervisorName = supervisorName,
+                    CompletedOrders = s.Count(o => o.Status?.ToLower() == "completed"),
+                    PendingOrders = pendingOrders,
+                    SupervisedThisMonth = Model?.CompletedOrders?
+                    .Count(o => o.SupervisorPhoneNumber == supervisorPhone
+                    && o.RequestCreatedAt.Year == currentYear
+                    && o.RequestCreatedAt.Month == currentMonth) ?? 0,
+                    SupervisedToday = Model?.CompletedOrders?
+                    .Count(o => o.SupervisorPhoneNumber == supervisorPhone
+                    && o.RequestCreatedAt.Year == currentYear
+                    && o.RequestCreatedAt.DayOfYear == currentDay) ?? 0,
+                    IsActive = activeSupervisorPhones.Contains(supervisorPhone)
+                };
+            })
+            .OrderByDescending(s => s.PendingOrders)
+            .ThenByDescending(s => s.IsActive)
+            .ThenBy(s => s.SupervisorName)
+            .ToList();
+            @foreach (var sup in supervisors)
+            {
                 <div class="col-lg-3 col-md-6 col-12">
                     <div class="card shadow-sm border-0 rounded-3 h-100">
                         <div class="card-body text-center">
-                            <h6 style="font-size: 20px;" class="card-title fw-bold">@supervisorName (@supervisorPhone)</h6>
-                            <hr style="  margin-top: 0.25rem;
-                                 margin-bottom: 0.25rem;" />
+                            <h6 style="font-size: 20px;" class="card-title fw-bold">@sup.SupervisorName (@sup.SupervisorPhone)</h6>
+                            <hr style="margin-top: 0.25rem; margin-bottom: 0.25rem;" />
                             <div style="font-size: 14px;">
                                 <p class="my-1">
                                     <i class="fas fa-hourglass-half text-warning "></i>
                                     <span class="fw-semibold">Orders Pending:</span>
-                                    <span id="pendingOrders_@sup.Key">@pendingOrders</span>
+                                    <span id="pendingOrders_@sup.SupervisorPhone">@sup.PendingOrders</span>
                                 </p>
                                 <p class="my-1">
                                     <i class="fas fa-calendar-day text-danger "></i>
-                                    <span class="fw-semibold">Orders Supervised Today:</span> @supervisedToday
-                                </p> 
+                                    <span class="fw-semibold">Orders Supervised Today:</span> @sup.SupervisedToday
+                                </p>
                                 <p class="my-1">
                                     <i class="fas fa-calendar-alt text-dark "></i>
-                                    <span class="fw-semibold">Orders Supervised in @(now.ToString("MMM, yyyy")):</span> @supervisedThisMonth
+                                    <span class="fw-semibold">Orders Supervised in @(now.ToString("MMM, yyyy")):</span> @sup.SupervisedThisMonth
                                 </p>
 
                                 <p class="mt-1 mb-0">
                                     <i class="fas fa-check-circle text-success "></i>
-                                    <span class="fw-semibold">Total Orders Supervised:</span> @completedOrders
+                                    <span class="fw-semibold">Total Orders Supervised:</span> @sup.CompletedOrders
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
             }
-
         }
     </div>
 </div>
