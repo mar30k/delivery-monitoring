@@ -28,13 +28,13 @@ namespace DeliveryMonitoring.Controllers
         //Driver Index Page - starts here
         [HttpGet]
         [Route("/drivers")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string tin)
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
             List<Driver> drivers = new();
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             string uri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
-
+            uri =(( tin != null && tin==companyTin) || companyTin== "0076217301") ? $"/drivers?companyTin={tin}" : uri;
             HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + uri);
             ViewBag.CompanyTin = companyTin;
             if (response.IsSuccessStatusCode)
