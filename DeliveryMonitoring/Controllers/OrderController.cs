@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using static NuGet.Packaging.PackagingConstants;
 namespace DeliveryMonitoring.Controllers
 {
@@ -14,12 +16,15 @@ namespace DeliveryMonitoring.Controllers
     public class OrderController : Controller
     {
         private IHttpContextAccessor _httpContextAccessor;
+        private readonly IWebHostEnvironment _env;
         //HttpClient Setup starts here
         private readonly IHttpClientFactory _httpClientFactory;
-        public OrderController(IHttpClientFactory httpClientFactory , IHttpContextAccessor httpContextAccessor)
+        public OrderController(IHttpClientFactory httpClientFactory , IHttpContextAccessor httpContextAccessor, IWebHostEnvironment env)
         {
+
             _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
+            _env = env;
         }
         //HttpClient Setup ends here
 
@@ -91,11 +96,17 @@ namespace DeliveryMonitoring.Controllers
                     // Extract message from the response (assuming JSON structure you shared)
                     string message = errorObject?.message ?? "An error occurred. Please try again later.";
 
-                    // Pass the message to TempData
-                    TempData["Message"] = $"Order {voucherCode}: {message}";
-                    return RedirectToAction("index");
-                    //var sampleOrder = GetSampleOrder();
-                    //return View(sampleOrder);
+                    if (!_env.IsDevelopment())
+                    {   
+                        // Pass the message to TempData
+                        TempData["Message"] = $"Order {voucherCode}: {message}";
+                        return RedirectToAction("index");
+                    }
+                    else
+                    {
+                        var sampleOrder = GetSampleOrder();
+                        return View(sampleOrder);
+                    }
                 }
 
 
@@ -116,8 +127,6 @@ namespace DeliveryMonitoring.Controllers
                 {
                     TempData["Message"] = $"Order {voucherCode} not found!";
                     return RedirectToAction("index");
-                    //var sampleOrder = GetSampleOrder();
-                    //return View(sampleOrder);
                 }
                 else
                 {
@@ -218,13 +227,13 @@ namespace DeliveryMonitoring.Controllers
                             TaxableAmount = 200.00m
                         }
                     },
-                                ExtraCharge = new Dictionary<string, decimal>
+                    ExtraCharge = new Dictionary<string, decimal>
                     {
                         { "VAT", 150.00m },
                         { "Delivery", 50.00m }
                     },
-                                GrandTotal = 1500.00m,
-                                ExtraInformation = new Dictionary<string, object>
+                    GrandTotal = 1500.00m,
+                    ExtraInformation = new Dictionary<string, object>
                     {
                         { "DeliveredBy", "Drone" },
                         { "Packaging", "Eco-friendly" }
@@ -400,6 +409,7 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500, $"Exception: {ex.Message}");
             }
         }
+
         [Route("/sendAlertMessage")]
         public async Task<IActionResult> SendAlertMessage([FromBody] AlertMessageDto messageDto)
         {
@@ -416,6 +426,39 @@ namespace DeliveryMonitoring.Controllers
             try
             {
                 HttpResponseMessage response = await _client.PostAsync(_client.BaseAddress + "/messaging/sendMessage", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"failed: {error}");
+                }
+                string data = await response.Content.ReadAsStringAsync();
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Exception: {ex.Message}");
+            }
+        }
+        [Route("/supervisorAccept")]
+        public async Task<IActionResult> AcceptOrderBySupervisor([FromBody] OrderDetail order)
+        {
+            var requestPayload = new
+            {
+                tin = order.CompanyTin,
+                voucherCode = order.VoucherCode,
+                clientPhoneNumber = order.CustomerPhoneNumber,
+                driverPhoneNumber = order.AssignedDriverPhoneNumber,
+                status = "seen"
+            };
+
+            var content = new StringContent(JsonConvert.SerializeObject(requestPayload), Encoding.UTF8, "application/json");
+
+            var _client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            try
+            {
+                HttpResponseMessage response = await _client.PostAsync(_client.BaseAddress + "delivery/insertActivityLog", content);
 
                 if (!response.IsSuccessStatusCode)
                 {

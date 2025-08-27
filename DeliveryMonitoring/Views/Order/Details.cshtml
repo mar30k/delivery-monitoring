@@ -9,16 +9,46 @@
 <!-- Add this line to include the custom CSS -->
 <link rel="stylesheet" href="~/css/orderDetail.css" />
 <div class="px-4 mt-2">
-    <div class="modal fade" id="sendAlertModal" tabindex="-1" aria-labelledby="sendAlertModalLabel" aria-hidden="true">
+    <div class="modal fade" id="supervisorConfirmModal" tabindex="-1" aria-labelledby="supervisorConfirmLabel" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content shadow">
-                <div class="modal-header bg-light">
-                    <h5 class="modal-title " id="sendAlertModalLabel">Send Alert</h5>
-                    <button type="button" class="btn-close " data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content">
+
+                <div class="modal-header border-bottom bg-light">
+                    <h5 class="modal-title" id="supervisorConfirmLabel">Confirm Supervision Assignment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body">
-                    <div id="alertContainer"></div>
+                    <div id="accetOrderAlertContainer"></div>
+                    <p class="m-0">You are about to confirm supervision for this order.</p>
+                    <ul class="list-unstyled my-1">
+                        <li><strong>Voucher Code:</strong> @Model?.VoucherCode</li>
+                        <li><strong>Branch:</strong> @Model?.BranchName</li>
+                        <li><strong>Customer Phone:</strong> @Model?.CustomerPhoneNumber</li>
+                        <li><strong>Driver Phone:</strong> @Model?.AssignedDriverPhoneNumber</li>
+                        <li><strong>Supervisor:</strong> @Model?.SupervisorName</li>
+                    </ul>
+                    <!-- Feedback message (hidden by default) -->
+                    <div id="supervisorFeedback" class="alert d-none mb-0 mt-2" role="alert"></div>
+                </div>
+
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="confirmSupervisorBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="sendAlertModal" tabindex="-1" aria-labelledby="sendAlertModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title " id="sendAlertModalLabel">Send Alert</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="sendAlertContainer"></div>
                     <!-- Recipient Choice -->
                     <div class="mb-3">
                         <label class="form-label">Send alert to:</label>
@@ -43,17 +73,17 @@
 
                         <div class="mb-3">
                             <label for="title" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="title" />
+                            <input type="text" class="form-control" id="title" required/>
                         </div>
 
                         <div class="mb-3">
                             <label for="body" class="form-label">Body</label>
-                            <textarea class="form-control" id="body" rows="4"></textarea>
+                            <textarea class="form-control" id="body" rows="4" required></textarea>
                         </div>
                     </form>
                 </div>
 
-                <div class="modal-footer bg-light">
+                <div class="modal-footer bg-light border-top">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary btn-sm" id="sendAlertBtn" disabled>Send</button>
                 </div>
@@ -88,7 +118,7 @@
                                 { "assigned", "lawngreen" },
                                 { "declined", "red" },
                                 { "accepted", "seagreen" },
-                                { "arrived", "coral" },
+                                { "arrived", "#F7BEA2" },
                                 { "ontheway", "darkorange" },
                                 { "drivernotfound", "red" },
                                 { "sos", "darkred" },
@@ -148,6 +178,24 @@
                     </div>
                     <div>
                         @{
+                            if (!(Model?.Activities?.ActivityResponse?.Any(x =>
+                                string.Equals(x?.Name, "Order Delivery accepted by the Supervisor", StringComparison.OrdinalIgnoreCase)
+                                ) ?? false))
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="supervisorAccept"
+                                        data-tin="@Model?.CompanyTin"
+                                        data-voucher-code="@Model?.VoucherCode"
+                                        data-client-phone="@Model?.CustomerPhoneNumber"
+                                        data-driver-phone="@Model?.AssignedDriverPhoneNumber"
+                                        data-supervisor-phone="@Model?.SupervisedBy"
+                                        data-supervisor-name="@Model?.SupervisorName"
+                                        data-branch="@Model?.BranchName">
+                                    Accept Order
+                                </button>
+                            }
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#sendAlertModal">
+                                Send Alert
+                            </button>
                             var isDriverPhoneInvalid = string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10;
                             <div id="driverPhoneWarning"
                                  class="@(isDriverPhoneInvalid ? "" : "d-none")"
@@ -156,15 +204,13 @@
                             </div>
 
                             <a id="trackDriverLink"
-                               class="btn btn-outline-dark btn-sm @(isDriverPhoneInvalid ? "d-none" : "")"
+                               class="btn btn-outline-success btn-sm @(isDriverPhoneInvalid ? "d-none" : "")"
                                style="text-decoration: none"
                                href="/driverdetail/@phoneNumber">
                                 Track Driver
                             </a>
                         }
-                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#sendAlertModal">
-                            Send Alert
-                        </button>
+                        
                     </div>
                 </div>
             </div>
@@ -274,8 +320,8 @@
                 $("#sosReason").text(matchedOrder.sosReason);
             }
          }
-        function showModalAlert(message, type = "warning", timeout = 4000) {
-          const alertContainer = document.getElementById("alertContainer");
+        function showModalAlert(message, containerId, type = "warning", timeout = 4000) {
+          const alertContainer = document.getElementById(containerId);
           if (!alertContainer) return;
 
           // Clear any existing alerts
@@ -315,7 +361,7 @@
             } else if (radio.value === 'driver') {
 
               if (!phoneNumber || phoneNumber.trim() === '') {
-                showModalAlert("No driver has been assigned to this order yet.");
+                showModalAlert("No driver has been assigned to this order yet.", "sendAlertContainer");
                 form.style.display = 'none';
                 sendButton.disabled = true;
                 return;
@@ -326,7 +372,7 @@
                 const response = await fetch(`/getDeviceID/${encodeURIComponent(phoneNumber)}`);
 
                 if (!response.ok) {
-                  showModalAlert(`Failed to fetch driver info`);
+                  showModalAlert(`Failed to fetch driver info`, "sendAlertContainer");
                   form.style.display = 'none';
                   sendButton.disabled = true;
                   return;
@@ -336,12 +382,12 @@
                 deviceIdInput.value = data.deviceId || '';
 
                 if (!data.deviceId) {
-                  showModalAlert("Driver device ID not found.");
+                  showModalAlert("Driver device ID not found.", "sendAlertContainer");
                   form.style.display = 'none';
                   sendButton.disabled = true;
                 }
               } catch (error) {
-                showModalAlert('Error fetching driver info: ' + error.message);
+                showModalAlert('Error fetching driver info: ' + error.message, "sendAlertContainer");
                 form.style.display = 'none';
                 sendButton.disabled = true;
               }
@@ -357,7 +403,7 @@
           const body = document.getElementById('body').value.trim();
 
           if (!recipient || !title || !body) {
-            showModalAlert("Please fill in all fields.");
+            showModalAlert("Please fill in all fields.", "sendAlertContainer");
             return;
           }
 
@@ -378,19 +424,66 @@
 
             if (!response.ok) {
               const errorText = await response.text();
-              showModalAlert('Failed to send alert: ');
+              showModalAlert('Failed to send alert: ', "sendAlertContainer");
             } else {
               const result = await response.text();
               console.log('Alert sent successfully:', result);
-              showModalAlert('Alert sent successfully!');
+              showModalAlert('Alert sent successfully!', "sendAlertContainer");
 
               // Close modal
               const modal = bootstrap.Modal.getInstance(document.getElementById('sendAlertModal'));
               modal.hide();
             }
           } catch (error) {
-            showModalAlert('Error sending alert: ' + error.message);
+            showModalAlert('Error sending alert: ' + error.message, "sendAlertContainer");
           }
         });
+
+
+        $('#supervisorAccept').on('click', function () {
+            const $btn = $(this);
+            $('#confirmSupervisorBtn').data({
+                tin: $btn.data('tin'),
+                voucherCode: $btn.data('voucher-code'),
+                clientPhone: $btn.data('client-phone'),
+                driverPhone: $btn.data('driver-phone')
+            });
+
+
+            const modal = new bootstrap.Modal(document.getElementById('supervisorConfirmModal'));
+            modal.show();
+        });
+
+        $('#confirmSupervisorBtn').on('click', async function () {
+            const $confirmBtn = $(this);
+            $confirmBtn.prop('disabled', true).text('Processing...');
+
+            const payload = {
+                voucherCode: $confirmBtn.data('voucherCode'),
+                companyTin: String($confirmBtn.data('tin')),
+                assignedDriverPhoneNumber: $confirmBtn.data('driverPhone'),
+                customerPhoneNumber: $confirmBtn.data('clientPhone')
+            };
+            try {
+                const response = await fetch('/supervisoraccept', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    showModalAlert('Error: Could not accept order supervision.', "accetOrderAlertContainer");
+                    $confirmBtn.prop('disabled', false).text('Confirm');
+                } else {
+                    showModalAlert('Order supervision accepted successfully!', "accetOrderAlertContainer", "success");
+                    setTimeout(() => window.location.reload(), 5000);
+                }
+            } catch (error) {
+                showModalAlert('Error:' + error.message, "accetOrderAlertContainer");
+                $confirmBtn.prop('disabled', false).text('Confirm');
+            }
+        });
+
+
     </script>
 }
