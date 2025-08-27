@@ -11,12 +11,12 @@
         <table class="table compact stripe hover pt-3 col-11" id="tablelist">
             <thead class="">
                 <tr>
-                    <th>Company Name</th>
-                    <th>
+                    <th class="text-start">Company Name</th>
+                    <th class="text-center">
                         Company TIN
                     </th>
-                    <th>Company Details</th>
-                    <th>Check Drivers</th>
+                    <th class="text-center">Company Details</th>
+                    <th class="text-center">Check Drivers</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,14 +25,14 @@
                     {
                         var company = Model.company.FirstOrDefault(c => c?.Tin == tin);
 
-                        <tr>
-                            <td>@(company?.BrandName ?? "N/A")</td>
-                            <td>@(tin ?? "N/A")</td>
-                            <td>
+                        <tr class="text-center">
+                            <td class="text-start">@(company?.BrandName ?? "N/A")</td>
+                            <td class="text-center">@(tin ?? "N/A")</td>
+                            <td class="text-center">
                                 <a class="btn btn-outline-dark" href="/company/@tin">Details</a>
                             </td>
-                            <td>
-                                <a href="Drivers/FilterCompany/@tin">Drivers</a>
+                            <td class="text-center">
+                                <a href="/drivers?tin=@tin">Drivers</a>
                             </td>
                         </tr>
                     }
