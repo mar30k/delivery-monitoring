@@ -1,7 +1,8 @@
 ﻿@model List<CompletedOrders>
 @{
     var tableId = ViewData["TableId"] as string ?? "defaultTableId";
-    bool isRedCloud = bool.TryParse(ViewData["IsRedCloud"] as string ?? "false", out var parsed) && parsed;
+    var ff = ViewData["IsRedCloud"];
+    bool isRedCloud = bool.TryParse(ff?.ToString(), out var parsed) && parsed;
     var purposeOptions = ViewData["PurposeOptions"] as Dictionary<int, string> ?? new Dictionary<int, string>();
 }
 <div class="row card">

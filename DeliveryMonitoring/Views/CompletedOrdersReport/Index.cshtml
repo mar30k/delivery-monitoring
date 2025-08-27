@@ -300,7 +300,9 @@
            var endStr = endDate ? endDate.format("YYYY-MM-DD") : " ";
 
            var filename = "report_" + startStr + endStr + ".xlsx";
-            // Export to Excel
+            if (startDate.isSame(endDate, 'day')) {
+                filename = "report_" + startDate.format('YYYY-MM-DD') + ".xlsx";
+            }
             XLSX.writeFile(workbook, filename);
         });
     </script>
