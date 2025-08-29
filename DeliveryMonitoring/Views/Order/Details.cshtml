@@ -5,6 +5,19 @@
 @{
     ViewData["Title"] = "Order Details";
     var phoneNumber = Model.AssignedDriverPhoneNumber;
+    var statusColors = new Dictionary<string, string>
+    {
+        { "requested", "deepskyblue" },
+        { "arrivedatbranch", "orange" },
+        { "assigned", "lawngreen" },
+        { "declined", "red" },
+        { "accepted", "seagreen" },
+        { "arrived", "#F7BEA2" },
+        { "ontheway", "darkorange" },
+        { "drivernotfound", "red" },
+        { "sos", "darkred" },
+        { "default", "yellow" }
+    };
 }
 <!-- Add this line to include the custom CSS -->
 <link rel="stylesheet" href="~/css/orderDetail.css" />
@@ -90,6 +103,52 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-light border-bottom">
+                    <h5 class="modal-title " id="changeStatusModalLabel">Change Order Status : <span id="voucherCode"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="changeOrderStatusForm" method="post">
+                    <div class="modal-body">
+                        <div id="changeOrderStatusAlertContainer"></div>
+
+                        <!-- VoucherCode hidden input -->
+                        <input type="hidden" name="voucherCode" id="voucherCodeInput" />
+
+                        <!-- Driver dropdown -->
+                        <div class="mb-3">
+                            <label for="driverSelect" class="form-label">Select Driver</label>
+                            <select id="driverSelect" name="driverPhoneNumber" class="form-select form-select-sm">
+                                <option value="" selected disabled>Loading drivers...</option>
+                            </select>
+                        </div>
+
+                        <!-- Status dropdown -->
+                        <div class="mb-3">
+                            <label for="statusSelect" class="form-label">Select Order Status</label>
+                            @{
+                                var excludedStatuses = new HashSet<string> { "sos", "drivernotfound", "declined", "default" };
+                            }
+                            <select id="statusSelect" name="orderStatus" class="form-select form-select-sm">
+                                <option value="" selected disabled>Select status</option>
+                                @foreach (var status in statusColors.Keys.Where(s => !excludedStatuses.Contains(s)))
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light border-top">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary btn-sm" id="orderStatusButton" disabled>Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <h3>Order Details</h3>
 
@@ -111,19 +170,7 @@
                 <div class="d-flex d-inline-block">
                     <div>
                         @{
-                            var statusColors = new Dictionary<string, string>
-                            {
-                                { "requested", "deepskyblue" },
-                                { "arrivedatbranch", "orange" },
-                                { "assigned", "lawngreen" },
-                                { "declined", "red" },
-                                { "accepted", "seagreen" },
-                                { "arrived", "#F7BEA2" },
-                                { "ontheway", "darkorange" },
-                                { "drivernotfound", "red" },
-                                { "sos", "darkred" },
-                                { "default", "yellow" }
-                            };
+                            
                             var statusKey = Model?.Status?.ToLower() ?? "default";
                             var bgColor = statusColors.ContainsKey(statusKey) ? statusColors[statusKey] : statusColors["default"];
                         }
@@ -178,37 +225,54 @@
                     </div>
                     <div>
                         @{
-                            if (!(Model?.Activities?.ActivityResponse?.Any(x =>
-                                string.Equals(x?.Name, "Order Delivery accepted by the Supervisor", StringComparison.OrdinalIgnoreCase)
-                                ) ?? false))
-                            {
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="supervisorAccept"
-                                        data-tin="@Model?.CompanyTin"
-                                        data-voucher-code="@Model?.VoucherCode"
-                                        data-client-phone="@Model?.CustomerPhoneNumber"
-                                        data-driver-phone="@Model?.AssignedDriverPhoneNumber"
-                                        data-supervisor-phone="@Model?.SupervisedBy"
-                                        data-supervisor-name="@Model?.SupervisorName"
-                                        data-branch="@Model?.BranchName">
-                                    Accept Order
-                                </button>
-                            }
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#sendAlertModal">
-                                Send Alert
-                            </button>
                             var isDriverPhoneInvalid = string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10;
-                            <div id="driverPhoneWarning"
-                                 class="@(isDriverPhoneInvalid ? "" : "d-none")"
-                                 style="background-color: red; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
-                                <strong>Driver Phone Not Available</strong>
-                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#sendAlertModal">
+                                        Send Alert
+                                    </button>
 
-                            <a id="trackDriverLink"
-                               class="btn btn-outline-success btn-sm @(isDriverPhoneInvalid ? "d-none" : "")"
-                               style="text-decoration: none"
-                               href="/driverdetail/@phoneNumber">
-                                Track Driver
-                            </a>
+                                    <div id="driverPhoneWarning"
+                                         class="@(isDriverPhoneInvalid ? "" : "d-none")"
+                                         style="background-color: red; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
+                                        <strong>Driver Phone Not Available</strong>
+                                    </div>
+
+                                    <a id="trackDriverLink"
+                                       class="btn btn-outline-success btn-sm @(isDriverPhoneInvalid ? "d-none" : "")"
+                                       style="text-decoration: none"
+                                       href="/driverdetail/@phoneNumber">
+                                        Track Driver
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row mt-1">
+                                <div class="col-12">
+                                    @if (!(Model?.Activities?.ActivityResponse?.Any(x =>
+                                                                    string.Equals(x?.Name, "Order Delivery accepted by the Supervisor", StringComparison.OrdinalIgnoreCase)
+                                                                    ) ?? false))
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="supervisorAccept"
+                                                data-tin="@Model?.CompanyTin"
+                                                data-voucher-code="@Model?.VoucherCode"
+                                                data-client-phone="@Model?.CustomerPhoneNumber"
+                                                data-driver-phone="@Model?.AssignedDriverPhoneNumber"
+                                                data-supervisor-phone="@Model?.SupervisedBy"
+                                                data-supervisor-name="@Model?.SupervisorName"
+                                                data-branch="@Model?.BranchName">
+                                            Accept Order
+                                        </button>
+                                    }
+                                    @if (Model?.Status?.ToLower() == "in transit")
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-warning" id="changeOrderStatus"
+                                                data-voucher-code="@Model?.VoucherCode">
+                                            Change Order Status
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            
                         }
                         
                     </div>
