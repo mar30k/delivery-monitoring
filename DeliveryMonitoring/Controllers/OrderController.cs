@@ -541,5 +541,43 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500, $"Exception: {ex.Message}");
             }
         }
+        [HttpPost]
+        [Route("/changeorderstatus")]
+        public async Task<IActionResult> ChangeOrderStatus([FromBody] OrderDetail assignSuperVisorDTO)
+        {
+            if (assignSuperVisorDTO == null || assignSuperVisorDTO.VoucherCode == null)
+                return BadRequest("Invalid voucher data.");
+            var param = new
+            {
+                voucherCode = assignSuperVisorDTO.VoucherCode,
+                orderStatus = assignSuperVisorDTO.VoucherCode,
+                driverPhoneNumber = assignSuperVisorDTO.VoucherCode,
+                isReassignMode = true
+            };
+            var jsonBody = JsonConvert.SerializeObject(param);
+            var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            var client = _httpClientFactory.CreateClient("Delivery");
+            var uri = "/orderRequests/updateOrderStatus";
+
+
+            try
+            {
+                var response = await client.PatchAsync(client.BaseAddress +  uri, content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode);
+                }
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<Boolean>(responseData);
+                return result ? Ok(result) : BadRequest("Unable To Change Order Status!");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Exception: {ex.Message}");
+            }
+        }
     }
 }
