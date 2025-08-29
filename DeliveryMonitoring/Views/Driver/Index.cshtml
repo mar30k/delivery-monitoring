@@ -84,7 +84,7 @@
                         @{
                             var statusColors = StatusInfo.StatusMap;
                         }
-                        @foreach (var driver in Model)
+                        @foreach (var driver in Model.OrderByDescending(d => d != null && d.IsDisabled))
                         {
                             var statusKey = driver?.Status?.ToLower() ?? "default";
                             var statusInfo = statusColors.ContainsKey(statusKey) 

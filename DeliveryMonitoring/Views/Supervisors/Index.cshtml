@@ -32,7 +32,15 @@
                             int count = orders?.Count ?? 0;
                             <tr>
                                 <td>@supervisor.FirstName @supervisor.SecondName</td>
-                                <td class="text-center"><a href="tel: @supervisor.UserName">@supervisor.UserName</a></td>
+                                <td class="text-center">
+                                    <a href="tel: @supervisor.UserName">@supervisor.UserName</a>
+                                    @if (!string.IsNullOrEmpty(supervisor.UserName))
+                                    {
+                                        <a onclick="copyToClipboard('@supervisor.UserName')" title="Copy to clipboard" class="text-primary text-decoration-none">
+                                            <i class="bi bi-clipboard"></i>
+                                        </a>
+                                    }
+                                </td>
                                 <td class="text-center">@((supervisor.LoggedInStatus) ? "Yes" : "No")</td>
                                 <td class="text-center">@supervisor.TotalSupervisedOrders</td>
                                 <td class="text-center">@count</td>
@@ -179,7 +187,14 @@
                 let newRowHtml = `
                     <tr style="font-size:13px;">
                         <td>${sup.firstName ?? ''} ${sup.secondName ?? ''}</td>
-                        <td class="text-center"><a href="tel:${sup.userName ?? ''}">${sup.userName ?? ''}</a></td>
+                        <td class="text-center">
+                        <a href="tel:${sup.userName ?? ''}">${sup.userName ?? ''}</a>
+                        ${sup.userName ? `
+                            <a href="#" onclick="copyToClipboard('${sup.userName}')" title="Copy to clipboard" >
+                                <i class="bi bi-clipboard"></i>
+                            </a>` : ''
+                        }
+                        </td>
                         <td class="text-center">${sup.loggedInStatus ? "Yes" : "No"}</td>
                         <td class="text-center">${sup.totalSupervisedOrders ?? 0}</td>
                         <td class="text-center">${ordersCount}</td>
