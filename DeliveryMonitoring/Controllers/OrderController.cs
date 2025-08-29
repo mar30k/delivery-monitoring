@@ -543,15 +543,15 @@ namespace DeliveryMonitoring.Controllers
         }
         [HttpPost]
         [Route("/changeorderstatus")]
-        public async Task<IActionResult> ChangeOrderStatus([FromBody] OrderDetail assignSuperVisorDTO)
+        public async Task<IActionResult> ChangeOrderStatus([FromBody] OrderDetail orderDetail)
         {
-            if (assignSuperVisorDTO == null || assignSuperVisorDTO.VoucherCode == null)
+            if (orderDetail == null || orderDetail.VoucherCode == null)
                 return BadRequest("Invalid voucher data.");
             var param = new
             {
-                voucherCode = assignSuperVisorDTO.VoucherCode,
-                orderStatus = assignSuperVisorDTO.VoucherCode,
-                driverPhoneNumber = assignSuperVisorDTO.VoucherCode,
+                voucherCode = orderDetail.VoucherCode,
+                orderStatus = orderDetail.VoucherCode,
+                driverPhoneNumber = orderDetail.VoucherCode,
                 isReassignMode = true
             };
             var jsonBody = JsonConvert.SerializeObject(param);

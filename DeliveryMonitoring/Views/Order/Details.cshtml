@@ -114,9 +114,10 @@
                     <div class="modal-body">
                         <div id="changeOrderStatusAlertContainer"></div>
 
-                        <!-- VoucherCode hidden input -->
-                        <input type="hidden" name="voucherCode" id="voucherCodeInput" />
-
+                        <div class="mb-3">
+                            <label for="voucherCode" class="form-label">Voucher Code: </label>
+                            <input type="text" readonly class="form-control" name="voucherCode" id="voucherCodeInput" />
+                        </div>
                         <!-- Driver dropdown -->
                         <div class="mb-3">
                             <label for="driverSelect" class="form-label">Select Driver</label>
@@ -263,13 +264,10 @@
                                             Accept Order
                                         </button>
                                     }
-                                    @if (Model?.Status?.ToLower() == "in transit")
-                                    {
-                                        <button type="button" class="btn btn-sm btn-outline-warning" id="changeOrderStatus"
+                                    <button type="button" class="btn btn-sm btn-outline-warning @(Model?.Status?.ToLower() == "sos" ? "" : "d-none")" id="changeOrderStatus"
                                                 data-voucher-code="@Model?.VoucherCode">
                                             Change Order Status
-                                        </button>
-                                    }
+                                    </button>
                                 </div>
                             </div>
                             

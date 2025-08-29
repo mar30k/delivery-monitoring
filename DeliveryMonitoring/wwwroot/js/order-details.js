@@ -29,6 +29,12 @@ function updateOrderStatuses() {
     if (matchedOrder && matchedOrder.status === 'sos' && matchedOrder.sosReason) {
         $("#sosReason").text(matchedOrder.sosReason);
     }
+    if (matchedOrder && matchedOrder.status === 'sos') {
+        $("#changeOrderStatus").addClass('d-none');
+    }
+    if (matchedOrder && matchedOrder.status !== 'sos') {
+        $("#changeOrderStatus").removeClass('d-none');
+    }
 }
 function showModalAlert(message, containerId, type = "warning", timeout = 4000) {
     const alertContainer = document.getElementById(containerId);
@@ -222,6 +228,8 @@ $('#changeOrderStatus').on('click', async function () {
     const voucherCode = $(this).data('voucher-code');
     $('#voucherCode').text(voucherCode);
     $('#voucherCodeInput').val(voucherCode);
+    $('#statusSelect').val('');
+    $('#orderStatusButton').prop('disabled', true);
     const modal = new bootstrap.Modal($('#changeStatusModal'));
     modal.show();
     loadAvailableDrivers();
@@ -251,7 +259,6 @@ $('#changeOrderStatusForm').on('submit', function (e) {
         return;
     }
 
-    // ✅ If all fields are valid, send AJAX request
     const data = {
         voucherCode,
         status,
