@@ -271,7 +271,7 @@
                         @(Model?.SupervisedBy ?? "Not Assigned")
                     </span>
                 </div>
-                @if(Model?.SupervisorName != null)
+                @if (!string.IsNullOrWhiteSpace(Model?.SupervisorName))
                 {
                     <div>
                         <span id="letters">Name:</span>

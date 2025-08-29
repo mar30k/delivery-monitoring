@@ -182,7 +182,7 @@ function updateOrders() {
                     </td>
                     <td class="status-cell text-center  ${textColorClass}" style="background: ${color}">${order.status}</td>
                     <td class="text-center">${clean(order.statusReport ?? '-')}</td>
-                    <td class="text-center ${order.alert !=null ? 'bg-danger' : ''}">${order.alert ?? '-'}</td>
+                    <td class="text-center ${order.orderPrinted ? 'text-success' : 'text-danger'}">${order.orderPrinted ? 'Yes': 'No'}</td>
                     <td class="driver-cell text-center" >
                         <div class="d-inline-flex align-items-center gap-1">
                             <a href="tel:${order.assignedDriverPhoneNumber}">${order.assignedDriverPhoneNumber || 'N/A'}</a>

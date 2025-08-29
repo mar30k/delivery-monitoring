@@ -73,7 +73,7 @@
                             Status Report
                         </th>                                                                 
                         <th class="text-center">
-                            Alert
+                            Order Printed
                         </th>                                                                 
                         <th class="text-center">
                             Driver
@@ -197,8 +197,8 @@
                                     var cleanText = Regex.Replace(rawText, "<.*?>", string.Empty);          // Step 2: Strip any actual HTML tags
                                 }
                                 <td class="text-center">@cleanText</td>
-                                <td class="text-center @(order?.Alert != null ? "bg-danger" : "")">
-                                    @(order?.Alert ?? "-")
+                                <td class="text-center @((order?.OrderPrinted ?? false) ? "text-success" : "text-danger")">
+                                    @((order?.OrderPrinted ?? false) ? "Yes" : "No")
                                 </td>
                                 <td class="driver-cell text-center" >
                                     <div class="d-inline-flex align-items-center gap-1">
