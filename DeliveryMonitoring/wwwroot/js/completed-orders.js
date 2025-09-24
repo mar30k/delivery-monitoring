@@ -5,13 +5,28 @@ var dateFilterMappings = [
     { id: "dateRange", tableName: "tablelist" },
     { id: "takeAwayDateRange", tableName: "takeAwayTable" }
 ];
-function initOrderTable(selector, emptyMessage, totalColumnIndex, nonOrderableTargets = [0]) {
-    return js(selector).DataTable({
+function initOrderTable(selector, emptyMessage, totalColumnIndex, nonOrderableTargets = [0], headerFilterColumns = []) {
+    const table = js(selector).DataTable({
         responsive: true,
         order: [[5, "desc"]],
         pageLength: 50,
         lengthMenu: [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
-        columnDefs: [{ orderable: false, targets: nonOrderableTargets }],
+        columnDefs: [
+            {
+                orderable: false,
+                targets: nonOrderableTargets
+            },
+            {
+                targets: headerFilterColumns.map(col => col.index), // extract indexes only
+                orderable: true,
+                render: function (data, type, row) {
+                    if (type === 'sort') {
+                        return data;
+                    }
+                    return data;
+                }
+            }
+        ],
         language: { emptyTable: emptyMessage },
         footerCallback: function (row, data, start, end, display) {
             var api = this.api();
@@ -34,7 +49,15 @@ function initOrderTable(selector, emptyMessage, totalColumnIndex, nonOrderableTa
                 pageTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
             );
         },
+        initComplete: function () {
+            var dt = this;
+            headerFilterColumns.forEach(function (col) {
+                initHeaderFilterDropdown(dt, col.index, col.name);
+            });
+        }
     });
+
+    return table;
 }
 js(() => {
     let startDate = moment().startOf('day');
@@ -56,21 +79,34 @@ js(() => {
         "#dineInTable",
         "No dine-in orders available.",
         6,
-        [0, 4, 7, 8, 9]
+        [0, 1, 2, 4, 7, 8, 9],
+        [
+            { index: 1, name: 'Branch' },
+            { index: 2, name: 'Supervisor' }
+        ]
     );
 
     takeAwayTable = initOrderTable(
         "#takeAwayTable",
         "No takeaway orders available.",
         6,
-        [0, 4, 7, 8, 9]
+        [0, 1, 2, 4, 7, 8, 9],
+        [
+            { index: 1, name: 'Branch' },
+            { index: 2, name: 'Supervisor' }
+        ]
     );
 
     tablelist = initOrderTable(
         "#tablelist",
         "No orders history to display at the moment.",
         11,
-        [0, 4, 9, 13, 14, 15]
+        [0, 1, 2, 4, 9, 10, 13, 14, 15],
+        [
+            { index: 1, name: 'Branch' },
+            { index: 2, name: 'Supervisor' },
+            { index: 10, name: 'Status' }
+        ]
     );
 
     // Apply date filters to corresponding tables

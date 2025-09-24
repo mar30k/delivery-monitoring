@@ -8,7 +8,63 @@
     .initial-hide {
         display: none;
     }
+    /* Header Filter Styles */
+    .header-filter-wrapper {
+        cursor: pointer;
+    }
+
+    .filter-toggle {
+        color: #6c757d !important;
+        text-decoration: none !important;
+    }
+
+    .filter-toggle:hover {
+        color: #495057 !important;
+    }
+
+    .filter-dropdown {
+        font-size: 12px;
+    }
+
+    .filter-header {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 5px;
+    }
+
+    .filter-options::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .filter-options::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .filter-options::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+
+    .filter-options::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+    .form-check-input {
+        margin-top: 0.2em;
+    }
+
+    .filter-actions {
+        border-top: 1px solid #dee2e6;
+        padding-top: 8px;
+    }
+
+    /* Add filter indicator when filter is active */
+    th.filter-active .filter-toggle {
+        color: #007bff !important;
+    }
 </style>
+<!-- Filter Controls -->
+
 <div class="p-4 mt-2">
     @if (TempData["Message"] != null)
     {
@@ -51,7 +107,7 @@
             <div id="alertContainer"></div>
             <div class="row align-items-center justify-content-between p-2 mb-3">
                 <div class="col-12 col-md-6 mb-2 mb-md-0">
-                    <h4 class="mb-0"> Completed Delivery Orders List</h4>
+                    <h4 class="mb-0"> Completed Delivery Orders</h4>
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
@@ -267,7 +323,7 @@
         <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
             <div class="row align-items-center justify-content-between p-2 mb-3">
                 <div class="col-12 col-md-6 mb-2 mb-md-0">
-                    <h4 class="mb-0"> Dine-in Orders List</h4>
+                    <h4 class="mb-0"> Dine-in Orders</h4>
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
@@ -290,7 +346,7 @@
         <div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
             <div class="row align-items-center justify-content-between p-2 mb-3">
                 <div class="col-12 col-md-6 mb-2 mb-md-0">
-                    <h4 class="mb-0"> Takeaway Order List</h4>
+                    <h4 class="mb-0"> Takeaway Order</h4>
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
@@ -436,6 +492,7 @@
         const purposeOptions = @Html.Raw(Json.Serialize(Model?.PurposeOptions ?? new Dictionary<int, string>()));
         var isRedCloud = @((isRedCloud) ? "true" : "false");
     </script>
-    <script src="~/js/completed-orders.js" asp-append-version="true"></script>   
+    <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script> 
+    <script src="~/js/completed-orders.js" asp-append-version="true"></script>
 }
 
