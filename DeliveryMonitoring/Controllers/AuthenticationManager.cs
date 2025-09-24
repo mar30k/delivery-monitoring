@@ -51,16 +51,30 @@ namespace DeliveryMonitoring.Controllers
 
                 HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + requestUrl);
 
-                string juservalidation = await response.Content.ReadAsStringAsync();
-                var userValidation = JsonConvert.DeserializeObject<ResponseModel<LoginResponse>>(juservalidation);
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var userValidation = JsonConvert.DeserializeObject<ResponseModel<LoginResponse>>(responseBody);
 
-                if (!response.IsSuccessStatusCode)
-                    return userValidation;
+                if (!response.IsSuccessStatusCode && userValidation!=null)
+                {
+                    return new ResponseModel<LoginResponse>
+                    {
+                        Success = false,
+                        Message = userValidation.Message,
+                        Data = new LoginResponse()
+                    };
+                }
 
-                if (userValidation.Success)
-                    return userValidation;
-                else
-                    return userValidation;
+                if (userValidation == null)
+                {
+                    return new ResponseModel<LoginResponse>
+                    {
+                        Success = false,
+                        Message = "Empty or invalid response",
+                        Data = new LoginResponse()
+                    };
+                }
+
+                return userValidation;
             }
         }
         public async Task<List<EntityModel>> CheckMyId()
@@ -139,10 +153,10 @@ namespace DeliveryMonitoring.Controllers
             context.Response.Cookies.Delete(CNET_WebConstantes.IdentificationCookie);
             context.Response.Cookies.Delete("apibaseAddress");
             var user = _httpContextAccessor.HttpContext?.User;
-            OnlineStatus(false, user?.Identity?.Name);
+            _ = await OnlineStatus(false, user?.Identity?.Name);
         }
 
-        public async void OnlineStatus(bool isOnline, string phoneNumber)
+        public async Task<bool> OnlineStatus(bool isOnline, string phoneNumber)
         {
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
 
@@ -157,9 +171,11 @@ namespace DeliveryMonitoring.Controllers
 
                 var responseData = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<Boolean>(responseData);
+                return result;
             }
             catch (Exception ex)
             {
+                return false;
             }
         }
     }

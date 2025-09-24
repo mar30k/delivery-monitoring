@@ -16,16 +16,18 @@ namespace DeliveryMonitoring.Controllers
     public class LoginController : Controller
 
     {
+        private readonly IWebHostEnvironment _appEnvironment;
         private readonly AuthenticationManager _authenticationManager;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
         public LoginController(AuthenticationManager authenticationManager,
             IHttpClientFactory httpClientFactory,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor, IWebHostEnvironment webHostEnvironment)
         {
             _authenticationManager = authenticationManager;
             _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
+            _appEnvironment = webHostEnvironment;
         }
         [Route("/login")]
         public async Task<IActionResult> index() 
@@ -59,8 +61,14 @@ namespace DeliveryMonitoring.Controllers
                 if (loginResult.Success)
                 {
                     var user = await GetUserByUserName(model.Username?.Trim());
+                    var status = await _authenticationManager.OnlineStatus(true, user.UserName.ToString());
+                    if (!status)
+                    {
+                        ModelState.AddModelError("", "Unable to update online status! Please try again.");
+                        return View("Login", model); 
+                    }
+
                     _authenticationManager.SignIn(user, model.RememberMe);
-                    _authenticationManager.OnlineStatus(true, user.UserName.ToString());
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -105,11 +113,11 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> checkMyId([FromBody] VerifyIdModel model)
         {
             var _client = _httpClientFactory.CreateClient("DeliveryLogin");
-            string baseAddress = "";
             if (ModelState.IsValid)
             {
                 string message = string.Empty;
-                if(model.myId?.Trim().ToLower() == "0076217301") 
+                string baseAddress;
+                if (model.myId?.Trim().ToLower() == "0076217301")
                 {
                     baseAddress = _client.BaseAddress.ToString();
                     AddCookie(CNET_WebConstantes.IdentificationCookie, "0076217301", TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
@@ -133,8 +141,14 @@ namespace DeliveryMonitoring.Controllers
                         List<EntityModel>? userValidation = JsonConvert.DeserializeObject<List<EntityModel>>(juservalidation);
                         if (userValidation?.Count > 0)
                         {
-                            baseAddress = userValidation.FirstOrDefault()?.BaseUrl + "/api";
-                            //baseAddress = "http://196.191.244.156:7038/api";
+                            if (_appEnvironment.IsDevelopment())
+                            {
+                                baseAddress = "http://196.191.244.156:7038/api";  // dev
+                            }
+                            else
+                            {
+                                baseAddress = userValidation.FirstOrDefault()?.BaseUrl + "/api";  // prod
+                            }
                             AddCookie(CNET_WebConstantes.IdentificationCookie, userValidation?.FirstOrDefault()?.Tin, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
                             AddCookie("apibaseAddress", baseAddress, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
                             if (userValidation.FirstOrDefault()?.Tin == model.myId?.Trim())
@@ -152,7 +166,7 @@ namespace DeliveryMonitoring.Controllers
                             message = "Bad Request at Api.";
                         }
                     }
-                    
+
 
                 }
                 return Json(new

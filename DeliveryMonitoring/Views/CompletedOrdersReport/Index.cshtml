@@ -1,6 +1,15 @@
-﻿@model CompletedOrdersViewModel
+﻿@using Microsoft.AspNetCore.Html
+@model CompletedOrdersViewModel
 @{
-    ViewData["Title"] = "Report";
+    var type = "Delivery";
+    if (Model?.Type == "dinein")
+    {
+        type = "Dine-in";
+    }else if(Model?.Type?.ToLower() == "takeaway")
+    {
+        type = "Takeaway";
+    }
+    ViewData["Title"] = type + " Report";
 }
 <style>
     .initial-hide {
@@ -8,10 +17,12 @@
     }
 </style>
 <div class="p-4">
-    <button class="btn btn-success btn-sm mb-2" id="exportToEcelBtn">Export Table To Excel</button>
-    <div class="row align-items-center justify-content-between p-2 mb-3">
+    <div class="row align-items-center justify-content-between p-2">
         <div class="col-12 col-md-6 mb-2 mb-md-0">
-            <h4 class="mb-0"> Completed Delivery Orders List</h4>
+            <div class="d-flex align-items-baseline">
+                <h4 class="mb-0 me-2"> @(type == "Delivery" ? "Completed " : "")@(type) Orders</h4>
+                <button class="btn btn-success btn-sm mb-2" id="exportToEcelBtn">Export Table To Excel</button>
+            </div>
         </div>
         <div class="col-12 col-md-6">
             <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
@@ -131,12 +142,14 @@
                                 <td class="text-center">
                                     @(order?.Purpose ?? "N/A")
                                 </td>
-                                <td class="text-center">
-                                    @(order?.Note ?? "N/A")
+                                <td class="text-center note-cell">
+                                    @RenderExpandableText(order?.Note ?? "")
                                 </td>
-                                <td class="text-center">
-                                    @((!string.IsNullOrEmpty(order?.Review)) ? @order.Review : "N/A")
+
+                                <td class="text-center review-cell">
+                                    @RenderExpandableText(order?.Review ?? "")
                                 </td>
+
                                 <td class="text-center">
                                     @(order?.Rating.ToString() ?? "N/A")
                                 </td>
@@ -157,6 +170,39 @@
         </div>
     </div>
 </div>
+@functions {
+    public IHtmlContent RenderExpandableText(string text, int maxLength = 50, int remainingThreshold = 10)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return new HtmlString("N/A");
+        }
+
+        bool showToggle = false;
+        string shortText = text;
+
+        if (text.Length > maxLength)
+        {
+            if (text.Length - maxLength > remainingThreshold)
+            {
+                shortText = text.Substring(0, maxLength) + "...";
+                showToggle = true;
+            }
+        }
+
+        if (showToggle)
+        {
+            return new HtmlString($@"
+                <span class='short-text'>{shortText}</span>
+                <span class='full-text' style='display:none;'>{text}</span>
+                <a href='#' class='toggle-text'>Read more</a>");
+        }
+        else
+        {
+            return new HtmlString(shortText);
+        }
+    }
+}
 @section Scripts{
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
@@ -277,8 +323,16 @@
                 tableRef.draw();
             });
         });
-        document.getElementById("exportToEcelBtn").addEventListener("click", function () {
-            var table = document.getElementById("completedOrders");
+         // Toggle long text in Note/Review cells
+        js(document).on('click', '.toggle-text', function(e) {
+            e.preventDefault();
+            var $cell = js(this).closest('td');
+            $cell.find('.short-text, .full-text').toggle();
+            js(this).text(js(this).text() === 'Read more' ? 'Show less' : 'Read more');
+        });
+
+        $("#exportToEcelBtn").on("click", function () {
+            var table = $("#completedOrders")[0];
 
             // Convert table to workbook
             var workbook = XLSX.utils.table_to_book(table, { sheet: "Completed Orders" });
@@ -299,9 +353,9 @@
            var startStr = startDate ? startDate.format("YYYY-MM-DD")  + "_to_" : "all_dates";
            var endStr = endDate ? endDate.format("YYYY-MM-DD") : " ";
 
-           var filename = "report_" + startStr + endStr + ".xlsx";
-            if (startDate.isSame(endDate, 'day')) {
-                filename = "report_" + startDate.format('YYYY-MM-DD') + ".xlsx";
+           var filename = '@type'+"_report_" + startStr + endStr + ".xlsx";
+            if (startDate && startDate.isSame(endDate, 'day')) {
+                filename = '@type'+"_report_" + startDate.format('YYYY-MM-DD') + ".xlsx";
             }
             XLSX.writeFile(workbook, filename);
         });

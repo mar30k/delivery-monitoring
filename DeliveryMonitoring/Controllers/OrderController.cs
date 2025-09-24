@@ -550,8 +550,8 @@ namespace DeliveryMonitoring.Controllers
             var param = new
             {
                 voucherCode = orderDetail.VoucherCode,
-                orderStatus = orderDetail.VoucherCode,
-                driverPhoneNumber = orderDetail.VoucherCode,
+                orderStatus = orderDetail.Status,
+                driverPhoneNumber = orderDetail.AssignedDriverPhoneNumber,
                 isReassignMode = true
             };
             var jsonBody = JsonConvert.SerializeObject(param);

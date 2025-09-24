@@ -36,5 +36,6 @@ namespace DeliveryMonitoring.Models
         public HulubejeResponse<List<CompletedOrders>>? TakeAwayOrders { get; set; }
         public Dictionary<int, string>? PurposeOptions { get; set; }
         public string? CompanyTin { get; set; }
+        public string? Type { get; set; }
     }
 }

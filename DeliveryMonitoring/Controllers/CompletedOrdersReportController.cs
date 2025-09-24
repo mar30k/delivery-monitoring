@@ -15,16 +15,16 @@ namespace DeliveryMonitoring.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
         [Route("/report")]
-        public async Task<IActionResult> Index(string type = "")
+        public async Task<IActionResult> Index(string t = "")
         {
             var _client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             string url = "voucher/getcompletedorders";
-            if (type.ToLower() == "dinein")
+            if (t.ToLower() == "dinein")
             {
                 url = "voucher/getordersbytype?type=3203";
             }
-            else if (type.ToLower() == "takeaway")
+            else if (t.ToLower() == "takeaway")
             {
                 url = "voucher/getordersbytype?type=2076";
             }
@@ -43,6 +43,7 @@ namespace DeliveryMonitoring.Controllers
             }
             var viewModel = new CompletedOrdersViewModel
             {
+                Type = t,
                 CompletedOrders = completedResult,
                 PurposeOptions = JsonConvert.DeserializeObject<Dictionary<int, string>>(purposeResponseData)
             };
