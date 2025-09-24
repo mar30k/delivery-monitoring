@@ -13,7 +13,7 @@
         public string? UserName { get; init; }
         public string? Note { get; init; }
         public DateTime? TimeStamp { get; init; }
-        public bool? Seen { get; set; }
+        public bool Seen { get; set; }
         public string? Version { get; init; }
         public string? Remark { get; init; }
 

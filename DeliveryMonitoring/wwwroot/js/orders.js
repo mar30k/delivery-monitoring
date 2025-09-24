@@ -180,7 +180,15 @@ function updateOrders() {
                     <td data-order="${order.createdAt}" data-iso="${order.createdAtString}" class="text-center">
                         ${requestCreatedAt}
                     </td>
-                    <td class="status-cell text-center  ${textColorClass}" style="background: ${color}">${order.status}</td>
+                    <td class="status-cell text-center  ${textColorClass}" style="background: ${color}">
+                        <span class="p-1"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="${order.status === 'sos' ? order.sosReason ?? '' : ''}"
+                            >
+                            ${order.status}
+                        </span>
+                    </td>
                     <td class="text-center">${clean(order.statusReport ?? '-')}</td>
                     <td class="text-center ${order.orderPrinted ? 'text-success' : 'text-danger'}">${order.orderPrinted ? 'Yes': 'No'}</td>
                     <td class="driver-cell text-center" >

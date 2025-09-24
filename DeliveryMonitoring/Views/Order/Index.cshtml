@@ -189,7 +189,12 @@
                                     @orderTime
                                 </td>
                                 <td class="status-cell text-center @(bgColor == "lawngreen" || bgColor == "yellow" ? "text-black" : "text-white")" style="background: @bgColor">
-                                    @order?.Status
+                                    <span class="p-1"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-placement="top"
+                                          title="@(order?.Status?.ToLower() == "sos" ? order?.SosReason ?? "" : "")">
+                                        @order?.Status
+                                    </span>
                                 </td>
                                 
                                 @{

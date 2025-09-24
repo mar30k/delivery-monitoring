@@ -181,7 +181,7 @@
                                 border-radius: 10px;
                                 color: @(bgColor == "red" || bgColor == "green" ? "white" : "black");
                                 display: inline-block;
-                                padding: 3px 3px;">
+                                padding: 0px 8px;">
                                 <strong class="@(bgColor == "lawngreen" || bgColor == "yellow" ? "text-black" : "text-white")" id="orderStatus">@Html.DisplayFor(model => model.Status) </strong>
                             </div>
                             <span class="text-info bg-aqua" id="sosReason">@(Model?.Status == "sos" && Model.SosReason != null ? $"{Model.SosReason}" : "")</span>
@@ -232,26 +232,28 @@
                                     <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#sendAlertModal">
                                         Send Alert
                                     </button>
+                                    <div style="display: inline-block;">
+                                        <div id="driverPhoneWarning"
+                                             class="@(isDriverPhoneInvalid ? "" : "d-none") p-2 badge bg-danger"
+                                             >
+                                            <strong class="text-white">Driver Not Available</strong>
+                                        </div>
 
-                                    <div id="driverPhoneWarning"
-                                         class="@(isDriverPhoneInvalid ? "" : "d-none")"
-                                         style="background-color: red; border-radius: 20px; color: black; display: inline-block; padding: 5px 5px;">
-                                        <strong>Driver Phone Not Available</strong>
+                                        <a id="trackDriverLink"
+                                           class="btn btn-outline-success btn-sm @(isDriverPhoneInvalid ? "d-none" : "")"
+                                           style="text-decoration: none"
+                                           href="/driverdetail/@phoneNumber">
+                                            Track Driver
+                                        </a>
                                     </div>
-
-                                    <a id="trackDriverLink"
-                                       class="btn btn-outline-success btn-sm @(isDriverPhoneInvalid ? "d-none" : "")"
-                                       style="text-decoration: none"
-                                       href="/driverdetail/@phoneNumber">
-                                        Track Driver
-                                    </a>
+                                    
                                 </div>
                             </div>
                             <div class="row mt-1">
                                 <div class="col-12">
                                     @if (!(Model?.Activities?.ActivityResponse?.Any(x =>
-                                                                    string.Equals(x?.Name, "Order Delivery accepted by the Supervisor", StringComparison.OrdinalIgnoreCase)
-                                                                    ) ?? false))
+                                            string.Equals(x?.Name, "Order Delivery accepted by the Supervisor", StringComparison.OrdinalIgnoreCase)
+                                            ) ?? false))
                                     {
                                         <button type="button" class="btn btn-sm btn-outline-primary" id="supervisorAccept"
                                                 data-tin="@Model?.CompanyTin"
@@ -349,5 +351,9 @@
 </div>
 @await Html.PartialAsync("_DeliveryActivity", Model?.Activities ?? new DeliveryMonitoring.Models.Activities())
 @section Scripts{
+    <script>
+        window.customerDeviceId = '@Model?.CustomerDeviceID';
+        window.voucherCode = '@Model?.VoucherCode';
+    </script>
     <script src="~/js/order-details.js" asp-append-version="true"></script>
 }

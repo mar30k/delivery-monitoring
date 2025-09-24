@@ -4,7 +4,7 @@ $(document).ready(function () {
     phoneNumber = (phoneText === "N/A" ? "" : phoneText);
 });
 setInterval(updateOrderStatuses, 10000);
-var voucherCode = '@Model?.VoucherCode';
+var voucherCode = window.voucherCode;
 function updateOrderStatuses() {
     const matchedOrder = data.find(order => order.voucherCode === voucherCode);
     if (matchedOrder) {
@@ -30,10 +30,10 @@ function updateOrderStatuses() {
         $("#sosReason").text(matchedOrder.sosReason);
     }
     if (matchedOrder && matchedOrder.status === 'sos') {
-        $("#changeOrderStatus").addClass('d-none');
+        $("#changeOrderStatus").removeClass('d-none');
     }
     if (matchedOrder && matchedOrder.status !== 'sos') {
-        $("#changeOrderStatus").removeClass('d-none');
+        $("#changeOrderStatus").addClass('d-none');
     }
 }
 function showModalAlert(message, containerId, type = "warning", timeout = 4000) {
@@ -73,7 +73,7 @@ document.querySelectorAll('input[name="recipient"]').forEach((radio) => {
 
         if (radio.value === 'customer') {
             // Use Razor to fill in customer's device ID
-            deviceIdInput.value = '@Model?.CustomerDeviceID';
+            deviceIdInput.value = window.customerDeviceId;
         } else if (radio.value === 'driver') {
 
             if (!phoneNumber || phoneNumber.trim() === '') {

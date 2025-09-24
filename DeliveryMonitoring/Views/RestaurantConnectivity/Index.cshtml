@@ -48,21 +48,17 @@
                                 <td class="text-center">@item.Note</td>
                                 <td data-order="@item.TimeStamp?.ToString("yyyy-MM-ddTHH:mm:ss")" class="text-center">@item.TimeStamp?.ToString("yyyy-MM-dd hh:mm:ss")</td>
                                 <td>
-                                    @if (item.Seen == true)
+                                    @if (item.Seen)
                                     {
                                         <span class="badge bg-success">Seen</span>
                                     }
-                                    else if (item.Seen == false)
+                                    else
                                     {
                                         <span class="badge bg-warning text-dark">Unseen</span>
                                     }
-                                    else
-                                    {
-                                        <span class="text-muted">N/A</span>
-                                    }
                                 </td>
                                 <td class="text-center">@(item.Version ?? "N/A")</td>
-                                <td class="text-center">@(item.Remark ?? "N/A")</td>
+                                <td class="text-center">@(item.Remark ?? "-")</td>
                             </tr>
                         }
                     </tbody>
@@ -81,7 +77,7 @@
             tablelist = js('#tablelist').DataTable({
                 responsive: true,
                 "order": [[9, "desc"]],
-                "pageLength": 20,
+                "pageLength": 50,
                 "lengthMenu": [[10,  20, 50, 100, -1], [10, 20, 50, 100, "All"]],
                 columnDefs: [
                     { orderable: false, targets: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }
