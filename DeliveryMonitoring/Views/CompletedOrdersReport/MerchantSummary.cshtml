@@ -1,0 +1,107 @@
+﻿@model List<MerchantSummary>
+@{
+    ViewData["Title"] = "Merchant Summary";
+}
+<div class="p-4 mt-2">
+    <div class="row align-items-center justify-content-between p-2 mb-3">
+        <div class="col-12 col-md-6 mb-2 mb-md-0">
+            <div class="d-flex align-items-baseline">
+                <h4 class="mb-0 me-2">Merchant Summary</h4>
+                <button class="btn btn-success btn-sm mb-2" id="exportToExcelBtn">Export Table To Excel</button>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
+                <label for="dateRange" class="form-label mb-0 fw-semibold">Filter by Date:</label>
+                <input type="text" id="dateRange" class="form-control" placeholder="@DateTime.Today.ToString("yyyy-MM-dd") to
+                @DateTime.Today.ToString("yyyy-MM-dd")" style="max-width: 220px;" readonly />
+            </div>
+        </div>
+    </div>
+    <div class="row card">
+        <div class="table-responsive pt-3 pb-3">
+            <table class="table compact stripe hover pt-3" id="merchantSummary" style="font-size: 13px;">
+                <thead>
+                    <tr>
+                        <th class="text-center">Tin</th>
+                        <th class="text-center">Company Name</th>
+                        <th class="text-center">Brnach Name</th>
+                        <th class="text-center"> Dine-In Orders</th>
+                        <th class="text-center">Dine-In Amount</th>
+                        <th class="text-center"> Takeaway Orders</th>
+                        <th class="text-center">Takeaway Amount</th>
+                        <th class="text-center"> Delivery Orders</th>
+                        <th class="text-center">Delivery Amount</th>
+                        <th class="text-center">Grand Total</th>
+                        <th class="text-center">Total Consignee Count</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-end">Totals:</th>
+                        <th></th> <!-- dineInAmount -->
+                        <th></th> <!-- takeawayAmount -->
+                        <th></th> <!-- deliveryAmount -->
+                        <th></th> <!-- totalDineInOrders -->
+                        <th></th> <!-- totalTakeAwayOrders -->
+                        <th></th> <!-- totalDeliveryOrders -->
+                        <th></th> <!-- grandTotal -->
+                        <th></th> <!-- totalConsigneeCount -->
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+</div>
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" href="~/css/header-filters.css" asp-append-version="true">
+    <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script>
+    <script src="~/js/summary-datatable.js" asp-append-version="true"></script>
+     <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
+    <script>
+        let startDate = moment().startOf('day');
+        let endDate = moment().endOf('day');
+        js(() => {
+            // Merchant Summary
+            initSummaryTable({
+                tableSelector: "#merchantSummary",
+                orderingColumn: [2, "asc"],
+                ajaxUrl: "/msummary/data",
+                floatCols: [4, 6, 8, 9],  // DineInAmount, TakeawayAmount, DeliveryAmount, GrandTotal
+                intCols: [3, 5, 7, 10],   // counts
+                columns: [
+                    { data: "tin", className: "text-center" },
+                    { data: "companyName", className: "text-center" },
+                    { data: "branchName", className: "text-center" },
+                    { data: "totalDineInOrders", className: "text-center" },
+                    { data: "dineInAmount", className: "text-center", render: d => parseFloat(d).toFixed(2) },
+                    { data: "totalTakeAwayOrders", className: "text-center" },
+                    { data: "takeawayAmount", className: "text-center", render: d => parseFloat(d).toFixed(2) },
+                    { data: "totalDeliveryOrders", className: "text-center" },
+                    { data: "deliveryAmount", className: "text-center", render: d => parseFloat(d).toFixed(2) },
+                    { data: "grandTotal", className: "text-center", render: d => parseFloat(d).toFixed(2) },
+                    { data: "totalConsigneeCount", className: "text-center" }
+                ],
+                headerFilterColumns: [
+                    { index: 1, name: 'Company Name' },
+                    { index: 2, name: 'Brnach Name' }
+                ],
+                nonOrderableTargets: [0]
+            });
+
+            $("#exportToExcelBtn").on("click", function () {
+                exportTableToExcel({
+                    tableSelector: "#merchantSummary",
+                    typePrefix: "Merchant_Summary",
+                    sheetName: "Merchan Summary", // <-- custom sheet name
+                    startDate: startDate,
+                    endDate: endDate,
+                }); 
+            });
+        });
+    </script>
+}
