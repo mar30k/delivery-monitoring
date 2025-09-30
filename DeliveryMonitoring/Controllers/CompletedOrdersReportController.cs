@@ -75,7 +75,8 @@ namespace DeliveryMonitoring.Controllers
             HttpClient client,
             string companyTin,
             DateTime startDate,
-            DateTime endDate)
+            DateTime endDate,
+            bool isClear = false)
         {
             var deliveryOrdersUrl = "voucher/getcompletedorders";
             var dineInOrdersUrl = "voucher/getordersbytype?type=3203";
@@ -103,17 +104,21 @@ namespace DeliveryMonitoring.Controllers
                         ErrorMessages = new List<string> { "Response was null" }
                     };
                 }
-
+                var filteredData = response.Data ?? new List<CompletedOrders>();
+                if(!isClear)
+                {
+                    filteredData = filteredData
+                                .Where(o => o.RequestCreatedAt.Date >= startDate.Date &&
+                                            o.RequestCreatedAt.Date <= endDate.Date)
+                                .ToList()
+                            ?? new List<CompletedOrders>();
+                }
                 return new HulubejeResponse<List<CompletedOrders>>
                 {
                     IsSuccessful = response.IsSuccessful,
                     ErrorMessages = response.ErrorMessages,
                     AdditionalParameters = response.AdditionalParameters,
-                    Data = response.Data?
-                                .Where(o => o.RequestCreatedAt.Date >= startDate.Date &&
-                                            o.RequestCreatedAt.Date <= endDate.Date)
-                                .ToList()
-                            ?? new List<CompletedOrders>()
+                    Data = filteredData
                 };
             }
 
@@ -143,7 +148,7 @@ namespace DeliveryMonitoring.Controllers
         // AJAX Data for DataTable
         [HttpPost]
         [Route("/msummary/data")]
-        public async Task<IActionResult> MerchantSummaryData(DateTime? startDate, DateTime? endDate)
+        public async Task<IActionResult> MerchantSummaryData(DateTime? startDate, DateTime? endDate, bool isClear)
         {
             var summaries = await BuildSummaryReport(
                 c => c.BranchCode,
@@ -162,7 +167,8 @@ namespace DeliveryMonitoring.Controllers
                     };
                 },
                 startDate,
-                endDate
+                endDate,
+                isClear
             );
 
             return Json(new { data = summaries }); // <-- return JSON only
@@ -170,7 +176,7 @@ namespace DeliveryMonitoring.Controllers
         // AJAX Data for DataTable
         [HttpPost]
         [Route("/csummary/data")]
-        public async Task<IActionResult> ConsigneeSummaryData(DateTime? startDate, DateTime? endDate)
+        public async Task<IActionResult> ConsigneeSummaryData(DateTime? startDate, DateTime? endDate, bool isClear)
         {
             var summaries = await BuildSummaryReport(
                 c => c.PhoneNumber ?? string.Empty,
@@ -189,7 +195,8 @@ namespace DeliveryMonitoring.Controllers
                 },
 
                 startDate,
-                endDate
+                endDate,
+                isClear
             );
 
             return Json(new { data = summaries }); // <-- return JSON only
@@ -198,7 +205,8 @@ namespace DeliveryMonitoring.Controllers
              Func<CompletedOrders, TKey> groupKeySelector,
              Func<IGrouping<TKey, CompletedOrders>, CompletedOrdersViewModel, TSummary> createSummary,
              DateTime? startDate = null,
-             DateTime? endDate = null)
+             DateTime? endDate = null,
+             bool isClear = false)
             where TSummary : Summary
         {
             var fromDate = startDate ?? DateTime.Now.Date;
@@ -208,7 +216,8 @@ namespace DeliveryMonitoring.Controllers
                 _httpClientFactory.CreateClient("CnetApiBaseUrl"),
                 CompanyTin ?? "",
                 fromDate,
-                toDate);
+                toDate,
+                isClear);
 
             var allOrderItems =
                 (allOrdersByType?.DineInOders?.Data ?? Enumerable.Empty<CompletedOrders>())

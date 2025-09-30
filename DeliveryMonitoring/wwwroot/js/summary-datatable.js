@@ -23,7 +23,7 @@ js(() => {
     });
     js("#dateRange").val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
 });
-
+var isClear = false;
 function initSummaryTable({
     tableSelector,
     orderingColumn = [1, "asc"],
@@ -71,9 +71,14 @@ function initSummaryTable({
             type: 'POST',
             data: function (d) {
                 const picker = js("#dateRange").data('daterangepicker');
-                if (picker) {
+                if (picker && !isClear) {
                     d.startDate = picker.startDate.format("YYYY-MM-DD");
                     d.endDate = picker.endDate.format("YYYY-MM-DD");
+                    d.isClear = false;
+                } else if(isClear){
+                    d.startDate = null;
+                    d.endDate = null;
+                    d.isClear = true;
                 }
             }
         },
@@ -123,12 +128,26 @@ function initSummaryTable({
         table.ajax.reload();
     });
 
-    js("#dateRange").on('cancel.daterangepicker', function () {
-        startDate = moment().startOf('day');
-        endDate = moment().startOf('day');
-        js(this).val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
-        table.ajax.reload();
+    js("#dateRange").on('cancel.daterangepicker', function (ev, picker) {
+
+        // Clear internal dates
+        picker.setStartDate(moment().startOf('day'));
+        picker.setEndDate(moment().startOf('day'));
+
+        // Clear the input field
+        js(this).val('');
+
+        // Reset your variables
+        startDate = null;
+        endDate = null;
+        isClear = true;
+
+        // Reload table with isClear = true
+        table.ajax.reload(function () {
+            isClear = false;
+        });
     });
+
 
     return table;
 }
