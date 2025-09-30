@@ -47,6 +47,7 @@
 
     var filterToggle = header.find('.filter-toggle');
     var filterDropdown = header.find('.filter-dropdown');
+    var filterToggleIcon = header.find('.filter-toggle i');
     var closeButton = header.find('.btn-close');
     var selectAll = header.find('.select-all');
     var filterItems = header.find('.filter-items');
@@ -70,14 +71,14 @@
             var itemId = dropdownId + '_' + value.replace(/[^a-zA-Z0-9]/g, '_');
 
             var itemHtml = `
-                <div class="form-check mb-1">
-                    <input class="form-check-input filter-item" type="checkbox" 
+            <div class="form-check mb-1">
+                <input class="form-check-input filter-item" type="checkbox"
                            value="${value}" id="${itemId}" checked>
-                    <label class="form-check-label" for="${itemId}" style="font-size: 12px;">
-                        ${value} <span class="text-muted">(${count})</span>
-                    </label>
-                </div>
-            `;
+                <label class="form-check-label" for="${itemId}" style="font-size: 12px;">
+                    ${value} <span class="text-muted">(${count})</span>
+                </label>
+            </div>
+        `;
             filterItems.append(itemHtml);
         });
     }
@@ -122,6 +123,7 @@
         selectAll.prop('checked', true);
         column.search('').draw();
         filterDropdown.hide();
+        filterToggleIcon.removeClass('bi-funnel-fill').addClass('bi-funnel');
     });
 
     // Individual item change
@@ -152,6 +154,7 @@
 // Apply column filter function
 function applyColumnFilter(column) {
     var header = $(column.header());
+    var filterToggle = header.find('.filter-toggle i');
     var selectedValues = [];
 
     header.find('.filter-item:checked').each(function () {
@@ -160,12 +163,14 @@ function applyColumnFilter(column) {
 
     if (selectedValues.length === 0) {
         column.search('').draw();
+        filterToggle.removeClass('bi-funnel-fill').addClass('bi-funnel');
     } else {
         var regexPattern = selectedValues.map(function (val) {
             return '^' + val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$';
         }).join('|');
 
         column.search(regexPattern, true, false).draw();
+        filterToggle.removeClass('bi-funnel').addClass('bi-funnel-fill');
     }
 }
 // When typing in the search box
