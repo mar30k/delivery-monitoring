@@ -21,7 +21,7 @@
         <div class="col-12 col-md-6 mb-2 mb-md-0">
             <div class="d-flex align-items-baseline">
                 <h4 class="mb-0 me-2"> @(type == "Delivery" ? "Completed " : "")@(type) Orders</h4>
-                <button class="btn btn-success btn-sm mb-2" id="exportToEcelBtn">Export Table To Excel</button>
+                <button class="btn btn-success btn-sm mb-2" id="exportToExcelBtn">Export Table To Excel</button>
             </div>
         </div>
         <div class="col-12 col-md-6">
@@ -207,6 +207,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
     <script>
         var js = jQuery.noConflict(true);
 
@@ -331,33 +332,20 @@
             js(this).text(js(this).text() === 'Read more' ? 'Show less' : 'Read more');
         });
 
-        $("#exportToEcelBtn").on("click", function () {
-            var table = $("#completedOrders")[0];
-
-            // Convert table to workbook
-            var workbook = XLSX.utils.table_to_book(table, { sheet: "Completed Orders" });
-
-            var worksheet = workbook.Sheets["Completed Orders"];
-
-            // Set column widths
-            worksheet['!cols'] = [
-                { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 22 },
-                { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 12 },
-                { wch: 10 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, { wch: 10 }
-            ];
-            // Generate timestamp using Moment.js (format: YYYY-MM-DD_HH-mm-ss)
-            var timestamp = moment().format("YYYY-MM-DD_HH-mm-ss");
-
-           // Set filename
-           // Use startDate and endDate for filename (default to 'AllDates' if null)
-           var startStr = startDate ? startDate.format("YYYY-MM-DD")  + "_to_" : "all_dates";
-           var endStr = endDate ? endDate.format("YYYY-MM-DD") : " ";
-
-           var filename = '@type'+"_report_" + startStr + endStr + ".xlsx";
-            if (startDate && startDate.isSame(endDate, 'day')) {
-                filename = '@type'+"_report_" + startDate.format('YYYY-MM-DD') + ".xlsx";
-            }
-            XLSX.writeFile(workbook, filename);
+        $("#exportToExcelBtn").on("click", function () {
+            exportTableToExcel({
+                tableSelector: "#completedOrders",
+                typePrefix: "@type",              // same as your initial code
+                sheetName: "Completed Orders",
+                startDate: startDate,             // moment object
+                endDate: endDate,
+                columnWidths: [
+                    { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 22 },
+                    { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 12 },
+                    { wch: 10 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, { wch: 10 }
+                ]
+            });
         });
+
     </script>
 }
