@@ -67,7 +67,7 @@ namespace DeliveryMonitoring.Controllers
                         ModelState.AddModelError("", "Unable to update online status! Please try again.");
                         return View("Login", model); 
                     }
-
+                    AddCookie("user", JsonConvert.SerializeObject(user), TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
                     _authenticationManager.SignIn(user, model.RememberMe);
                     return RedirectToAction("Index", "Home");
                 }

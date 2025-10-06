@@ -1,6 +1,7 @@
 using CNET_ERP_V7.WebConstants;
 using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Models;
+using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Configuration;
 
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient<IApiRequestService, ApiRequestService>();
 var configuration = new ConfigurationBuilder()
        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
        .Build();
@@ -47,6 +49,7 @@ builder.Services.AddAuthentication(CNET_WebConstantes.CookieScheme)
 builder.Services.AddSession();
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddScoped<AuthenticationManager>();
 
 var app = builder.Build();
