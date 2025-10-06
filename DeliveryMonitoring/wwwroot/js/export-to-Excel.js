@@ -15,32 +15,82 @@ function exportTableToExcel({
     endDate = null,
     columnWidths = []
 }) {
-    var table = js(tableSelector)[0];
-    if (!table) {
+    var table = js(tableSelector);
+    if (table.length === 0) {
         console.warn("Table not found:", tableSelector);
         return;
     }
 
-    // Convert table to workbook
-    var workbook = XLSX.utils.table_to_book(table, { sheet: sheetName });
-    var worksheet = workbook.Sheets[sheetName];
+    // Get DataTable instance
+    var dt = table.DataTable();
+    if (!dt) {
+        console.warn("DataTable not initialized:", tableSelector);
+        return;
+    }
+
+    // Extract clean headers
+    var headers = [];
+    table.find('thead th').each(function () {
+        var title = js(this).find('.dt-column-title').first().text().trim();
+        headers.push(title || "");
+    });
+
+    // Extract object keys from first row
+    var data = dt.rows({ search: 'applied' , page: 'all'}).data().toArray();
+    if (!data.length) {
+        console.warn("No data found for export.");
+        return;
+    }
+
+    var keys = Object.keys(data[0]); // ['phoneNumber', 'name', 'dineInAmount', ...]
+
+    // Build worksheet data
+    var ws_data = [headers]; // first row = headers
+    data.forEach(row => {
+        ws_data.push(
+            keys.map(k => {
+                var val = row[k];
+
+                // If val is null or undefined, make it empty string
+                if (val == null) return "";
+
+                // If it's an object (like {display: ..., @data-order: ...})
+                if (typeof val === "object") {
+                    // Use display if it exists
+                    if ("display" in val) return val.display;
+                    // Otherwise stringify the object
+                    return JSON.stringify(val);
+                }
+                // Convert to string
+                val = val.toString().trim();
+
+                // If it contains a span (expandable cell), extract full text
+                if (val.includes("<span")) {
+                    return getCellFullText(val);
+                }
+
+                // Otherwise, return trimmed text
+                return val;
+            })
+        );
+    });
+
+    // Build worksheet
+    var worksheet = XLSX.utils.aoa_to_sheet(ws_data);
 
     // Set column widths if provided
     if (columnWidths.length > 0) {
         worksheet['!cols'] = columnWidths;
     }
 
-    // Generate timestamp
-    var timestamp = moment().format("YYYY-MM-DD_HH-mm-ss");
+    // Build workbook
+    var workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
 
-    // Prepare filename parts
+    // Prepare filename
     var startStr = startDate ? startDate.format("YYYY-MM-DD") + "_to_" : "all_dates";
-    var endStr = endDate ? endDate.format("YYYY-MM-DD") : " ";
-
-    // Default filename logic
+    var endStr = endDate ? endDate.format("YYYY-MM-DD") : "";
     var filename = typePrefix + "_report_" + startStr + endStr + ".xlsx";
-
-    // Same-day adjustment
     if (startDate && endDate && startDate.isSame(endDate, 'day')) {
         filename = typePrefix + "_report_" + startDate.format("YYYY-MM-DD") + ".xlsx";
     }
@@ -48,9 +98,19 @@ function exportTableToExcel({
     // Save workbook
     XLSX.writeFile(workbook, filename);
 }
+function getCellFullText(cellHtml) {
+    if (!cellHtml) return "";
 
+    // Create a temporary DOM element to parse HTML
+    var tmp = document.createElement("div");
+    tmp.innerHTML = cellHtml;
 
-    //all pages are not loading so using datatable is must
-    //columns names for columns with head filters is not correct 
-    //footers should be removed 
-    //only full texts should be displayed in cells rather than html
+    // Look for .full-text span first
+    var fullSpan = tmp.querySelector(".full-text");
+    if (fullSpan) {
+        return fullSpan.textContent.trim();
+    }
+
+    // Otherwise, fallback to plain text
+    return tmp.textContent.trim();
+}

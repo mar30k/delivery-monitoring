@@ -16,6 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\js\export-to-Excel.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.3" />
     <PackageReference Include="MediaBrowser.Common" Version="4.7.9" />
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.0" />

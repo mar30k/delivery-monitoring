@@ -4,7 +4,11 @@
     var disTinctSupervisors = Model?.CompletedOrders?.Data?.DistinctBy(x => x.SupervisorPhoneNumber).Where(x => x.SupervisorPhoneNumber != null).ToList();
     var isRedCloud = Model?.CompanyTin == "0076217301";
 }
-
+<style>
+.initial-hide {
+    display: none;
+}
+</style>
 <div class="p-4 mt-2">
     @if (TempData["Message"] != null)
     {
@@ -24,26 +28,20 @@
             }, 5000);
         </script>
     }
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <ul class="nav nav-tabs" id="orderTabs" role="tablist">
         <li class="nav-item">
-            <a class="nav-link active text-decoration-none" id="home-tab" data-toggle="tab" href="#home" role="tab"
-               aria-controls="home" aria-selected="true">Delivery</a>
+            <a class="nav-link text-decoration-none active" id="completed-delivery-tab" data-bs-toggle="tab" href="#completed-delivery" role="tab" aria-controls="completed-delivery" aria-selected="true">Delivery</a>
         </li>
-
-
         <li class="nav-item">
-            <a class="nav-link text-decoration-none" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
-               aria-controls="profile" aria-selected="false">Dine-in</a>
+            <a class="nav-link text-decoration-none" id="dinein-orders-tab" data-bs-toggle="tab" href="#dine-in-orders" role="tab" aria-controls="dine-in-orders" aria-selected="false">Dine-in</a>
         </li>
-
-
         <li class="nav-item">
-            <a class="nav-link text-decoration-none" id="messages-tab" data-toggle="tab" href="#messages" role="tab"
-               aria-controls="messages" aria-selected="false">Takeaway</a>
+            <a class="nav-link text-decoration-none" id="takeaway-tab" data-bs-toggle="tab" href="#takeaway" role="tab" aria-controls="takeaway" aria-selected="false">Takeaway</a>
         </li>
     </ul>
+
     <div class="tab-content border border-top-0 p-3">
-        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+        <div class="tab-pane fade show active" id="completed-delivery" role="tabpanel" aria-labelledby="completed-delivery-tab">
             <div id="alertContainer"></div>
             <div class="row align-items-center justify-content-between p-2 mb-3">
                 <div class="col-12 col-md-6 mb-2 mb-md-0">
@@ -260,7 +258,7 @@
             </div>
         </div>
         
-        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+        <div class="tab-pane fade" id="dine-in-orders" role="tabpanel" aria-labelledby="dinein-orders-tab">
             <div class="row align-items-center justify-content-between p-2 mb-3">
                 <div class="col-12 col-md-6 mb-2 mb-md-0">
                     <h4 class="mb-0"> Dine-in Orders</h4>
@@ -283,7 +281,7 @@
         </div>
 
 
-        <div class="tab-pane fade" id="messages" role="tabpanel" aria-labelledby="messages-tab">
+        <div class="tab-pane fade" id="takeaway" role="tabpanel" aria-labelledby="takeaway-tab">
             <div class="row align-items-center justify-content-between p-2 mb-3">
                 <div class="col-12 col-md-6 mb-2 mb-md-0">
                     <h4 class="mb-0"> Takeaway Order</h4>
@@ -426,6 +424,20 @@
 </div>
 
 @section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Activate tab based on URL hash on page load
+            var hash = window.location.hash;
+            if (hash) {
+                $('#orderTabs a[href="' + hash + '"]').tab('show');
+            }
+
+            // Update URL hash when tab changes
+            $('#orderTabs a').on('shown.bs.tab', function (e) {
+                history.replaceState(null, null, e.target.hash);
+            });
+        });
+    </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" href="~/css/header-filters.css" asp-append-version="true">

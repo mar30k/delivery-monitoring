@@ -44,7 +44,9 @@
         </div>
     `;
     header.html(filterHtml);
-
+    header.find('.filter-toggle, .filter-dropdown, .filter-dropdown *').on('click', function (e) {
+        e.stopPropagation();
+    });
     var filterToggle = header.find('.filter-toggle');
     var filterDropdown = header.find('.filter-dropdown');
     var filterToggleIcon = header.find('.filter-toggle i');
@@ -124,6 +126,7 @@
         column.search('').draw();
         filterDropdown.hide();
         filterToggleIcon.removeClass('bi-funnel-fill').addClass('bi-funnel');
+        selectAll.prop('checked', true)
     });
 
     // Individual item change
