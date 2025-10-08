@@ -51,7 +51,7 @@ builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddScoped<AuthenticationManager>();
-
+builder.Services.AddScoped<IApiRequestService, ApiRequestService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
