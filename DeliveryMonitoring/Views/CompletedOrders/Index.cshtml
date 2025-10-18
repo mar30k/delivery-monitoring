@@ -270,7 +270,7 @@
                     </div>
                 </div>
             </div>
-            @await Html.PartialAsync("_Orders", Model?.DineInOders?.Data,
+            @await Html.PartialAsync("_NonDeliveryOrders", Model?.DineInOders?.Data,
             new ViewDataDictionary(ViewData)
             {
                 ["TableId"] = "dineInTable",
@@ -293,7 +293,7 @@
                     </div>
                 </div>
             </div>
-            @await Html.PartialAsync("_Orders", Model?.TakeAwayOrders?.Data,
+            @await Html.PartialAsync("_NonDeliveryOrders", Model?.TakeAwayOrders?.Data,
                     new ViewDataDictionary(ViewData) {
                          ["TableId"] = "takeAwayTable" ,
                          ["Title"] = "Takeaway Orders",

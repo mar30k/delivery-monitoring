@@ -68,7 +68,7 @@ namespace DeliveryMonitoring.Controllers
                 .GroupBy(d => new { d.Tin, d.BranchName, d.DeviceName }) // Group by Tin , BranchName and DeviceName
                 .Select(g => g.OrderByDescending(d => d.TimeStamp).First()) // Get the one with latest TimeStamp
                 .ToList();
-            if (companyTin != "0076217301")
+            if (!string.IsNullOrWhiteSpace(companyTin) && companyTin != "0076217301")
             {
                 latestByTinAndBranch = latestByTinAndBranch?
                     .Where(x => x?.Tin?.ToString() == companyTin?.Trim())
@@ -81,6 +81,8 @@ namespace DeliveryMonitoring.Controllers
 
                 if (takeAwayOrders != null)
                     takeAwayOrders.Data = takeAwayOrders.Data?.Where(order => order.Tin == companyTin).ToList();
+                if (orders != null)
+                    orders = orders.Where(order => order.DeliveryTin == companyTin).ToList();
             }
             var viewModel = new HomeViewModel
             {

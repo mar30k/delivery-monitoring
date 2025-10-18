@@ -8,7 +8,7 @@
 
     <h3>List of Companies</h3>
     <div class="card pt-3 pb-3 row">
-        <table class="table compact stripe hover pt-3 col-11" id="tablelist">
+        <table class="table compact stripe hover pt-3 col-11" id="tablelist" style="font-size: 13px;">
             <thead class="">
                 <tr>
                     <th class="text-start">Company Name</th>
@@ -23,16 +23,16 @@
                 @{
                     @foreach (var tin in Model.Companies.companyTins)
                     {
-                        var company = Model.company.FirstOrDefault(c => c?.Tin == tin);
+                        var company = Model.Company.FirstOrDefault(c => c?.Tin == tin);
 
                         <tr class="text-center">
                             <td class="text-start">@(company?.BrandName ?? "N/A")</td>
                             <td class="text-center">@(tin ?? "N/A")</td>
                             <td class="text-center">
-                                <a class="btn btn-outline-dark" href="/company/@tin">Details</a>
+                                <a class="btn btn-outline-secondary btn-sm text-decoration-none" href="/company/@tin">Details</a>
                             </td>
                             <td class="text-center">
-                                <a href="/drivers?tin=@tin">Drivers</a>
+                                <a class="btn btn-outline-secondary btn-sm text-decoration-none" href="/drivers?tin=@tin">Drivers</a>
                             </td>
                         </tr>
                     }

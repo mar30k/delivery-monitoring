@@ -121,7 +121,7 @@ namespace DeliveryMonitoring.Controllers
             return Ok(getordersbytypeData);
         }
         [Route("/orderdetail")]
-        public async Task<IActionResult> OrderDetail(string voucher ,string type = "")
+        public async Task<IActionResult> CompletedOrderDetail(string voucher ,string type = "")
         {
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var supervisors = new List<SupervisorsDTO>();

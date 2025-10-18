@@ -27,6 +27,7 @@ namespace DeliveryMonitoring.Helpers
                 if (string.IsNullOrWhiteSpace(companyTin)) { return new List<OrderDetail>(); }
 
                 HttpResponseMessage responseMessage = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
+                
                 if (responseMessage.IsSuccessStatusCode)
                 {
                     var responseMessageData = await responseMessage.Content.ReadAsStringAsync();
@@ -35,6 +36,10 @@ namespace DeliveryMonitoring.Helpers
                 response?.ForEach(x => x.CreatedAtString = new DateTimeOffset(DateTime.SpecifyKind(x.CreatedAt.Value, DateTimeKind.Utc))
                                     .ToOffset(TimeSpan.FromHours(3))
                                     .ToString("yyyy-MM-dd HH:mm:ss"));
+                if (!string.IsNullOrWhiteSpace(companyTin) && companyTin != "0076217301" && response!=null)
+                {
+                    response = response.Where(order => order.DeliveryTin == companyTin).ToList();
+                }
                 return response ?? new List<OrderDetail>();
             }
             catch

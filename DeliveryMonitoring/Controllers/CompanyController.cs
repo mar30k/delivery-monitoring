@@ -19,7 +19,7 @@ namespace DeliveryMonitoring.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        [Route("Companies")]
+        [Route("companies")]
         public async Task<IActionResult> Index()
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
@@ -35,17 +35,16 @@ namespace DeliveryMonitoring.Controllers
 
             // Call the second endpoint for each company TIN to get detailed information
             var companyDetailsList = new List<Company>();
-            if(companyTin != "0076217301")
+            if(!string.IsNullOrWhiteSpace(companyTin) && companyTin != "0076217301")
             {
                 HttpResponseMessage companyDetailsResponse = await _client.GetAsync($"{_client.BaseAddress}/companies/{companyTin}");
                 if (companyDetailsResponse.IsSuccessStatusCode)
                 {
                     string data2 = await companyDetailsResponse.Content.ReadAsStringAsync();
                     var companyDetailsModel = JsonConvert.DeserializeObject<Company>(data2);
-                    companyDetailsList.Add(companyDetailsModel);
+                    companyDetailsList.Add(companyDetailsModel?? new Company());
                 }
-
-                if (companiesModel?.companyTins?.Contains(companyTin) == true)
+                if (companiesModel != null)
                 {
                     companiesModel.companyTins = new List<string> { companyTin };
                 }
@@ -53,7 +52,7 @@ namespace DeliveryMonitoring.Controllers
                 return View(new CompanyIndex
                 {
                     Companies = companiesModel ?? new Companies(),
-                    company = companyDetailsList
+                    Company = companyDetailsList
                 });
             }
             foreach (var companyTins in companiesModel?.companyTins ?? new List<string>())
@@ -63,7 +62,7 @@ namespace DeliveryMonitoring.Controllers
                 {
                     string data2 = await companyDetailsResponse.Content.ReadAsStringAsync();
                     var companyDetailsModel = JsonConvert.DeserializeObject<Company>(data2);
-                    companyDetailsList.Add(companyDetailsModel);
+                    companyDetailsList.Add(companyDetailsModel ?? new Company());
                 }
             }
 
@@ -71,7 +70,7 @@ namespace DeliveryMonitoring.Controllers
             var viewModel = new CompanyIndex
             {
                 Companies = companiesModel ?? new Companies(),
-                company = companyDetailsList
+                Company = companyDetailsList
             };
 
             return View(viewModel);
@@ -83,11 +82,11 @@ namespace DeliveryMonitoring.Controllers
         {
             var _client = _httpClientFactory.CreateClient("Delivery");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
+            if (string.IsNullOrWhiteSpace(companyTin))
             {
                 return RedirectToAction("Logout", "Login");
             }
-            else if (companyTin != "0076217301") { return RedirectToAction("index", "home"); }
+            else if (companyTin != "0076217301" && companyTins!=companyTin) { return RedirectToAction("index", "company"); }
             Company? company = null;
 
             try

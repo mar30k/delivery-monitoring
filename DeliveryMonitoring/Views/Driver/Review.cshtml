@@ -23,21 +23,22 @@
                     <span class="text-muted">(0 reviews)</span>
                 }
             </div>
-            <hr />
-            @if (Model?.Reviews != null && Model.Reviews.Any())
+            <hr />@if (Model?.Reviews != null && Model.Reviews.Any())
             {
                 <div class="mb-3">
-                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(0)">All</button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(5)">5 <i class="bi bi-star-fill text-warning"></i></button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(4)">4 <i class="bi bi-star-fill text-warning"></i></button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(3)">3 <i class="bi bi-star-fill text-warning"></i></button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(2)">2 <i class="bi bi-star-fill text-warning"></i></button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="filterByRating(1)">1 <i class="bi bi-star-fill text-warning"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm active" data-rating="0" onclick="filterByRating(this)">All</button>
+                    <button class="btn btn-outline-secondary btn-sm" data-rating="5" onclick="filterByRating(this)">5 <i class="bi bi-star-fill text-warning"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm" data-rating="4" onclick="filterByRating(this)">4 <i class="bi bi-star-fill text-warning"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm" data-rating="3" onclick="filterByRating(this)">3 <i class="bi bi-star-fill text-warning"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm" data-rating="2" onclick="filterByRating(this)">2 <i class="bi bi-star-fill text-warning"></i></button>
+                    <button class="btn btn-outline-secondary btn-sm" data-rating="1" onclick="filterByRating(this)">1 <i class="bi bi-star-fill text-warning"></i></button>
                 </div>
+
                 <div id="noReviewsMessage" class="alert alert-info d-none">
-                    No reviews found for the selected rating.
+                    No reviews found for this driver.
                 </div>
-                <div class="row">
+
+                <div class="row" id="reviewsContainer">
                     @for (int i = 0; i < Model.Reviews.Count; i++)
                     {
                         var review = Model.Reviews[i];
@@ -47,7 +48,7 @@
                             imageUrl = "/images/default-avatar.png";
                         }
 
-                        <div class="col-md-6 mb-4" data-rating="@review.Rating">
+                        <div class="col-md-6 mb-4 col-12 col-lg-4 review-card" data-rating="@review.Rating">
                             <div class="card shadow-sm border-0 h-100">
                                 <div class="card-body d-flex">
                                     <div class="me-4">
@@ -71,7 +72,8 @@
                                             }
                                         </div>
                                         <small class="text-muted d-block mb-2">@review.Date.ToString("MMMM dd, yyyy • h:mm tt")</small>
-                                        <small class="text-muted d-block mb-2">@review.ReferenceVoucher</small>
+                                        <a class="text-decoration-none" target="_blank"
+                                           href="/orderdetail?voucher=@review.ReferenceVoucher">@review.ReferenceVoucher</a>
 
                                         @if (!string.IsNullOrWhiteSpace(review.Review))
                                         {
@@ -95,6 +97,11 @@
                         </div>
                     }
                 </div>
+
+                <!-- Pagination -->
+                <nav>
+                    <ul class="pagination justify-content-center mt-4" id="paginationContainer"></ul>
+                </nav>
             }
             else
             {
@@ -107,25 +114,119 @@
 </div>
 @section Scripts {
     <script>
-        function filterByRating(rating) {
-            let found = false;
-            document.querySelectorAll('[data-rating]').forEach(card => {
-                const cardRating = parseInt(card.getAttribute('data-rating'), 10);
-                if (rating === 0 || cardRating === rating) {
-                    card.style.display = '';
-                    found = true;
-                } else {
-                    card.style.display = 'none';
+        const reviewsPerPage = 12;
+        let currentPage = 1;
+        let currentRating = 0;
+
+        function renderPagination(totalReviews) {
+            const totalPages = Math.ceil(totalReviews / reviewsPerPage);
+            const paginationContainer = document.getElementById('paginationContainer');
+            paginationContainer.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            const createPageItem = (page, text = null, disabled = false, active = false) => {
+                const li = document.createElement('li');
+                li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
+                li.innerHTML = `<a class="page-link text-decoration-none" href="#">${text || page}</a>`;
+                if (!disabled && !active) {
+                    li.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        currentPage = page;
+                        filterByRating(null, currentRating);
+                    });
                 }
+                return li;
+            };
+
+            // Previous button
+            paginationContainer.appendChild(createPageItem(currentPage - 1, '«', currentPage === 1));
+
+            // Show first page
+            if (currentPage > 3) {
+                paginationContainer.appendChild(createPageItem(1, '1'));
+                if (currentPage > 4) {
+                    const ellipsis = document.createElement('li');
+                    ellipsis.className = 'page-item disabled';
+                    ellipsis.innerHTML = `<span class="page-link">…</span>`;
+                    paginationContainer.appendChild(ellipsis);
+                }
+            }
+
+            // Pages around current page
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                paginationContainer.appendChild(createPageItem(i, null, false, i === currentPage));
+            }
+
+            // Show last page
+            if (currentPage < totalPages - 2) {
+                if (currentPage < totalPages - 3) {
+                    const ellipsis = document.createElement('li');
+                    ellipsis.className = 'page-item disabled';
+                    ellipsis.innerHTML = `<span class="page-link">…</span>`;
+                    paginationContainer.appendChild(ellipsis);
+                }
+                paginationContainer.appendChild(createPageItem(totalPages, totalPages));
+            }
+
+            // Next button
+            paginationContainer.appendChild(createPageItem(currentPage + 1, '»', currentPage === totalPages));
+        }
+        function filterByRating(button, rating = null) {
+            if (button) {
+                const selectedRating = parseInt(button.getAttribute('data-rating'), 10);
+                const isActive = button.classList.contains('active');
+                currentRating = isActive && selectedRating !== 0 ? 0 : selectedRating;
+
+                document.querySelectorAll('.mb-3 button[data-rating]').forEach(btn => btn.classList.remove('active'));
+                if (currentRating === 0) {
+                    document.querySelector('.mb-3 button[data-rating="0"]').classList.add('active');
+                } else {
+                    button.classList.add('active');
+                }
+
+                currentPage = 1; // Reset page on filter change
+            }
+
+            const allReviews = document.querySelectorAll('.review-card');
+            let filteredReviews = [];
+            allReviews.forEach(card => {
+                const cardRating = parseInt(card.getAttribute('data-rating'), 10);
+                if (currentRating === 0 || cardRating === currentRating) {
+                    filteredReviews.push(card);
+                }
+                card.style.display = 'none';
             });
 
-            // Show or hide "No reviews" message
+            // Show only current page reviews
+            const start = (currentPage - 1) * reviewsPerPage;
+            const end = start + reviewsPerPage;
+            filteredReviews.slice(start, end).forEach(card => card.style.display = '');
+
+            // Show/hide "No reviews" message
             const msg = document.getElementById('noReviewsMessage');
-            if (!found) {
+            if (filteredReviews.length === 0) {
+                const messages = {
+                    0: "No reviews found for this driver.",
+                    1: "No 1-star reviews found.",
+                    2: "No 2-star reviews found.",
+                    3: "No 3-star reviews found.",
+                    4: "No 4-star reviews found.",
+                    5: "No 5-star reviews found.",
+                }
+                msg.textContent = messages[currentRating] || "No reviews found.";
                 msg.classList.remove('d-none');
             } else {
                 msg.classList.add('d-none');
             }
+
+            // Render pagination
+            renderPagination(filteredReviews.length);
         }
+
+        // Initial render
+        document.addEventListener('DOMContentLoaded', function () {
+            filterByRating(null, 0);
+        });
     </script>
 }
