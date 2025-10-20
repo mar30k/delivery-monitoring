@@ -8,10 +8,10 @@
 
 @functions {
     // Helper function to convert a numeric rating to a star representation
-    string GetStarRating(double rating)
+    string GetStarRating(decimal rating)
     {
         int fullStars = (int)rating;
-        bool hasHalfStar = rating - fullStars >= 0.5;
+        bool hasHalfStar = rating - fullStars >= 0.5m;
         StringBuilder stars = new StringBuilder();
         for (int i = 1; i <= 5; i++)
         {
@@ -53,8 +53,14 @@
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="mb-2">
-                                <span class="fw-bold">Rating:</span>
-                                <span class="text-warning">@Html.Raw(GetStarRating(Model.Rating))</span>
+                                <span class="fw-bold me-1">Rating:</span>
+                                <div class="d-inline-flex align-items-center flex-wrap">
+                                    <span class="text-warning fs-5 me-2">@Html.Raw(GetStarRating(Model.Rating))</span>
+                                    <small class="text-muted">
+                                        @Model.Rating.ToString("0.0") / 5
+                                        (<span>@Model.RatingCount</span> ratings)
+                                    </small>
+                                </div>
                             </div>
                         </div>
                         <div class="col-lg-4">
@@ -89,7 +95,24 @@
                                         <strong>City:</strong> @branch.City <br>
                                     }
                                     <strong>Star Rating:</strong>
-                                    <span class="text-warning">@Html.Raw(GetStarRating(branch.StarRating))</span> <br>
+                                    @{
+                                        string value = branch.Rating ?? "0";
+                                        decimal number = 0;
+
+                                        if (decimal.TryParse(value, out var parsed))
+                                        {
+                                            number = parsed;
+                                        }
+
+                                        string formatted = number.ToString("0.00");
+                                    }
+
+                                    <span class="text-warning fs-5 me-2">@Html.Raw(GetStarRating(number))</span>
+                                    <small class="text-muted">
+                                        @formatted / 5
+                                        (<span>@branch.RatingCount</span> ratings)
+                                    </small>
+                                     <br>
                                     @if (!string.IsNullOrEmpty(branch.Description))
                                     {
                                         <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#descriptionModal">

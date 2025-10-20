@@ -66,13 +66,16 @@ namespace DeliveryMonitoring.Controllers
                     .Where(x => x?.Tin?.ToString() == companyTin?.Trim())
                     .ToList();
             }
+            var result = latestByTinAndBranch?
+                .Where(s => string.IsNullOrEmpty(s.Note) || !s.Note.StartsWith("09"))
+                .ToList();
             var viewModel = new HomeViewModel
             {
                 Drivers = drivers,
                 Orders = orders,
                 Comps = company,
                 CompanyTin = companyTin,
-                DeviceControl = latestByTinAndBranch,
+                DeviceControl = result,
                 Supervisors = superVisors,
                 CompletedOrders = completedOrders,
                 DineInOrders = dineInOders,

@@ -11,7 +11,7 @@ namespace DeliveryMonitoring.Models
         public string? Description { get; set; }
         public DateTime RegisterDate { get; set; }
         [Display(Name = "Rating")]
-        public int Rating { get; set; }
+        public decimal Rating { get; set; }
         [Display(Name = "Rating")]
         public int RatingCount { get; set; }
         public bool IsSponsored { get; set; }
@@ -31,7 +31,7 @@ namespace DeliveryMonitoring.Models
         public string? Description { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
-        public int Rating { get; set; }
+        public string? Rating { get; set; }
         public int RatingCount { get; set; }
         public int StarRating { get; set; }
         public string? Logo { get; set; }

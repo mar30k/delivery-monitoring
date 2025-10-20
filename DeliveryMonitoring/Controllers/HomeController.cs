@@ -27,7 +27,6 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Index()
         {
             var client = _httpClientFactory.CreateClient("Delivery");
-            var httpClient = _httpClientFactory.CreateClient("ApiBaseUrl");
             var v7Client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
 
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
@@ -40,12 +39,8 @@ namespace DeliveryMonitoring.Controllers
             List<Driver> drivers = new();
             List<OrderDetail> orders = new();
             Companies company = new();
-            List<DeviceControl> deviceControl = new();
             List<SupervisorsDTO> superVisors = new();
-            HulubejeResponse<List<CompletedOrders>> completedOrders = new();
-            HulubejeResponse<List<CompletedOrders>> dineInOders = new();
-            HulubejeResponse<List<CompletedOrders>> takeAwayOrders = new();
-
+            
             try
             {
                 var startDate = DateTime.Today.ToString("yyyy-MM-dd");
@@ -54,35 +49,10 @@ namespace DeliveryMonitoring.Controllers
                 orders = await FetchData<List<OrderDetail>>(client, $"/orderRequests?companyTin={companyTin}") ?? new List<OrderDetail>();
                 company = await FetchData<Companies>(client, $"/companies") ?? new Companies();
                 superVisors = await FetchData<List<SupervisorsDTO>>(v7Client, $"auth/getsupervisors") ?? new List<SupervisorsDTO>();
-                takeAwayOrders = await FetchData<HulubejeResponse<List<CompletedOrders>>>(v7Client, $"voucher/getordersbytype?type=2076") ?? new HulubejeResponse<List<CompletedOrders>>();
-                completedOrders = await FetchData<HulubejeResponse<List<CompletedOrders>>>(v7Client, $"voucher/getcompletedorders") ?? new HulubejeResponse<List<CompletedOrders>>();
-                dineInOders = await FetchData<HulubejeResponse<List<CompletedOrders>>>(v7Client, $"voucher/getordersbytype?type=3203") ?? new HulubejeResponse<List<CompletedOrders>>();
-                deviceControl = (await FetchData<List<DeviceControl>>(httpClient, $"deviceControl?StartDate={startDate}&EndDate={startDate}") ?? new List<DeviceControl>()).ToList().Where(s => !s.Note.StartsWith("09")).ToList();
             }
             catch (HttpRequestException)
             {
                 // Optionally log the error
-            }
-            var latestByTinAndBranch = deviceControl?
-                .Where(d => d.TimeStamp.HasValue) // Ensure TimeStamp is not null
-                .GroupBy(d => new { d.Tin, d.BranchName, d.DeviceName }) // Group by Tin , BranchName and DeviceName
-                .Select(g => g.OrderByDescending(d => d.TimeStamp).First()) // Get the one with latest TimeStamp
-                .ToList();
-            if (!string.IsNullOrWhiteSpace(companyTin) && companyTin != "0076217301")
-            {
-                latestByTinAndBranch = latestByTinAndBranch?
-                    .Where(x => x?.Tin?.ToString() == companyTin?.Trim())
-                    .ToList();
-                if (completedOrders != null)
-                    completedOrders.Data = completedOrders.Data?.Where(order => order.Tin == companyTin).ToList();
-
-                if (dineInOders != null)
-                    dineInOders.Data = dineInOders.Data?.Where(order => order.Tin == companyTin).ToList();
-
-                if (takeAwayOrders != null)
-                    takeAwayOrders.Data = takeAwayOrders.Data?.Where(order => order.Tin == companyTin).ToList();
-                if (orders != null)
-                    orders = orders.Where(order => order.DeliveryTin == companyTin).ToList();
             }
             var viewModel = new HomeViewModel
             {
@@ -90,23 +60,59 @@ namespace DeliveryMonitoring.Controllers
                 Orders = orders,
                 Comps = company,
                 CompanyTin = companyTin,
-                DeviceControl = latestByTinAndBranch,
                 Supervisors = superVisors,
-                TakeAwayOrders = takeAwayOrders,
-                CompletedOrders = completedOrders,
-                DineInOrders = dineInOders,
             };
-            
+
             return View(viewModel);
         }
 
-        private async Task<T?> FetchData<T>(HttpClient client, string uri)
+        private static async Task<T?> FetchData<T>(HttpClient client, string uri)
         {
-            HttpResponseMessage response = await client.GetAsync(client.BaseAddress + uri);
-            if (!response.IsSuccessStatusCode) return default;
+            try
+            {
+                var response = await client.GetAsync(client.BaseAddress + uri);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.Error.WriteLine($"[FetchData] Request to '{uri}' failed with status: {response.StatusCode}");
+                    return default;
+                }
 
-            string json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(json);
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<T>(json);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[FetchData] Exception while fetching '{uri}': {ex.Message}");
+                return default;
+            }
+        }
+
+
+        [HttpGet("/GetChartData")]
+        public async Task<IActionResult> GetChartData([FromQuery] string type)
+        {
+            var v7Client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            var today = DateTime.Today;
+
+            string? uri = type?.ToLower() switch
+            {
+                "takeaway" => "voucher/getordersbytype?type=2076",
+                "delivery" => "voucher/getcompletedorders",
+                "dinein" => "voucher/getordersbytype?type=3203",
+                _ => null
+            };
+
+            if (uri is null)
+                return BadRequest("Invalid type parameter. Use takeaway, delivery, or dinein.");
+
+            var response = await FetchData<HulubejeResponse<List<CompletedOrders>>>(v7Client, uri)
+                          ?? new HulubejeResponse<List<CompletedOrders>>();
+
+            var count = response.Data?.Count(x => x.RequestCreatedAt.Date == today) ?? 0;
+            var total = response.Data?.Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
+
+            return Ok(new { count, total });
         }
     }
+
 }

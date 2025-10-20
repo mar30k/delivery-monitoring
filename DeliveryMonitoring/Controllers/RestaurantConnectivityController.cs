@@ -37,7 +37,7 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/getDeviceControl")]
         public async Task<List<DeviceControl>?> GetDeviceControlByDate(string date)
         {
-            if (date == null) date = DateTime.Now.ToString("yyyy-MM-dd");
+            date ??= DateTime.Now.ToString("yyyy-MM-dd");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             var client = _httpClientFactory.CreateClient("ApiBaseUrl");
 
@@ -64,7 +64,11 @@ namespace DeliveryMonitoring.Controllers
                     .ToList();
             }
 
-            return latestByTinAndBranch;
+            // Filter out items with Note starting with "09"
+            var result = latestByTinAndBranch?
+                .Where(s => string.IsNullOrEmpty(s.Note) || !s.Note.StartsWith("09"))
+                .ToList();
+            return result;
         }
     }
 }
