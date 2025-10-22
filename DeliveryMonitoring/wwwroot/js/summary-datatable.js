@@ -4,6 +4,7 @@
  * @param {string} options.tableSelector - jQuery selector for the table
  * @param {Object} [options.orderingColumn={col: 1, direction: "asc"}] - Initial ordering { col: columnIndex, direction: "asc"|"desc" }
  * @param {string} options.ajaxUrl - URL to fetch table data via AJAX
+ * @param {Array<Object>} [options.avgCols=[]] - Columns for calculating footer averages [{ index: colIndex, includeZeros: true|false }]
  * @param {Array<number>} [options.floatCols=[]] - Column indexes with float values for footer totals
  * @param {Array<number>} [options.intCols=[]] - Column indexes with integer values for footer totals
  * @param {Array<Object>} options.columns - DataTables column definitions [{ data: "field", className: "text-center", render: ... }]
@@ -30,6 +31,7 @@ function initSummaryTable({
     ajaxUrl,
     floatCols = [],
     intCols = [],
+    avgCols = [],
     columns = [],
     headerFilterColumns = [],
     nonOrderableTargets = []
@@ -39,7 +41,15 @@ function initSummaryTable({
         if (type_ === 'sort' || type_ === 'type') {
             return isFloat ? parseFloat(data) || 0 : parseInt(data) || 0;
         }
-        return isFloat ? parseFloat(data).toFixed(2) : data;
+        if (isFloat) {
+            // Format as currency with Br prefix
+            const value = parseFloat(data) || 0;
+            return value.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        return data;
     };
 
     const stringRender = (data, type_, row) => {
@@ -51,14 +61,16 @@ function initSummaryTable({
         return data;
     };
 
-    // Apply numeric render to float/int columns
+    // Apply numeric render only if no custom render is already defined
     columns.forEach((col, idx) => {
-        if (floatCols.includes(idx)) {
-            col.render = numericRender('sort', true);
-        } else if (intCols.includes(idx)) {
-            col.render = numericRender('sort', false);
-        } else {
-            col.render = stringRender;
+        if (!col.render) { // Preserve custom renderers
+            if (floatCols.includes(idx)) {
+                col.render = numericRender('sort', true);
+            } else if (intCols.includes(idx)) {
+                col.render = numericRender('sort', false);
+            } else {
+                col.render = stringRender;
+            }
         }
     });
 
@@ -103,7 +115,10 @@ function initSummaryTable({
             // Floats
             floatCols.forEach(col => {
                 let total = api.column(col, { page: 'current' }).data().reduce((a, b) => parseVal(a) + parseVal(b), 0);
-                js(api.column(col).footer()).html(total.toFixed(2));
+                js(api.column(col).footer()).html(total.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }));
             });
 
             // Ints
@@ -111,6 +126,27 @@ function initSummaryTable({
                 let total = api.column(col, { page: 'current' }).data().reduce((a, b) => parseVal(a) + parseVal(b), 0);
                 js(api.column(col).footer()).html(total);
             });
+
+            //Averages
+            if (avgCols && avgCols.length > 0) {
+                avgCols.forEach(colConfig => {
+                    let colIndex = colConfig.index;
+                    let includeZeros = colConfig.includeZeros;
+
+                    let values = api.column(colIndex, { page: 'current' }).data().map(parseVal);
+
+                    if (!includeZeros) {
+                        values = values.filter(v => v !== 0);
+                    }
+
+                    let avg = values.length > 0
+                        ? values.reduce((a, b) => a + b, 0) / values.length
+                        : 0;
+
+                    js(api.column(colIndex).footer()).html(avg.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                });
+            }
+
         },
         initComplete: function () {
             const dt = this;

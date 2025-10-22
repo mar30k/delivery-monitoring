@@ -1,15 +1,423 @@
 ﻿var js = jQuery.noConflict(true);
 var dineInTable, takeAwayTable, tablelist;
+var startDate = moment().startOf('day');
+var endDate = moment().endOf('day');
+var isClear = false;
+
 var dateFilterMappings = [
     { id: "dineInDateRange", tableName: "dineInTable" },
     { id: "dateRange", tableName: "tablelist" },
     { id: "takeAwayDateRange", tableName: "takeAwayTable" }
 ];
-function initOrderTable(selector, emptyMessage, totalColumnIndex, nonOrderableTargets = [0], headerFilterColumns = []) {
+
+js(() => {
+    // Add global date filter for DataTables
+    js.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        if (!startDate || !endDate) return true;
+
+        var orderDateStr = data[5]; // Adjust as needed for different tables
+        var orderDate = moment(orderDateStr, "YYYY-MM-DD HH:mm:ss");
+
+        return orderDate.isValid() && orderDate.isBetween(startDate, endDate, undefined, '[]');
+    });
+
+    // Remove initial hide classes
+    dateFilterMappings.forEach(({ id, tableName }) => {
+        js(`#${tableName} tbody tr.initial-hide`).removeClass('initial-hide');
+    });
+
+    var dineInAndTakeawayColumns = [
+        { data: "voucherCode", className: "text-center" },
+        { data: "companyName", className: "text-center" },
+        { data: "branchName", className: "text-center" },
+        { data: "firstName", className: "text-center" },
+
+        // Phone Number with tel link + copy button
+        {
+            data: "phoneNumber",
+            className: "text-center",
+            render: function (data) {
+                if (!data) return "N/A";
+                return `
+            <div class="d-inline-flex align-items-center gap-1">
+                <a href="tel:${data}">${data}</a>
+                <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-primary text-decoration-none">
+                    <i class="bi bi-clipboard"></i>
+                </a>
+            </div>`;
+            }
+        },
+
+        // Request Created At
+        {
+            data: "requestCreatedAt", // for display
+            className: "text-center",
+            createdCell: function (td, cellData, rowData) {
+                if (rowData.requestCreatedAt) {
+                    // Parse backend's 12-hour formatted date string
+                    const parsedDate = moment(rowData.requestCreatedAt, "YYYY-MM-DD hh:mm:ss");
+
+                    // 24-hour format for data-order (sorting)
+                    const orderDate = parsedDate.format("YYYY-MM-DDTHH:mm:ss");
+                    td.setAttribute("data-order", orderDate);
+
+                    // Set text content (display)
+                    td.innerText = rowData.requestCreatedAtString;
+                } else {
+                    td.innerText = "N/A";
+                }
+            }
+        },
+
+        // Total Amount
+        {
+            data: "totalAmount",
+            className: "text-center",
+            render: function (d, type, row) {
+                if (type === 'sort' || type === 'type') return parseFloat(d) || 0; // keep numeric value for sorting
+                if (!d) return "0.00";
+                return parseFloat(d).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+        },
+        // Review / Purpose / Show buttons
+        {
+            data: null,
+            className: "text-center",
+            orderable: false,
+            render: function (data, type, row) {
+                if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
+
+                // Compute purposeKey from purposeOptions
+                const purposeKey = Object.keys(purposeOptions).find(k => purposeOptions[k] === row.purpose) || '';
+
+                if (row.note) {
+                    return `
+                <button class="btn btn-outline-secondary btn-sm"
+                    data-note="${row.note || ''}"
+                    data-purpose="${row.purpose || ''}"
+                    data-purpose-key="${purposeKey}"
+                    data-voucher-code="${row.voucherCode}"
+                    data-customer-phone="${row.phoneNumber || ''}"
+                    data-customer-review="${row.review || ''}"
+                    data-customer-rating="${row.rating || 0}"
+                    data-phone-number="${row.driverPhoneNumber || ''}"
+                    onclick="showDetailsModal(this)">
+                    Show
+                </button>`;
+                } else {
+                    return `
+                <button class="btn btn-outline-secondary btn-sm"
+                    data-voucher-code="${row.voucherCode}"
+                    data-phone-number="${row.driverPhoneNumber || ''}"
+                    data-customer-phone="${row.phoneNumber || ''}"
+                    data-customer-review="${row.review || ''}"
+                    data-customer-rating="${row.rating || 0}"
+                    onclick="showReviewModal(this)">
+                    Review
+                </button>`;
+                }
+            }
+        },
+
+        // Activity button
+        {
+            data: null,
+            className: "text-center",
+            orderable: false,
+            render: function (data, type, row) {
+                return `<button class="btn btn-outline-secondary activityBtn btn-sm"
+                    data-voucher="${row.voucherCode}"
+                    data-company-code="${row.companyCode}"
+                    onclick="showActivity(this)">
+                    Show
+                </button>`;
+            }
+        },
+
+        // Details link
+        {
+            data: null,
+            className: "text-center",
+            orderable: false,
+            render: function (data, type, row) {
+                if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
+                return `<a class="btn btn-outline-secondary activityBtn btn-sm" target="_blank"
+                    href="orderdetail?voucher=${row.voucherCode}&type=${row.tableId}">
+                    Details
+                </a>`;
+            }
+        }
+    ];
+
+    var deliveryColumns = [
+        { data: "voucherCode", className: "text-center" },
+        { data: "companyName", className: "text-center" },
+        { data: "branchName", className: "text-center" },
+        { data: "firstName", className: "text-center" },
+
+        // Phone Number column with tel link + copy button
+        {
+            data: "phoneNumber",
+            className: "text-center",
+            render: function (data) {
+                if (!data) return "N/A";
+                return `
+            <div class="d-inline-flex align-items-center gap-1">
+                <a href="tel:${data}">${data}</a>
+                <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-primary text-decoration-none">
+                    <i class="bi bi-clipboard"></i>
+                </a>
+            </div>`;
+            }
+        },
+
+
+
+        // Request created at
+        {
+            data: "requestCreatedAt", // for display
+            className: "text-center",
+            createdCell: function (td, cellData, rowData) {
+                if (rowData.requestCreatedAt) {
+                    // Parse backend's 12-hour formatted date string
+                    const parsedDate = moment(rowData.requestCreatedAt, "YYYY-MM-DD hh:mm:ss");
+
+                    // 24-hour format for data-order (sorting)
+                    const orderDate = parsedDate.format("YYYY-MM-DDTHH:mm:ss");
+                    td.setAttribute("data-order", orderDate);
+
+                    // Set text content (display)
+                    td.innerText = rowData.requestCreatedAtString;
+                } else {
+                    td.innerText = "N/A";
+                }
+            }
+        },
+
+        { data: "distance", className: "text-center", render: d => d + " K.M" },
+        { data: "duration", className: "text-center", render: d => d + " Min" },
+        { data: "eta", className: "text-center", render: d => d + " Min" },
+
+        // Driver phone with copy
+        {
+            data: "driverPhoneNumber",
+            className: "text-center",
+            render: function (data) {
+                if (!data) return "N/A";
+                return `
+            <div class="d-inline-flex align-items-center gap-1">
+                <a href="tel:${data}">${data}</a>
+                <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-primary text-decoration-none">
+                    <i class="bi bi-clipboard"></i>
+                </a>
+            </div>`;
+            }
+        },
+
+        { data: "supervisorName", className: "text-center" },
+
+        {
+            data: "totalAmount",
+            className: "text-center",
+            render: function (d, type, row) {
+                if (type === 'sort' || type === 'type') return parseFloat(d) || 0; // keep numeric value for sorting
+                if (!d) return "0.00";
+                return parseFloat(d).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+        },
+        {
+            data: "tip",
+            className: "text-center",
+            render: function (d, type, row) {
+                if (type === 'sort' || type === 'type') return parseFloat(d) || 0; // keep numeric value for sorting
+                if (!d) return "0.00";
+                return parseFloat(d).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+            }
+        },
+
+        // Review / Purpose / Show buttons column
+        {
+            data: null,
+            className: "text-center",
+            orderable: false,
+            render: function (data, type, row) {
+                if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
+
+                // Compute purposeKey from purposeOptions
+                const purposeKey = Object.keys(purposeOptions).find(k => purposeOptions[k] === row.purpose) || '';
+
+                if (row.purpose) {
+                    return `
+                <button class="btn btn-outline-secondary btn-sm"
+                    data-note="${row.note || ''}"
+                    data-purpose="${row.purpose}"
+                    data-purpose-key="${purposeKey}"
+                    data-voucher-code="${row.voucherCode}"
+                    data-customer-phone="${row.phoneNumber || ''}"
+                    data-customer-review="${row.review || ''}"
+                    data-customer-rating="${row.rating || 0}"
+                    data-phone-number="${row.driverPhoneNumber || ''}"
+                    onclick="showDetailsModal(this)">
+                    Show
+                </button>`;
+                } else {
+                    return `
+                <button class="btn btn-outline-secondary btn-sm"
+                    data-voucher-code="${row.voucherCode}"
+                    data-phone-number="${row.driverPhoneNumber || ''}"
+                    data-customer-phone="${row.phoneNumber || ''}"
+                    data-customer-review="${row.review || ''}"
+                    data-customer-rating="${row.rating || 0}"
+                    onclick="showReviewModal(this)">
+                    Review
+                </button>`;
+                }
+            }
+        },
+
+        // Activity button
+        {
+            data: null,
+            className: "text-center",
+            orderable: false,
+            render: function (data, type, row) {
+                return `<button class="btn btn-outline-secondary activityBtn btn-sm"
+                    data-voucher="${row.voucherCode}"
+                    data-company-code="${row.companyCode}"
+                    onclick="showActivity(this)">
+                    Show
+                </button>`;
+            }
+        },
+
+        // Details link
+        {
+            data: null,
+            className: "text-center",
+            orderable: false,
+            render: function (data, type, row) {
+                if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
+                return `<a class="btn btn-outline-secondary activityBtn btn-sm" target="_blank"
+                    href="orderdetail?voucher=${row.voucherCode}">
+                    Details
+                </a>`;
+            }
+        }
+    ];
+    // Initialize tables first
+    dineInTable = initOrderTable(
+        "#dineInTable",
+        "#dineInDateRange",
+        dineInAndTakeawayColumns,
+        "/getordersbytype?type=3203",
+        "No dine-in orders available.",
+        6,
+        [0, 1, 2, 4, 7, 8, 9],
+        [
+            { index: 1, name: 'Branch' },
+            { index: 2, name: 'Supervisor' }
+        ]
+    );
+
+    takeAwayTable = initOrderTable(
+        "#takeAwayTable",
+        "#takeAwayDateRange",
+        dineInAndTakeawayColumns,
+        "/getordersbytype?type=2076",
+        "No takeaway orders available.",
+        6,
+        [0, 1, 2, 4, 7, 8, 9],
+        [
+            { index: 1, name: 'Company' },
+            { index: 2, name: 'Branch' }
+        ]
+    );
+
+    tablelist = initOrderTable(
+        "#tablelist",
+        "#dateRange",
+        deliveryColumns,
+        "/getcompletedorders",
+        "No orders history to display at the moment.",
+        11,
+        [0, 1, 2, 4, 9, 10, 13, 14, 15],
+        [
+            { index: 2, name: 'Branch' },
+            { index: 1, name: 'Company' },
+            { index: 10, name: 'Supervisor' }
+        ]
+    );
+    // Initialize date range pickers AFTER tables are created
+    initDateRangePickers();
+});
+
+function initDateRangePickers() {
+    dateFilterMappings.forEach(({ id, tableName }) => {
+        const selector = `#${id}`;
+        const tableRef = (tableName === "dineInTable") ? dineInTable :
+            (tableName === "takeAwayTable") ? takeAwayTable :
+                (tableName === "tablelist") ? tablelist : null;
+
+        if (!tableRef) return;
+
+        // Initialize date range picker
+        js(selector).daterangepicker({
+            startDate: startDate,
+            endDate: endDate,
+            maxDate: moment(),
+            autoUpdateInput: true,
+            locale: {
+                cancelLabel: 'Clear',
+                format: 'YYYY-MM-DD'
+            }
+        });
+
+        // Set initial date range text
+        js(selector).val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
+
+        // Handle apply
+        js(selector).on('apply.daterangepicker', function (ev, picker) {
+            startDate = picker.startDate.startOf('day');
+            endDate = picker.endDate.endOf('day');
+            js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+            tableRef.ajax.reload();
+        });
+
+        // Handle clear
+        js(selector).on('cancel.daterangepicker', function () {
+            startDate = null;
+            endDate = null;
+            js(this).val('');
+            isClear = true;
+            tableRef.ajax.reload(function () {
+                isClear = false;
+            });
+        });
+    });
+}
+
+function initOrderTable(selector, daterangepicker, columns, ajaxUrl, emptyMessage, totalColumnIndex, nonOrderableTargets = [0], headerFilterColumns = []) {
     const table = js(selector).DataTable({
         responsive: true,
+        processing: true,
+        serverSide: false,
+        ajax: function (data, callback, settings) {
+            const url = new URL(ajaxUrl, window.location.origin);
+
+            if (startDate && endDate && !isClear) {
+                url.searchParams.append("startDate", startDate.format("YYYY-MM-DD"));
+                url.searchParams.append("endDate", endDate.format("YYYY-MM-DD"));
+            }
+
+            url.searchParams.append("isClear", isClear);
+
+            js.getJSON(url.toString(), function (json) {
+                callback(json);
+            });
+        },
         order: [[5, "desc"]],
         pageLength: 50,
+        columns: columns,
         lengthMenu: [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
         columnDefs: [
             {
@@ -17,7 +425,7 @@ function initOrderTable(selector, emptyMessage, totalColumnIndex, nonOrderableTa
                 targets: nonOrderableTargets
             },
             {
-                targets: headerFilterColumns.map(col => col.index), // extract indexes only
+                targets: headerFilterColumns.map(col => col.index),
                 orderable: true,
                 render: function (data, type, row) {
                     if (type === 'sort') {
@@ -59,99 +467,6 @@ function initOrderTable(selector, emptyMessage, totalColumnIndex, nonOrderableTa
 
     return table;
 }
-js(() => {
-    let startDate = moment().startOf('day');
-    let endDate = moment().endOf('day');
-
-    js.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-        if (!startDate || !endDate) return true;
-
-        var orderDateStr = data[5]; // Adjust as needed for different tables
-        var orderDate = moment(orderDateStr, "YYYY-MM-DD HH:mm:ss");
-
-        return orderDate.isValid() && orderDate.isBetween(startDate, endDate, undefined, '[]');
-    });
-    dateFilterMappings.forEach(({ id, tableName }) => {
-        js(`#${tableName} tbody tr.initial-hide`).removeClass('initial-hide');
-    });
-    
-    dineInTable = initOrderTable(
-        "#dineInTable",
-        "No dine-in orders available.",
-        6,
-        [0, 1, 2, 4, 7, 8, 9],
-        [
-            { index: 1, name: 'Branch' },
-            { index: 2, name: 'Supervisor' }
-        ]
-    );
-
-    takeAwayTable = initOrderTable(
-        "#takeAwayTable",
-        "No takeaway orders available.",
-        6,
-        [0, 1, 2, 4, 7, 8, 9],
-        [
-            { index: 1, name: 'Branch' },
-            { index: 2, name: 'Supervisor' }
-        ]
-    );
-
-    tablelist = initOrderTable(
-        "#tablelist",
-        "No orders history to display at the moment.",
-        11,
-        [0, 1, 2, 4, 9, 10, 13, 14, 15],
-        [
-            { index: 1, name: 'Branch' },
-            { index: 2, name: 'Supervisor' },
-            { index: 10, name: 'Status' }
-        ]
-    );
-
-    // Apply date filters to corresponding tables
-    dateFilterMappings.forEach(({ id, tableName }) => {
-        const selector = `#${id}`;
-        const tableRef = (tableName === "dineInTable") ? dineInTable :
-            (tableName === "takeAwayTable") ? takeAwayTable :
-                (tableName === "tablelist") ? tablelist : null;
-
-        if (!tableRef) return;
-
-        js(selector).daterangepicker({
-            startDate: startDate,
-            endDate: endDate,
-            maxDate: moment(),
-            autoUpdateInput: true,
-            locale: {
-                cancelLabel: 'Clear',
-                format: 'YYYY-MM-DD'
-            }
-        });
-
-        // Set initial date range text
-        js(selector).val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
-
-        // Trigger initial draw
-        tableRef.draw();
-
-        // Handle apply
-        js(selector).on('apply.daterangepicker', function (ev, picker) {
-            startDate = picker.startDate.startOf('day');
-            endDate = picker.endDate.endOf('day');
-            js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
-            tableRef.draw();
-        });
-
-        // Handle clear
-        js(selector).on('cancel.daterangepicker', function () {
-            startDate = null;
-            endDate = null;
-            js(this).val('');
-            tableRef.draw();
-        });
-    });
-});
 async function showDetailsModal(button) {
     const note = button.getAttribute('data-note').replace(/\n/g, '<br>');;
     const purpose = button.getAttribute('data-purpose');
@@ -299,7 +614,6 @@ async function showCustomerReview({
         if (spinner) spinner.style.display = 'none';
     }
 }
-
 function renderStars(rating) {
     rating = Math.floor(rating);
     return '<i class="bi bi-star-fill text-warning"></i>'.repeat(rating) +
@@ -367,8 +681,6 @@ document.getElementById('reviewForm').addEventListener('submit', async function 
         submitBtn.textContent = originalText;
     }
 });
-
-
 async function showActivity(button) {
     const voucherCode = button.getAttribute('data-voucher');
     const companyCode = button.getAttribute('data-company-code');
@@ -439,7 +751,6 @@ async function showActivity(button) {
         loader.classList.add('d-none');
     }
 }
-
 function showActivityAlert(message, type = 'danger') {
     const alertContainer = document.getElementById('activityAlertContainer');
     if (!alertContainer) return;
@@ -453,10 +764,17 @@ function showActivityAlert(message, type = 'danger') {
 }
 
 
+// Refresh interval in milliseconds (1 minute = 60000 ms)
+const refreshInterval = 60000;
+setInterval(() => {
+    if (dineInTable) dineInTable.ajax.reload(null, false); // false = don't reset paging
+    if (takeAwayTable) takeAwayTable.ajax.reload(null, false);
+    if (tablelist) tablelist.ajax.reload(null, false);
+}, refreshInterval)
 
-setInterval(fetchDeliveryOrders, 30000); // every 30 seconds
-setInterval(()=> fetchOrdersByType(2076), 30000); // every 30 seconds
-setInterval(()=> fetchOrdersByType(3203), 30000); // every 30 seconds
+//setInterval(fetchDeliveryOrders, 30000); // every 30 seconds
+//setInterval(()=> fetchOrdersByType(2076), 30000); // every 30 seconds
+//setInterval(()=> fetchOrdersByType(3203), 30000); // every 30 seconds
 
 async function fetchDeliveryOrders() {
     try {
