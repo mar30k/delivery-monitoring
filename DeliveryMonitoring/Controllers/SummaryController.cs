@@ -225,7 +225,7 @@ namespace DeliveryMonitoring.Controllers
                                 TotalDeliveryOrders = group.Count(),
                                 TotalOrderDeclinedByRestaurant = group.Where(o => o.Purpose == "Order Declined By Restaurant").Count(),
                                 purposeSummary,
-                                DeliveryAmount = group.Sum(o=> o.TotalAmount),
+                                DeliveryAmount = Math.Round(group.Sum(o=> o.TotalAmount), 2),
                                 totalConsigneeCount,
                                 totalMerchantCount
                             };

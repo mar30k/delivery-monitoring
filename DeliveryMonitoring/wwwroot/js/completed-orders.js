@@ -763,14 +763,11 @@ function showActivityAlert(message, type = 'danger') {
     `;
 }
 
-
-// Refresh interval in milliseconds (1 minute = 60000 ms)
-const refreshInterval = 60000;
 setInterval(() => {
     if (dineInTable) dineInTable.ajax.reload(null, false); // false = don't reset paging
     if (takeAwayTable) takeAwayTable.ajax.reload(null, false);
     if (tablelist) tablelist.ajax.reload(null, false);
-}, refreshInterval)
+}, 60000)
 
 //setInterval(fetchDeliveryOrders, 30000); // every 30 seconds
 //setInterval(()=> fetchOrdersByType(2076), 30000); // every 30 seconds
