@@ -53,7 +53,184 @@ namespace DeliveryMonitoring.Controllers
                         startDate, endDate, isClear
                     );
                     return Json(new { data = merchantSummaries });
+                case "driver":
+                    var availableDrivers = await GetAvailableDrivers();
+                    if (CompanyTin != "0076217301")
+                        availableDrivers = availableDrivers.Where(d => d.CompanyTin != null && d.CompanyTin == CompanyTin).ToList();
+                    var ordersResult = await FetchCompletedOrders(CompanyTin, _httpClientFactory.CreateClient("CnetApiBaseUrl"), "voucher/getcompletedorders");
 
+                    if (ordersResult?.Data == null || availableDrivers == null)
+                        return Json(new { data = new List<object>() });
+
+                    if (!isClear && startDate.HasValue && endDate.HasValue)
+                    {
+                        var start = startDate.Value.Date;
+                        var end = endDate.Value.Date;
+                        ordersResult.Data = ordersResult.Data.Where(o =>
+                            o.RequestCreatedAt.Date >= start &&
+                            o.RequestCreatedAt.Date <= end
+                        ).ToList();
+                    }
+                    // Get driver phone numbers from available drivers for filtering
+                    var availableDriverPhones = availableDrivers
+                        .Where(d => !string.IsNullOrWhiteSpace(d.PhoneNumber))
+                        .Select(d => d.PhoneNumber)
+                        .ToHashSet();
+
+                    // Group by driver phone number but only include available drivers
+                    var driverSummary = ordersResult.Data
+                        .Where(d => !string.IsNullOrWhiteSpace(d.DriverPhoneNumber) &&
+                                   availableDriverPhones.Contains(d.DriverPhoneNumber))
+                        .GroupBy(d => d.DriverPhoneNumber)
+                        .Select(group =>
+                        {
+                            var first = group.FirstOrDefault();
+                            var driver = availableDrivers.FirstOrDefault(d => d.PhoneNumber == first?.DriverPhoneNumber);
+                            var validRatings = group
+                                .Where(o => o.Rating > 0)
+                                .Select(o => o.Rating)
+                                .ToList();
+                            var averageRating = validRatings.Any() ? Math.Round(validRatings.Average(), 2)  : 0;
+                            var totalTimeDeviation = group.Sum(o => o.Eta) - group.Sum(o => o.Duration);
+                            return new
+                            {
+                                first?.DriverPhoneNumber,
+                                Name = driver?.FirstName ?? "N/A",
+                                TotalDistance = group.Sum(o => o.Distance),
+                                Tip = group.Sum(o => o.Tip),
+                                TotalDeliveryOrders = group.Count(),
+                                DeliveryAmount = group.Sum(o => o.TotalAmount),
+                                TotalConsigneeCount = group
+                                    .Select(o => o.PhoneNumber)
+                                    .Distinct()
+                                    .Count(),
+                                TotalMerchantCount = group
+                                    .Select(o => new { o.Tin, o.BranchCode, o.CompanyCode })
+                                    .Distinct()
+                                    .Count(),
+                                averageRating,
+                                totalTimeDeviation
+                            };
+                        })
+                        .ToList();
+
+                    return Json(new { data = driverSummary });
+                case "supervisor":
+                    if (CompanyTin != "0076217301")
+                        return Json(new { data = new List<object>() });
+                    var orderResult = await FetchCompletedOrders(CompanyTin, _httpClientFactory.CreateClient("CnetApiBaseUrl"), "voucher/getcompletedorders");
+
+                    if (orderResult?.Data == null )
+                        return Json(new { data = new List<object>() });
+                    if(!isClear && startDate.HasValue && endDate.HasValue)
+                    {
+                        var start = startDate.Value.Date;
+                        var end = endDate.Value.Date;
+                        orderResult.Data = orderResult.Data
+                            .Where(o=> o.RequestCreatedAt.Date >= start &&
+                            o.RequestCreatedAt.Date <= end
+                        ).ToList();
+                    }
+
+                    var categoryColors = new Dictionary<string, string>
+                    {
+                        { "Good", "green" },
+                        { "Very Critical", "red" },
+                        { "Restaurant Related", "purple" },
+                        { "Vehicle Related", "darkred" },
+                        { "Customer Related", "orange" },
+                        { "System Error", "blue" },
+                        { "Other", "gray" }
+                    };
+
+                    var purposeCategories = new Dictionary<string, string>
+                    {
+                        // Good
+                        { "Successful Delivery", "Good" },
+                        { "Successful Pickup", "Good" },
+                        { "Successful Dining", "Good" },
+
+                        // Customer Related
+                        { "Ordered By Mistake", "Customer Related" },
+                        { "Incorrect Delivery Address", "Customer Related" },
+                        { "Incorrectly Marked As Delivered", "Customer Related" },
+                        { "Address Out Of Range", "Customer Related" },
+                        { "Wrong Order Placed", "Customer Related" },
+                        { "Customer Unreachable", "Customer Related" },
+                        
+
+                        // Restaurant Related
+                        { "Item Out Of Stock", "Restaurant Related" },
+                        { "Long Preparation Time", "Restaurant Related" },
+                        { "Order Declined By Restaurant", "Restaurant Related" },
+                        { "Restaurant Closed", "Restaurant Related" },
+                        { "Special Request Not Possible", "Restaurant Related" },
+
+                        // Vehicle Related
+                        { "Traffic Or Road Blockage", "Vehicle Related" },
+                        { "Weather Conditions", "Vehicle Related" },
+                        { "Vehicle Accident", "Vehicle Related" },
+                        { "Vehicle Malfunction", "Vehicle Related" },
+                        { "Vehicle Out of Charge or Fuel", "Vehicle Related" },
+                        { "Personal Emergency", "Customer Related" },
+
+                        // System Error
+                        { "Duplicate Order", "System Error" }, // If system caused duplicates
+                       
+
+                        // Very Critical
+                        { "Robbery", "Very Critical" },
+                        { "Delayed Delivery", "Very Critical" }
+                    };
+
+                    var supervisorSummary = orderResult.Data
+                        .Where(o => !string.IsNullOrWhiteSpace(o.SupervisorPhoneNumber))
+                        .GroupBy(o => o.SupervisorPhoneNumber)
+                        .Select(group =>
+                        {
+                            var first = group.FirstOrDefault();
+                            var totalConsigneeCount = group.DistinctBy(o => o.PhoneNumber).Count();
+                            var totalMerchantCount = group.DistinctBy(o => new { o.Tin, o.BranchCode, o.CompanyCode }).Count();
+
+                            var purposeCounts = group
+                                .Where(o => !string.IsNullOrEmpty(o.Purpose))?
+                                .GroupBy(o => o.Purpose!)
+                                .ToDictionary(g => g.Key!, g => g.Count());
+
+                            
+
+                            string purposeSummary = "";
+
+                            if (purposeCounts != null)
+                            {
+                                var htmlList = purposeCounts.Select(pc =>
+                                {
+                                    string category = purposeCategories.TryGetValue(pc.Key, out var cat) ? cat : "Other";
+                                    string color = categoryColors[category];
+
+                                    return new { Section = category, Html = $"<span style='color:{color}; font-weight:600;'>{pc.Key}: {pc.Value}</span>" };
+                                }).ToList();
+
+                                purposeSummary = string.Join("<br>",
+                                    htmlList.GroupBy(x => x.Section)
+                                            .Select(g => string.Join(", ", g.Select(x => x.Html)))
+                                );
+                            }
+
+
+                            return new
+                            {
+                                first?.SupervisorName,
+                                first?.SupervisorPhoneNumber,
+                                TotalDeliveryOrders = group.Count(),
+                                TotalOrderDeclinedByRestaurant = group.Where(o => o.Purpose == "Order Declined By Restaurant").Count(),
+                                purposeSummary,
+                                DeliveryAmount = group.Sum(o=> o.TotalAmount),
+                                totalConsigneeCount,
+                                totalMerchantCount
+                            };
+                        }).ToList();
+                    return Json(new { data = supervisorSummary });
                 case "consignee":
                 default:
                     var consigneeSummaries = await BuildSummaryReport(
@@ -213,6 +390,22 @@ namespace DeliveryMonitoring.Controllers
             {
                 return null;
             }
+        }
+        public async Task<List<Driver>> GetAvailableDrivers()
+        {
+            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            string uri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
+            var _client = _httpClientFactory.CreateClient("Delivery");
+            List<Driver> drivers = new();
+
+            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + uri);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string data = await response.Content.ReadAsStringAsync();
+                drivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
+            }
+            return drivers;
         }
     }
 }

@@ -289,7 +289,7 @@
                         <i class="bi bi-chevron-down"></i>
                     </a>
                     <ul class="collapse list-unstyled ps-3" id="reportSubmenu">
-                        <li><a href="/report" ><i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Delivery</a></li>
+                    <li><a href="/report"><i class="bi bi-cart2"></i> Delivery</a></li>
                         <li><a href="/report?t=dinein"  ><i class="bi bi-shop"></i> Dine-in</a></li>
                         <li><a href="/report?t=takeaway"  ><i class="bi bi-bag-check"></i> Takeaway</a></li>
                         <li>
@@ -297,6 +297,19 @@
                                 <i class="bi bi-person-badge"></i> Consignee
                             </a>
                         </li>
+                        <li>
+                            <a href="/summary?t=driver" >
+                            <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Driver
+                            </a>
+                        </li>
+                        @if (companyTin == "0076217301")
+                        {
+                            <li>
+                                <a href="/summary?t=supervisor">
+                                    <i class="bi bi-person-badge"></i> Supervisor
+                                </a>
+                            </li>
+                        }
                         <li>
                         <a href="/summary?t=merchant">
                                 <i class="bi bi-shop"></i> Merchant

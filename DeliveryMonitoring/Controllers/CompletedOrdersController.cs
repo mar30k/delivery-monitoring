@@ -23,102 +23,112 @@ namespace DeliveryMonitoring.Controllers
         {
             var _client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+
+            var CompletedOrdersViewModel = new CompletedOrdersViewModel
+            {
+                PurposeOptions = new Dictionary<int, string>(), // default empty dictionary
+                CompanyTin = companyTin
+            };
+
             try
             {
-                var completedResult = await FetchCompletedOrders(_client, "voucher/getcompletedorders");
-
                 var purposeResponse = await _client.GetAsync("delivery/getpurpose");
+
                 if (!purposeResponse.IsSuccessStatusCode)
                 {
                     var errorContent = await purposeResponse.Content.ReadAsStringAsync();
-                    ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
+                    ViewBag.ErrorMessage = $"Failed to retrieve purpose options. Server responded with: {errorContent}";
+                    return View(CompletedOrdersViewModel); // pass default view model
                 }
 
-                
                 var purposeResponseData = await purposeResponse.Content.ReadAsStringAsync();
                 var purposeResult = JsonConvert.DeserializeObject<Dictionary<int, string>>(purposeResponseData);
-                var dineIneResult = await FetchCompletedOrders(_client, "voucher/getordersbytype?type=3203");
-                var takeAwayResult = await FetchCompletedOrders(_client, "voucher/getordersbytype?type=2076");
-                    
-                if (companyTin != "0076217301")
-                {
-                    if (completedResult != null)
-                        completedResult.Data = completedResult.Data?.Where(order => order.Tin == companyTin).ToList();
-
-                    if (dineIneResult != null)
-                        dineIneResult.Data = dineIneResult.Data?.Where(order => order.Tin == companyTin).ToList();
-
-                    if (takeAwayResult != null)
-                        takeAwayResult.Data = takeAwayResult.Data?.Where(order => order.Tin == companyTin).ToList();      
-                    foreach(var order in completedResult?.Data ?? new List<CompletedOrders>())
-                    {
-                        order.SupervisorName = null;
-                        order.SupervisorPhoneNumber = null;
-                    }
-                }
-
-                var CompletedOrdersViewModel = new CompletedOrdersViewModel
-                {
-                    CompletedOrders = completedResult,
-                    DineInOders = dineIneResult,
-                    TakeAwayOrders = takeAwayResult,
-                    PurposeOptions = purposeResult,
-                    CompanyTin = companyTin
-                };
-                return View(CompletedOrdersViewModel); 
+                CompletedOrdersViewModel.PurposeOptions = purposeResult ?? new Dictionary<int, string>();
             }
             catch (HttpRequestException)
             {
                 ViewBag.ErrorMessage = "Unable to connect to the service. Please try again later.";
-                return View(null);
             }
+            catch (JsonException)
+            {
+                ViewBag.ErrorMessage = "Invalid JSON received from the service.";
+            }
+
+            return View(CompletedOrdersViewModel); // always pass a view model
         }
 
         [HttpGet("/getCompletedOrders")]
-        public async Task<IActionResult> GetCompletedOrdersApi()
+        public async Task<IActionResult> GetCompletedOrdersApi(
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
+            [FromQuery] bool isClear = false)
         {
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
             var result = await FetchCompletedOrders(client, "voucher/getcompletedorders");
             if (result == null || result.Data == null)
-            {
                 return NotFound("Failed to retrieve or parse completed orders.");
+
+            // Filter by company
+            if (companyTin != "0076217301")
+                result.Data = result.Data.Where(order => order.Tin == companyTin).ToList();
+
+            // Apply date filter only if not cleared and dates exist
+            if (!isClear && startDate.HasValue && endDate.HasValue)
+            {
+                result.Data = result.Data
+                    .Where(o => o.RequestCreatedAt.Date >= startDate.Value.Date && o.RequestCreatedAt.Date <= endDate.Value.Date)
+                    .ToList();
             }
 
-            if (companyTin != "0076217301")
-            {
-                result.Data = result.Data.Where(order => order.Tin == companyTin).ToList();
-            }
+            // Format date
             foreach (var item in result.Data)
-            {
-                item.RequestCreatedAtString = item.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss");
-            }
+                item.RequestCreatedAtString = item.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm tt");
+
             return Ok(result);
         }
 
         [HttpGet("/getordersbytype")]
-        public async Task<IActionResult> GetOrdersByType(string type)
+        public async Task<IActionResult> GetOrdersByType(
+            [FromQuery] string type,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
+            [FromQuery] bool isClear = false)
         {
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
-            var getordersbytypeData = await FetchCompletedOrders(client, $"voucher/getordersbytype?type={type}");
-
-            if (getordersbytypeData == null || getordersbytypeData.Data == null)
-            {
+            // Fetch data from API
+            var getOrdersByTypeData = await FetchCompletedOrders(client, $"voucher/getordersbytype?type={type}");
+            if (getOrdersByTypeData == null || getOrdersByTypeData.Data == null)
                 return NotFound("Failed to retrieve or parse completed orders.");
-            }
 
+            // Filter by company TIN (if not main company)
             if (companyTin != "0076217301")
             {
-                getordersbytypeData.Data = getordersbytypeData.Data.Where(order => order.Tin == companyTin).ToList();
+                getOrdersByTypeData.Data = getOrdersByTypeData.Data
+                    .Where(order => order.Tin == companyTin)
+                    .ToList();
             }
-            foreach (var item in getordersbytypeData.Data)
+
+            // 🔹 Filter by date range (only if not cleared)
+            if (!isClear && startDate.HasValue && endDate.HasValue)
             {
-                item.RequestCreatedAtString = item.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss");
+                getOrdersByTypeData.Data = getOrdersByTypeData.Data
+                    .Where(o => o.RequestCreatedAt.Date >= startDate.Value.Date &&
+                                o.RequestCreatedAt.Date <= endDate.Value.Date)
+                    .ToList();
             }
-            return Ok(getordersbytypeData);
+
+            // Add readable date string
+            foreach (var item in getOrdersByTypeData.Data)
+            {
+                item.RequestCreatedAtString = item.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm tt");
+                item.TableId = type == "2076" ? "takeAwayTable" : "dineInTable";
+            }
+
+            return Ok(getOrdersByTypeData);
         }
         [Route("/orderdetail")]
         public async Task<IActionResult> CompletedOrderDetail(string voucher ,string type = "")

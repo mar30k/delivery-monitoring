@@ -24,6 +24,7 @@ namespace DeliveryMonitoring.Models
         public int BranchCode { get; set; }
         public string? BranchName { get; set; }
         public string? Review { get; set; }
+        public string? TableId { get; set; }
         public double Rating { get; set; }
         public double Tip { get; set; }
         public string? RequestCreatedAtString { get; set; }
