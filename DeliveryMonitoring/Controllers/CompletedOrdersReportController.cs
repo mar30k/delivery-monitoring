@@ -4,6 +4,7 @@ using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace DeliveryMonitoring.Controllers
 {
@@ -23,28 +24,67 @@ namespace DeliveryMonitoring.Controllers
         [Route("/report")]
         public async Task<IActionResult> Index(string t = "")
         {
-            var _client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-            string url = "voucher/getcompletedorders";
+            string jsonResponse;
+            string purposesJson;
+
+            // Choose correct endpoint based on order type
             if (t.ToLower() == "dinein")
             {
-                url = "voucher/getordersbytype?type=3203";
+                jsonResponse = await _apiRequest.GetOrdersByTypeRawAsync(3203);
             }
             else if (t.ToLower() == "takeaway")
             {
-                url = "voucher/getordersbytype?type=2076";
+                jsonResponse = await _apiRequest.GetOrdersByTypeRawAsync(2076);
             }
-            var completedResult = await _apiRequest.GetAsync<HulubejeResponse<List<CompletedOrders>>>(url);
+            else
+            {
+                jsonResponse = await _apiRequest.GetCompletedOrdersRawAsync();
+            }
+
+            // 🟢 Fetch purposes (raw JSON)
+            purposesJson = await _apiRequest.GetDeliveryPurposeRawAsync();
+
+            // 🟢 Deserialize API responses
+            var completedResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(jsonResponse);
+            var purposeOptions = JsonConvert.DeserializeObject<Dictionary<int, string>>(purposesJson);
+
+            // 🟢 Apply filtering by CompanyTin
             if (!string.IsNullOrWhiteSpace(CompanyTin) && CompanyTin != "0076217301")
             {
                 if (completedResult != null)
                     completedResult.Data = completedResult.Data?.Where(order => order.Tin == CompanyTin).ToList();
             }
+
+            // 🟢 Handle dine-in or takeaway supervisor note extraction
+            var isNonDeliveryType = t.ToLower() == "dinein" || t.ToLower() == "takeaway";
+            if (isNonDeliveryType)
+            {
+                foreach (var item in completedResult?.Data ?? new List<CompletedOrders>())
+                {
+                    string supervisorName = "N/A";
+
+                    if (!string.IsNullOrEmpty(item.Note) && item.Note.StartsWith("{"))
+                    {
+                        var match = Regex.Match(item.Note, @"^\{(.*?)\}");
+                        if (match.Success)
+                        {
+                            supervisorName = match.Groups[1].Value;
+                            item.Note = item.Note.Substring(match.Length).TrimStart();
+                        }
+                    }
+
+                    item.SupervisorName = supervisorName;
+                }
+            }
+
+            // 🟢 Build view model
             var viewModel = new CompletedOrdersViewModel
             {
                 Type = t,
                 CompletedOrders = completedResult,
-                PurposeOptions = await _apiRequest.GetAsync<Dictionary<int, string>>("delivery/getpurpose"),
+                PurposeOptions = purposeOptions ?? new Dictionary<int, string>()
             };
+
             return View(viewModel);
         }
     }

@@ -91,7 +91,15 @@ namespace DeliveryMonitoring.Controllers
                                 .Select(o => o.Rating)
                                 .ToList();
                             var averageRating = validRatings.Any() ? Math.Round(validRatings.Average(), 2)  : 0;
-                            var totalTimeDeviation = group.Sum(o => o.Eta) - group.Sum(o => o.Duration);
+                            var totalTimeDeviation = Math.Round(group.Sum(o => o.Eta) - group.Sum(o => o.Duration), 2);
+                            // Find the date with the most orders for this driver
+                            var topOrderDate = group
+                                .GroupBy(o => o.RequestCreatedAt.Date)
+                                .Select(g => new { Date = g.Key, Count = g.Count() })
+                                .OrderByDescending(x => x.Count)
+                                .ThenBy(x => x.Date) // optional: earliest if tied
+                                .FirstOrDefault();
+
                             return new
                             {
                                 first?.DriverPhoneNumber,
@@ -109,7 +117,10 @@ namespace DeliveryMonitoring.Controllers
                                     .Distinct()
                                     .Count(),
                                 averageRating,
-                                totalTimeDeviation
+                                totalTimeDeviation,
+                                // 🔹 New fields:
+                                MostOrdersDate = topOrderDate?.Date.ToString("ddd MM dd, yyyy"),
+                                MostOrdersCount = topOrderDate?.Count ?? 0
                             };
                         })
                         .ToList();
@@ -223,8 +234,7 @@ namespace DeliveryMonitoring.Controllers
                                 first?.SupervisorName,
                                 first?.SupervisorPhoneNumber,
                                 TotalDeliveryOrders = group.Count(),
-                                TotalOrderDeclinedByRestaurant = group.Where(o => o.Purpose == "Order Declined By Restaurant").Count(),
-                                purposeSummary,
+                                purposeSummary = string.IsNullOrEmpty(purposeSummary) ? "N/A" : purposeSummary,
                                 DeliveryAmount = Math.Round(group.Sum(o=> o.TotalAmount), 2),
                                 totalConsigneeCount,
                                 totalMerchantCount

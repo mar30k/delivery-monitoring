@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace DeliveryMonitoring.Controllers
 {
@@ -14,10 +15,12 @@ namespace DeliveryMonitoring.Controllers
     {
         private IHttpClientFactory _httpClientFactory;
         private IHttpContextAccessor _httpContextAccessor;
-        public CompletedOrdersController(IHttpClientFactory httpClientFactory , IHttpContextAccessor httpContextAccessor)
+        private readonly AuthenticationManager _authenticationManager;
+        public CompletedOrdersController(IHttpClientFactory httpClientFactory , IHttpContextAccessor httpContextAccessor, AuthenticationManager authenticationManager   )
         {
             _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
+            _authenticationManager = authenticationManager;
         }
         public async Task<IActionResult> Index()
         {
@@ -120,12 +123,28 @@ namespace DeliveryMonitoring.Controllers
                                 o.RequestCreatedAt.Date <= endDate.Value.Date)
                     .ToList();
             }
-
             // Add readable date string
             foreach (var item in getOrdersByTypeData.Data)
             {
                 item.RequestCreatedAtString = item.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm tt");
                 item.TableId = type == "2076" ? "takeAwayTable" : "dineInTable";
+                // Default supervisor name
+                string supervisorName = "N/A";
+
+                if (!string.IsNullOrEmpty(item.Note) && item.Note.StartsWith("{"))
+                {
+                    var match = Regex.Match(item.Note, @"^\{(.*?)\}");
+                    if (match.Success)
+                    {
+                        // Extract supervisor name
+                        supervisorName = match.Groups[1].Value;
+
+                        // Remove the {SupervisorName} part from the note
+                        item.Note = item.Note.Substring(match.Length).TrimStart();
+                    }
+                }
+
+                item.SupervisorName = supervisorName;
             }
 
             return Ok(getOrdersByTypeData);
@@ -231,11 +250,32 @@ namespace DeliveryMonitoring.Controllers
         [HttpPost("savenote")]
         public async Task<IActionResult> SaveOrderReview([FromBody] CompletedOrders request)
         {
+            if (request == null)
+                return BadRequest("please fill all the required fields.");
             var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
 
             try
             {
-                var response = await client.GetAsync($"delivery/savenote?voucherCode={request.VoucherCode}&note={request.Note}&purpose={request.Purpose}" );
+                if (!request.IsDelivery)
+                {
+                    var user = _authenticationManager.GetUserFromCookie(Request);
+                    if (user != null)
+                    {
+                        var supervisors = await GetSupervisorsAsync();
+                        var supervisor = supervisors.FirstOrDefault(s => s.UserName == user.UserName);
+                        if (supervisor != null)
+                        {
+                            // Prepend supervisor info safely
+                            request.Note = $"{{{supervisor.FirstName} {supervisor.SecondName}}} {request.Note}";
+                        }
+                        else
+                        {
+                            return BadRequest("Unable to find the supervisor. Please try Again!");
+                        }
+                    }
+                }
+
+                var response = await client.GetAsync($"delivery/savenote?voucherCode={request.VoucherCode}&note={request.Note}&purpose={request.Purpose}");
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -246,7 +286,7 @@ namespace DeliveryMonitoring.Controllers
                 var responseData = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<Boolean>(responseData);
 
-                
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -279,6 +319,42 @@ namespace DeliveryMonitoring.Controllers
             {
                 return BadRequest(ex.Message[0]);
             }
+        }
+
+        [NonAction]
+        public async Task<List<SupervisorsDTO>> GetSupervisorsAsync()
+        {
+            var supervisors = new List<SupervisorsDTO>();
+            var _v7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+            try
+            {
+                // Build the request URL
+
+                // Call the API
+                HttpResponseMessage response = await _v7client.GetAsync(_v7client.BaseAddress + "auth/getsupervisors");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Read the JSON response
+                    string jsonData = await response.Content.ReadAsStringAsync();
+
+                    // Deserialize into a list
+                    supervisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(jsonData)
+                                  ?? new List<SupervisorsDTO>();
+                }
+                else
+                {
+                    // Log or handle non-success responses
+                    Console.WriteLine($"API Error: {response.StatusCode} - {response.ReasonPhrase}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle unexpected errors (network, deserialization, etc.)
+                Console.WriteLine($"Exception in GetSupervisorsAsync: {ex.Message}");
+            }
+
+            return supervisors;
         }
     }
 }

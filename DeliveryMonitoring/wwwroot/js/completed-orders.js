@@ -1,7 +1,10 @@
 ﻿var js = jQuery.noConflict(true);
 var dineInTable, takeAwayTable, tablelist;
-var startDate = moment().startOf('day');
-var endDate = moment().endOf('day');
+var tableDateRanges = {
+    dineInTable: { start: moment().startOf('day'), end: moment().endOf('day') },
+    takeAwayTable: { start: moment().startOf('day'), end: moment().endOf('day') },
+    tablelist: { start: moment().startOf('day'), end: moment().endOf('day') }
+};
 var isClear = false;
 
 var dateFilterMappings = [
@@ -11,297 +14,145 @@ var dateFilterMappings = [
 ];
 
 js(() => {
-    // Add global date filter for DataTables
-    js.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-        if (!startDate || !endDate) return true;
+    // Shared helper functions
 
-        var orderDateStr = data[5]; // Adjust as needed for different tables
-        var orderDate = moment(orderDateStr, "YYYY-MM-DD HH:mm:ss");
+    const renderPhone = (data) => {
+        if (!data) return "N/A";
+        return `
+        <div class="d-inline-flex align-items-center gap-1">
+            <a href="tel:${data}">${data}</a>
+            <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-primary text-decoration-none">
+                <i class="bi bi-clipboard"></i>
+            </a>
+        </div>`;
+    };
 
-        return orderDate.isValid() && orderDate.isBetween(startDate, endDate, undefined, '[]');
-    });
+    const renderAmount = (d, type) => {
+        if (type === 'sort' || type === 'type') return parseFloat(d) || 0;
+        if (!d) return "0.00";
+        return parseFloat(d).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
 
-    // Remove initial hide classes
-    dateFilterMappings.forEach(({ id, tableName }) => {
-        js(`#${tableName} tbody tr.initial-hide`).removeClass('initial-hide');
-    });
+    const renderCurrency = (d, type) => {
+        if (type === 'sort' || type === 'type') return parseFloat(d) || 0;
+        if (!d) return "0.00";
+        return parseFloat(d).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    };
 
-    var dineInAndTakeawayColumns = [
+    const renderRequestDate = (td, cellData, rowData) => {
+        if (rowData.requestCreatedAt) {
+            const parsed = moment(rowData.requestCreatedAt, "YYYY-MM-DD hh:mm:ss");
+            td.setAttribute("data-order", parsed.format("YYYY-MM-DDTHH:mm:ss"));
+            td.innerText = rowData.requestCreatedAtString;
+        } else {
+            td.innerText = "N/A";
+        }
+    };
+
+    const renderReviewOrShow = (row, isDelivery) => {
+        if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
+        const purposeKey = Object.keys(purposeOptions).find(k => purposeOptions[k] === row.purpose) || '';
+
+        if (row.note || row.purpose) {
+            return `
+        <button class="btn btn-outline-secondary btn-sm"
+            data-note="${row.note || ''}"
+            data-purpose="${row.purpose || ''}"
+            data-purpose-key="${purposeKey}"
+            data-voucher-code="${row.voucherCode}"
+            data-customer-phone="${row.phoneNumber || ''}"
+            data-customer-review="${row.review || ''}"
+            data-customer-rating="${row.rating || 0}"
+            data-phone-number="${row.driverPhoneNumber || ''}"
+            data-is-delivery="${isDelivery}"
+            onclick="showDetailsModal(this)">
+            Show
+        </button>`;
+        } else {
+            return `
+        <button class="btn btn-outline-secondary btn-sm"
+            data-voucher-code="${row.voucherCode}"
+            data-phone-number="${row.driverPhoneNumber || ''}"
+            data-customer-phone="${row.phoneNumber || ''}"
+            data-customer-review="${row.review || ''}"
+            data-customer-rating="${row.rating || 0}"
+            data-is-delivery="${isDelivery}"
+            onclick="showReviewModal(this)">
+            Review
+        </button>`;
+        }
+    };
+
+    const renderActivityBtn = (row) => `
+    <button class="btn btn-outline-secondary activityBtn btn-sm"
+        data-voucher="${row.voucherCode}"
+        data-company-code="${row.companyCode}"
+        onclick="showActivity(this)">
+        Show
+    </button>`;
+
+    const renderDetailsLink = (row, isDelivery) => {
+        if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
+        const href = isDelivery
+            ? `orderdetail?voucher=${row.voucherCode}`
+            : `orderdetail?voucher=${row.voucherCode}&type=${row.tableId}`;
+        return `<a class="btn btn-outline-secondary activityBtn btn-sm" target="_blank" href="${href}">Details</a>`;
+    };
+
+    // Shared base columns (used by all tables)
+    const baseColumns = [
         { data: "voucherCode", className: "text-center" },
         { data: "companyName", className: "text-center" },
         { data: "branchName", className: "text-center" },
         { data: "firstName", className: "text-center" },
-
-        // Phone Number with tel link + copy button
+        { data: "phoneNumber", className: "text-center", render: renderPhone },
         {
-            data: "phoneNumber",
+            data: "requestCreatedAt",
             className: "text-center",
-            render: function (data) {
-                if (!data) return "N/A";
-                return `
-            <div class="d-inline-flex align-items-center gap-1">
-                <a href="tel:${data}">${data}</a>
-                <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-primary text-decoration-none">
-                    <i class="bi bi-clipboard"></i>
-                </a>
-            </div>`;
-            }
-        },
-
-        // Request Created At
-        {
-            data: "requestCreatedAt", // for display
-            className: "text-center",
-            createdCell: function (td, cellData, rowData) {
-                if (rowData.requestCreatedAt) {
-                    // Parse backend's 12-hour formatted date string
-                    const parsedDate = moment(rowData.requestCreatedAt, "YYYY-MM-DD hh:mm:ss");
-
-                    // 24-hour format for data-order (sorting)
-                    const orderDate = parsedDate.format("YYYY-MM-DDTHH:mm:ss");
-                    td.setAttribute("data-order", orderDate);
-
-                    // Set text content (display)
-                    td.innerText = rowData.requestCreatedAtString;
-                } else {
-                    td.innerText = "N/A";
-                }
-            }
-        },
-
-        // Total Amount
-        {
-            data: "totalAmount",
-            className: "text-center",
-            render: function (d, type, row) {
-                if (type === 'sort' || type === 'type') return parseFloat(d) || 0; // keep numeric value for sorting
-                if (!d) return "0.00";
-                return parseFloat(d).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
-        },
-        // Review / Purpose / Show buttons
-        {
-            data: null,
-            className: "text-center",
-            orderable: false,
-            render: function (data, type, row) {
-                if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
-
-                // Compute purposeKey from purposeOptions
-                const purposeKey = Object.keys(purposeOptions).find(k => purposeOptions[k] === row.purpose) || '';
-
-                if (row.note) {
-                    return `
-                <button class="btn btn-outline-secondary btn-sm"
-                    data-note="${row.note || ''}"
-                    data-purpose="${row.purpose || ''}"
-                    data-purpose-key="${purposeKey}"
-                    data-voucher-code="${row.voucherCode}"
-                    data-customer-phone="${row.phoneNumber || ''}"
-                    data-customer-review="${row.review || ''}"
-                    data-customer-rating="${row.rating || 0}"
-                    data-phone-number="${row.driverPhoneNumber || ''}"
-                    onclick="showDetailsModal(this)">
-                    Show
-                </button>`;
-                } else {
-                    return `
-                <button class="btn btn-outline-secondary btn-sm"
-                    data-voucher-code="${row.voucherCode}"
-                    data-phone-number="${row.driverPhoneNumber || ''}"
-                    data-customer-phone="${row.phoneNumber || ''}"
-                    data-customer-review="${row.review || ''}"
-                    data-customer-rating="${row.rating || 0}"
-                    onclick="showReviewModal(this)">
-                    Review
-                </button>`;
-                }
-            }
-        },
-
-        // Activity button
-        {
-            data: null,
-            className: "text-center",
-            orderable: false,
-            render: function (data, type, row) {
-                return `<button class="btn btn-outline-secondary activityBtn btn-sm"
-                    data-voucher="${row.voucherCode}"
-                    data-company-code="${row.companyCode}"
-                    onclick="showActivity(this)">
-                    Show
-                </button>`;
-            }
-        },
-
-        // Details link
-        {
-            data: null,
-            className: "text-center",
-            orderable: false,
-            render: function (data, type, row) {
-                if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
-                return `<a class="btn btn-outline-secondary activityBtn btn-sm" target="_blank"
-                    href="orderdetail?voucher=${row.voucherCode}&type=${row.tableId}">
-                    Details
-                </a>`;
-            }
+            createdCell: renderRequestDate
         }
     ];
 
-    var deliveryColumns = [
-        { data: "voucherCode", className: "text-center" },
-        { data: "companyName", className: "text-center" },
-        { data: "branchName", className: "text-center" },
-        { data: "firstName", className: "text-center" },
-
-        // Phone Number column with tel link + copy button
+    // Dine-In & Takeaway columns
+    const dineInAndTakeawayColumns = [
+        ...baseColumns,
+        { data: "supervisorName", className: "text-center" },
+        { data: "totalAmount", className: "text-center", render: renderAmount },
         {
-            data: "phoneNumber",
-            className: "text-center",
-            render: function (data) {
-                if (!data) return "N/A";
-                return `
-            <div class="d-inline-flex align-items-center gap-1">
-                <a href="tel:${data}">${data}</a>
-                <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-primary text-decoration-none">
-                    <i class="bi bi-clipboard"></i>
-                </a>
-            </div>`;
-            }
+            data: null, className: "text-center", orderable: false,
+            render: (data, type, row) => renderReviewOrShow(row, false)
         },
-
-
-
-        // Request created at
         {
-            data: "requestCreatedAt", // for display
-            className: "text-center",
-            createdCell: function (td, cellData, rowData) {
-                if (rowData.requestCreatedAt) {
-                    // Parse backend's 12-hour formatted date string
-                    const parsedDate = moment(rowData.requestCreatedAt, "YYYY-MM-DD hh:mm:ss");
-
-                    // 24-hour format for data-order (sorting)
-                    const orderDate = parsedDate.format("YYYY-MM-DDTHH:mm:ss");
-                    td.setAttribute("data-order", orderDate);
-
-                    // Set text content (display)
-                    td.innerText = rowData.requestCreatedAtString;
-                } else {
-                    td.innerText = "N/A";
-                }
-            }
+            data: null, className: "text-center", orderable: false,
+            render: (data, type, row) => renderActivityBtn(row)
         },
+        {
+            data: null, className: "text-center", orderable: false,
+            render: (data, type, row) => renderDetailsLink(row, false)
+        }
+    ];
 
+    // Delivery columns (adds distance/duration/tip)
+    const deliveryColumns = [
+        ...baseColumns,
         { data: "distance", className: "text-center", render: d => d + " K.M" },
         { data: "duration", className: "text-center", render: d => d + " Min" },
         { data: "eta", className: "text-center", render: d => d + " Min" },
-
-        // Driver phone with copy
-        {
-            data: "driverPhoneNumber",
-            className: "text-center",
-            render: function (data) {
-                if (!data) return "N/A";
-                return `
-            <div class="d-inline-flex align-items-center gap-1">
-                <a href="tel:${data}">${data}</a>
-                <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-primary text-decoration-none">
-                    <i class="bi bi-clipboard"></i>
-                </a>
-            </div>`;
-            }
-        },
-
+        { data: "driverPhoneNumber", className: "text-center", render: renderPhone },
         { data: "supervisorName", className: "text-center" },
-
+        { data: "totalAmount", className: "text-center", render: renderAmount },
+        { data: "tip", className: "text-center", render: renderAmount },
         {
-            data: "totalAmount",
-            className: "text-center",
-            render: function (d, type, row) {
-                if (type === 'sort' || type === 'type') return parseFloat(d) || 0; // keep numeric value for sorting
-                if (!d) return "0.00";
-                return parseFloat(d).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
+            data: null, className: "text-center", orderable: false,
+            render: (data, type, row) => renderReviewOrShow(row, true)
         },
         {
-            data: "tip",
-            className: "text-center",
-            render: function (d, type, row) {
-                if (type === 'sort' || type === 'type') return parseFloat(d) || 0; // keep numeric value for sorting
-                if (!d) return "0.00";
-                return parseFloat(d).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-            }
+            data: null, className: "text-center", orderable: false,
+            render: (data, type, row) => renderActivityBtn(row)
         },
-
-        // Review / Purpose / Show buttons column
         {
-            data: null,
-            className: "text-center",
-            orderable: false,
-            render: function (data, type, row) {
-                if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
-
-                // Compute purposeKey from purposeOptions
-                const purposeKey = Object.keys(purposeOptions).find(k => purposeOptions[k] === row.purpose) || '';
-
-                if (row.purpose) {
-                    return `
-                <button class="btn btn-outline-secondary btn-sm"
-                    data-note="${row.note || ''}"
-                    data-purpose="${row.purpose}"
-                    data-purpose-key="${purposeKey}"
-                    data-voucher-code="${row.voucherCode}"
-                    data-customer-phone="${row.phoneNumber || ''}"
-                    data-customer-review="${row.review || ''}"
-                    data-customer-rating="${row.rating || 0}"
-                    data-phone-number="${row.driverPhoneNumber || ''}"
-                    onclick="showDetailsModal(this)">
-                    Show
-                </button>`;
-                } else {
-                    return `
-                <button class="btn btn-outline-secondary btn-sm"
-                    data-voucher-code="${row.voucherCode}"
-                    data-phone-number="${row.driverPhoneNumber || ''}"
-                    data-customer-phone="${row.phoneNumber || ''}"
-                    data-customer-review="${row.review || ''}"
-                    data-customer-rating="${row.rating || 0}"
-                    onclick="showReviewModal(this)">
-                    Review
-                </button>`;
-                }
-            }
-        },
-
-        // Activity button
-        {
-            data: null,
-            className: "text-center",
-            orderable: false,
-            render: function (data, type, row) {
-                return `<button class="btn btn-outline-secondary activityBtn btn-sm"
-                    data-voucher="${row.voucherCode}"
-                    data-company-code="${row.companyCode}"
-                    onclick="showActivity(this)">
-                    Show
-                </button>`;
-            }
-        },
-
-        // Details link
-        {
-            data: null,
-            className: "text-center",
-            orderable: false,
-            render: function (data, type, row) {
-                if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
-                return `<a class="btn btn-outline-secondary activityBtn btn-sm" target="_blank"
-                    href="orderdetail?voucher=${row.voucherCode}">
-                    Details
-                </a>`;
-            }
+            data: null, className: "text-center", orderable: false,
+            render: (data, type, row) => renderDetailsLink(row, true)
         }
     ];
     // Initialize tables first
@@ -311,7 +162,7 @@ js(() => {
         dineInAndTakeawayColumns,
         "/getordersbytype?type=3203",
         "No dine-in orders available.",
-        6,
+        7,
         [0, 1, 2, 4, 7, 8, 9],
         [
             { index: 1, name: 'Branch' },
@@ -325,7 +176,7 @@ js(() => {
         dineInAndTakeawayColumns,
         "/getordersbytype?type=2076",
         "No takeaway orders available.",
-        6,
+        7,
         [0, 1, 2, 4, 7, 8, 9],
         [
             { index: 1, name: 'Company' },
@@ -360,10 +211,11 @@ function initDateRangePickers() {
 
         if (!tableRef) return;
 
-        // Initialize date range picker
+        const tableRange = tableDateRanges[tableName];
+
         js(selector).daterangepicker({
-            startDate: startDate,
-            endDate: endDate,
+            startDate: tableRange.start,
+            endDate: tableRange.end,
             maxDate: moment(),
             autoUpdateInput: true,
             locale: {
@@ -372,21 +224,21 @@ function initDateRangePickers() {
             }
         });
 
-        // Set initial date range text
-        js(selector).val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
+        js(selector).val(
+            tableRange.start.format('YYYY-MM-DD') + ' to ' + tableRange.end.format('YYYY-MM-DD')
+        );
 
-        // Handle apply
         js(selector).on('apply.daterangepicker', function (ev, picker) {
-            startDate = picker.startDate.startOf('day');
-            endDate = picker.endDate.endOf('day');
+            tableDateRanges[tableName] = {
+                start: picker.startDate.startOf('day'),
+                end: picker.endDate.endOf('day')
+            };
             js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
             tableRef.ajax.reload();
         });
 
-        // Handle clear
         js(selector).on('cancel.daterangepicker', function () {
-            startDate = null;
-            endDate = null;
+            tableDateRanges[tableName] = { start: null, end: null };
             js(this).val('');
             isClear = true;
             tableRef.ajax.reload(function () {
@@ -395,7 +247,6 @@ function initDateRangePickers() {
         });
     });
 }
-
 function initOrderTable(selector, daterangepicker, columns, ajaxUrl, emptyMessage, totalColumnIndex, nonOrderableTargets = [0], headerFilterColumns = []) {
     const table = js(selector).DataTable({
         responsive: true,
@@ -403,10 +254,12 @@ function initOrderTable(selector, daterangepicker, columns, ajaxUrl, emptyMessag
         serverSide: false,
         ajax: function (data, callback, settings) {
             const url = new URL(ajaxUrl, window.location.origin);
+            const tableName = selector.replace('#', '');
+            const { start, end } = tableDateRanges[tableName] || {};
 
-            if (startDate && endDate && !isClear) {
-                url.searchParams.append("startDate", startDate.format("YYYY-MM-DD"));
-                url.searchParams.append("endDate", endDate.format("YYYY-MM-DD"));
+            if (start && end && !isClear) {
+                url.searchParams.append("startDate", start.format("YYYY-MM-DD"));
+                url.searchParams.append("endDate", end.format("YYYY-MM-DD"));
             }
 
             url.searchParams.append("isClear", isClear);
@@ -433,6 +286,10 @@ function initOrderTable(selector, daterangepicker, columns, ajaxUrl, emptyMessag
                     }
                     return data;
                 }
+            },
+            {
+                orderSequence: ['asc', 'desc'],
+                targets: '_all'
             }
         ],
         language: { emptyTable: emptyMessage },
@@ -476,6 +333,7 @@ async function showDetailsModal(button) {
     const customerReview = button.getAttribute('data-customer-review');
     const customerRating = button.getAttribute('data-customer-rating');
     const purposeKey = button.getAttribute('data-purpose-key');
+    const isDelivery = button.getAttribute('data-is-delivery');
 
 
     document.getElementById('modalNote').innerHTML = note || '—';
@@ -488,6 +346,7 @@ async function showDetailsModal(button) {
     editBtn.setAttribute('data-customer-phone', customerPhone);
     editBtn.setAttribute('data-purpose-key', purposeKey);
     editBtn.setAttribute('data-note', note);
+    editBtn.setAttribute('data-is-delivery', isDelivery);
     // Show the modal immediately
     const modal = new bootstrap.Modal(document.getElementById('reviewDetailsModal'));
     modal.show();
@@ -510,6 +369,7 @@ async function showReviewModal(button) {
     const customerReview = button.getAttribute('data-customer-review');
     const customerRating = button.getAttribute('data-customer-rating');
     const purposeKey = button.getAttribute('data-purpose-key');
+    const isDelivery = button.getAttribute('data-is-delivery');
 
     // Close any open modal before opening this one
     document.querySelectorAll('.modal.show').forEach(modalEl => {
@@ -518,6 +378,7 @@ async function showReviewModal(button) {
 
     // Populate modal inputs
     document.getElementById('reviewOrderId').value = voucherCode;
+    document.getElementById('isDelivery').value = isDelivery;
     document.getElementById('reviewPurpose').value = purposeKey || '';
     document.getElementById('reviewNote').value = note || '';
     document.getElementById('voucherCodeReview').textContent = voucherCode ? `- ${voucherCode}` : '';
@@ -656,13 +517,14 @@ document.getElementById('reviewForm').addEventListener('submit', async function 
     const voucherCode = document.getElementById('reviewOrderId').value;
     const purpose = document.getElementById('reviewPurpose').value;
     const note = document.getElementById('reviewNote').value || '';
+    const isDelivery = document.getElementById('isDelivery').value == "true";
     try {
         const response = await fetch('/CompletedOrders/savenote', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ voucherCode, purpose, note })
+            body: JSON.stringify({ voucherCode, purpose, note, isDelivery })
         });
 
         if (response.ok) {

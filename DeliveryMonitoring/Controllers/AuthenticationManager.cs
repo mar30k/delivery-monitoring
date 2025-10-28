@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NuGet.Protocol.Plugins;
 using System.Security.Claims;
+using Tweetinvi.Core.Models;
 
 
 namespace DeliveryMonitoring.Controllers
@@ -177,6 +178,25 @@ namespace DeliveryMonitoring.Controllers
             {
                 return false;
             }
+        }
+
+        public UserDTO? GetUserFromCookie(HttpRequest request)
+        {
+            if (request.Cookies.TryGetValue("user", out string? cookieValue) &&
+                !string.IsNullOrWhiteSpace(cookieValue))
+            {
+                try
+                {
+                    return JsonConvert.DeserializeObject<UserDTO>(cookieValue);
+                }
+                catch (JsonException ex)
+                {
+                    // Log or handle malformed cookie
+                    Console.WriteLine($"Error parsing user cookie: {ex.Message}");
+                }
+            }
+
+            return null;
         }
     }
 }
