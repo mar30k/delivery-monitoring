@@ -1,5 +1,6 @@
 ﻿using CNET_ERP_V7.WebConstants;
 using DeliveryMonitoring.Models;
+using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -13,18 +14,20 @@ namespace DeliveryMonitoring.Controllers
     [Route("/CompletedOrders")]
     public class CompletedOrdersController : Controller
     {
-        private IHttpClientFactory _httpClientFactory;
         private IHttpContextAccessor _httpContextAccessor;
+        private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
-        public CompletedOrdersController(IHttpClientFactory httpClientFactory , IHttpContextAccessor httpContextAccessor, AuthenticationManager authenticationManager   )
+        public CompletedOrdersController(IHttpClientFactory httpClientFactory,
+            IApiRequestService apiRequestService,
+            IHttpContextAccessor httpContextAccessor,
+            AuthenticationManager authenticationManager   )
         {
-            _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
             _authenticationManager = authenticationManager;
+            _apiRequestService = apiRequestService;
         }
         public async Task<IActionResult> Index()
         {
-            var _client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
             var CompletedOrdersViewModel = new CompletedOrdersViewModel
@@ -35,16 +38,7 @@ namespace DeliveryMonitoring.Controllers
 
             try
             {
-                var purposeResponse = await _client.GetAsync("delivery/getpurpose");
-
-                if (!purposeResponse.IsSuccessStatusCode)
-                {
-                    var errorContent = await purposeResponse.Content.ReadAsStringAsync();
-                    ViewBag.ErrorMessage = $"Failed to retrieve purpose options. Server responded with: {errorContent}";
-                    return View(CompletedOrdersViewModel); // pass default view model
-                }
-
-                var purposeResponseData = await purposeResponse.Content.ReadAsStringAsync();
+                var purposeResponseData = await _apiRequestService.GetDeliveryPurposeAsync();
                 var purposeResult = JsonConvert.DeserializeObject<Dictionary<int, string>>(purposeResponseData);
                 CompletedOrdersViewModel.PurposeOptions = purposeResult ?? new Dictionary<int, string>();
             }
@@ -66,10 +60,9 @@ namespace DeliveryMonitoring.Controllers
             [FromQuery] DateTime? endDate,
             [FromQuery] bool isClear = false)
         {
-            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
-            var result = await FetchCompletedOrders(client, "voucher/getcompletedorders");
+            var result = await _apiRequestService.GetCompletedOrdersAsync();
             if (result == null || result.Data == null)
                 return NotFound("Failed to retrieve or parse completed orders.");
 
@@ -99,11 +92,10 @@ namespace DeliveryMonitoring.Controllers
             [FromQuery] DateTime? endDate,
             [FromQuery] bool isClear = false)
         {
-            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
             // Fetch data from API
-            var getOrdersByTypeData = await FetchCompletedOrders(client, $"voucher/getordersbytype?type={type}");
+            var getOrdersByTypeData = await _apiRequestService.GetOrdersByTypeAsync(int.TryParse(type, out var intType) ? intType : 0);
             if (getOrdersByTypeData == null || getOrdersByTypeData.Data == null)
                 return NotFound("Failed to retrieve or parse completed orders.");
 
@@ -152,64 +144,35 @@ namespace DeliveryMonitoring.Controllers
         [Route("/orderdetail")]
         public async Task<IActionResult> CompletedOrderDetail(string voucher ,string type = "")
         {
-            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-            var supervisors = new List<SupervisorsDTO>();
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            string url = "voucher/getcompletedorders";
-            if (type == "dineInTable")
+            int intType = 0;
+            if (type == "takeAwayTable" || type == "dineInTable")
             {
-                url = "voucher/getordersbytype?type=3203";
+                intType = type == "dineInTable" ? 3203 : 2076;
             }
-            else if (type == "takeAwayTable")
-            {
-                url = "voucher/getordersbytype?type=2076";
-            }
-            var result = await FetchCompletedOrders(client, url);
+            var result = intType == 0 ? await _apiRequestService.GetCompletedOrdersAsync() : await _apiRequestService.GetOrdersByTypeAsync(intType);
             if (result == null)
             {
                 TempData["Message"] = $"Unable to fetch details of Order: {voucher}.";
                 return RedirectToAction("index");
             }
-            CompletedOrders? order = result != null ? result.Data?.FirstOrDefault(o => o.VoucherCode == voucher) : new CompletedOrders();
+            var order = result != null ? result.Data?.FirstOrDefault(o => o.VoucherCode == voucher) : new CompletedOrders();
 
             if (companyTin != "0076217301" && companyTin != order?.Tin)
             {
                 TempData["Message"] = $"You do not have the necessary permissions to view Order: {voucher}.";
                 return RedirectToAction("index");
             }
-            var voucherResponse = await client.GetAsync($"voucher/gethistorydetail?voucherCode={voucher}&companyCode={order?.CompanyCode}&industryType=1992");
-            if (!voucherResponse.IsSuccessStatusCode)
-            {
-                var errorContent = await voucherResponse.Content.ReadAsStringAsync();
-                ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
-            }
+            var voucherDetail = await _apiRequestService.Gethistorydetail(voucher, order?.CompanyCode.ToString() ?? "");
 
-            var voucherContent = await voucherResponse.Content.ReadAsStringAsync();
-            var voucherDetail = JsonConvert.DeserializeObject<HulubejeResponse<LineItemsDetail>>(voucherContent)
-                                ?? new HulubejeResponse<LineItemsDetail>();
-
-            // 2. Fetch driver activity
-            var driverResponse = await client.GetAsync($"driveractivity/get?voucherCode={voucher}&companyCode={order?.CompanyCode}");
-            if (!driverResponse.IsSuccessStatusCode)
+            var supervisors = await _apiRequestService.GetSupervisorsAsync();
+            var supervisor = supervisors?.FirstOrDefault(s => s.UserName == order?.SupervisorPhoneNumber);
+            if (order != null)
             {
-                var errorContent = await driverResponse.Content.ReadAsStringAsync();
-                ViewBag.ErrorMessage = $"Failed to retrieve completed orders. Server responded with: {errorContent}";
+                order.SupervisorName = $"{supervisor?.FirstName} {supervisor?.SecondName}";
             }
-
-            var getsupervisors = await client.GetAsync(client.BaseAddress + "auth/getsupervisors");
-            if (getsupervisors.IsSuccessStatusCode)
-            {
-                string Supervisordata = await getsupervisors.Content.ReadAsStringAsync();
-                supervisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(Supervisordata);
-                var supervisor = supervisors?.FirstOrDefault(s => s.UserName == order?.SupervisorPhoneNumber);
-                if (order != null)
-                {
-                    order.SupervisorName = $"{supervisor?.FirstName} {supervisor?.SecondName}";
-                }
-            }
-            var driverContent = await driverResponse.Content.ReadAsStringAsync();
-            var driverActivity = JsonConvert.DeserializeObject<HulubejeResponse<Activities>>(driverContent)
-                                 ?? new HulubejeResponse<Activities>();
+            
+            var driverActivity = await _apiRequestService.GetDriverActivityAsync(order?.CompanyCode.ToString() ?? "", voucher);
 
             // Combine both results into a view model
             var viewModel = new OrderDetail
@@ -220,31 +183,11 @@ namespace DeliveryMonitoring.Controllers
                 SupervisorName = order?.SupervisorName,
                 AssignedDriverPhoneNumber = order?.DriverPhoneNumber,
                 LineItemsDetail = voucherDetail.Data,
-                Activities = driverActivity.Data,
+                Activities = driverActivity?.Data,
                 VoucherCode = voucher
             };
 
             return View(viewModel);
-        }
-
-
-        private static async Task<HulubejeResponse<List<CompletedOrders>>?> FetchCompletedOrders(HttpClient client, string url)
-        {
-            try
-            {
-                var response = await client.GetAsync(url);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var responseData = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(responseData) ?? new HulubejeResponse<List<CompletedOrders>>();
-            }
-            catch (Exception)
-            {
-                return null;
-            }
         }
 
         [HttpPost("savenote")]
@@ -252,8 +195,6 @@ namespace DeliveryMonitoring.Controllers
         {
             if (request == null)
                 return BadRequest("please fill all the required fields.");
-            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-
             try
             {
                 if (!request.IsDelivery)
@@ -261,7 +202,7 @@ namespace DeliveryMonitoring.Controllers
                     var user = _authenticationManager.GetUserFromCookie(Request);
                     if (user != null)
                     {
-                        var supervisors = await GetSupervisorsAsync();
+                        var supervisors = await _apiRequestService.GetSupervisorsAsync();
                         var supervisor = supervisors.FirstOrDefault(s => s.UserName == user.UserName);
                         if (supervisor != null)
                         {
@@ -275,19 +216,12 @@ namespace DeliveryMonitoring.Controllers
                     }
                 }
 
-                var response = await client.GetAsync($"delivery/savenote?voucherCode={request.VoucherCode}&note={request.Note}&purpose={request.Purpose}");
+                
+                var result = await _apiRequestService.SaveDeliveryNote(request.VoucherCode ?? "", request.Note ?? "", request.Purpose ?? "");
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return BadRequest(errorContent);
-                }
-
-                var responseData = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<Boolean>(responseData);
-
-
-                return Ok(result);
+                if (!result.IsSuccessful)
+                    return BadRequest();
+                return Ok(result.IsSuccessful);
             }
             catch (Exception ex)
             {
@@ -297,64 +231,21 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("getDeliveryActivity")]
         public async Task<IActionResult> GetDeliveryActivity(string voucherCode, string companyCode)
         {
-            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-
             try
             {
-                var response = await client.GetAsync($"driveractivity/get?companyCode={companyCode}&voucherCode={voucherCode}");
-
-                if (!response.IsSuccessStatusCode)
+                var response = await _apiRequestService.GetDriverActivityAsync(companyCode, voucherCode);
+                if(response == null)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return BadRequest(errorContent);
+                    return NotFound("Failed to retrieve delivery activity.");
                 }
-
-                var responseData = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<HulubejeResponse<Activities>>(responseData);
                 Response.Headers["Cache-Control"] = "public, max-age=10"; // cache for 5 minutes
                 Response.Headers["Vary"] = "Accept-Encoding";
-                return Ok(result);
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message[0]);
             }
-        }
-
-        [NonAction]
-        public async Task<List<SupervisorsDTO>> GetSupervisorsAsync()
-        {
-            var supervisors = new List<SupervisorsDTO>();
-            var _v7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-            try
-            {
-                // Build the request URL
-
-                // Call the API
-                HttpResponseMessage response = await _v7client.GetAsync(_v7client.BaseAddress + "auth/getsupervisors");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // Read the JSON response
-                    string jsonData = await response.Content.ReadAsStringAsync();
-
-                    // Deserialize into a list
-                    supervisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(jsonData)
-                                  ?? new List<SupervisorsDTO>();
-                }
-                else
-                {
-                    // Log or handle non-success responses
-                    Console.WriteLine($"API Error: {response.StatusCode} - {response.ReasonPhrase}");
-                }
-            }
-            catch (Exception ex)
-            {
-                // Handle unexpected errors (network, deserialization, etc.)
-                Console.WriteLine($"Exception in GetSupervisorsAsync: {ex.Message}");
-            }
-
-            return supervisors;
         }
     }
 }

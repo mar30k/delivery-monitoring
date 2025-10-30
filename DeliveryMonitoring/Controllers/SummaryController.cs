@@ -10,16 +10,14 @@ namespace DeliveryMonitoring.Controllers
 {
     public class SummaryController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IApiRequestService _apiRequest;
+        private readonly IApiRequestService _apiRequestService;
         private string CompanyTin =>
         _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie] ?? "";
-        public SummaryController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, IApiRequestService apiRequest)
+        public SummaryController( IHttpContextAccessor httpContextAccessor, IApiRequestService apiRequest)
         {
-            _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
-            _apiRequest = apiRequest;
+            _apiRequestService = apiRequest;
         }
         [HttpGet("/summary")]
         public IActionResult Index(string t = "consignee")
@@ -54,10 +52,8 @@ namespace DeliveryMonitoring.Controllers
                     );
                     return Json(new { data = merchantSummaries });
                 case "driver":
-                    var availableDrivers = await GetAvailableDrivers();
-                    if (CompanyTin != "0076217301")
-                        availableDrivers = availableDrivers.Where(d => d.CompanyTin != null && d.CompanyTin == CompanyTin).ToList();
-                    var ordersResult = await FetchCompletedOrders(CompanyTin, _httpClientFactory.CreateClient("CnetApiBaseUrl"), "voucher/getcompletedorders");
+                    var availableDrivers = await _apiRequestService.GetAvailableDriversAsync();
+                    var ordersResult = await FetchCompletedOrders(CompanyTin, 0);
 
                     if (ordersResult?.Data == null || availableDrivers == null)
                         return Json(new { data = new List<object>() });
@@ -129,7 +125,7 @@ namespace DeliveryMonitoring.Controllers
                 case "supervisor":
                     if (CompanyTin != "0076217301")
                         return Json(new { data = new List<object>() });
-                    var orderResult = await FetchCompletedOrders(CompanyTin, _httpClientFactory.CreateClient("CnetApiBaseUrl"), "voucher/getcompletedorders");
+                    var orderResult = await FetchCompletedOrders(CompanyTin, 0);
 
                     if (orderResult?.Data == null )
                         return Json(new { data = new List<object>() });
@@ -266,19 +262,15 @@ namespace DeliveryMonitoring.Controllers
 
 
         public async Task<CompletedOrdersViewModel> CompletedOrdersViewModel(
-            HttpClient client,
             string companyTin,
             DateTime startDate,
             DateTime endDate,
             bool isClear = false)
         {
-            var deliveryOrdersUrl = "voucher/getcompletedorders";
-            var dineInOrdersUrl = "voucher/getordersbytype?type=3203";
-            var takeAwayOrdersUrl = "voucher/getordersbytype?type=2076";
-
-            var deliveryTask = FetchCompletedOrders(companyTin, client, deliveryOrdersUrl);
-            var dineInTask = FetchCompletedOrders(companyTin, client, dineInOrdersUrl);
-            var takeAwayTask = FetchCompletedOrders(companyTin, client, takeAwayOrdersUrl);
+           
+            var deliveryTask = FetchCompletedOrders(companyTin, 0);
+            var dineInTask = FetchCompletedOrders(companyTin,  3203);
+            var takeAwayTask = FetchCompletedOrders(companyTin, 2076);
 
             await Task.WhenAll(deliveryTask, dineInTask, takeAwayTask);
 
@@ -337,7 +329,6 @@ namespace DeliveryMonitoring.Controllers
             var toDate = endDate ?? DateTime.Now.Date;
 
             var allOrdersByType = await CompletedOrdersViewModel(
-                _httpClientFactory.CreateClient("CnetApiBaseUrl"),
                 CompanyTin ?? "",
                 fromDate,
                 toDate,
@@ -377,18 +368,12 @@ namespace DeliveryMonitoring.Controllers
                 .ToList()!;
         }
 
-        private static async Task<HulubejeResponse<List<CompletedOrders>>?> FetchCompletedOrders(string companyTin, HttpClient client, string url)
+        private async Task<HulubejeResponse<List<CompletedOrders>>?> FetchCompletedOrders(string companyTin, int type)
         {
             try
             {
-                var response = await client.GetAsync(url);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var responseData = await response.Content.ReadAsStringAsync();
-                var completedResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(responseData) ?? new HulubejeResponse<List<CompletedOrders>>();
+                
+                var completedResult = type != 0?  await _apiRequestService.GetOrdersByTypeAsync(type) : await _apiRequestService.GetCompletedOrdersAsync();
                 if (!string.IsNullOrWhiteSpace(companyTin) && companyTin != "0076217301")
                 {
                     if (completedResult != null)
@@ -400,22 +385,6 @@ namespace DeliveryMonitoring.Controllers
             {
                 return null;
             }
-        }
-        public async Task<List<Driver>> GetAvailableDrivers()
-        {
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            string uri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
-            var _client = _httpClientFactory.CreateClient("Delivery");
-            List<Driver> drivers = new();
-
-            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + uri);
-
-            if (response.IsSuccessStatusCode)
-            {
-                string data = await response.Content.ReadAsStringAsync();
-                drivers = JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
-            }
-            return drivers;
         }
     }
 }

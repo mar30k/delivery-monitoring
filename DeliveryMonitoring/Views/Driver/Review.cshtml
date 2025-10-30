@@ -10,28 +10,36 @@
 
             <h3 class="card-title mb-3">Driver Reviews</h3>
             <div class="d-flex align-items-center mb-3">
-                @if (Model != null)
-                {
-                    <h4 class="mb-0 me-3 text-warning">
-                        @Model?.Rating.ToString("0.0")
-                        <i class="bi bi-star-fill"></i>
-                    </h4>
-                    <span class="text-muted">(@Model?.Count reviews)</span>
-                }
-                else
-                {
-                    <span class="text-muted">(0 reviews)</span>
-                }
+                <h4 id="averageRating" class="mb-0 me-3 text-warning">
+                    @Model?.Rating.ToString("0.0")
+                    <i class="bi bi-star-fill"></i>
+                </h4>
+                <span id="reviewCount" class="text-muted">(@Model?.Count reviews)</span>
             </div>
-            <hr />@if (Model?.Reviews != null && Model.Reviews.Any())
+            <hr />
+            @if (!string.IsNullOrEmpty(ViewBag.Error))
             {
-                <div class="mb-3">
-                    <button class="btn btn-outline-secondary btn-sm active" data-rating="0" onclick="filterByRating(this)">All</button>
-                    <button class="btn btn-outline-secondary btn-sm" data-rating="5" onclick="filterByRating(this)">5 <i class="bi bi-star-fill text-warning"></i></button>
-                    <button class="btn btn-outline-secondary btn-sm" data-rating="4" onclick="filterByRating(this)">4 <i class="bi bi-star-fill text-warning"></i></button>
-                    <button class="btn btn-outline-secondary btn-sm" data-rating="3" onclick="filterByRating(this)">3 <i class="bi bi-star-fill text-warning"></i></button>
-                    <button class="btn btn-outline-secondary btn-sm" data-rating="2" onclick="filterByRating(this)">2 <i class="bi bi-star-fill text-warning"></i></button>
-                    <button class="btn btn-outline-secondary btn-sm" data-rating="1" onclick="filterByRating(this)">1 <i class="bi bi-star-fill text-warning"></i></button>
+                <div class="alert alert-info text-center mt-4">
+                    @ViewBag.Error
+                </div>
+            }
+            @if (Model?.Reviews != null && Model.Reviews.Any())
+            {
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap">
+                    <!-- Rating buttons -->
+                    <div class="btn-group mb-2" role="group" aria-label="Rating filters">
+                        <button type="button" class="btn btn-outline-secondary btn-sm active" data-rating="0" onclick="handleRatingClick(this)">All</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-rating="5" onclick="handleRatingClick(this)">5 <i class="bi bi-star-fill text-warning"></i></button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-rating="4" onclick="handleRatingClick(this)">4 <i class="bi bi-star-fill text-warning"></i></button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-rating="3" onclick="handleRatingClick(this)">3 <i class="bi bi-star-fill text-warning"></i></button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-rating="2" onclick="handleRatingClick(this)">2 <i class="bi bi-star-fill text-warning"></i></button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-rating="1" onclick="handleRatingClick(this)">1 <i class="bi bi-star-fill text-warning"></i></button>
+                    </div>
+
+                    <!-- Date range picker -->
+                    <div class="mb-2">
+                        <input type="text" id="dateRange" class="form-control form-control-sm" style="width: 250px;" readonly />
+                    </div>
                 </div>
 
                 <div id="noReviewsMessage" class="alert alert-info d-none">
@@ -103,130 +111,11 @@
                     <ul class="pagination justify-content-center mt-4" id="paginationContainer"></ul>
                 </nav>
             }
-            else
-            {
-                <div class="alert alert-info text-center mt-4">
-                    No reviews found for this driver.
-                </div>
-            }
         </div>
     </div>
 </div>
 @section Scripts {
-    <script>
-        const reviewsPerPage = 12;
-        let currentPage = 1;
-        let currentRating = 0;
-
-        function renderPagination(totalReviews) {
-            const totalPages = Math.ceil(totalReviews / reviewsPerPage);
-            const paginationContainer = document.getElementById('paginationContainer');
-            paginationContainer.innerHTML = '';
-
-            if (totalPages <= 1) return;
-
-            const createPageItem = (page, text = null, disabled = false, active = false) => {
-                const li = document.createElement('li');
-                li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
-                li.innerHTML = `<a class="page-link text-decoration-none" href="#">${text || page}</a>`;
-                if (!disabled && !active) {
-                    li.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        currentPage = page;
-                        filterByRating(null, currentRating);
-                    });
-                }
-                return li;
-            };
-
-            // Previous button
-            paginationContainer.appendChild(createPageItem(currentPage - 1, '«', currentPage === 1));
-
-            // Show first page
-            if (currentPage > 3) {
-                paginationContainer.appendChild(createPageItem(1, '1'));
-                if (currentPage > 4) {
-                    const ellipsis = document.createElement('li');
-                    ellipsis.className = 'page-item disabled';
-                    ellipsis.innerHTML = `<span class="page-link">…</span>`;
-                    paginationContainer.appendChild(ellipsis);
-                }
-            }
-
-            // Pages around current page
-            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
-                paginationContainer.appendChild(createPageItem(i, null, false, i === currentPage));
-            }
-
-            // Show last page
-            if (currentPage < totalPages - 2) {
-                if (currentPage < totalPages - 3) {
-                    const ellipsis = document.createElement('li');
-                    ellipsis.className = 'page-item disabled';
-                    ellipsis.innerHTML = `<span class="page-link">…</span>`;
-                    paginationContainer.appendChild(ellipsis);
-                }
-                paginationContainer.appendChild(createPageItem(totalPages, totalPages));
-            }
-
-            // Next button
-            paginationContainer.appendChild(createPageItem(currentPage + 1, '»', currentPage === totalPages));
-        }
-        function filterByRating(button, rating = null) {
-            if (button) {
-                const selectedRating = parseInt(button.getAttribute('data-rating'), 10);
-                const isActive = button.classList.contains('active');
-                currentRating = isActive && selectedRating !== 0 ? 0 : selectedRating;
-
-                document.querySelectorAll('.mb-3 button[data-rating]').forEach(btn => btn.classList.remove('active'));
-                if (currentRating === 0) {
-                    document.querySelector('.mb-3 button[data-rating="0"]').classList.add('active');
-                } else {
-                    button.classList.add('active');
-                }
-
-                currentPage = 1; // Reset page on filter change
-            }
-
-            const allReviews = document.querySelectorAll('.review-card');
-            let filteredReviews = [];
-            allReviews.forEach(card => {
-                const cardRating = parseInt(card.getAttribute('data-rating'), 10);
-                if (currentRating === 0 || cardRating === currentRating) {
-                    filteredReviews.push(card);
-                }
-                card.style.display = 'none';
-            });
-
-            // Show only current page reviews
-            const start = (currentPage - 1) * reviewsPerPage;
-            const end = start + reviewsPerPage;
-            filteredReviews.slice(start, end).forEach(card => card.style.display = '');
-
-            // Show/hide "No reviews" message
-            const msg = document.getElementById('noReviewsMessage');
-            if (filteredReviews.length === 0) {
-                const messages = {
-                    0: "No reviews found for this driver.",
-                    1: "No 1-star reviews found.",
-                    2: "No 2-star reviews found.",
-                    3: "No 3-star reviews found.",
-                    4: "No 4-star reviews found.",
-                    5: "No 5-star reviews found.",
-                }
-                msg.textContent = messages[currentRating] || "No reviews found.";
-                msg.classList.remove('d-none');
-            } else {
-                msg.classList.add('d-none');
-            }
-
-            // Render pagination
-            renderPagination(filteredReviews.length);
-        }
-
-        // Initial render
-        document.addEventListener('DOMContentLoaded', function () {
-            filterByRating(null, 0);
-        });
-    </script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="~/js/driver-reviews.js" asp-append-version="true"></script>
 }

@@ -498,8 +498,8 @@ async function fetchDriverReview(phoneNumber, voucherCode, customerPhone) {
         const response = await fetch(`/Driver/fetchReview?phoneNumber=${encodeURIComponent(phoneNumber)}&page=${page}`);
         if (!response.ok) throw new Error(`Failed to fetch review: ${response.status}`);
         const result = await response.json();
-        if (!result || !result.reviews || result.reviews.length === 0) return null;
-        return result.reviews.find(r=> r.referenceVoucher === voucherCode && r.reviewerPhoneNumber == customerPhone) || null;
+        if (!result || !result.data.reviews || result.data.reviews.length === 0) return null;
+        return result.data.reviews.find(r=> r.referenceVoucher === voucherCode && r.reviewerPhoneNumber == customerPhone) || null;
 
     } catch (error) {
         console.error("Error fetching driver review:", error);

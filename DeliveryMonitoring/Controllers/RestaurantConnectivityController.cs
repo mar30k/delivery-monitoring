@@ -1,5 +1,6 @@
 ﻿using CNET_ERP_V7.WebConstants;
 using DeliveryMonitoring.Models;
+using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -11,13 +12,15 @@ namespace DeliveryMonitoring.Controllers
     [Authorize]
     public class RestaurantConnectivityController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IApiRequestService _apiRequestService;
 
-        public RestaurantConnectivityController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+        public RestaurantConnectivityController(
+            IHttpContextAccessor httpContextAccessor,
+            IApiRequestService apiRequestService)
         {
-            _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
+            _apiRequestService = apiRequestService;
         }
         [Route("/deviceControl")]
         public async Task<IActionResult> Index(string date)
@@ -39,19 +42,7 @@ namespace DeliveryMonitoring.Controllers
         {
             date ??= DateTime.Now.ToString("yyyy-MM-dd");
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            var client = _httpClientFactory.CreateClient("ApiBaseUrl");
-
-            var response = await client.GetAsync($"deviceControl?StartDate={date}&EndDate={date}");
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                // Log error if necessary
-                return null;
-            }
-
-            var responseData = await response.Content.ReadAsStringAsync();
-            var deviceControl = JsonConvert.DeserializeObject<List<DeviceControl>>(responseData);
+            var deviceControl = await _apiRequestService.GetDeviceControlAsync(date);
             var latestByTinAndBranch = deviceControl?
                 .Where(d => d.TimeStamp.HasValue) // Ensure TimeStamp is not null
                 .GroupBy(d => new { d.Tin, d.BranchName, d.DeviceName }) // Group by Tin , BranchName and DeviceName

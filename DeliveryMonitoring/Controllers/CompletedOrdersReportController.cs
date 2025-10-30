@@ -11,41 +11,38 @@ namespace DeliveryMonitoring.Controllers
     public class CompletedOrdersReportController : Controller
     {
         private IHttpContextAccessor _httpContextAccessor;
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IApiRequestService _apiRequest;
         private string CompanyTin =>
         _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie] ?? "";
         public CompletedOrdersReportController(IHttpContextAccessor httpContextAccessor, IHttpClientFactory httpClientFactory, IApiRequestService apiRequest)
         {
-            _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
             _apiRequest = apiRequest;
         }
         [Route("/report")]
         public async Task<IActionResult> Index(string t = "")
         {
-            string jsonResponse;
+            var completedResult =  new HulubejeResponse<List<CompletedOrders>>();
             string purposesJson;
 
             // Choose correct endpoint based on order type
             if (t.ToLower() == "dinein")
             {
-                jsonResponse = await _apiRequest.GetOrdersByTypeRawAsync(3203);
+				completedResult = await _apiRequest.GetOrdersByTypeAsync(3203);
             }
             else if (t.ToLower() == "takeaway")
             {
-                jsonResponse = await _apiRequest.GetOrdersByTypeRawAsync(2076);
+				completedResult = await _apiRequest.GetOrdersByTypeAsync(2076);
             }
             else
             {
-                jsonResponse = await _apiRequest.GetCompletedOrdersRawAsync();
+				completedResult = await _apiRequest.GetCompletedOrdersAsync();
             }
 
             // 🟢 Fetch purposes (raw JSON)
-            purposesJson = await _apiRequest.GetDeliveryPurposeRawAsync();
+            purposesJson = await _apiRequest.GetDeliveryPurposeAsync();
 
             // 🟢 Deserialize API responses
-            var completedResult = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(jsonResponse);
             var purposeOptions = JsonConvert.DeserializeObject<Dictionary<int, string>>(purposesJson);
 
             // 🟢 Apply filtering by CompanyTin

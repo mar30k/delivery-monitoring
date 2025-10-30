@@ -1,5 +1,6 @@
 ﻿using CNET_ERP_V7.WebConstants;
 using DeliveryMonitoring.Models;
+using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
@@ -9,24 +10,18 @@ namespace DeliveryMonitoring.Controllers
     public class AnalyticsController : Controller
     {
         private IHttpContextAccessor _httpContextAccessor;
-        private readonly IHttpClientFactory _httpClientFactory;
-        public AnalyticsController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+        private readonly IApiRequestService _apiRequestService;
+        public AnalyticsController(IHttpContextAccessor httpContextAccessor, IApiRequestService apiRequestService)
         {
-            _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
+            _apiRequestService = apiRequestService;
         }
         [Route("/Analytics")]
         public async Task<IActionResult> Index()
         {
-            var client = _httpClientFactory.CreateClient("Delivery");
-            var httpClient = _httpClientFactory.CreateClient("ApiBaseUrl");
-            var v7Client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             if (string.IsNullOrWhiteSpace(companyTin))
                 return RedirectToAction("Logout", "Login");
-
-            string driverUri = companyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={companyTin}";
 
             // Declare all variables outside try
             List<Driver> drivers = new();
@@ -41,14 +36,14 @@ namespace DeliveryMonitoring.Controllers
             {
                 var startDate = DateTime.Today.ToString("yyyy-MM-dd");
                 // Fetch drivers and orders
-                drivers = await FetchData<List<Driver>>(client, driverUri) ?? new List<Driver>();
-                orders = await FetchData<List<OrderDetail>>(client, $"/orderRequests?companyTin={companyTin}") ?? new List<OrderDetail>();
-                company = await FetchData<Companies>(client, $"/companies") ?? new Companies();
-                superVisors = await FetchData<List<SupervisorsDTO>>(v7Client, $"auth/getsupervisors") ?? new List<SupervisorsDTO>();
-                deviceControl = await FetchData<List<DeviceControl>>(httpClient, $"deviceControl?StartDate={startDate}&EndDate={startDate}") ?? new List<DeviceControl>();
-                takeAwayOrders = await FetchData<HulubejeResponse<List<CompletedOrders>>>(v7Client, $"voucher/getordersbytype?type=2076") ?? new HulubejeResponse<List<CompletedOrders>>();
-                completedOrders = await FetchData<HulubejeResponse<List<CompletedOrders>>>(v7Client, $"voucher/getcompletedorders") ?? new HulubejeResponse<List<CompletedOrders>>();
-                dineInOders = await FetchData<HulubejeResponse<List<CompletedOrders>>>(v7Client, $"voucher/getordersbytype?type=3203") ?? new HulubejeResponse<List<CompletedOrders>>();
+                drivers = await _apiRequestService.GetAvailableDriversAsync();
+                orders = await _apiRequestService.GetOrderRequestsAsync();
+                company = await _apiRequestService.GetCompaniesAsync();
+                superVisors = await _apiRequestService.GetSupervisorsAsync();
+                deviceControl = await _apiRequestService.GetDeviceControlAsync(startDate);
+                takeAwayOrders = await _apiRequestService.GetOrdersByTypeAsync(2076);
+                completedOrders = await _apiRequestService.GetCompletedOrdersAsync();
+                dineInOders = await _apiRequestService.GetOrdersByTypeAsync(3203);
             }
             catch (HttpRequestException)
             {
@@ -82,14 +77,6 @@ namespace DeliveryMonitoring.Controllers
                 TakeAwayOrders = takeAwayOrders
             };
             return View(viewModel);
-        }
-        private async Task<T?> FetchData<T>(HttpClient client, string uri)
-        {
-            HttpResponseMessage response = await client.GetAsync(client.BaseAddress + uri);
-            if (!response.IsSuccessStatusCode) return default;
-
-            string json = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(json);
         }
     }
 }

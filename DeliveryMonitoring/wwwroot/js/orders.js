@@ -364,7 +364,7 @@ async function dispatchOrder(order) {
 async function checkOrderStatus(voucherCode) {
     try {
         await $.ajax({
-            url: "/Order/orderdetails", // Replace with your actual endpoint
+            url: "/Order/checkRedispatchEligibility", // Replace with your actual endpoint
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify({ voucherCode: voucherCode })

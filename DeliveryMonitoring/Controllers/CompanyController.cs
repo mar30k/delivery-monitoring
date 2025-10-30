@@ -1,5 +1,6 @@
 ﻿using CNET_ERP_V7.WebConstants;
 using DeliveryMonitoring.Models;
+using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -12,41 +13,33 @@ namespace DeliveryMonitoring.Controllers
     public class CompanyController : Controller
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IHttpClientFactory _httpClientFactory;
-        public CompanyController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+        private readonly IApiRequestService _apiRequestService;
+        public CompanyController(
+            IApiRequestService apiRequestService,
+            IHttpContextAccessor httpContextAccessor)
         {
-           _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
+            _apiRequestService = apiRequestService;
         }
 
         [Route("companies")]
         public async Task<IActionResult> Index()
         {
-            var _client = _httpClientFactory.CreateClient("Delivery");
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
+            var currentCompanyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            if (string.IsNullOrWhiteSpace(currentCompanyTin) || string.IsNullOrWhiteSpace(currentCompanyTin))
             {
                 return RedirectToAction("Logout", "Login");
             }
-                // Call the first endpoint to get company TINs
-            HttpResponseMessage companiesResponse = await _client.GetAsync($"{_client.BaseAddress}/companies");
-            string data = await companiesResponse.Content.ReadAsStringAsync();
-            var companiesModel = JsonConvert.DeserializeObject<Companies>(data);
-
+            var companiesModel = await _apiRequestService.GetCompaniesAsync();
             // Call the second endpoint for each company TIN to get detailed information
             var companyDetailsList = new List<Company>();
-            if(!string.IsNullOrWhiteSpace(companyTin) && companyTin != "0076217301")
+            if(!string.IsNullOrWhiteSpace(currentCompanyTin) && currentCompanyTin != "0076217301")
             {
-                HttpResponseMessage companyDetailsResponse = await _client.GetAsync($"{_client.BaseAddress}/companies/{companyTin}");
-                if (companyDetailsResponse.IsSuccessStatusCode)
-                {
-                    string data2 = await companyDetailsResponse.Content.ReadAsStringAsync();
-                    var companyDetailsModel = JsonConvert.DeserializeObject<Company>(data2);
-                    companyDetailsList.Add(companyDetailsModel?? new Company());
-                }
+                var companyDetailsModel = await _apiRequestService.GetCompanyDetailsAsync(currentCompanyTin);
+                companyDetailsList.Add(companyDetailsModel ?? new Company());
                 if (companiesModel != null)
                 {
-                    companiesModel.companyTins = new List<string> { companyTin };
+                    companiesModel.companyTins = new List<string> { currentCompanyTin };
                 }
 
                 return View(new CompanyIndex
@@ -55,15 +48,10 @@ namespace DeliveryMonitoring.Controllers
                     Company = companyDetailsList
                 });
             }
-            foreach (var companyTins in companiesModel?.companyTins ?? new List<string>())
+            foreach (var companyTin in companiesModel?.companyTins ?? new List<string>())
             {
-                HttpResponseMessage companyDetailsResponse = await _client.GetAsync($"{_client.BaseAddress}/companies/{companyTins}");
-                if (companyDetailsResponse.IsSuccessStatusCode)
-                {
-                    string data2 = await companyDetailsResponse.Content.ReadAsStringAsync();
-                    var companyDetailsModel = JsonConvert.DeserializeObject<Company>(data2);
-                    companyDetailsList.Add(companyDetailsModel ?? new Company());
-                }
+                var companyDetailsModel = await _apiRequestService.GetCompanyDetailsAsync(companyTin);
+                companyDetailsList.Add(companyDetailsModel ?? new Company());
             }
 
             // Create the CompanyIndex view model
@@ -77,28 +65,19 @@ namespace DeliveryMonitoring.Controllers
         }
 
         
-        [HttpGet("/Company/{companyTins}")]
-        public async Task<IActionResult> Details(string companyTins)
+        [HttpGet("/Company/{companyTin}")]
+        public async Task<IActionResult> Details(string companyTin)
         {
-            var _client = _httpClientFactory.CreateClient("Delivery");
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            if (string.IsNullOrWhiteSpace(companyTin))
+            var currentCompanyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            if (string.IsNullOrWhiteSpace(currentCompanyTin))
             {
                 return RedirectToAction("Logout", "Login");
             }
-            else if (companyTin != "0076217301" && companyTins!=companyTin) { return RedirectToAction("index", "company"); }
-            Company? company = null;
+            else if (currentCompanyTin != "0076217301" && currentCompanyTin != companyTin) { return RedirectToAction("index", "company"); }
 
             try
             {
-                HttpResponseMessage response = await _client.GetAsync($"{_client.BaseAddress}/companies/{companyTins}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    string data = await response.Content.ReadAsStringAsync();
-                    company = !string.IsNullOrEmpty(data) ? JsonConvert.DeserializeObject<Company>(data) : null;
-                }
-
+                var company = await _apiRequestService.GetCompanyDetailsAsync(companyTin);
                 if (company == null )
                 {
                     // Return a view indicating that company details are not found

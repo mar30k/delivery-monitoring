@@ -23,18 +23,10 @@
                         <div class="d-flex align-items-center gap-4 flex-wrap">
                             <div class="text-center">
                                 <h1 class="mb-0 fw-bold text-primary" id="totalDrivers">
-                                    @(Model?.Drivers?.Count ?? 0)
-                                </h1>
-                                <small class="text-black">Total</small>
-                            </div>
-
-                            <div class="text-center">
-                                <h5 class="mb-0 text-info" id="activeDrivers">
                                     @(Model?.Drivers?.Count(x => x.IsDisabled != true) ?? 0)
-                                </h5>
-                                <small class="text-muted">Active</small>
-                            </div>
-
+                                </h1>
+                                <small class="text-black">Total Active</small>
+                            </div>                            
                             <div class="text-center">
                                 <h5 class="mb-0 text-success" id="readyDrivers">
                                     @(Model?.Drivers?.Count(x => x.Status?.ToLower() == "ready") ?? 0)

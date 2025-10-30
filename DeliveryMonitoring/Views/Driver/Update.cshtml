@@ -115,9 +115,7 @@
     // Trigger validation immediately on page load
     toggleSaveButton();
 
-    // Attach the click event handler to the saveButton
     document.getElementById("saveButton").addEventListener("click", function () {
-        // Continue with your existing code...
         var formData = {
             companyTin: document.getElementById("companyTin").value,
             firstName: document.getElementById("firstName").value,
@@ -125,25 +123,25 @@
             isDisabled: document.querySelector('input[name="isDisabled"]:checked').value === "true"
         };
 
-        // Send a PATCH request using fetch API
         fetch('@Url.Action("Update", "Driver", new { phoneNumber = Model.phoneNumber })', {
             method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
-        }).then(function (response) {
+        })
+        .then(response => {
             if (response.ok) {
-                // Successfully updated, redirect to details page
                 $('#successModal').modal('show');
-                setTimeout(function () {
+                setTimeout(() => {
                     $('#successModal').modal('hide');
                     window.location.href = '@Url.Action("Index", "Driver")';
                 }, 2000);
+            } else {
+                return response.text().then(text => { throw new Error(text) });
             }
-        }).catch(function (error) {
-            // Handle fetch error
+        })
+        .catch(error => {
             console.error('Fetch Error:', error);
+            alert("Failed to update driver: " + error.message);
         });
     });
 </script>

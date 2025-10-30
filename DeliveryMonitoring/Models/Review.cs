@@ -4,7 +4,8 @@
     {
         public int? Count { get; set; }
         public decimal Rating { get; set; }
-       public List<Reviews>? Reviews { get; set; }
+        public List<Reviews>? Reviews { get; set; }
+        public Driver? DriveInfo { get; set; }
     }
 
     public class Reviews

@@ -1,5 +1,6 @@
 ﻿using CNET_ERP_V7.WebConstants;
 using DeliveryMonitoring.Models;
+using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -9,19 +10,19 @@ namespace DeliveryMonitoring.Controllers
     [Authorize]
     public class SupervisorsController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public SupervisorsController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+        private readonly IApiRequestService _apiRequestService;
+        public SupervisorsController(
+            IHttpContextAccessor httpContextAccessor,
+            IApiRequestService apiRequestService)
         {
-            _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
+            _apiRequestService = apiRequestService;
         }
         [Route("/supervisors")]
         public async Task<IActionResult>Index()
         {
-            var _client = _httpClientFactory.CreateClient("Delivery");
-            var _V7client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
+
             List<OrderDetail>? orders = new();
             List<SupervisorsDTO>? superVisors = new();
             HulubejeResponse<List<CompletedOrders>>? completedOrders = new();
@@ -31,30 +32,12 @@ namespace DeliveryMonitoring.Controllers
                 return RedirectToAction("Logout", "Login");
             }
 
-            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + $"/orderRequests?companyTin={companyTin}");
-            if (response.IsSuccessStatusCode)
+            orders = await _apiRequestService.GetOrderRequestsAsync();
+            if ( companyTin== "0076217301" )
             {
-                string data = await response.Content.ReadAsStringAsync();
-                orders = JsonConvert.DeserializeObject<List<OrderDetail>>(data);
-            }
-            if( companyTin== "0076217301" )
-            {
-                HttpResponseMessage getsupervisors = await _V7client.GetAsync(_V7client.BaseAddress + "auth/getsupervisors");
+                superVisors = await _apiRequestService.GetSupervisorsAsync();
+                completedOrders = await _apiRequestService.GetCompletedOrdersAsync();
 
-
-                if (getsupervisors.IsSuccessStatusCode)
-                {
-                    string data = await getsupervisors.Content.ReadAsStringAsync();
-                    superVisors = JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data);
-                }
-                HttpResponseMessage getCompletedOrders = await _V7client.GetAsync(_V7client.BaseAddress + "voucher/getcompletedorders");
-
-
-                if (getCompletedOrders.IsSuccessStatusCode)
-                {
-                    string data = await getCompletedOrders.Content.ReadAsStringAsync();
-                    completedOrders = JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(data);
-                }
                 foreach (var supervisor in superVisors ?? new List<SupervisorsDTO>())
                 {
                     supervisor.TotalSupervisedOrders = completedOrders?.Data?.Count(x => x.SupervisorPhoneNumber == supervisor.UserName) ?? 0;
