@@ -1,4 +1,5 @@
 ﻿using CNET_ERP_V7.WebConstants;
+using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -56,7 +57,7 @@ namespace DeliveryMonitoring.Controllers
                 return BadRequest("Invalid type parameter. Use takeaway, delivery, or dinein.");
 
             var response = type?.ToLower()== "delivery" ? await _apiRequestService.GetCompletedOrdersAsync() 
-                : await _apiRequestService.GetOrdersByTypeAsync(type?.ToLower() == "takeaway" ? 2076 : 3203);
+                : await _apiRequestService.GetOrdersByTypeAsync(type?.ToLower() == "takeaway" ? (int)DeliveryOrderTypes.PickUpAtBranch : (int)DeliveryOrderTypes.InHouseDining);
 
             var count = response.Data?.Count(x => x.RequestCreatedAt.Date == today) ?? 0;
             var total = response.Data?.Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;

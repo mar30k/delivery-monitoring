@@ -1,5 +1,6 @@
 ﻿using Bogus.DataSets;
 using CNET_ERP_V7.WebConstants;
+using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -28,11 +29,11 @@ namespace DeliveryMonitoring.Controllers
             // Choose correct endpoint based on order type
             if (t.ToLower() == "dinein")
             {
-				completedResult = await _apiRequest.GetOrdersByTypeAsync(3203);
+				completedResult = await _apiRequest.GetOrdersByTypeAsync((int)DeliveryOrderTypes.InHouseDining);
             }
             else if (t.ToLower() == "takeaway")
             {
-				completedResult = await _apiRequest.GetOrdersByTypeAsync(2076);
+				completedResult = await _apiRequest.GetOrdersByTypeAsync((int)DeliveryOrderTypes.PickUpAtBranch);
             }
             else
             {

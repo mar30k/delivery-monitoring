@@ -25,5 +25,27 @@
         public string? BranchName { get; set; }
         public int TotalConsigneeCount { get; set; }
     }
+    public class DriverSummary : Summary
+    {
+        public string? DriverPhoneNumber { get; set; }
+        public string? Name { get; set; }
+        public double TotalDistance { get; set; }
+        public double Tip { get; set; }
+        public double AverageRating { get; set; }
+        public double TotalTimeDeviation { get; set; }
+        public string? MostOrdersDate { get; set; } // e.g., "Mon Nov 01, 2025"
+        public int MostOrdersCount { get; set; }
+        public int TotalConsigneeCount { get; set; }
+        public int TotalMerchantCount { get; set; }
+    }
+
+    public class SupervisorSummary : Summary
+    {
+        public string? SupervisorPhoneNumber { get; set; }
+        public string? SupervisorName { get; set; }
+        public string? PurposeSummary { get; set; } // Could be HTML or structured string
+        public int TotalConsigneeCount { get; set; }
+        public int TotalMerchantCount { get; set; }
+    }
 
 }

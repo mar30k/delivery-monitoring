@@ -1,7 +1,8 @@
 ﻿using CNET_ERP_V7.WebConstants;
+using DeliveryMonitoring.Constants;
+using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
-using DeliveryMonitoring.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
@@ -14,6 +15,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly IApiRequestService _apiRequestService;
         private string CompanyTin =>
         _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie] ?? "";
+        private const string AdminCompanyTin = "0076217301";
         public SummaryController( IHttpContextAccessor httpContextAccessor, IApiRequestService apiRequest)
         {
             _httpContextAccessor = httpContextAccessor;
@@ -27,11 +29,11 @@ namespace DeliveryMonitoring.Controllers
         }
 
         [HttpPost("/summary/data")]
-        public async Task<IActionResult> SummaryData(string type, DateTime? startDate, DateTime? endDate, bool isClear)
+        public async Task<IActionResult> SummaryData(SummaryType type, DateTime? startDate, DateTime? endDate, bool isClear)
         {
-            switch (type?.ToLower())
+            switch (type)
             {
-                case "merchant":
+                case SummaryType.Merchant:
                     var merchantSummaries = await BuildSummaryReport(
                         c => c.BranchCode,
                         (merchant, allOrdersByType) =>
@@ -51,9 +53,9 @@ namespace DeliveryMonitoring.Controllers
                         startDate, endDate, isClear
                     );
                     return Json(new { data = merchantSummaries });
-                case "driver":
+                case SummaryType.Driver:
                     var availableDrivers = await _apiRequestService.GetAvailableDriversAsync();
-                    var ordersResult = await FetchCompletedOrders(CompanyTin, 0);
+                    var ordersResult = FilterOrdersByCompany(await _apiRequestService.GetCompletedOrdersAsync(), CompanyTin);
 
                     if (ordersResult?.Data == null || availableDrivers == null)
                         return Json(new { data = new List<object>() });
@@ -96,9 +98,9 @@ namespace DeliveryMonitoring.Controllers
                                 .ThenBy(x => x.Date) // optional: earliest if tied
                                 .FirstOrDefault();
 
-                            return new
+                            return new DriverSummary
                             {
-                                first?.DriverPhoneNumber,
+                                DriverPhoneNumber = first?.DriverPhoneNumber,
                                 Name = driver?.FirstName ?? "N/A",
                                 TotalDistance = group.Sum(o => o.Distance),
                                 Tip = group.Sum(o => o.Tip),
@@ -112,8 +114,8 @@ namespace DeliveryMonitoring.Controllers
                                     .Select(o => new { o.Tin, o.BranchCode, o.CompanyCode })
                                     .Distinct()
                                     .Count(),
-                                averageRating,
-                                totalTimeDeviation,
+                                AverageRating = averageRating,
+                                TotalTimeDeviation = totalTimeDeviation,
                                 // 🔹 New fields:
                                 MostOrdersDate = topOrderDate?.Date.ToString("ddd MM dd, yyyy"),
                                 MostOrdersCount = topOrderDate?.Count ?? 0
@@ -122,10 +124,10 @@ namespace DeliveryMonitoring.Controllers
                         .ToList();
 
                     return Json(new { data = driverSummary });
-                case "supervisor":
-                    if (CompanyTin != "0076217301")
+                case SummaryType.Supervisor:
+                    if (CompanyTin != AdminCompanyTin)
                         return Json(new { data = new List<object>() });
-                    var orderResult = await FetchCompletedOrders(CompanyTin, 0);
+                    var orderResult = FilterOrdersByCompany(await _apiRequestService.GetCompletedOrdersAsync(), CompanyTin);
 
                     if (orderResult?.Data == null )
                         return Json(new { data = new List<object>() });
@@ -139,56 +141,8 @@ namespace DeliveryMonitoring.Controllers
                         ).ToList();
                     }
 
-                    var categoryColors = new Dictionary<string, string>
-                    {
-                        { "Good", "green" },
-                        { "Very Critical", "red" },
-                        { "Restaurant Related", "purple" },
-                        { "Vehicle Related", "darkred" },
-                        { "Customer Related", "orange" },
-                        { "System Error", "blue" },
-                        { "Other", "gray" }
-                    };
-
-                    var purposeCategories = new Dictionary<string, string>
-                    {
-                        // Good
-                        { "Successful Delivery", "Good" },
-                        { "Successful Pickup", "Good" },
-                        { "Successful Dining", "Good" },
-
-                        // Customer Related
-                        { "Ordered By Mistake", "Customer Related" },
-                        { "Incorrect Delivery Address", "Customer Related" },
-                        { "Incorrectly Marked As Delivered", "Customer Related" },
-                        { "Address Out Of Range", "Customer Related" },
-                        { "Wrong Order Placed", "Customer Related" },
-                        { "Customer Unreachable", "Customer Related" },
-                        
-
-                        // Restaurant Related
-                        { "Item Out Of Stock", "Restaurant Related" },
-                        { "Long Preparation Time", "Restaurant Related" },
-                        { "Order Declined By Restaurant", "Restaurant Related" },
-                        { "Restaurant Closed", "Restaurant Related" },
-                        { "Special Request Not Possible", "Restaurant Related" },
-
-                        // Vehicle Related
-                        { "Traffic Or Road Blockage", "Vehicle Related" },
-                        { "Weather Conditions", "Vehicle Related" },
-                        { "Vehicle Accident", "Vehicle Related" },
-                        { "Vehicle Malfunction", "Vehicle Related" },
-                        { "Vehicle Out of Charge or Fuel", "Vehicle Related" },
-                        { "Personal Emergency", "Customer Related" },
-
-                        // System Error
-                        { "Duplicate Order", "System Error" }, // If system caused duplicates
-                       
-
-                        // Very Critical
-                        { "Robbery", "Very Critical" },
-                        { "Delayed Delivery", "Very Critical" }
-                    };
+                    var purposeCategories = OrderCategoryMappings.PurposeCategories;
+                    var categoryColors = OrderCategoryMappings.CategoryColors;
 
                     var supervisorSummary = orderResult.Data
                         .Where(o => !string.IsNullOrWhiteSpace(o.SupervisorPhoneNumber))
@@ -225,19 +179,19 @@ namespace DeliveryMonitoring.Controllers
                             }
 
 
-                            return new
+                            return new SupervisorSummary
                             {
-                                first?.SupervisorName,
-                                first?.SupervisorPhoneNumber,
+                                SupervisorName = first?.SupervisorName,
+                                SupervisorPhoneNumber = first?.SupervisorPhoneNumber,
                                 TotalDeliveryOrders = group.Count(),
-                                purposeSummary = string.IsNullOrEmpty(purposeSummary) ? "N/A" : purposeSummary,
+                                PurposeSummary = string.IsNullOrEmpty(purposeSummary) ? "N/A" : purposeSummary,
                                 DeliveryAmount = Math.Round(group.Sum(o=> o.TotalAmount), 2),
-                                totalConsigneeCount,
-                                totalMerchantCount
+                                TotalConsigneeCount =  totalConsigneeCount,
+                                TotalMerchantCount = totalMerchantCount
                             };
                         }).ToList();
                     return Json(new { data = supervisorSummary });
-                case "consignee":
+                case SummaryType.Consignee:
                 default:
                     var consigneeSummaries = await BuildSummaryReport(
                         c => c.PhoneNumber ?? string.Empty,
@@ -261,24 +215,24 @@ namespace DeliveryMonitoring.Controllers
         }
 
 
-        public async Task<CompletedOrdersViewModel> CompletedOrdersViewModel(
+        public async Task<CompletedOrdersViewModel> CompletedOrdersViewModelAsync(
             string companyTin,
             DateTime startDate,
             DateTime endDate,
             bool isClear = false)
         {
-           
-            var deliveryTask = FetchCompletedOrders(companyTin, 0);
-            var dineInTask = FetchCompletedOrders(companyTin,  3203);
-            var takeAwayTask = FetchCompletedOrders(companyTin, 2076);
+            // Fetch and filter by company
+            var deliveryTask = _apiRequestService.GetCompletedOrdersAsync();
+            var dineInTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderTypes.InHouseDining);
+            var takeAwayTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderTypes.PickUpAtBranch);
 
             await Task.WhenAll(deliveryTask, dineInTask, takeAwayTask);
 
-            var deliveryResponse = await deliveryTask;
-            var dineInResponse = await dineInTask;
-            var takeAwayResponse = await takeAwayTask;
+            var deliveryResponse = FilterOrdersByCompany(await deliveryTask, companyTin);
+            var dineInResponse = FilterOrdersByCompany(await dineInTask, companyTin);
+            var takeAwayResponse = FilterOrdersByCompany(await takeAwayTask, companyTin);
 
-            // Helper to safely filter even if response or Data is null
+            // Local helper for date filtering
             HulubejeResponse<List<CompletedOrders>> FilterByDate(HulubejeResponse<List<CompletedOrders>>? response)
             {
                 if (response == null)
@@ -290,15 +244,17 @@ namespace DeliveryMonitoring.Controllers
                         ErrorMessages = new List<string> { "Response was null" }
                     };
                 }
+
                 var filteredData = response.Data ?? new List<CompletedOrders>();
+
                 if (!isClear)
                 {
                     filteredData = filteredData
-                                .Where(o => o.RequestCreatedAt.Date >= startDate.Date &&
-                                            o.RequestCreatedAt.Date <= endDate.Date)
-                                .ToList()
-                            ?? new List<CompletedOrders>();
+                        .Where(o => o.RequestCreatedAt.Date >= startDate.Date &&
+                                    o.RequestCreatedAt.Date <= endDate.Date)
+                        .ToList();
                 }
+
                 return new HulubejeResponse<List<CompletedOrders>>
                 {
                     IsSuccessful = response.IsSuccessful,
@@ -328,7 +284,7 @@ namespace DeliveryMonitoring.Controllers
             var fromDate = startDate ?? DateTime.Now.Date;
             var toDate = endDate ?? DateTime.Now.Date;
 
-            var allOrdersByType = await CompletedOrdersViewModel(
+            var allOrdersByType = await CompletedOrdersViewModelAsync(
                 CompanyTin ?? "",
                 fromDate,
                 toDate,
@@ -368,17 +324,23 @@ namespace DeliveryMonitoring.Controllers
                 .ToList()!;
         }
 
-        private async Task<HulubejeResponse<List<CompletedOrders>>?> FetchCompletedOrders(string companyTin, int type)
+        private static HulubejeResponse<List<CompletedOrders>>? FilterOrdersByCompany(
+            HulubejeResponse<List<CompletedOrders>>? completedResult,
+            string companyTin)
         {
             try
             {
-                
-                var completedResult = type != 0?  await _apiRequestService.GetOrdersByTypeAsync(type) : await _apiRequestService.GetCompletedOrdersAsync();
-                if (!string.IsNullOrWhiteSpace(companyTin) && companyTin != "0076217301")
+                if (completedResult == null)
+                    return null;
+
+                // Apply company filter if the TIN is provided and not the default one
+                if (!string.IsNullOrWhiteSpace(companyTin) && companyTin != AdminCompanyTin)
                 {
-                    if (completedResult != null)
-                        completedResult.Data = completedResult.Data?.Where(order => order.Tin == companyTin).ToList();
+                    completedResult.Data = completedResult.Data?
+                        .Where(order => order.Tin == companyTin)
+                        .ToList();
                 }
+
                 return completedResult;
             }
             catch (Exception)
@@ -386,5 +348,6 @@ namespace DeliveryMonitoring.Controllers
                 return null;
             }
         }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using CNET_ERP_V7.WebConstants;
+using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -87,7 +88,7 @@ namespace DeliveryMonitoring.Controllers
 
         [HttpGet("/getordersbytype")]
         public async Task<IActionResult> GetOrdersByType(
-            [FromQuery] string type,
+            [FromQuery] int type,
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate,
             [FromQuery] bool isClear = false)
@@ -95,7 +96,7 @@ namespace DeliveryMonitoring.Controllers
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
             // Fetch data from API
-            var getOrdersByTypeData = await _apiRequestService.GetOrdersByTypeAsync(int.TryParse(type, out var intType) ? intType : 0);
+            var getOrdersByTypeData = await _apiRequestService.GetOrdersByTypeAsync(type);
             if (getOrdersByTypeData == null || getOrdersByTypeData.Data == null)
                 return NotFound("Failed to retrieve or parse completed orders.");
 
@@ -119,7 +120,7 @@ namespace DeliveryMonitoring.Controllers
             foreach (var item in getOrdersByTypeData.Data)
             {
                 item.RequestCreatedAtString = item.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm tt");
-                item.TableId = type == "2076" ? "takeAwayTable" : "dineInTable";
+                item.TableId = type == (int)DeliveryOrderTypes.PickUpAtBranch ? "takeAwayTable" : "dineInTable";
                 // Default supervisor name
                 string supervisorName = "N/A";
 
@@ -145,12 +146,19 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> CompletedOrderDetail(string voucher ,string type = "")
         {
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            int intType = 0;
-            if (type == "takeAwayTable" || type == "dineInTable")
+
+            DeliveryOrderTypes orderType = DeliveryOrderTypes.DeliveryToLocation;
+
+            if (type is "takeAwayTable" or "dineInTable")
             {
-                intType = type == "dineInTable" ? 3203 : 2076;
+                orderType = type == "dineInTable"
+                    ? DeliveryOrderTypes.InHouseDining
+                    : DeliveryOrderTypes.PickUpAtBranch;
             }
-            var result = intType == 0 ? await _apiRequestService.GetCompletedOrdersAsync() : await _apiRequestService.GetOrdersByTypeAsync(intType);
+
+            var result = orderType == DeliveryOrderTypes.DeliveryToLocation
+                ? await _apiRequestService.GetCompletedOrdersAsync()
+                : await _apiRequestService.GetOrdersByTypeAsync((int)orderType);
             if (result == null)
             {
                 TempData["Message"] = $"Unable to fetch details of Order: {voucher}.";

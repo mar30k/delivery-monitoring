@@ -1,4 +1,12 @@
-﻿var js = jQuery.noConflict(true);
+﻿// Usage
+const DeliveryOrderTypes = {
+    PickUpAtBranch: 2076,
+    DeliveryToLocation: 2077,
+    ScheduledPickUp: 2078,
+    ScheduledDeliveryToLocation: 2079,
+    InHouseDining: 3203
+};
+var js = jQuery.noConflict(true);
 var dineInTable, takeAwayTable, tablelist;
 var tableDateRanges = {
     dineInTable: { start: moment().startOf('day'), end: moment().endOf('day') },
@@ -6,6 +14,8 @@ var tableDateRanges = {
     tablelist: { start: moment().startOf('day'), end: moment().endOf('day') }
 };
 var isClear = false;
+var takeAwayOrderType = DeliveryOrderTypes.PickUpAtBranch; // 2076
+var dineInOrderType = DeliveryOrderTypes.InHouseDining; // 2076
 
 var dateFilterMappings = [
     { id: "dineInDateRange", tableName: "dineInTable" },
@@ -160,7 +170,7 @@ js(() => {
         "#dineInTable",
         "#dineInDateRange",
         dineInAndTakeawayColumns,
-        "/getordersbytype?type=3203",
+        `/getordersbytype?type=${dineInOrderType}`,
         "No dine-in orders available.",
         7,
         [0, 1, 2, 4, 7, 8, 9],
@@ -169,12 +179,12 @@ js(() => {
             { index: 2, name: 'Supervisor' }
         ]
     );
-
+    
     takeAwayTable = initOrderTable(
         "#takeAwayTable",
         "#takeAwayDateRange",
         dineInAndTakeawayColumns,
-        "/getordersbytype?type=2076",
+        `/getordersbytype?type=${takeAwayOrderType}`,
         "No takeaway orders available.",
         7,
         [0, 1, 2, 4, 7, 8, 9],
@@ -630,210 +640,3 @@ setInterval(() => {
     if (takeAwayTable) takeAwayTable.ajax.reload(null, false);
     if (tablelist) tablelist.ajax.reload(null, false);
 }, 60000)
-
-//setInterval(fetchDeliveryOrders, 30000); // every 30 seconds
-//setInterval(()=> fetchOrdersByType(2076), 30000); // every 30 seconds
-//setInterval(()=> fetchOrdersByType(3203), 30000); // every 30 seconds
-
-async function fetchDeliveryOrders() {
-    try {
-        const response = await fetch('/getcompletedorders');
-        if (!response.ok) {
-            console.error("Failed to fetch completed orders");
-            return;
-        }
-
-        const result = await response.json();
-        const data = result.data || [];
-        let currentPage = tablelist.page.info().page;
-        const tbody = document.querySelector('#tablelist tbody');
-        tbody.innerHTML = ''; // Clear old rows
-        data.forEach(order => {
-            const requestCreatedAt = order.requestCreatedAtString || "N/A";
-            const purposeKey = Object.entries(purposeOptions).find(([key, val]) => val === order.purpose)?.[0];
-            const detailUrl = `orderDetail?` + new URLSearchParams({
-                voucher: order.voucherCode,
-            }).toString();
-            const reviewButton = order.purpose
-                ? `<button class="btn btn-outline-secondary btn-sm"
-                            data-note="${order.note ?? ''}"
-                            data-purpose="${order.purpose ?? ''}"
-                            data-purpose-key="${purposeKey}"
-                            data-voucher-code="${order.voucherCode ?? ''}"
-                            data-customer-phone="${order.phoneNumber ?? ''}"
-                            data-customer-review="${order.review ?? ''}"
-                            data-customer-rating="${order.rating ?? ''}"
-                            data-phone-number="${order.driverPhoneNumber ?? ''}"
-                            onclick="showDetailsModal(this)">Show</button>`
-                : `<button class="btn btn-outline-secondary btn-sm"
-                            data-voucher-code="${order.voucherCode ?? ''}"
-                            data-phone-number="${order.driverPhoneNumber ?? ''}"
-                            data-customer-phone="${order.phoneNumber ?? ''}" 
-                            data-customer-review="${order.review ?? ''}"
-                            data-customer-rating="${order.rating ?? ''}"
-                            onclick="showReviewModal(this)">Review</button>`;
-
-            const activityButton = `<button class="btn btn-outline-secondary activityBtn btn-sm"
-                                      data-voucher="${order.voucherCode ?? ''}"
-                                      data-company-code="${order.companyCode}"
-                                      onclick="showActivity(this)"
-                                      >
-                                      Show
-                                    </button>`;
-
-            const supervisorName = isRedCloud ? `${order.supervisorName || 'N/A'}` : '<p class="text-muted mb-0">N/A</p>';
-            const reviews = isRedCloud ? `${reviewButton}` : '<p class="text-muted mb-0">N/A</p>';
-            const details = isRedCloud ? `<a id="detailsLink" class="btn btn-outline-secondary activityBtn btn-sm" href="${detailUrl}" target="_blank">Details</a>` : '<p class="text-muted mb-0">N/A</p>';
-            let row = document.createElement('tr');
-            row.setAttribute('data-voucher', order.voucherCode);
-            row.style.fontSize = "13px";
-
-            row.innerHTML = `
-                <td class="text-center">${order.voucherCode || 'N/A'}</td>
-                <td class="text-center">${order.companyName || 'N/A'}</td>
-                <td class="text-center">${order.branchName || 'N/A'}</td>
-                <td class="text-center">${order.firstName || 'N/A'}</td>
-                <td class="text-center">
-                    <div class="d-inline-flex align-items-center gap-1">
-                        <a href="tel:${order.phoneNumber}">${order.phoneNumber || 'N/A'}</a>
-                            ${order.phoneNumber ? `
-                                <a href="#" onclick="copyToClipboard('${order.phoneNumber}')" title="Copy to clipboard" >
-                                    <i class="bi bi-clipboard"></i>
-                                </a>` : ''
-                            }
-                    </div>
-                </td>
-                <td data-order="${order.requestCreatedAt}" data-iso="${requestCreatedAt}" class="text-center">${requestCreatedAt}</td>
-                <td data-order="${order.distance}" class="text-center">${order.distance ?? 'N/A'} K.M</td>
-                <td data-order="${order.duration}" class="text-center">${order.duration ?? 'N/A'} Min</td>
-                <td data-order="${order.eta}" class="text-center">${order.eta ?? 'N/A'} Min</td>
-                <td class="driver-cell text-center">
-                    <div class="d-inline-flex align-items-center gap-1">
-                        <a href="tel:${order.driverPhoneNumber}">${order.driverPhoneNumber || 'N/A'}</a>
-                            ${order.driverPhoneNumber ? `
-                                <a href="#" onclick="copyToClipboard('${order.driverPhoneNumber}')" title="Copy to clipboard" class="text-decoration-none">
-                                    <i class="bi bi-clipboard"></i>
-                                </a>` : ''
-                            }
-                    </div>
-                </td>
-                <td class="text-center">${supervisorName}</td>
-                <td class="text-center">
-                  ${order.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}
-                </td>
-                <td class="text-center">
-                  ${order.tip?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0'}
-                </td>
-                <td class="text-center">${reviews}</td>
-                <td class="text-center">${activityButton}</td>
-                <td class="text-center">
-                    ${details}
-                </td>
-            `;
-
-            tbody.appendChild(row);
-        });
-
-        // Reinitialize DataTable without destroying it
-        tablelist.clear();
-        tablelist.rows.add(js('#tablelist tbody tr'));  // Add the newly updated rows
-        // Redraw the table and retain the current page
-        tablelist.draw();
-        tablelist.page(currentPage).draw(false);
-    } catch (err) {
-        console.error("Error rendering completed orders:", err);
-    }
-}
-async function fetchOrdersByType(type) {
-    try {
-        const response = await fetch(`/getordersbytype?type=${type}`);
-        if (!response.ok) {
-            console.error("Failed to fetch completed orders");
-            return;
-        }
-        var table = type === 2076 ? "takeAwayTable" : "dineInTable";
-        const tableInstance = type === 2076 ? takeAwayTable : dineInTable;  
-
-        const result = await response.json();
-        const data = result.data || [];
-        let currentPage = tableInstance.page.info().page;
-        const tbody = document.querySelector(`#${table} tbody`);
-        tbody.innerHTML = ''; // Clear old rows
-        data.forEach(order => {
-            const requestCreatedAt = order.requestCreatedAtString || "N/A";
-            const purposeKey = Object.entries(purposeOptions).find(([key, val]) => val === order.purpose)?.[0];
-            const detailUrl = `orderDetail?` + new URLSearchParams({
-                voucher: order.voucherCode,
-                type: table,
-            }).toString();
-            const reviewButton = order.note
-                ? `<button class="btn btn-outline-secondary btn-sm"
-                            data-note="${order.note ?? ''}"
-                            data-purpose="${order.purpose ?? ''}"
-                            data-purpose-key="${purposeKey}"
-                            data-voucher-code="${order.voucherCode ?? ''}"
-                            data-customer-phone="${order.phoneNumber ?? ''}"
-                            data-customer-review="${order.review ?? ''}"
-                            data-customer-rating="${order.rating ?? ''}"
-                            data-phone-number="${order.driverPhoneNumber ?? ''}"
-                            onclick="showDetailsModal(this)">Show</button>`
-                : `<button class="btn btn-outline-secondary btn-sm"
-                            data-voucher-code="${order.voucherCode ?? ''}"
-                            data-phone-number="${order.driverPhoneNumber ?? ''}"
-                            data-customer-phone="${order.phoneNumber ?? ''}"
-                            data-customer-review="${order.review ?? ''}"
-                            data-customer-rating="${order.rating ?? ''}"
-                            onclick="showReviewModal(this)">Review</button>`;
-            const activityButton = `<button class="btn btn-outline-secondary activityBtn btn-sm"
-                                      data-voucher="${order.voucherCode ?? ''}"
-                                      data-company-code="${order.companyCode}"
-                                      onclick="showActivity(this)"
-                                      >
-                                      Show
-                                    </button>`;
-            const reviews = isRedCloud ? `${reviewButton}` : '<p class="text-muted mb-0">N/A</p>';
-            const details = isRedCloud ? `<a id="detailsLink" class="btn btn-outline-secondary activityBtn btn-sm" href="${detailUrl}" target="_blank">Details</a>` : '<p class="text-muted mb-0">N/A</p>';
-
-            let row = document.createElement('tr');
-            row.setAttribute('data-voucher', order.voucherCode);
-            row.style.fontSize = "13px";
-
-            row.innerHTML = `
-                <td class="text-center">${order.voucherCode || 'N/A'}</td>
-                <td class="text-center">${order.companyName || 'N/A'}</td>
-                <td class="text-center">${order.branchName || 'N/A'}</td>
-                <td class="text-center">${order.firstName || 'N/A'}</td>
-                <td class="text-center">
-                    <div class="d-inline-flex align-items-center gap-1">
-                        <a href="tel:${order.phoneNumber}">${order.phoneNumber || 'N/A'}</a>
-                            ${order.phoneNumber ? `
-                                <a href="#" onclick="copyToClipboard('${order.phoneNumber}')" title="Copy to clipboard" >
-                                    <i class="bi bi-clipboard"></i>
-                                </a>` : ''
-                }
-                    </div>
-                </td>
-                <td data-order="${order.requestCreatedAt}" data-iso="${requestCreatedAt}" class="text-center">${requestCreatedAt}</td>
-                <td class="text-center">
-                  ${order.totalAmount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}
-                </td>
-                <td class="text-center">${reviews}</td>
-                <td class="text-center">${activityButton}</td>
-                <td class="text-center">
-                    ${details}
-                </td>
-            `;
-
-            tbody.appendChild(row);
-        });
-
-        // Reinitialize DataTable without destroying it
-        tableInstance.clear();
-        tableInstance.rows.add(js(`#${table} tbody tr`));  // Add the newly updated rows
-        // Redraw the table and retain the current page
-        tableInstance.draw();
-        tableInstance.page(currentPage).draw(false);
-    } catch (err) {
-        console.error("Error rendering completed orders:", err);
-    }
-}
