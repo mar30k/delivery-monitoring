@@ -23,8 +23,8 @@
 <!-- Add this line to include the custom CSS -->
 <link rel="stylesheet" href="~/css/homeIndex.css" />
 <div class="bg-light">
-    <div class="container-fluid dashboard-container">
-        <div class="row vh-100 animated-row pt-3 " id="firstRow">
+    <div class="container-fluid">
+        <div class="row pt-3 " id="firstRow">
             <div class="row">
                 <div class="d-flex flex-wrap justify-content-between gap-3">
                     <div class="card flex-grow-1">
@@ -180,7 +180,7 @@
                 </div>
                 <!--The Bar Chart and the Map Ends Here-->
             </div>
-            <div class="row mt-2 d-none">
+            <div class="row mt-2">
                 <!-- Chart 3 -->
                 <div class="col-md-6 mb-3">
                     <div class="card border-1 pb-2">
@@ -231,186 +231,157 @@
     int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrived");
     int arrivedAtBranchOrdersCount = Model.Orders.Count(d => d.Status == "arrivedAtBranch");
     int sosOrdersCount = Model.Orders.Count(d => d.Status == "sos");
-
-        //counts related to completed orders
-        var today = DateTime.Today;
-
-        int deliveryOrdersCount = Model?.CompletedOrders?.Data?
-        .Count(x => x.RequestCreatedAt.Date == today) ?? 0;
-
-        int dineinOrdersCount = Model?.DineInOrders?.Data?
-        .Count(x => x.RequestCreatedAt.Date == today) ?? 0;
-
-        int takeawayOrdersCount = Model?.TakeAwayOrders?.Data?
-        .Count(x => x.RequestCreatedAt.Date == today) ?? 0;
-
-        double deliveryOrdersTotalCount = Model?.CompletedOrders?.Data?
-        .Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
-
-        double dineinOrdersTotalCount = Model?.DineInOrders?.Data?
-        .Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
-
-        double takeawayOrdersTotalCount = Model?.TakeAwayOrders?.Data?
-        .Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
 }
 <div id="toastContainer" class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;"></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-        const completedChart = document.getElementById('completdChart');
-        const completedTotalChart = document.getElementById('completedTotalChart');
-        var completeDataSet = [ @takeawayOrdersCount, @deliveryOrdersCount, @dineinOrdersCount];
-        var completeTotalAmountDataSet = [ @takeawayOrdersTotalCount, @deliveryOrdersTotalCount, @dineinOrdersTotalCount];
+    function loadGoogleMapsAPI(apiKey, callbackName) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=${callbackName}`;
+            script.async = true;
+            script.defer = true;
+
+            script.onload = () => {
+                console.log("Google Maps API loaded successfully");
+                resolve();
+            };
+
+            script.onerror = (err) => {
+                console.error("Failed to load Google Maps API", err);
+                reject(err);
+            };
+
+            document.head.appendChild(script);
+        });
+    }
+
+    // Example usage:
+    loadGoogleMapsAPI("AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ", "initMap")
+        .then(() => {
+            console.log("Map can be initialized now.");
+        })
+        .catch(() => {
+            alert("Failed to load Google Maps. Please try again later.");
+            // Optionally hide map container or show fallback content
+        });
+
     var driverDataSet = [@offlineCount, @readyCount, @acceptedCount, @deliveringCount, @completedCount , @arrivedatbranchCount, @arrivedCount];
     var orderDataSet = [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
                          @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedAtBranchOrdersCount,@arrivedOrdersCount,@sosOrdersCount ];
     var map;
     const driverMarkerMap = new Map();
     $(document).ready(function () {
-            loadMapScript();
-        autoScrollDashboard();
         fetchOrders();
         fetchSupervisors();
         fetchKotStatus();
         setInterval(fetchOrders, 20000);
         setInterval(fetchSupervisors, 60000);
         setInterval(fetchKotStatus, 60000);
+        setInterval(()=>fetchAndUpdateChart(3, "all-at-once"), 60000);
+        fetchAndUpdateChart();
         // playAlertSound();
     });
-    const ctx = document.getElementById('driversChart');
-        const orderChart = document.getElementById('ordersChart');
-        function createDoughnutChart(ctx, label, labels, dataSet, colors, titleText) {
-            return new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-                    labels: labels,
-            datasets: [{
-                        label: label,
-                        data: dataSet,
-                        backgroundColor: colors,
-                hoverOffset: 4
-            }]
-        },
-        options: {
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                    size: 14
+    
+    function createDoughnutChart(ctx, label, labels, dataSet, colors, titleText) {
+        return new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                        labels: labels,
+                datasets: [{
+                            label: label,
+                            data: dataSet,
+                            backgroundColor: colors,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                        size: 14
+                                }
                             }
-                        }
-                    },
-                        title: {
-                        display: true,
-                            text: titleText,
-                        font: {
-                                size: 18
+                        },
+                            title: {
+                            display: true,
+                                text: titleText,
+                            font: {
+                                    size: 18
+                            }
                         }
                     }
                 }
-            }
-    });
-        }
-        const driverChart = createDoughnutChart(
-            ctx,
-            'Drivers',
-            [ 'Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
-            driverDataSet,
-            [
-                '#dc3545',  // Offline
-                '#28a745',     // Ready     
-                'seagreen',    // Accepted
-                'darkorange',  // Delivering
-                '#20c997',     // Completed
-                'coral',       // ArrivedAtBranch
-                '#F7BEA2'      // Arrived
-            ],
-            'Drivers Status'
-        );
-
-        // Completed Orders Chart
-        const completdOrderschart = createDoughnutChart(
-            completedChart,
-            'Orders',
-            ['Takeaway (@takeawayOrdersCount)', 'Delivery (@deliveryOrdersCount)', 'Dine-in (@dineinOrdersCount)'],
-            completeDataSet,
-            [
-                '#17a2b8', // Takeaway
-                '#007bff', // Delivery
-                '#ffc107'  // Dine-in
-            ],
-            'Completed Orders @(DateTime.Today.ToString("yyyy-MM-dd"))'
-        );
-
-
-        // Completed Orders Total Chart
-        const completedOrdersTotalChart = createDoughnutChart(
-            completedTotalChart,
-            'Orders',
-            [
-                'Takeaway (@takeawayOrdersTotalCount.ToString("N2"))',
-                'Delivery (@deliveryOrdersTotalCount.ToString("N2"))',
-                'Dine-in (@dineinOrdersTotalCount.ToString("N2"))'
-            ],
-            completeTotalAmountDataSet,
-            [
-                '#17a2b8', // Takeaway
-                '#007bff', // Delivery
-                '#ffc107'  // Dine-in
-            ],
-            'Completed Orders Total'
-        );
-
-        // Orders Status Chart
-        const ordersStatusChart = createDoughnutChart(
-            orderChart,
-            'Orders',
-            [
-                'Completed',
-                'Requested',
-                'Assigned',
-                'Accepted',
-                'On The Way',
-                'Declined',
-                'Driver Not Found',
-                'ArrivedAtBranch',
-                'Arrived',
-                'sos'
-            ],
-            orderDataSet,
-            [
-                'green',       // Completed
-                'deepskyblue', // Requested
-                'lawngreen',   // Assigned
-                'seagreen',    // Accepted
-                'darkorange',  // On The Way
-                'red',         // Declined
-                'firebrick',   // Driver Not Found
-                'coral',       // ArrivedAtBranch
-                '#F7BEA2',     // Arrived
-                'darkred'      // SOS
-                ],
-            'Orders Status'
-        );
-
-    function loadMapScript(retries = 3, delay = 1000) {
-        fetch('/Map/GetMapData')
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return response.text();
-            })
-            .then(script => {
-                eval(script);
-            })
-            .catch(error => {
-                if (retries > 1) {
-                    console.warn(`Retrying... attempts left: ${retries - 1}`);
-                    setTimeout(() => loadMapScript(retries - 1, delay), delay);
-                } else {
-                    console.error('Error loading Google Maps API after retries:', error);
-                }
-            });
+        });
     }
+
+    const driverChart = createDoughnutChart(
+        document.getElementById('driversChart'),
+        'Drivers',
+        [ 'Offline', 'Ready', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
+        driverDataSet,
+        [
+            '#dc3545',  // Offline
+            '#28a745',     // Ready     
+            'seagreen',    // Accepted
+            'darkorange',  // Delivering
+            '#20c997',     // Completed
+            'coral',       // ArrivedAtBranch
+            '#F7BEA2'      // Arrived
+        ],
+        'Drivers Status'
+    );
+
+    const ordersStatusChart = createDoughnutChart(
+        document.getElementById('ordersChart'),
+        'Orders',
+        [
+            'Completed',
+            'Requested',
+            'Assigned',
+            'Accepted',
+            'On The Way',
+            'Declined',
+            'Driver Not Found',
+            'ArrivedAtBranch',
+            'Arrived',
+            'sos'
+        ],
+        orderDataSet,
+        [
+            'green',       // Completed
+            'deepskyblue', // Requested
+            'lawngreen',   // Assigned
+            'seagreen',    // Accepted
+            'darkorange',  // On The Way
+            'red',         // Declined
+            'firebrick',   // Driver Not Found
+            'coral',       // ArrivedAtBranch
+            '#F7BEA2',     // Arrived
+            'darkred'      // SOS
+            ],
+        'Orders Status'
+    );
+
+    const countChart = createDoughnutChart(
+        document.getElementById('completdChart'),
+        'Orders',
+        ['Takeaway (0)', 'Delivery (0)', 'Dine-in (0)'],
+        [0, 0, 0],
+        ['#17a2b8', '#007bff', '#ffc107'],
+        `Completed Orders ${new Date().toISOString().slice(0, 10)}`
+    );
+
+    const totalChart = createDoughnutChart(
+        document.getElementById('completedTotalChart'),
+        'Orders',
+        ['Takeaway (0)', 'Delivery (0)', 'Dine-in (0)'],
+        [0, 0, 0],
+        ['#17a2b8', '#007bff', '#ffc107'],
+        `Completed Orders Total ${new Date().toISOString().slice(0, 10)}`
+    );
 
     function initMap() {
         // Default center coordinates
@@ -501,25 +472,143 @@
             .catch(error => console.error('Error fetching live location:', error, error.responseText));
     }
 
+    let resumeTimer;
+    let scrollingDown = true;
+    let autoScrollActive = true;
+    let scrollSpeed = 1; // pixels per frame
+    let pauseTime = 3000; // 2 seconds pause at top/bottom
+    let isPaused = false;
 
-    function autoScrollDashboard() {
-        let scrollTargets = $(".dashboard-container .animated-row");
-        if (scrollTargets.length === 0) {
-            console.warn("No scroll targets found.");
-            return;
+    function autoScrollStep() {
+        if (!autoScrollActive) return;
+
+        const scrollElement = document.scrollingElement || document.documentElement;
+        const scrollTop = scrollElement.scrollTop;
+        const scrollHeight = scrollElement.scrollHeight;
+        const clientHeight = scrollElement.clientHeight;
+
+        // Pause logic
+        if (isPaused) return; // skip scrolling while paused
+
+        if (scrollingDown) {
+            if (scrollTop + clientHeight < scrollHeight) {
+                scrollElement.scrollTop = scrollTop + scrollSpeed;
+            } else {
+                // Reached bottom → pause
+                isPaused = true;
+                setTimeout(() => {
+                    scrollingDown = false;
+                    isPaused = false;
+                    requestAnimationFrame(autoScrollStep);
+                }, pauseTime);
+                return; // stop this frame
+            }
+        } else {
+            if (scrollTop > 0) {
+                scrollElement.scrollTop = scrollTop - scrollSpeed;
+            } else {
+                // Reached top → pause
+                isPaused = true;
+                setTimeout(() => {
+                    scrollingDown = true;
+                    isPaused = false;
+                    requestAnimationFrame(autoScrollStep);
+                }, pauseTime);
+                return; // stop this frame
+            }
         }
-        let index = 0;
-        setInterval(function () {
-            index = index % scrollTargets.length;
-            let targetOffset = $(scrollTargets[index]).offset().top;
-            $('html, body').animate({
-                scrollTop: targetOffset
-            }, 3000); // 3000ms = 3 seconds scroll duration
-            index++;
-        }, 15000); // Change section every 15 seconds
+
+        requestAnimationFrame(autoScrollStep);
     }
 
+    window.addEventListener('load', () => {
+        autoScrollStep();
+    });
 
+    // Stop auto-scroll on user interaction
+    ["wheel", "touchstart", "mousedown", "keydown"].forEach(event => {
+        window.addEventListener(event, () => {
+            autoScrollActive = false;
+            clearTimeout(resumeTimer);
+            resumeTimer = setTimeout(() => {
+                autoScrollActive = true;
+                autoScrollStep();
+            }, 10000); // resume after 10s
+        }, false);
+    });
+
+
+    async function fetchAndUpdateChart(maxRetries = 3, updateMode = "all-at-once") {
+        const orderSlices = [
+            { url: '/GetChartData?type=delivery', index: 1, label: 'Delivery' },
+            { url: '/GetChartData?type=takeaway', index: 0, label: 'Takeaway' },
+            { url: '/GetChartData?type=dinein', index: 2, label: 'Dine-in' }
+        ];
+
+        // fetch and update a single slice
+        async function fetchSlice(slice) {
+            try {
+                const response = await fetch(slice.url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+
+                const count = data.count || 0;
+                const total = data.total || 0;
+
+                // update charts immediately if in gradual mode
+                if (updateMode === "gradual") {
+                    updateCharts(slice, count, total);
+                }
+
+                return { slice, count, total, success: true };
+            } catch (err) {
+                console.warn(`Failed to fetch ${slice.label}:`, err);
+                return { slice, success: false };
+            }
+        }
+
+        function updateCharts(slice, count, total) {
+            // Update count chart
+            countChart.data.datasets[0].data[slice.index] = count;
+            countChart.data.labels[slice.index] = `${slice.label} (${count})`;
+
+            // Update total chart
+            totalChart.data.datasets[0].data[slice.index] = total;
+            totalChart.data.labels[slice.index] = `${slice.label} (${total.toFixed(2)})`;
+
+            // Gradual mode updates immediately
+            if (updateMode === "gradual") {
+                countChart.update();
+                totalChart.update();
+            }
+        }
+
+        // retry logic for failed slices
+        async function retryFailed(failed, attempt) {
+            if (!failed.length) return [];
+            console.log(`Retrying ${failed.length} slice(s), attempt ${attempt}...`);
+            await new Promise(r => setTimeout(r, 1000 * attempt));
+            const results = await Promise.all(failed.map(fetchSlice));
+            return results.filter(r => !r.success).map(r => r.slice);
+        }
+
+        // --- Main run ---
+        let results = await Promise.all(orderSlices.map(fetchSlice));
+
+        // retry rounds if any failed
+        let failedSlices = results.filter(r => !r.success).map(r => r.slice);
+        for (let attempt = 2; attempt <= maxRetries && failedSlices.length; attempt++) {
+            failedSlices = await retryFailed(failedSlices, attempt);
+        }
+
+        // All done: final update (for all-at-once mode)
+        if (updateMode === "all-at-once") {
+            results = results.filter(r => r.success);
+            for (const r of results) updateCharts(r.slice, r.count, r.total);
+            countChart.update();
+            totalChart.update();
+        }
+    }
 
     const seenOrders = new Set();
     let isFirstFetch = true;

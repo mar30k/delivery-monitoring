@@ -60,8 +60,32 @@ namespace DeliveryMonitoring.Controllers
                 return View(null);
             }
         }
-        //List of Orders Page -- Ends Here
 
+        [Route("/GetOrders")]
+        public async Task<List<OrderDetail>?> GetOrders()
+        {
+            try
+            {
+                var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+
+                if (string.IsNullOrWhiteSpace(companyTin)) { return new List<OrderDetail>(); }
+
+                var response = await _apiRequestService.GetOrderRequestsAsync();
+                if (response.Count > 0)
+                    response?.ForEach(x => x.CreatedAtString = new DateTimeOffset(DateTime.SpecifyKind(x.CreatedAt.Value, DateTimeKind.Utc))
+                                    .ToOffset(TimeSpan.FromHours(3))
+                                    .ToString("yyyy-MM-dd HH:mm:ss"));
+                if (!string.IsNullOrWhiteSpace(companyTin) && companyTin != "0076217301" && response != null)
+                {
+                    response = response.Where(order => order.DeliveryTin == companyTin).ToList();
+                }
+                return response ?? new List<OrderDetail>();
+            }
+            catch
+            {
+                return new List<OrderDetail>();
+            }
+        }
         //Order Details Page -- Starts Here
         [HttpGet("/Order/{voucherCode}")]
         public async Task<IActionResult> Details(string voucherCode)

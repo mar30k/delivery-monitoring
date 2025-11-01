@@ -2,6 +2,7 @@
 using CNET_V7_Domain.Domain.SecuritySchema;
 using CNET_V7_Domain.Misc;
 using DeliveryMonitoring.Models;
+using DeliveryMonitoring.Services;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -16,84 +17,37 @@ namespace DeliveryMonitoring.Controllers
     public class AuthenticationManager
     {
         private IHttpContextAccessor _httpContextAccessor;
-        private readonly IHttpClientFactory _httpClientFactory;
-
+        private readonly IApiRequestService _apiRequestService;
         private UserDTO _cachedUser;
         public AuthenticationManager(
                 IHttpContextAccessor httpContextAccessor,
-                IHttpClientFactory httpClientFactory
-                )
+                IApiRequestService apiRequestService)
         {
             _httpContextAccessor = httpContextAccessor;
-            _httpClientFactory = httpClientFactory;
+            _apiRequestService = apiRequestService;
         }
 
 
         public async Task<ResponseModel<LoginResponse>> AuthenticateUser(string userName, string password)
         {
-            var apibaseAddress = _httpContextAccessor.HttpContext?.Request.Cookies["apibaseAddress"];
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-
-            var _client = new HttpClient
-            {
-                BaseAddress = new Uri(apibaseAddress)
-            };
-            var _s = new ResponseModel<LoginResponse>();
             if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
             {
-                //return AuthenticationErrorType.IncorrectUserNamePassword;
-                return _s;
+                string message = string.IsNullOrWhiteSpace(userName)
+                    ? (string.IsNullOrWhiteSpace(password) ? "Username and password are required." : "Username is required.")
+                    : "Password is required.";
+
+                return new ResponseModel<LoginResponse>
+                {
+                    Success = false,
+                    Message = message,
+                    Data = new LoginResponse()
+                };
             }
             else
             {
-                var endpoint = "/SysInitialize/authenticate";
-                string queryString = $"?userName={userName}&password={password}&tin={companyTin}";
-                string requestUrl = $"{endpoint}{queryString}";
-
-                HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + requestUrl);
-
-                string responseBody = await response.Content.ReadAsStringAsync();
-                var userValidation = JsonConvert.DeserializeObject<ResponseModel<LoginResponse>>(responseBody);
-
-                if (!response.IsSuccessStatusCode && userValidation!=null)
-                {
-                    return new ResponseModel<LoginResponse>
-                    {
-                        Success = false,
-                        Message = userValidation.Message,
-                        Data = new LoginResponse()
-                    };
-                }
-
-                if (userValidation == null)
-                {
-                    return new ResponseModel<LoginResponse>
-                    {
-                        Success = false,
-                        Message = "Empty or invalid response",
-                        Data = new LoginResponse()
-                    };
-                }
-
-                return userValidation;
+                return  await _apiRequestService.AuthenticateUser(userName, password);
             }
         }
-        public async Task<List<EntityModel>> CheckMyId()
-        {
-            var _client = _httpClientFactory.CreateClient("DeliveryLogin");
-            string requestUrl = $"/Consignee/filter?gslType=1";
-
-            HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + requestUrl);
-            var userValidation = new List<EntityModel>();
-
-            if (response.IsSuccessStatusCode)
-            {
-                string juservalidation = await response.Content.ReadAsStringAsync();
-                userValidation = JsonConvert.DeserializeObject<List<EntityModel>>(juservalidation);
-            }
-            return userValidation ?? new List<EntityModel>();
-        }
-
         public virtual async void SignIn(UserDTO user, bool isPersistent)
         {
             if (user == null)
@@ -154,30 +108,7 @@ namespace DeliveryMonitoring.Controllers
             context.Response.Cookies.Delete(CNET_WebConstantes.IdentificationCookie);
             context.Response.Cookies.Delete("apibaseAddress");
             var user = _httpContextAccessor.HttpContext?.User;
-            _ = await OnlineStatus(false, user?.Identity?.Name);
-        }
-
-        public async Task<bool> OnlineStatus(bool isOnline, string phoneNumber)
-        {
-            var client = _httpClientFactory.CreateClient("CnetApiBaseUrl");
-
-            try
-            {
-                var response = await client.GetAsync($"auth/status?code={phoneNumber}&online={isOnline}");
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                }
-
-                var responseData = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<Boolean>(responseData);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
+            _ = await _apiRequestService.UpdateSupervisorsOnlineStatusAsync(isOnline: false, phoneNumber: user?.Identity?.Name);
         }
 
         public UserDTO? GetUserFromCookie(HttpRequest request)

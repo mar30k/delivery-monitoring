@@ -83,6 +83,7 @@ function updateReviewsDisplay() {
     }
 
     renderPagination(filtered.length);
+    updateHeaderStats(filtered);
 }
 
 // -------------------------

@@ -1,4 +1,6 @@
 ﻿using CNET_ERP_V7.WebConstants;
+using CNET_V7_Domain.Domain.SecuritySchema;
+using CNET_V7_Domain.Misc;
 using DeliveryMonitoring.Models;
 using Newtonsoft.Json;
 using System;
@@ -11,6 +13,8 @@ namespace DeliveryMonitoring.Services
     public class ApiRequestService : IApiRequestService
     {
         #region Fields
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
         private readonly string _getDeviceControl;
         private readonly string _getRouteDetails;
         private readonly string _assignOrderSupervisor;
@@ -19,6 +23,7 @@ namespace DeliveryMonitoring.Services
         private readonly HttpClient _client;
         private readonly HttpClient _deliveryClient;
         private readonly HttpClient _deviceControlClient;
+        private readonly HttpClient _deliveryLoginClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string _getOrderRequests;
         private readonly string _getDrivers;
@@ -34,44 +39,59 @@ namespace DeliveryMonitoring.Services
         private readonly string _getDriverActivityAsync;
         private readonly string _getHistroyDetail;
         private readonly string _saveDeliveryNote;
+        private readonly string _getFilteredCustomers;
+        private readonly string _updateOnlineStatus;
+        private readonly string _authenicateUser;
+        private readonly string _getUserByUserName;
+        private readonly string _getCompletedOrders;
+        private readonly string _getCompletedOrdersByType;
 
         private string CompanyTin => _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie] ?? "";
+        private string ApibaseAddress => _httpContextAccessor.HttpContext?.Request.Cookies["apibaseAddress"] ?? "";
         #endregion
 
         #region Constructor
-        public ApiRequestService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+        public ApiRequestService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
         {
             _client = httpClientFactory.CreateClient("CnetApiBaseUrl");
             _deliveryClient = httpClientFactory.CreateClient("Delivery");
             _deviceControlClient = httpClientFactory.CreateClient("ApiBaseUrl");
+            _deliveryLoginClient = httpClientFactory.CreateClient("DeliveryLogin");
             _httpContextAccessor = httpContextAccessor;
-
-            _getOrderRequests = $"/orderRequests?companyTin={CompanyTin}";
-            _getOrderDetailByVoucher = "/orderRequests/";
+            _httpClientFactory = httpClientFactory;
+            _getOrderRequests = $"orderRequests?companyTin={CompanyTin}";
+            _getOrderDetailByVoucher = "orderRequests/";
             _getDriverActivityAsync = "driveractivity/get?";
             _getHistroyDetail = "voucher/gethistorydetail?";
             _saveDeliveryNote = "delivery/savenote?";
-            _getDriverDetails = "/drivers/";
-            _updateDriverDetails = "/drivers/";
+            _getDriverDetails = "drivers/";
+            _updateDriverDetails = "drivers/";
             _getDriverReviews = "review/get";
-            _getRouteDetails = "/routing/getRouteDetail";
+            _getRouteDetails = "routing/getRouteDetail";
             _getSupervisors = "auth/getsupervisors";
-            _getCompanies = "/companies";
-            _getCompanyDetails = "/companies/";
-            _sendMessage = "/messaging/sendMessage";
+            _getCompanies = "companies";
+            _getCompanyDetails = "companies/";
+            _sendMessage = "messaging/sendMessage";
             _insertActivityLog = "delivery/insertActivityLog";
             _reDispatchDrivers = "driver/dispatch";
-            _getDrivers = CompanyTin == "0076217301" ? "/drivers" : $"/drivers?companyTin={CompanyTin}";
+            _getDrivers = "drivers";
             _getDeviceControl = $"deviceControl";
-            _assignOrderSupervisor = "/orderRequests/assignOrderSupervisor";
-            _updateOrderStatus = "/orderRequests/updateOrderStatus";
+            _assignOrderSupervisor = "orderRequests/assignOrderSupervisor";
+            _updateOrderStatus = "orderRequests/updateOrderStatus";
+            _getFilteredCustomers = "Consignee/filter?";
+            _updateOnlineStatus = "auth/status?";
+            _authenicateUser = "SysInitialize/authenticate?";
+            _getUserByUserName = "User/filter?";
+            _getCompletedOrders = "voucher/getcompletedorders";
+            _getCompletedOrdersByType = "voucher/getordersbytype?";
+            _configuration = configuration;
         }
         #endregion
 
         #region Order Requests
         public async Task<List<OrderDetail>> GetOrderRequestsAsync()
         {
-            var response = await _deliveryClient.GetAsync(_deliveryClient.BaseAddress + _getOrderRequests);
+            var response = await _deliveryClient.GetAsync(_getOrderRequests);
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -82,7 +102,7 @@ namespace DeliveryMonitoring.Services
 
         public async Task<OrderDetail?> GetOrderDetailByVoucher(string voucherNumber)
         {
-            var response = await _deliveryClient.GetAsync($"{_deliveryClient.BaseAddress}{_getOrderDetailByVoucher}{voucherNumber}");
+            var response = await _deliveryClient.GetAsync($"{_getOrderDetailByVoucher}{voucherNumber}");
             if (!response.IsSuccessStatusCode) return null;
 
             var data = await response.Content.ReadAsStringAsync();
@@ -99,7 +119,8 @@ namespace DeliveryMonitoring.Services
         #region Drivers
         public async Task<List<Driver>> GetAvailableDriversAsync()
         {
-            var response = await _deliveryClient.GetAsync(_deliveryClient.BaseAddress + _getDrivers);
+            string endpoint = CompanyTin == "0076217301" ? _getDrivers : $"{_getDrivers}?companyTin={CompanyTin}";
+            var response = await _deliveryClient.GetAsync(endpoint);
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -110,7 +131,7 @@ namespace DeliveryMonitoring.Services
 
         public async Task<T?> GetDriverDetailsByPhoneNumber<T>(string phoneNumber)
         {
-            var response = await _deliveryClient.GetAsync(_deliveryClient.BaseAddress + _getDriverDetails + phoneNumber);
+            var response = await _deliveryClient.GetAsync($" {_getDriverDetails}{phoneNumber}");
             if (!response.IsSuccessStatusCode) return default;
 
             var data = await response.Content.ReadAsStringAsync();
@@ -129,11 +150,8 @@ namespace DeliveryMonitoring.Services
         /// </summary>
         public Task<HulubejeResponse<bool>> UpdateDriverDetailsAsync(UpdateDriverModel driverModel, string phoneNumber)
         {
-            // Construct the endpoint dynamically
-            string endpoint = $"{_updateDriverDetails}{phoneNumber}";
-
             // Use PostAsync<T> helper (could be renamed PatchAsync<T> if needed)
-            return PostAsync<bool>(_deliveryClient, endpoint, driverModel);
+            return PostAsync<bool>(_deliveryClient, $"{_updateDriverDetails}{phoneNumber}", driverModel);
         }
 
         /// <summary>
@@ -141,7 +159,7 @@ namespace DeliveryMonitoring.Services
         /// </summary>
         public Task<HulubejeResponse<bool>> RedispatchDriversAsync(OrderDetail orderDetail)
         {
-            return PostAsync<bool>(_deliveryClient, _reDispatchDrivers, orderDetail);
+            return PostAsync<bool>(_client, _reDispatchDrivers, orderDetail);
         }
 
 
@@ -158,7 +176,7 @@ namespace DeliveryMonitoring.Services
             var json = JsonConvert.SerializeObject(payload);
             using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _client.PostAsync($"{_client.BaseAddress}{_getDriverReviews}", content);
+            var response = await _client.PostAsync(_getDriverReviews, content);
             var responseBody = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
@@ -177,7 +195,7 @@ namespace DeliveryMonitoring.Services
                         $"&lat2={Uri.EscapeDataString(lat2)}&lng2={Uri.EscapeDataString(lng2)}" +
                         $"&profile={Uri.EscapeDataString(profile)}";
 
-            var response = await _deliveryClient.GetAsync(_deliveryClient.BaseAddress + _getRouteDetails + query);
+            var response = await _deliveryClient.GetAsync( $"{_getRouteDetails}{query}");
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -188,7 +206,7 @@ namespace DeliveryMonitoring.Services
 
         public async Task<HulubejeResponse<Activities>?> GetDriverActivityAsync(string companyCode, string voucherCode)
         {
-            var response = await _client.GetAsync(_client.BaseAddress + _getDriverActivityAsync + $"companyCode={companyCode}&voucherCode={voucherCode}");
+            var response = await _client.GetAsync( $"{_getDriverActivityAsync}companyCode={companyCode}&voucherCode={voucherCode}");
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -196,23 +214,12 @@ namespace DeliveryMonitoring.Services
             }
             return null;
         }
-
-        public async Task<HulubejeResponse<LineItemsDetail>> Gethistorydetail(string voucherCode, string companyCode, int industryType = 1992)
-        {
-            var response = await _client.GetAsync(_client.BaseAddress + _getHistroyDetail + $"companyCode={companyCode}&voucherCode={voucherCode}&industryType={industryType}");
-            if (response.IsSuccessStatusCode)
-            {
-                var data = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<HulubejeResponse<LineItemsDetail>>(data) ?? new HulubejeResponse<LineItemsDetail>();
-            }
-            return new HulubejeResponse<LineItemsDetail>();
-        }
         #endregion
 
         #region Supervisors & Companies
         public async Task<List<SupervisorsDTO>> GetSupervisorsAsync()
         {
-            var response = await _client.GetAsync(_client.BaseAddress + _getSupervisors);
+            var response = await _client.GetAsync(_getSupervisors);
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -223,7 +230,7 @@ namespace DeliveryMonitoring.Services
 
         public async Task<Companies> GetCompaniesAsync()
         {
-            var response = await _deliveryClient.GetAsync(_deliveryClient.BaseAddress + _getCompanies);
+            var response = await _deliveryClient.GetAsync(_getCompanies);
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -233,7 +240,7 @@ namespace DeliveryMonitoring.Services
         }
         public async Task<Company?> GetCompanyDetailsAsync(string companyTin)
         {
-            var response = await _deliveryClient.GetAsync(_deliveryClient.BaseAddress + _getCompanyDetails + companyTin);
+            var response = await _deliveryClient.GetAsync($"{_getCompanyDetails}{companyTin}");
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -246,7 +253,7 @@ namespace DeliveryMonitoring.Services
         #region Completed Orders
         public async Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync()
         {
-            var response = await _client.GetAsync("voucher/getcompletedorders");
+            var response = await _client.GetAsync(_getCompletedOrders);
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -258,7 +265,7 @@ namespace DeliveryMonitoring.Services
 
         public async Task<HulubejeResponse<List<CompletedOrders>>> GetOrdersByTypeAsync(int type)
         {
-            var response = await _client.GetAsync($"voucher/getordersbytype?type={type}");
+            var response = await _client.GetAsync($"{_getCompletedOrdersByType}type={type}");
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -267,12 +274,22 @@ namespace DeliveryMonitoring.Services
             }
             return new HulubejeResponse<List<CompletedOrders>>();
         }
+        public async Task<HulubejeResponse<LineItemsDetail>> Gethistorydetail(string voucherCode, string companyCode, int industryType = 1992)
+        {
+            var response = await _client.GetAsync($"{_getHistroyDetail}companyCode={companyCode}&voucherCode={voucherCode}&industryType={industryType}");
+            if (response.IsSuccessStatusCode)
+            {
+                var data = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<HulubejeResponse<LineItemsDetail>>(data) ?? new HulubejeResponse<LineItemsDetail>();
+            }
+            return new HulubejeResponse<LineItemsDetail>();
+        }
         #endregion
 
         #region Device Control
         public async Task<List<DeviceControl>> GetDeviceControlAsync(string date)
         {
-            var response = await _deliveryClient.GetAsync(_deviceControlClient.BaseAddress + _getDeviceControl + $"?StartDate={date}&EndDate={date}");
+            var response = await _deviceControlClient.GetAsync($"{_getDeviceControl}?StartDate={date}&EndDate={date}");
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -333,7 +350,133 @@ namespace DeliveryMonitoring.Services
 
         #endregion
 
-        #region Common
+        #region map
+        public async Task<string> GetGoogleMapsJsAsync()
+        {
+            string googleMapsKey = _configuration["GoogleMapsApiKey"];
+            string apiUrl = $"https://maps.googleapis.com/maps/api/js?key={googleMapsKey}&callback=initMap&libraries=places,geometry&v=weekly";
+
+            using var client = _httpClientFactory.CreateClient();
+            var result = await client.GetStringAsync(apiUrl);
+            return result;
+        }
+
+        #endregion
+
+        #region login and authentication
+        public async Task<List<EntityModel>> GetFilteredConsigneesAsync(string tin)
+        {
+            var response = await _deliveryLoginClient.GetAsync($"{_getFilteredCustomers}Tin={tin}");
+            if (response.IsSuccessStatusCode)
+            {
+                var data = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<List<EntityModel>>(data)
+                       ?? new List<EntityModel>();
+            }
+            return new List<EntityModel>();
+        }
+        public async Task<ResponseModel<LoginResponse>> AuthenticateUser(string phoneNumber, string password)
+        {
+            try
+            {
+                var _client = new HttpClient
+                {
+                    BaseAddress = new Uri(ApibaseAddress)
+                };
+                // Construct the query
+                string queryString = $"userName={Uri.EscapeDataString(phoneNumber)}&password={Uri.EscapeDataString(password)}&tin={Uri.EscapeDataString(CompanyTin)}";
+                string requestUrl = $"{_authenicateUser}{queryString}";
+
+                var response = await _client.GetAsync(requestUrl); // _client already has BaseAddress configured
+                string responseBody = await response.Content.ReadAsStringAsync();
+
+                var userValidation = JsonConvert.DeserializeObject<ResponseModel<LoginResponse>>(responseBody);
+
+                // Handle HTTP error or null response
+                if (!response.IsSuccessStatusCode || userValidation == null)
+                {
+                    return new ResponseModel<LoginResponse>
+                    {
+                        Success = false,
+                        Message = userValidation?.Message ?? "Empty or invalid response",
+                        Data = new LoginResponse()
+                    };
+                }
+
+                return userValidation;
+            }
+            catch (Exception ex)
+            {
+                // Optional: log ex.Message
+                return new ResponseModel<LoginResponse>
+                {
+                    Success = false,
+                    Message = $"An error occurred: {ex.Message}",
+                    Data = new LoginResponse()
+                };
+            }
+        }
+
+        public async Task<HulubejeResponse<bool>> UpdateSupervisorsOnlineStatusAsync(bool isOnline, string phoneNumber)
+        {
+            try
+            {
+                // Build URL for DeliveryLogin API
+                string url = $"{_updateOnlineStatus}code={Uri.EscapeDataString(phoneNumber)}&online={isOnline}";
+
+                var response = await _client.GetAsync(url);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new HulubejeResponse<bool>
+                    {
+                        IsSuccessful = false,
+                        Data = false,
+                        ErrorMessages = new List<string> { $"HTTP {response.StatusCode}: {responseContent}" }
+                    };
+                }
+
+                // Deserialize boolean response
+                bool isUpdated = JsonConvert.DeserializeObject<bool>(responseContent);
+
+                return new HulubejeResponse<bool>
+                {
+                    IsSuccessful = true,
+                    Data = isUpdated
+                };
+            }
+            catch (Exception ex)
+            {
+                return new HulubejeResponse<bool>
+                {
+                    IsSuccessful = false,
+                    Data = false,
+                    ErrorMessages = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        public virtual async Task<UserDTO?> GetUserByUserName(string userName)
+        {
+            var _client = new HttpClient
+            {
+                BaseAddress = new Uri(ApibaseAddress)
+            };
+
+            var response = await _client.GetAsync($"{_getUserByUserName}userName={userName}");
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var juser = await response.Content.ReadAsStringAsync();
+            var usernameUser = JsonConvert.DeserializeObject<List<UserDTO>>(juser);
+
+            return usernameUser != null && usernameUser.Count > 0 ? usernameUser.FirstOrDefault() : null;
+
+        }
+        #endregion
+
+        #region PostAsync<Dynamic Model>
         private static async Task<HulubejeResponse<T>> PostAsync<T>(HttpClient client, string endpoint, object payload)
         {
             try
@@ -341,7 +484,7 @@ namespace DeliveryMonitoring.Services
                 var json = JsonConvert.SerializeObject(payload);
                 using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await client.PostAsync($"{client.BaseAddress}{endpoint}", content);
+                var response = await client.PostAsync(endpoint, content);
 
                 var responseBody = await response.Content.ReadAsStringAsync();
 
@@ -377,5 +520,6 @@ namespace DeliveryMonitoring.Services
             }
         }
         #endregion
+
     }
 }

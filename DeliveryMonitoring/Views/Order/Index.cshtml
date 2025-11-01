@@ -1,5 +1,6 @@
 ﻿@using System.Text.RegularExpressions
 @using System.Net
+@using DeliveryMonitoring.Helpers
 @model OrderViewModel
 
 @{
@@ -105,43 +106,7 @@
                             { "default", "yellow" }
                         };
                         var voucher = "0939977886-111428-646";
-                        var testOrder = new OrderDetail
-                        {
-                            AssignedDriverPhoneNumber = "0912345678",
-                            BranchName = "Main Branch",
-                            CompanyCode = 101,
-                            CompanyName = "Test Company",
-                            CompanyTin = "123456789",
-                            SosReason = "",
-                            Customer = new CustomerDetail
-                            {
-                                FirstName = "John",
-                                PhoneNumber = "0910000000",
-                                GeocodeAddress = "123 Test St",
-                                SpecificAddress = "Apt 5B",
-                                DeviceID = "DEVICE123",
-                                LatLng = new Location
-                                {
-                                    lat = 9.145,
-                                    lng = 40.4897
-                                }
-                            },
-                            DriverAssignedAt = DateTimeOffset.Now.ToUnixTimeMilliseconds(),
-                            IsAssignedAck = false,
-                            IsNoDriversAck = false,
-                            OrderArrivedAckByCustomer = false,
-                            OrderArrivedAckByDriver = false,
-                            RequestCreatedAt = DateTimeOffset.Now.ToUnixTimeMilliseconds(),
-                            RequestCreatedAtIso = DateTime.Now,
-                            Status = "DriverNotFound",
-                            VoucherCode = "0939977886-152027-221",
-                            Platform = "Web",
-                            TargetBranchLocation = new Location
-                            {
-                                lat = 9.034,
-                                lng = 38.746
-                            }
-                        };
+                        var testOrder = GetSampleOrder.CreateSampleOrder();
 
                         var testJsonOrder = System.Text.Json.JsonSerializer.Serialize(testOrder, new System.Text.Json.JsonSerializerOptions
                         {
@@ -276,10 +241,10 @@
                     </tr>
                 </tfoot>
             </table>
-@*             <a class="btn btn-outline-dark btn-sm"
+            @* <a class="btn btn-outline-dark btn-sm"
                data-order='@Html.Raw(testJsonOrder)'
                onclick="openRedispatchModal(this)"
-               id="@testOrder.VoucherCode.ToString()">
+               id="@testOrder.VoucherCode?.ToString()">
                 Redispatch
             </a>  <a class="btn btn-outline-dark btn-sm" onclick="openAssignSupervisorModal('@voucher')">Assign</a> *@
            

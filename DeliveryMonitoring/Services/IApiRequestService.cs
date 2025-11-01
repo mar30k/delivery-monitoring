@@ -1,4 +1,6 @@
-﻿using DeliveryMonitoring.Models;
+﻿using CNET_V7_Domain.Domain.SecuritySchema;
+using CNET_V7_Domain.Misc;
+using DeliveryMonitoring.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -171,6 +173,46 @@ namespace DeliveryMonitoring.Services
         /// </summary>
         /// <param name="request">Log entry data object.</param>
         Task<HulubejeResponse<bool>> InsertActivityLogAsync(object request);
+
+        #endregion
+
+        #region map
+        // Existing methods...
+
+        /// <summary>
+        /// Fetches Google Maps JavaScript API content using the provided API key.
+        /// </summary>
+        Task<string> GetGoogleMapsJsAsync();
+        #endregion
+
+        #region login and authentication
+
+        /// <summary>
+        /// Retrieves filtered consignees based on company TIN.
+        /// </summary>
+        /// <param name="tin">Company TIN</param>
+        Task<List<EntityModel>> GetFilteredConsigneesAsync(string tin);
+
+        /// <summary>
+        /// Updates the online status of a driver.
+        /// </summary>
+        /// <param name="isOnline">True if online, false if offline</param>
+        /// <param name="phoneNumber">Supervisors's phone number</param>
+        Task<HulubejeResponse<bool>> UpdateSupervisorsOnlineStatusAsync(bool isOnline, string phoneNumber);
+
+        /// <summary>
+        /// Authenticates a user with the given phone number and password.
+        /// Returns a response containing login information and status.
+        /// </summary>
+        /// <param name="phoneNumber">The user's phone number used as username.</param>
+        /// <param name="password">The user's password.</param>
+        Task<ResponseModel<LoginResponse>> AuthenticateUser(string phoneNumber, string password);
+
+        /// <summary>
+        /// Retrieves user details based on the provided username (phone number).
+        /// </summary>
+        /// <param name="userName">The user's phone number or username.</param>
+        Task<UserDTO?> GetUserByUserName(string userName);
 
         #endregion
     }

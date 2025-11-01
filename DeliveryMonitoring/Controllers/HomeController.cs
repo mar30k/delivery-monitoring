@@ -15,7 +15,7 @@ namespace DeliveryMonitoring.Controllers
         //HttpClient Setup starts here
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
-        public HomeController(IHttpClientFactory httpClientFactory,
+        public HomeController(
             IHttpContextAccessor httpContextAccessor,
             IApiRequestService apiRequestService)
         {

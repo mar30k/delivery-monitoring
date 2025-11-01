@@ -54,7 +54,7 @@
                 <div class="col-8 d-flex justify-content-center gap-2">
                     <div>
                         <a class="btn btn-success btn-sm" href="/updatedriverinfo/@Model?.PhoneNumber">
-                            <i class="bi bi-pencil-square"></i>&nbsp;Update Driver Info
+                            <i class="bi bi-pencil-square"></i> Update Driver Info
                         </a>
                     </div>
                     <div>
@@ -65,107 +65,126 @@
                 </div>
             </div>
 
-            <div class="row" id="orderDetail">               
-                <div class="col-6">
-                    <img src="@Model?.Detail?.ProfilePicture" alt="" class="half-size-img">
-                    <img src="@Model?.Detail?.IdAttachment" alt="" class="half-size-img">
-                </div>
-                <div class="col-6">
-                    <div class="mb-2">
-                        <span class="fw-bold">Name: </span>
-                        <span>@Model?.FirstName</span>
-                    </div>
-                    @{
-                        var statusColors = StatusInfo.StatusMap;
-                        var statusKey = Model?.Status?.ToLower() ?? "default";
-                        var statusInfo = statusColors.ContainsKey(statusKey)
-                        ? statusColors[statusKey]
-                        : statusColors["default"];
-                        var bgColor = statusInfo.Color;
-                    }
-                    <div class="mb-2">
-                        <span class="fw-bold">Status: </span>
-                        <span id="statusInfo" class="text-white px-2 py-1 rounded" style="background-color: @bgColor;">
-                            @Model?.Status
-                        </span>
-                    </div>
+            <div class="container pb-3">
+                <div class="card shadow-sm">
+                    <div class="row g-0">
+                        <!-- Left Column: Images -->
+                        <div class="col-md-4 text-center p-3 border-end">
+                            <img src="@Model?.Detail?.ProfilePicture" alt="Profile Picture" class="img-fluid rounded mb-2"
+                                 style="cursor: zoom-in;" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="@Model?.Detail?.ProfilePicture">
 
-                    @if ((Orders ?? new List<OrderDetail>()).Any(o => o.AssignedDriverPhoneNumber == @Model?.PhoneNumber))
-                    {
-                        var assignedOrders = (Orders ?? new List<OrderDetail>())
-                        .Where(o => o.AssignedDriverPhoneNumber == @Model?.PhoneNumber).ToList();
-                        <div class="mb-2">
-                            <span class="fw-bold">Orders: </span>
-                            <span>
-                                @foreach (var order in assignedOrders)
-                                {
-                                    <a href="/order/@order.VoucherCode" class="me-2 text-decoration-none" target="_blank">
-                                        @order.VoucherCode
-                                    </a>
-                                }
-                            </span>
+                            <img src="@Model?.Detail?.IdAttachment" alt="ID Attachment" class="img-fluid rounded"
+                                 style="cursor: zoom-in;" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="@Model?.Detail?.IdAttachment">
                         </div>
-                    }
+                        <!-- Modal for Image Zoom -->
+                        <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content bg-transparent border-0">
+                                    <div class="modal-body p-0 text-center position-relative">
+                                        <img id="modalImage" src="" alt="Zoomed Image" class="img-fluid rounded">
 
-                    <div class="mb-2">
-                        <span class="fw-bold">Last updated at: </span>
-                        <span id="lastUpdatedAtInfo">
-                            @(Model?.UpdatedAt != null
-                            ? new DateTimeOffset(DateTime.SpecifyKind(Model.UpdatedAt.Value, DateTimeKind.Utc))
-                            .ToOffset(TimeSpan.FromHours(3))
-                            .ToString("yyyy-MM-dd hh:mm:ss tt")
-                            : "")
-                        </span>
-                    </div>
+                                        <!-- Rotate Icon Button -->
+                                        <button type="button" class="btn btn-light btn-sm position-absolute top-0 end-0 m-2" id="rotateBtn">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="mb-2">
-                        <span class="fw-bold">@Html.DisplayNameFor(model => model.CompanyTin): </span>
-                        <a href="/company/@Model?.CompanyTin">@Html.DisplayFor(model => model.CompanyTin)</a>
-                    </div>
+                        <!-- Right Column: Details -->
+                        <div class="col-md-8 p-3">
+                            <h4 class="mb-3">@Model?.FirstName</h4>
 
-                    <div class="mb-2">
-                        <span class="fw-bold">Phone Number: </span>
-                        <a href="tel:@Model?.PhoneNumber">@Model?.PhoneNumber</a>
-                    </div>
+                            <!-- Status -->
+                            @{
+                                var statusColors = StatusInfo.StatusMap;
+                                var statusKey = Model?.Status?.ToLower() ?? "default";
+                                var statusInfo = statusColors.ContainsKey(statusKey)
+                                ? statusColors[statusKey]
+                                : statusColors["default"];
+                                var bgColor = statusInfo.Color;
+                            }
+                            <p>
+                                <span class="fw-bold">Status: </span>
+                                <span class="text-white px-2 py-1 rounded" style="background-color: @bgColor;">
+                                    @Model?.Status
+                                </span>
+                            </p>
 
-                    <div class="mb-2">
-                        <span class="fw-bold">Plate Number: </span>
-                        <span>@(Model?.Detail?.PlateNumber ?? "N/A")</span>
-                    </div>
+                            <!-- Assigned Orders -->
+                            @if ((Orders ?? new List<OrderDetail>()).Any(o => o.AssignedDriverPhoneNumber == @Model?.PhoneNumber))
+                            {
+                                var assignedOrders = (Orders ?? new List<OrderDetail>())
+                                .Where(o => o.AssignedDriverPhoneNumber == @Model?.PhoneNumber).ToList();
+                                <p>
+                                    <span class="fw-bold">Orders: </span>
+                                    @foreach (var order in assignedOrders)
+                                    {
+                                        <a href="/order/@order.VoucherCode" class="me-2 text-decoration-none" target="_blank">
+                                            @order.VoucherCode
+                                        </a>
+                                    }
+                                </p>
+                            }
 
-                    <div class="mb-2">
-                        <span class="fw-bold">Email: </span>
-                        @if (!string.IsNullOrEmpty(Model?.Detail?.Email))
-                        {
-                            <a href="mailto:@@Model?.Detail?.Email">@Model?.Detail?.Email</a>
-                        }
-                        else
-                        {
-                            <span>N/A</span>
-                        }
-                    </div>
-
-                    <div class="mb-2">
-                        <span class="fw-bold">Gender: </span>
-                        <span>@(Model?.Detail?.Gender ?? "N/A")</span>
-                    </div>
-
-                    <div class="mb-2">
-                        <span class="fw-bold">Number Of Accepted Orders: </span>
-                        <span>@(Model?.NumberOfAcceptedOrders.ToString() ?? "N/A")</span>
-                    </div>
-
-                    <div class="mb-2">
-                        <span class="fw-bold">Number Of Rejected Orders: </span>
-                        <span>@(Model?.NumberOfRejectedOrders.ToString() ?? "N/A")</span>
-                    </div>
-                    <div class="mb-2">
-                        <span class="fw-bold">Number Of Completed Orders:</span>
-                        <span id="completed">Loading...</span>
-                    </div>
-                    <div>
-                        <span class="fw-bold">Traveled Distance: </span>
-                        <span>@(Model?.Detail?.TotalKm != null ? Model?.Detail?.TotalKm?.ToString("0.00") + " km" : "N/A")</span>
+                            <!-- General Info Grid -->
+                            <div class="row">
+                                <div class="col-sm-6 mb-2">
+                                    <span class="fw-bold">Last Updated: </span>
+                                    <span id="lastUpdatedAtInfo">
+                                        @(Model?.UpdatedAt != null
+                                                ? new DateTimeOffset(DateTime.SpecifyKind(Model.UpdatedAt.Value, DateTimeKind.Utc))
+                                                .ToOffset(TimeSpan.FromHours(3))
+                                                .ToString("yyyy-MM-dd hh:mm:ss tt")
+                                                : "")
+                                    </span>
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <span class="fw-bold">Company TIN: </span>
+                                    <a href="/company/@Model?.CompanyTin">@Html.DisplayFor(model => model.CompanyTin)</a>
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <span class="fw-bold">Phone: </span>
+                                    <a href="tel:@Model?.PhoneNumber">@Model?.PhoneNumber</a>
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <span class="fw-bold">Plate Number: </span>
+                                    <span>@(Model?.Detail?.PlateNumber ?? "N/A")</span>
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <span class="fw-bold">Email: </span>
+                                    @if (!string.IsNullOrEmpty(Model?.Detail?.Email))
+                                    {
+                                        <a href="mailto:@Model?.Detail?.Email">@Model?.Detail?.Email</a>
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <span class="fw-bold">Gender: </span>
+                                    <span>@(Model?.Detail?.Gender ?? "N/A")</span>
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <span class="fw-bold">Accepted Orders: </span>
+                                    <span>@(Model?.NumberOfAcceptedOrders.ToString() ?? "N/A")</span>
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <span class="fw-bold">Rejected Orders: </span>
+                                    <span>@(Model?.NumberOfRejectedOrders.ToString() ?? "N/A")</span>
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <span class="fw-bold">Completed Orders: </span>
+                                    <span id="completed">Loading...</span>
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <span class="fw-bold">Traveled Distance: </span>
+                                    <span>@(Model?.Detail?.TotalKm != null ? Model?.Detail?.TotalKm?.ToString("0.00") + " km" : "N/A")</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -176,6 +195,26 @@
     </script>
  *@
     <script>
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        let rotation = 0;
+
+        // Set the clicked image in the modal
+        imageModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // The clicked image
+            const src = button.getAttribute('data-img');
+            modalImage.src = src;
+
+            // Reset rotation when a new image is opened
+            rotation = 0;
+            modalImage.style.transform = `rotate(${rotation}deg)`;
+        });
+
+        // Rotate button click
+        document.getElementById('rotateBtn').addEventListener('click', function () {
+            rotation += 90; // rotate 90 degrees clockwise
+            modalImage.style.transform = `rotate(${rotation}deg)`;
+        });
         let infowindow = null;
         const statusColors = {
             offline: { color: "#dc3545", priority: "1" },  // Bootstrap danger - Offline

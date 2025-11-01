@@ -19,3 +19,9 @@
     pointer-events: auto;
     position: relative;
 }
+html, body {
+    height: 100%;
+}
+.dashboard-container {
+    min-height: 200vh; /* ensure enough height to scroll */
+}

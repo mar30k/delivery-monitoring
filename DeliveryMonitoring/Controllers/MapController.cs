@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DeliveryMonitoring.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -8,23 +9,18 @@ namespace DeliveryMonitoring.Controllers
     [Authorize]
     public class MapController: Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-
-        public MapController(IHttpClientFactory httpClientFactory)
-        {
-            _httpClientFactory = httpClientFactory;
-        }
         
+        private readonly IApiRequestService _apiRequestService;
+        public MapController(IApiRequestService apiRequestService)
+        {
+            _apiRequestService = apiRequestService;
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetMapData()
         {
-            // Replace YOUR_GOOGLE_MAPS_API_KEY with your actual API key
-            string apiKey = "AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ";
-            string apiUrl = "https://maps.googleapis.com/maps/api/js?key=" + apiKey + "&callback=initMap&libraries=places,geometry&v=weekly";
-
-            using var client = _httpClientFactory.CreateClient();
-            var result = await client.GetStringAsync(apiUrl);
-            return Content(result, "application/javascript");
+            var jsContent = await _apiRequestService.GetGoogleMapsJsAsync();
+            return Content(jsContent, "application/javascript");
         }
     }
 }

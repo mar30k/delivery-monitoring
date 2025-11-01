@@ -1,6 +1,7 @@
 ﻿using CNET_ERP_V7.WebConstants;
 using CNET_V7_Domain.Domain.SecuritySchema;
 using DeliveryMonitoring.Models;
+using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -16,18 +17,22 @@ namespace DeliveryMonitoring.Controllers
     public class LoginController : Controller
 
     {
+        private readonly IApiRequestService _apiRequestService;
         private readonly IWebHostEnvironment _appEnvironment;
         private readonly AuthenticationManager _authenticationManager;
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfiguration _configuration;
         public LoginController(AuthenticationManager authenticationManager,
-            IHttpClientFactory httpClientFactory,
-            IHttpContextAccessor httpContextAccessor, IWebHostEnvironment webHostEnvironment)
+            IHttpContextAccessor httpContextAccessor,
+            IWebHostEnvironment webHostEnvironment,
+            IConfiguration configuration,
+            IApiRequestService apiRequestService)
         {
             _authenticationManager = authenticationManager;
-            _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
             _appEnvironment = webHostEnvironment;
+            _configuration = configuration;
+            _apiRequestService = apiRequestService;
         }
         [Route("/login")]
         public async Task<IActionResult> index() 
@@ -60,9 +65,9 @@ namespace DeliveryMonitoring.Controllers
                 var loginResult = await _authenticationManager.AuthenticateUser(model.Username?.Trim(), model.Password);
                 if (loginResult.Success)
                 {
-                    var user = await GetUserByUserName(model.Username?.Trim());
-                    var status = await _authenticationManager.OnlineStatus(true, user.UserName.ToString());
-                    if (!status)
+                    var user = await _apiRequestService.GetUserByUserName(model.Username?.Trim());
+                    var status = await _apiRequestService.UpdateSupervisorsOnlineStatusAsync(isOnline: true, phoneNumber: user.UserName.ToString());
+                    if (!status.IsSuccessful && !status.Data)
                     {
                         ModelState.AddModelError("", "Unable to update online status! Please try again.");
                         return View("Login", model); 
@@ -79,47 +84,22 @@ namespace DeliveryMonitoring.Controllers
 
             return View("Login", model);
         }
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
             _authenticationManager.SignOut();
             return RedirectToAction("index","Login");
-        }
-        public virtual async Task<UserDTO?> GetUserByUserName(string _userName)
-        {
-            var apibaseAddress = _httpContextAccessor.HttpContext?.Request.Cookies["apibaseAddress"];
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-
-            var _client = new HttpClient
-            {
-                BaseAddress = new Uri(apibaseAddress)
-            };
-            UserDTO? _loggedInUser;
-
-            var response = await _client.GetAsync(_client.BaseAddress + "/User/filter?userName=" + _userName);
-            if (!response.IsSuccessStatusCode)
-                return null;
-
-            var juser = await response.Content.ReadAsStringAsync();
-            var usernameUser = JsonConvert.DeserializeObject<List<UserDTO>>(juser);
-
-            _loggedInUser = usernameUser != null && usernameUser.Count > 0 ? usernameUser.FirstOrDefault() : null;
-
-            return _loggedInUser;
-        }
-
-
+        }        
 
         [HttpPost]
-        public async Task<IActionResult> checkMyId([FromBody] VerifyIdModel model)
+        public async Task<IActionResult> CheckMyId([FromBody] VerifyIdModel model)
         {
-            var _client = _httpClientFactory.CreateClient("DeliveryLogin");
             if (ModelState.IsValid)
             {
-                string message = string.Empty;
                 string baseAddress;
+                string message;
                 if (model.myId?.Trim().ToLower() == "0076217301")
                 {
-                    baseAddress = _client.BaseAddress.ToString();
+                    baseAddress = _configuration["DeliveryLogin"];
                     AddCookie(CNET_WebConstantes.IdentificationCookie, "0076217301", TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
                     AddCookie("apibaseAddress", baseAddress, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
                     return Json(new
@@ -130,41 +110,32 @@ namespace DeliveryMonitoring.Controllers
                 }
                 else
                 {
-
-                    string requestUrl = $"/Consignee/filter?Tin={model.myId}";
-
-                    HttpResponseMessage response = await _client.GetAsync(_client.BaseAddress + requestUrl);
-
-                    if (response.IsSuccessStatusCode)
+                    var userValidation = await _apiRequestService.GetFilteredConsigneesAsync(tin: model.myId?.Trim());
+                    if (userValidation?.Count > 0)
                     {
-                        string juservalidation = await response.Content.ReadAsStringAsync();
-                        List<EntityModel>? userValidation = JsonConvert.DeserializeObject<List<EntityModel>>(juservalidation);
-                        if (userValidation?.Count > 0)
+                        if (_appEnvironment.IsDevelopment())
                         {
-                            if (_appEnvironment.IsDevelopment())
-                            {
-                                baseAddress = "http://196.191.244.156:7038/api";  // dev
-                            }
-                            else
-                            {
-                                baseAddress = userValidation.FirstOrDefault()?.BaseUrl + "/api";  // prod
-                            }
-                            AddCookie(CNET_WebConstantes.IdentificationCookie, userValidation?.FirstOrDefault()?.Tin, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
-                            AddCookie("apibaseAddress", baseAddress, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
-                            if (userValidation.FirstOrDefault()?.Tin == model.myId?.Trim())
-                            {
-                                return Json(new
-                                {
-                                    d = true,
-                                    m = "Verified successfuly"
-                                });
-                            }
-                            message = "Invalid identification no.";
+                            baseAddress = "http://196.191.244.156:7038/api/";  // dev
                         }
                         else
                         {
-                            message = "Bad Request at Api.";
+                            baseAddress = userValidation.FirstOrDefault()?.BaseUrl + "/api/";  // prod
                         }
+                        AddCookie(CNET_WebConstantes.IdentificationCookie, userValidation?.FirstOrDefault()?.Tin, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
+                        AddCookie("apibaseAddress", baseAddress, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
+                        if (userValidation.FirstOrDefault()?.Tin == model.myId?.Trim())
+                        {
+                            return Json(new
+                            {
+                                d = true,
+                                m = "Verified successfuly"
+                            });
+                        }
+                        message = "Invalid identification no.";
+                    }
+                    else
+                    {
+                        message = "Bad Request at Api.";
                     }
 
 

@@ -16,7 +16,7 @@ namespace DeliveryMonitoring.Controllers
             _httpContextAccessor = httpContextAccessor;
             _apiRequestService = apiRequestService;
         }
-        [Route("/Analytics")]
+        [Route("/analytics")]
         public async Task<IActionResult> Index()
         {
             var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
@@ -29,9 +29,6 @@ namespace DeliveryMonitoring.Controllers
             Companies company = new();
             List<DeviceControl> deviceControl = new();
             List<SupervisorsDTO> superVisors = new();
-            HulubejeResponse<List<CompletedOrders>> completedOrders = new();
-            HulubejeResponse<List<CompletedOrders>> dineInOders = new();
-            HulubejeResponse<List<CompletedOrders>> takeAwayOrders = new();
             try
             {
                 var startDate = DateTime.Today.ToString("yyyy-MM-dd");
@@ -41,9 +38,6 @@ namespace DeliveryMonitoring.Controllers
                 company = await _apiRequestService.GetCompaniesAsync();
                 superVisors = await _apiRequestService.GetSupervisorsAsync();
                 deviceControl = await _apiRequestService.GetDeviceControlAsync(startDate);
-                takeAwayOrders = await _apiRequestService.GetOrdersByTypeAsync(2076);
-                completedOrders = await _apiRequestService.GetCompletedOrdersAsync();
-                dineInOders = await _apiRequestService.GetOrdersByTypeAsync(3203);
             }
             catch (HttpRequestException)
             {
@@ -71,10 +65,7 @@ namespace DeliveryMonitoring.Controllers
                 Comps = company,
                 CompanyTin = companyTin,
                 DeviceControl = result,
-                Supervisors = superVisors,
-                CompletedOrders = completedOrders,
-                DineInOrders = dineInOders,
-                TakeAwayOrders = takeAwayOrders
+                Supervisors = superVisors
             };
             return View(viewModel);
         }

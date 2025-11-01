@@ -17,7 +17,7 @@ namespace DeliveryMonitoring.Controllers
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
-        public CompletedOrdersController(IHttpClientFactory httpClientFactory,
+        public CompletedOrdersController(
             IApiRequestService apiRequestService,
             IHttpContextAccessor httpContextAccessor,
             AuthenticationManager authenticationManager   )

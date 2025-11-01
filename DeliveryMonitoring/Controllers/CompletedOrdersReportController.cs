@@ -14,7 +14,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly IApiRequestService _apiRequest;
         private string CompanyTin =>
         _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie] ?? "";
-        public CompletedOrdersReportController(IHttpContextAccessor httpContextAccessor, IHttpClientFactory httpClientFactory, IApiRequestService apiRequest)
+        public CompletedOrdersReportController(IHttpContextAccessor httpContextAccessor, IApiRequestService apiRequest)
         {
             _httpContextAccessor = httpContextAccessor;
             _apiRequest = apiRequest;
