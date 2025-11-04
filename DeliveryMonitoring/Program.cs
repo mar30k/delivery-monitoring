@@ -1,4 +1,4 @@
-using CNET_ERP_V7.WebConstants;
+using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
@@ -44,12 +44,13 @@ builder.Services.AddAuthentication(CNET_WebConstantes.CookieScheme)
      .AddCookie(CNET_WebConstantes.CookieScheme, options =>
      {
          options.AccessDeniedPath = "/account/denied";
-         options.LoginPath = "/login";
+         options.LoginPath = "/verifyId";
      });
 builder.Services.AddSession();
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICookieService, CookieService>();
+builder.Services.AddDataProtection();
+builder.Services.AddScoped<ISecureCookieService, SecureCookieService>();
 builder.Services.AddScoped<AuthenticationManager>();
 builder.Services.AddScoped<IApiRequestService, ApiRequestService>();
 var app = builder.Build();

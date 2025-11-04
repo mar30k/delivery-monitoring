@@ -1,7 +1,8 @@
-﻿using CNET_ERP_V7.WebConstants;
-using CNET_V7_Domain.Domain.SecuritySchema;
+﻿using CNET_V7_Domain.Domain.SecuritySchema;
+using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -34,7 +35,7 @@ namespace DeliveryMonitoring.Controllers
             _configuration = configuration;
             _apiRequestService = apiRequestService;
         }
-        [Route("/login")]
+        [Route("/verifyId")]
         public async Task<IActionResult> index() 
         {
             var identificationResult = await _authenticationManager.identificationValid();
@@ -45,13 +46,17 @@ namespace DeliveryMonitoring.Controllers
             }
             return View("index");
         }
-        [Route("Login/Login")]
+        [Route("/login")]
         public async Task<IActionResult> Login() {
             var identificationResult = await _authenticationManager.identificationValid();
 
             if (identificationResult.isValid)
             {
                 return RedirectToAction("Index", "Home"); 
+            }
+            if (_authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) != null)
+            {
+                return RedirectToAction("index", "Login");
             }
             return View("Login"); 
         }
@@ -72,7 +77,7 @@ namespace DeliveryMonitoring.Controllers
                         ModelState.AddModelError("", "Unable to update online status! Please try again.");
                         return View("Login", model); 
                     }
-                    AddCookie("user", JsonConvert.SerializeObject(user), TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
+                    _authenticationManager.AddSecureCookie(CNET_WebConstantes.UserInfo, JsonConvert.SerializeObject(user), TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
                     _authenticationManager.SignIn(user, model.RememberMe);
                     return RedirectToAction("Index", "Home");
                 }
@@ -100,8 +105,8 @@ namespace DeliveryMonitoring.Controllers
                 if (model.myId?.Trim().ToLower() == "0076217301")
                 {
                     baseAddress = _configuration["DeliveryLogin"];
-                    AddCookie(CNET_WebConstantes.IdentificationCookie, "0076217301", TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
-                    AddCookie("apibaseAddress", baseAddress, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
+                    _authenticationManager.AddSecureCookie(CNET_WebConstantes.IdentificationCookie, "0076217301", TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
+                    _authenticationManager.AddSecureCookie(CNET_WebConstantes.ApiBaseAddress, baseAddress, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
                     return Json(new
                     {
                         d = true,
@@ -121,8 +126,8 @@ namespace DeliveryMonitoring.Controllers
                         {
                             baseAddress = userValidation.FirstOrDefault()?.BaseUrl + "/api/";  // prod
                         }
-                        AddCookie(CNET_WebConstantes.IdentificationCookie, userValidation?.FirstOrDefault()?.Tin, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
-                        AddCookie("apibaseAddress", baseAddress, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
+                        _authenticationManager.AddSecureCookie(CNET_WebConstantes.IdentificationCookie, userValidation?.FirstOrDefault()?.Tin, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
+                        _authenticationManager.AddSecureCookie(CNET_WebConstantes.ApiBaseAddress, baseAddress, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieDailyLifeTime));
                         if (userValidation.FirstOrDefault()?.Tin == model.myId?.Trim())
                         {
                             return Json(new
@@ -149,17 +154,6 @@ namespace DeliveryMonitoring.Controllers
 
             return View("Index", model);
         }
-
-        public void AddCookie(string key, string value, TimeSpan expiry)
-        {
-            var options = new CookieOptions
-            {
-                Expires = DateTimeOffset.Now.Add(expiry),
-                HttpOnly = true,
-                Secure = true, // set to false if not using HTTPS
-                SameSite = SameSiteMode.Strict
-            };
-            Response.Cookies.Append(key, value, options);
-        }
+        
     }
 }

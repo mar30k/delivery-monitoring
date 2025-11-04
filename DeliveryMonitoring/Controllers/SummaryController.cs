@@ -1,25 +1,27 @@
-﻿using CNET_ERP_V7.WebConstants;
-using DeliveryMonitoring.Constants;
+﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
 
 namespace DeliveryMonitoring.Controllers
 {
+    [Authorize]
     public class SummaryController : Controller
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
-        private string CompanyTin =>
-        _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie] ?? "";
+        private readonly AuthenticationManager _authenticationManager;
+        private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
         private const string AdminCompanyTin = "0076217301";
-        public SummaryController( IHttpContextAccessor httpContextAccessor, IApiRequestService apiRequest)
+        public SummaryController( IHttpContextAccessor httpContextAccessor, IApiRequestService apiRequest, AuthenticationManager authenticationManager)
         {
             _httpContextAccessor = httpContextAccessor;
             _apiRequestService = apiRequest;
+            _authenticationManager = authenticationManager;
         }
         [HttpGet("/summary")]
         public IActionResult Index(SummaryReportType t )

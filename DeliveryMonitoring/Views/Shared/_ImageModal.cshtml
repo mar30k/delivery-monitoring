@@ -1,0 +1,55 @@
+﻿<style>
+    .zoomable {
+        cursor: zoom-in;
+        transition: transform 0.3s ease;
+    }
+
+    #modalImage {
+        max-width: 100%;
+        max-height: 85vh;
+        object-fit: contain;
+        cursor: grab;
+    }
+</style>
+<!-- Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
+                <div class="ms-auto d-flex gap-2 align-items-center">
+                    <button class="btn btn-outline-light btn-sm" id="rotateBtn" title="Rotate">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+            <div class="modal-body text-center p-2 bg-black">
+                <img id="modalImage" class="img-fluid" alt="Preview">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const modalImage = document.getElementById('modalImage');
+    let rotation = 0;
+
+    document.querySelectorAll('.zoomable').forEach(img => {
+        img.addEventListener('click', () => {
+            modalImage.src = img.dataset.img;
+            rotation = 0;
+            modalImage.style.transform = `rotate(${rotation}deg)`;
+
+            // Show modal
+            const bsModal = new bootstrap.Modal(document.getElementById('imageModal'));
+            bsModal.show();
+        });
+    });
+
+    // Rotate button
+    document.getElementById('rotateBtn').addEventListener('click', () => {
+        rotation += 90;
+        modalImage.style.transform = `rotate(${rotation}deg)`;
+    });
+
+</script>

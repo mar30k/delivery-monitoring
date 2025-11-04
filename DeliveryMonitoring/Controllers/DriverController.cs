@@ -1,4 +1,4 @@
-﻿using CNET_ERP_V7.WebConstants;
+﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -20,12 +20,17 @@ namespace DeliveryMonitoring.Controllers
     {
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
+        private readonly AuthenticationManager _authenticationManager;
+        private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
+
         public DriverController(
+            AuthenticationManager authenticationManager,
             IHttpContextAccessor httpContextAccessor,
             IApiRequestService apiRequestService)
         {
             _httpContextAccessor = httpContextAccessor;
             _apiRequestService = apiRequestService;
+            _authenticationManager = authenticationManager;
         }
 
         //Driver Index Page - starts here
@@ -33,7 +38,6 @@ namespace DeliveryMonitoring.Controllers
         [Route("/drivers")]
         public async Task<IActionResult> Index(string tin)
         {
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             var status = StatusInfo.StatusMap;
             List<Driver> drivers =await _apiRequestService.GetAvailableDriversAsync();
             drivers = drivers
@@ -47,7 +51,6 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/Driver/LiveLocation")]
         public async Task<IActionResult> LiveLocation()
         {
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             var data = await _apiRequestService.GetAvailableDriversAsync();
             foreach (var item in data ?? new List<Driver>())
             {
@@ -67,8 +70,7 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/driverdetail/{phoneNumber}")]
         public async Task<IActionResult> Details(string phoneNumber)
         {
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
+            if (string.IsNullOrWhiteSpace(CompanyTin))
             {
                 return RedirectToAction("Logout", "Login");
             }
@@ -87,7 +89,7 @@ namespace DeliveryMonitoring.Controllers
                 driver = await _apiRequestService.GetDriverDetailsByPhoneNumber<Driver>(phoneNumber);
                 if (driver!=null)
                 {
-                    if (companyTin != "0076217301" && companyTin != driver.CompanyTin)
+                    if (CompanyTin != "0076217301" && CompanyTin != driver.CompanyTin)
                     {
                         return NotFound();
                     }
@@ -141,7 +143,6 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/Driver/LiveLocation/{phoneNumber}")]
         public async Task<IActionResult> LiveLocation(string phoneNumber)
         {
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             var driver = new Driver();
             List<OrderDetail> orders = new();
             RouteModel? getRoutedata = new();

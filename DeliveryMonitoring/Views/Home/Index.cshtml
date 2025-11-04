@@ -1,8 +1,10 @@
 ﻿@model DeliveryMonitoring.Models.HomeViewModel
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject DeliveryMonitoring.Controllers.AuthenticationManager AuthManager
+@using DeliveryMonitoring.Constants
 @{
     ViewData["Title"] = "Dashboard";
-    var companyTin = HttpContextAccessor.HttpContext?.Request.Cookies["cnet.erp.v6.myId"];
+    var companyTin = AuthManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? "";
     var isRedCloud = companyTin == "0076217301";
 }
 
@@ -215,5 +217,5 @@
                            @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedAtBranchOrdersCount,@arrivedOrdersCount,@sosOrdersCount]
         };
     </script>
-    <script src="js/dashboard-charts.js"></script>
+    <script src="js/dashboard-charts.js" asp-append-version="true"></script>
 }

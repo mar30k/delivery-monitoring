@@ -1,7 +1,9 @@
-﻿using CNET_ERP_V7.WebConstants;
-using CNET_V7_Domain.Domain.SecuritySchema;
+﻿using CNET_V7_Domain.Domain.SecuritySchema;
 using CNET_V7_Domain.Misc;
+using DeliveryMonitoring.Constants;
+using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Models;
+using Microsoft.AspNetCore.DataProtection;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
@@ -45,13 +47,16 @@ namespace DeliveryMonitoring.Services
         private readonly string _getUserByUserName;
         private readonly string _getCompletedOrders;
         private readonly string _getCompletedOrdersByType;
+        private readonly IDataProtector _protector;
 
-        private string CompanyTin => _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie] ?? "";
-        private string ApibaseAddress => _httpContextAccessor.HttpContext?.Request.Cookies["apibaseAddress"] ?? "";
+        private string CompanyTin => GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? "";
+        private string ApibaseAddress => GetSecureCookie(CNET_WebConstantes.ApiBaseAddress) ?? "";
         #endregion
 
         #region Constructor
-        public ApiRequestService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
+        public ApiRequestService(IHttpClientFactory httpClientFactory,
+            IHttpContextAccessor httpContextAccessor, 
+            IConfiguration configuration, IDataProtectionProvider dataProtectionProvider)
         {
             _client = httpClientFactory.CreateClient("CnetApiBaseUrl");
             _deliveryClient = httpClientFactory.CreateClient("Delivery");
@@ -59,7 +64,7 @@ namespace DeliveryMonitoring.Services
             _deliveryLoginClient = httpClientFactory.CreateClient("DeliveryLogin");
             _httpContextAccessor = httpContextAccessor;
             _httpClientFactory = httpClientFactory;
-            _getOrderRequests = $"orderRequests?companyTin={CompanyTin}";
+            _getOrderRequests = $"orderRequests?";
             _getOrderDetailByVoucher = "orderRequests/";
             _getDriverActivityAsync = "driveractivity/get?";
             _getHistroyDetail = "voucher/gethistorydetail?";
@@ -85,13 +90,15 @@ namespace DeliveryMonitoring.Services
             _getCompletedOrders = "voucher/getcompletedorders";
             _getCompletedOrdersByType = "voucher/getordersbytype?";
             _configuration = configuration;
+            _protector = dataProtectionProvider.CreateProtector("DeliveryMonitoring.Cookies");
         }
         #endregion
 
         #region Order Requests
         public async Task<List<OrderDetail>> GetOrderRequestsAsync()
         {
-            var response = await _deliveryClient.GetAsync(_getOrderRequests);
+            
+            var response = await _deliveryClient.GetAsync($"{_getOrderRequests}companyTin={CompanyTin}");
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
@@ -476,7 +483,7 @@ namespace DeliveryMonitoring.Services
         }
         #endregion
 
-        #region PostAsync<Dynamic Model>
+        #region HTTP POST Helper
         private static async Task<HulubejeResponse<T>> PostAsync<T>(HttpClient client, string endpoint, object payload)
         {
             try
@@ -520,6 +527,17 @@ namespace DeliveryMonitoring.Services
             }
         }
         #endregion
+
+        private string? GetSecureCookie(string key)
+        {
+            var request = _httpContextAccessor.HttpContext?.Request;
+            if (request?.Cookies.TryGetValue(key, out var protectedValue) ?? false)
+            {
+                try { return _protector.Unprotect(protectedValue); }
+                catch { return null; }
+            }
+            return null;
+        }
 
     }
 }

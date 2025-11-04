@@ -68,30 +68,18 @@
             <div class="container pb-3">
                 <div class="card shadow-sm">
                     <div class="row g-0">
-                        <!-- Left Column: Images -->
                         <div class="col-md-4 text-center p-3 border-end">
-                            <img src="@Model?.Detail?.ProfilePicture" alt="Profile Picture" class="img-fluid rounded mb-2"
-                                 style="cursor: zoom-in;" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="@Model?.Detail?.ProfilePicture">
+                            <img src="@Model?.Detail?.ProfilePicture"
+                                 alt="Profile Picture"
+                                 class="zoomable img-thumbnail mb-2"
+                                 data-img="@Model?.Detail?.ProfilePicture">
 
-                            <img src="@Model?.Detail?.IdAttachment" alt="ID Attachment" class="img-fluid rounded"
-                                 style="cursor: zoom-in;" data-bs-toggle="modal" data-bs-target="#imageModal" data-img="@Model?.Detail?.IdAttachment">
+                            <img src="@Model?.Detail?.IdAttachment"
+                                 alt="ID Attachment"
+                                 class="zoomable img-thumbnail"
+                                 data-img="@Model?.Detail?.IdAttachment">
                         </div>
-                        <!-- Modal for Image Zoom -->
-                        <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg">
-                                <div class="modal-content bg-transparent border-0">
-                                    <div class="modal-body p-0 text-center position-relative">
-                                        <img id="modalImage" src="" alt="Zoomed Image" class="img-fluid rounded">
-
-                                        <!-- Rotate Icon Button -->
-                                        <button type="button" class="btn btn-light btn-sm position-absolute top-0 end-0 m-2" id="rotateBtn">
-                                            <i class="bi bi-arrow-clockwise"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                        <partial name="_ImageModal" />
                         <!-- Right Column: Details -->
                         <div class="col-md-8 p-3">
                             <h4 class="mb-3">@Model?.FirstName</h4>
@@ -190,31 +178,9 @@
             </div>
         </div>
     </div>
-@*     <script async
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAA8U3kqWJt2stT_CX_r8md8FKsj0-rmiQ&callback=initMap&libraries=places,geometry&v=weekly">
-    </script>
- *@
+</div>
+@section Scripts {
     <script>
-        const imageModal = document.getElementById('imageModal');
-        const modalImage = document.getElementById('modalImage');
-        let rotation = 0;
-
-        // Set the clicked image in the modal
-        imageModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget; // The clicked image
-            const src = button.getAttribute('data-img');
-            modalImage.src = src;
-
-            // Reset rotation when a new image is opened
-            rotation = 0;
-            modalImage.style.transform = `rotate(${rotation}deg)`;
-        });
-
-        // Rotate button click
-        document.getElementById('rotateBtn').addEventListener('click', function () {
-            rotation += 90; // rotate 90 degrees clockwise
-            modalImage.style.transform = `rotate(${rotation}deg)`;
-        });
         let infowindow = null;
         const statusColors = {
             offline: { color: "#dc3545", priority: "1" },  // Bootstrap danger - Offline
@@ -262,50 +228,50 @@
                 var orderAssigned = false;
 
                 @{
-                            if (Model != null)
-                            {
-                                        var status = Model.Status?.ToLower();
-                                        var driverOrder = Orders?.FirstOrDefault(x => x.AssignedDriverPhoneNumber == Model.PhoneNumber);
-                                        string destLat = "0.0";
-                                        string destLng = "0.0";
+                                    if (Model != null)
+                                    {
+                                                        var status = Model.Status?.ToLower();
+                                                        var driverOrder = Orders?.FirstOrDefault(x => x.AssignedDriverPhoneNumber == Model.PhoneNumber);
+                                                        string destLat = "0.0";
+                                                        string destLng = "0.0";
 
-                                        if (status == "delivering" || status == "arrivedatbranch")
-                                        {
-                                                    destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
-                                                    destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
-                                        }
-                                        else if (status == "accepted")
-                                        {
-                                                    destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
-                                                    destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
-                                        }
-                                        else if (driverOrder != null)
-                                        {
-                                                    destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
-                                                    destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
-                                        }
-                                        <text>
-                                            place = {
-                                                Name: '@Model.FirstName',
-                                                LastUpdatedAt: '@(Model?.UpdatedAt != null
-                                                ? new DateTimeOffset(DateTime.SpecifyKind(Model.UpdatedAt.Value, DateTimeKind.Utc))
-                                                .ToOffset(TimeSpan.FromHours(3))
-                                                .ToString("yyyy-MM-dd hh:mm:ss tt")
-                                                : "")',
-                                                Phone: '@Model.PhoneNumber',
-                                                Status: '@Model.Status',
-                                                lat: @(@Model?.LatLng?.lat ?? 0.0),
-                                                lng: @(@Model?.LatLng?.lng ?? 0.0),
-                                                DestLat: @destLat,
-                                                DestLng: @destLng
-                                            };
-                                        </text>
+                                                        if (status == "delivering" || status == "arrivedatbranch")
+                                                        {
+                                                                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                                                                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                                                        }
+                                                        else if (status == "accepted")
+                                                        {
+                                                                            destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
+                                                                            destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
+                                                        }
+                                                        else if (driverOrder != null)
+                                                        {
+                                                                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                                                                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                                                        }
+                                                        <text>
+                                                            place = {
+                                                                Name: '@Model.FirstName',
+                                                                LastUpdatedAt: '@(Model?.UpdatedAt != null
+                                                                                                                                                                                                                    ? new DateTimeOffset(DateTime.SpecifyKind(Model.UpdatedAt.Value, DateTimeKind.Utc))
+                                                                                                                                                                                                                    .ToOffset(TimeSpan.FromHours(3))
+                                                                                                                                                                                                                    .ToString("yyyy-MM-dd hh:mm:ss tt")
+                                                                                                                                                                                                                    : "")',
+                                        Phone: '@Model.PhoneNumber',
+                                        Status: '@Model.Status',
+                                        lat: @(@Model?.LatLng?.lat ?? 0.0),
+                                        lng: @(@Model?.LatLng?.lng ?? 0.0),
+                                        DestLat: @destLat,
+                                        DestLng: @destLng
+                                    };
+                                </text>
 
-                                        if (driverOrder != null)
-                                        {
-                                                <text>orderAssigned = true;</text>
-                                        }
-                            }
+                                                                                                                                                if (driverOrder != null)
+                                                        {
+                                                                        <text>orderAssigned = true;</text>
+                                                        }
+                                    }
 
                 }
 
@@ -540,5 +506,5 @@
             $("#completed").text(count !== null ? count : "0");
         });
     </script>
-</div>
+}
 

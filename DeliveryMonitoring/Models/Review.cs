@@ -17,6 +17,7 @@
         public string Review { get; set; } = string.Empty;
         public string VoucherCode { get; set; } = string.Empty;
         public string ReferenceVoucher { get; set; } = string.Empty;
+        public string Attachment { get; set; } = string.Empty;
         public string? Reply { get; set; }
         public decimal Rating { get; set; }
         public DateTime Date { get; set; }

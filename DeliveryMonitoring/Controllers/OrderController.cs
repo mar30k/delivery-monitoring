@@ -1,4 +1,4 @@
-﻿using CNET_ERP_V7.WebConstants;
+﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
@@ -15,15 +15,20 @@ namespace DeliveryMonitoring.Controllers
         private readonly IWebHostEnvironment _env;
         //HttpClient Setup starts here
         private readonly IApiRequestService _apiRequestService;
+        private readonly AuthenticationManager _authenticationManager;
+        private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
+
         public OrderController(
             IHttpContextAccessor httpContextAccessor,
             IWebHostEnvironment env,
-            IApiRequestService apiRequestService)
+            IApiRequestService apiRequestService,
+            AuthenticationManager authenticationManager)
         {
 
             _httpContextAccessor = httpContextAccessor;
             _env = env;
             _apiRequestService = apiRequestService;
+            _authenticationManager = authenticationManager;
         }
         //HttpClient Setup ends here
 
@@ -36,16 +41,15 @@ namespace DeliveryMonitoring.Controllers
             List<SupervisorsDTO>? superVisors = new();
             try
             {            
-                var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-                if (string.IsNullOrWhiteSpace(companyTin))
+                if (string.IsNullOrWhiteSpace(CompanyTin))
                 {
                     return RedirectToAction("Logout", "Login");
                 }
 
                 orders = await _apiRequestService.GetOrderRequestsAsync();
-                if (companyTin != "0076217301")
+                if (CompanyTin != "0076217301")
                 {
-                    orders = orders?.Where(o => o.DeliveryTin == companyTin).ToList();
+                    orders = orders?.Where(o => o.DeliveryTin == CompanyTin).ToList();
                 }
                 superVisors = await _apiRequestService.GetSupervisorsAsync();
                 var orderViewModel = new OrderViewModel
@@ -66,18 +70,17 @@ namespace DeliveryMonitoring.Controllers
         {
             try
             {
-                var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
 
-                if (string.IsNullOrWhiteSpace(companyTin)) { return new List<OrderDetail>(); }
+                if (string.IsNullOrWhiteSpace(CompanyTin)) { return new List<OrderDetail>(); }
 
                 var response = await _apiRequestService.GetOrderRequestsAsync();
                 if (response.Count > 0)
                     response?.ForEach(x => x.CreatedAtString = new DateTimeOffset(DateTime.SpecifyKind(x.CreatedAt.Value, DateTimeKind.Utc))
                                     .ToOffset(TimeSpan.FromHours(3))
                                     .ToString("yyyy-MM-dd HH:mm:ss"));
-                if (!string.IsNullOrWhiteSpace(companyTin) && companyTin != "0076217301" && response != null)
+                if (!string.IsNullOrWhiteSpace(CompanyTin) && CompanyTin != "0076217301" && response != null)
                 {
-                    response = response.Where(order => order.DeliveryTin == companyTin).ToList();
+                    response = response.Where(order => order.DeliveryTin == CompanyTin).ToList();
                 }
                 return response ?? new List<OrderDetail>();
             }
@@ -90,7 +93,6 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/Order/{voucherCode}")]
         public async Task<IActionResult> Details(string voucherCode)
         {
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             OrderDetail? order = null;
             List<SupervisorsDTO>? superVisors = new();
             try
@@ -106,7 +108,7 @@ namespace DeliveryMonitoring.Controllers
                     return RedirectToAction("Index");
                 }
 
-                if (companyTin != "0076217301" && companyTin != order?.DeliveryTin)
+                if (CompanyTin != "0076217301" && CompanyTin != order?.DeliveryTin)
                 {
                     TempData["Message"] = $"You do not have the necessary permissions to view Order {voucherCode}.";
                     return RedirectToAction("index");
@@ -206,7 +208,6 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("order/getAvailableSupervisors")]
         public async Task<IActionResult> GetAvailableSupervisors()
         {
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             try
             {
                 var supervisors = await _apiRequestService.GetSupervisorsAsync();

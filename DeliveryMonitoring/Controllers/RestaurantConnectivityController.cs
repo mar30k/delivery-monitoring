@@ -1,4 +1,4 @@
-﻿using CNET_ERP_V7.WebConstants;
+﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -14,13 +14,16 @@ namespace DeliveryMonitoring.Controllers
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
-
+        private readonly AuthenticationManager _authenticationManager;
+        private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
         public RestaurantConnectivityController(
             IHttpContextAccessor httpContextAccessor,
-            IApiRequestService apiRequestService)
+            IApiRequestService apiRequestService,
+            AuthenticationManager authenticationManager)
         {
             _httpContextAccessor = httpContextAccessor;
             _apiRequestService = apiRequestService;
+            _authenticationManager = authenticationManager;
         }
         [Route("/deviceControl")]
         public async Task<IActionResult> Index(string date)
@@ -41,17 +44,16 @@ namespace DeliveryMonitoring.Controllers
         public async Task<List<DeviceControl>?> GetDeviceControlByDate(string date)
         {
             date ??= DateTime.Now.ToString("yyyy-MM-dd");
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
             var deviceControl = await _apiRequestService.GetDeviceControlAsync(date);
             var latestByTinAndBranch = deviceControl?
                 .Where(d => d.TimeStamp.HasValue) // Ensure TimeStamp is not null
                 .GroupBy(d => new { d.Tin, d.BranchName, d.DeviceName }) // Group by Tin , BranchName and DeviceName
                 .Select(g => g.OrderByDescending(d => d.TimeStamp).First()) // Get the one with latest TimeStamp
                 .ToList();
-            if (companyTin != "0076217301")
+            if (CompanyTin != "0076217301")
             {
                 latestByTinAndBranch = latestByTinAndBranch?
-                    .Where(x => x?.Tin?.ToString() == companyTin?.Trim())
+                    .Where(x => x?.Tin?.ToString() == CompanyTin?.Trim())
                     .ToList();
             }
 

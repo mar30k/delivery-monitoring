@@ -1,10 +1,11 @@
-﻿using CNET_ERP_V7.WebConstants;
-using CNET_V7_Domain.Domain.SecuritySchema;
+﻿using CNET_V7_Domain.Domain.SecuritySchema;
 using CNET_V7_Domain.Misc;
+using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NuGet.Protocol.Plugins;
@@ -19,12 +20,19 @@ namespace DeliveryMonitoring.Controllers
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private UserDTO _cachedUser;
+        private readonly IDataProtector _protector;
+        private readonly ISecureCookieService _cookieService;
+
         public AuthenticationManager(
+            IDataProtectionProvider dataProtectionProvider,
                 IHttpContextAccessor httpContextAccessor,
-                IApiRequestService apiRequestService)
+                IApiRequestService apiRequestService,
+                ISecureCookieService cookieService)
         {
             _httpContextAccessor = httpContextAccessor;
             _apiRequestService = apiRequestService;
+            _protector = dataProtectionProvider.CreateProtector("DeliveryMonitoring.Cookies");
+            _cookieService = cookieService;
         }
 
 
@@ -105,29 +113,40 @@ namespace DeliveryMonitoring.Controllers
             var context = _httpContextAccessor.HttpContext;
             //and sign out from the current authentication scheme
             await context.SignOutAsync(CNET_WebConstantes.CookieScheme);
-            context.Response.Cookies.Delete(CNET_WebConstantes.IdentificationCookie);
-            context.Response.Cookies.Delete("apibaseAddress");
+            DeleteCookie(CNET_WebConstantes.IdentificationCookie);
+            DeleteCookie(CNET_WebConstantes.ApiBaseAddress);
+            DeleteCookie(CNET_WebConstantes.UserInfo);
             var user = _httpContextAccessor.HttpContext?.User;
             _ = await _apiRequestService.UpdateSupervisorsOnlineStatusAsync(isOnline: false, phoneNumber: user?.Identity?.Name);
         }
 
-        public UserDTO? GetUserFromCookie(HttpRequest request)
+        public UserDTO? GetUserFromCookie()
         {
-            if (request.Cookies.TryGetValue("user", out string? cookieValue) &&
-                !string.IsNullOrWhiteSpace(cookieValue))
-            {
-                try
-                {
-                    return JsonConvert.DeserializeObject<UserDTO>(cookieValue);
-                }
-                catch (JsonException ex)
-                {
-                    // Log or handle malformed cookie
-                    Console.WriteLine($"Error parsing user cookie: {ex.Message}");
-                }
-            }
+            // Retrieve the secure cookie value
+            var cookieValue = GetSecureCookie(CNET_WebConstantes.UserInfo);
 
-            return null;
+            if (string.IsNullOrWhiteSpace(cookieValue))
+                return null;
+
+            try
+            {
+                // Deserialize the JSON into UserDTO
+                return JsonConvert.DeserializeObject<UserDTO>(cookieValue);
+            }
+            catch (JsonException ex)
+            {
+                // TODO: replace with proper logging
+                Console.WriteLine($"Failed to deserialize user cookie: {ex.Message}");
+                return null;
+            }
         }
+        public void AddSecureCookie(string key, string value, TimeSpan expiry)
+        => _cookieService.SetCookie(key, value, expiry);
+
+        public string? GetSecureCookie(string key)
+            => _cookieService.GetCookie(key);
+
+        public void DeleteCookie(string key)
+            => _cookieService.DeleteCookie(key);
     }
 }

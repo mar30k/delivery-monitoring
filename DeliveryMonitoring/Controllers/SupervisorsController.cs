@@ -1,4 +1,4 @@
-﻿using CNET_ERP_V7.WebConstants;
+﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -12,12 +12,15 @@ namespace DeliveryMonitoring.Controllers
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
+        private readonly AuthenticationManager _authenticationManager;
         public SupervisorsController(
             IHttpContextAccessor httpContextAccessor,
-            IApiRequestService apiRequestService)
+            IApiRequestService apiRequestService,
+            AuthenticationManager authenticationManager)
         {
             _httpContextAccessor = httpContextAccessor;
             _apiRequestService = apiRequestService;
+            _authenticationManager = authenticationManager;
         }
         [Route("/supervisors")]
         public async Task<IActionResult>Index()
@@ -26,7 +29,8 @@ namespace DeliveryMonitoring.Controllers
             List<OrderDetail>? orders = new();
             List<SupervisorsDTO>? superVisors = new();
             HulubejeResponse<List<CompletedOrders>>? completedOrders = new();
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            var companyTin = _authenticationManager.GetSecureCookie(
+                CNET_WebConstantes.IdentificationCookie);
             if (string.IsNullOrWhiteSpace(companyTin) || string.IsNullOrWhiteSpace(companyTin))
             {
                 return RedirectToAction("Logout", "Login");

@@ -1,5 +1,4 @@
-﻿using CNET_ERP_V7.WebConstants;
-using DeliveryMonitoring.Constants;
+﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -16,18 +15,23 @@ namespace DeliveryMonitoring.Controllers
         //HttpClient Setup starts here
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
+        private readonly AuthenticationManager _authenticationManager;
+        private string CompanyTin =>_authenticationManager.GetSecureCookie(
+                CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
         public HomeController(
             IHttpContextAccessor httpContextAccessor,
-            IApiRequestService apiRequestService)
+            IApiRequestService apiRequestService,
+            AuthenticationManager authenticationManager)
         {
             _httpContextAccessor = httpContextAccessor;
             _apiRequestService = apiRequestService;
+            _authenticationManager = authenticationManager;
         }
         [Route("/")]
         public async Task<IActionResult> Index()
         {
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
-            if (string.IsNullOrWhiteSpace(companyTin))
+            
+            if (string.IsNullOrWhiteSpace(CompanyTin))
                 return RedirectToAction("Logout", "Login");
 
             try
@@ -38,14 +42,14 @@ namespace DeliveryMonitoring.Controllers
                     Orders = await _apiRequestService.GetOrderRequestsAsync(),
                     Comps = await _apiRequestService.GetCompaniesAsync(),
                     Supervisors = await _apiRequestService.GetSupervisorsAsync(),
-                    CompanyTin = companyTin
+                    CompanyTin = CompanyTin
                 };
 
                 return View(viewModel);
             }
             catch (HttpRequestException)
             {
-                return View(new HomeViewModel { CompanyTin = companyTin });
+                return View(new HomeViewModel { CompanyTin = CompanyTin });
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using CNET_ERP_V7.WebConstants;
+﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -14,18 +14,22 @@ namespace DeliveryMonitoring.Controllers
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
+        private readonly AuthenticationManager _authenticationManager;
         public CompanyController(
+            AuthenticationManager authenticationManager,
             IApiRequestService apiRequestService,
             IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
             _apiRequestService = apiRequestService;
+            _authenticationManager = authenticationManager;
         }
 
         [Route("companies")]
         public async Task<IActionResult> Index()
         {
-            var currentCompanyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            var currentCompanyTin = _authenticationManager.GetSecureCookie(
+                CNET_WebConstantes.IdentificationCookie);
             if (string.IsNullOrWhiteSpace(currentCompanyTin) || string.IsNullOrWhiteSpace(currentCompanyTin))
             {
                 return RedirectToAction("Logout", "Login");
@@ -68,7 +72,7 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/Company/{companyTin}")]
         public async Task<IActionResult> Details(string companyTin)
         {
-            var currentCompanyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            var currentCompanyTin = _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie);
             if (string.IsNullOrWhiteSpace(currentCompanyTin))
             {
                 return RedirectToAction("Logout", "Login");

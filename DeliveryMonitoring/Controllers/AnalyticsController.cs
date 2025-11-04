@@ -1,4 +1,4 @@
-﻿using CNET_ERP_V7.WebConstants;
+﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -11,15 +11,20 @@ namespace DeliveryMonitoring.Controllers
     {
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
-        public AnalyticsController(IHttpContextAccessor httpContextAccessor, IApiRequestService apiRequestService)
+        private readonly AuthenticationManager _authenticationManager;
+        public AnalyticsController(IHttpContextAccessor httpContextAccessor
+            , IApiRequestService apiRequestService,
+            AuthenticationManager authenticationManager)
         {
             _httpContextAccessor = httpContextAccessor;
             _apiRequestService = apiRequestService;
+            _authenticationManager = authenticationManager;
         }
         [Route("/analytics")]
         public async Task<IActionResult> Index()
         {
-            var companyTin = _httpContextAccessor.HttpContext?.Request.Cookies[CNET_WebConstantes.IdentificationCookie];
+            var companyTin = _authenticationManager.GetSecureCookie(
+                CNET_WebConstantes.IdentificationCookie);
             if (string.IsNullOrWhiteSpace(companyTin))
                 return RedirectToAction("Logout", "Login");
 

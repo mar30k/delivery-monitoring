@@ -1,7 +1,8 @@
-﻿@using CNET_ERP_V7.WebConstants
+﻿@using DeliveryMonitoring.Constants
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject DeliveryMonitoring.Controllers.AuthenticationManager AuthManager
 @{
-    var companyTin = HttpContextAccessor.HttpContext?.Request.Cookies["cnet.erp.v6.myId"];
+    var companyTin = AuthManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -289,9 +290,10 @@
                         <i class="bi bi-chevron-down"></i>
                     </a>
                     <ul class="collapse list-unstyled ps-3" id="reportSubmenu">
-                        <li><a href="/report"><i class="bi bi-cart2"></i> Delivery</a></li>
+                        <li><a href="/report?t=delivery"><i class="bi bi-cart2"></i> Delivery</a></li>
                         <li><a href="/report?t=dinein"  ><i class="bi bi-shop"></i> Dine-in</a></li>
                         <li><a href="/report?t=takeaway"  ><i class="bi bi-bag-check"></i> Takeaway</a></li>
+                        <li><a href="/report?t=all"><i class="bi bi-cart2"></i> All</a></li>
                     </ul>
                 </li>
                 <li id="summaryMenu">
@@ -387,11 +389,11 @@
         <!--Main container ends here all components without the sidebar-->
     
         <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/elevatezoom-plus@1.1.21/jquery.ez-plus.min.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
         <script src="~/js/uikit.min.js"></script>
         <script src="~/js/uikit-icons.min.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
-        <script src="~/lib/jquery/dist/jquery.min.js"></script>
         <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css" />
         <script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
         @await RenderSectionAsync("Scripts", required: false)
