@@ -31,4 +31,19 @@
         InHouseDining = 3203
     }
 
+
+    public enum SummaryReportType
+    {
+        Merchant,
+        Consignee,
+        Supervisor,
+        Driver
+    }
+    public enum ReportByOrderType
+    {
+        Delivery,
+        Dinein,
+        Takeaway,
+        All
+    }
 }

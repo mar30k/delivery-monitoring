@@ -80,7 +80,7 @@ function initSummaryTable({
         serverSide: false,
         ajax: {
             url: ajaxUrl,
-            type: 'POST',
+            type: 'GET',
             data: function (d) {
                 const picker = js("#dateRange").data('daterangepicker');
                 if (picker && !isClear) {
@@ -100,6 +100,10 @@ function initSummaryTable({
                 targets: headerFilterColumns.map(col => col.index),
                 orderable: true,
                 render: function (data, type, row) { return data; }
+            },
+            {
+                orderSequence: ['asc', 'desc'],
+                targets: '_all'
             }
         ],
         order: [orderingColumn],

@@ -1,6 +1,6 @@
 ﻿namespace DeliveryMonitoring.Models
 {
-    public class SummaryTableConfig
+    public class TableConfig
     {
         public string Type { get; set; } = "consignee";  // e.g. "merchant" or "consignee"
         public string Title { get; set; } = "";

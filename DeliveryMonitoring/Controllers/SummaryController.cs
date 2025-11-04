@@ -22,13 +22,13 @@ namespace DeliveryMonitoring.Controllers
             _apiRequestService = apiRequest;
         }
         [HttpGet("/summary")]
-        public IActionResult Index(string t = "consignee")
+        public IActionResult Index(SummaryReportType t )
         {
-            var config = SummaryConfigFactory.Create(t); // encapsulate config in one place
+            var config = TableConfigFactory.CreateSummary(t); // encapsulate config in one place
             return View(config);
         }
 
-        [HttpPost("/summary/data")]
+        [HttpGet("/summary/data")]
         public async Task<IActionResult> SummaryData(SummaryType type, DateTime? startDate, DateTime? endDate, bool isClear)
         {
             switch (type)

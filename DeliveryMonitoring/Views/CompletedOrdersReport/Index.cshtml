@@ -1,26 +1,14 @@
 ﻿@using Microsoft.AspNetCore.Html
-@model CompletedOrdersViewModel
+@model TableConfig
 @{
-    var type = "Delivery";
-    if (Model?.Type == "dinein")
-    {
-        type = "Dine-in";
-    }else if(Model?.Type?.ToLower() == "takeaway")
-    {
-        type = "Takeaway";
-    }
-    ViewData["Title"] = type + " Report";
+    ViewData["Title"] = Model?.Title;
+    var isAllOrders = Model?.TableId == "allOrders";
 }
-<style>
-    .initial-hide {
-        display: none;
-    }
-</style>
 <div class="p-4">
     <div class="row align-items-center justify-content-between p-2">
         <div class="col-12 col-md-6 mb-2 mb-md-0">
             <div class="d-flex align-items-baseline">
-                <h4 class="mb-0 me-2"> @(type == "Delivery" ? "Completed " : "")@(type) Orders</h4>
+                <h4 class="mb-0 me-2"> @Model?.Title</h4>
                 <button class="btn btn-success btn-sm mb-2" id="exportToExcelBtn">Export Table To Excel</button>
             </div>
         </div>
@@ -33,7 +21,7 @@
     </div>
     <div class="row card">
         <div class="table-responsive pt-3 pb-3">
-            <table class="table compact stripe hover pt-3" id="completedOrders" style="font-size: 13px;">
+            <table class="table compact stripe hover pt-3" id="@Model?.TableId" style="font-size: 13px;">
                 <thead class="">
                     <tr>
                         <th class="text-center">
@@ -88,264 +76,55 @@
                         <th class="text-center">
                             Rating
                         </th>
+                        @if(isAllOrders)
+                        {
+                            <th class="text-center">
+                                Type
+                            </th>
+                        }
                     </tr>
                 </thead>
-                <tbody>
-                    @{
-                        var today = DateTime.Today.ToString("yyyy-MM-dd");
-                        foreach (var order in Model?.CompletedOrders?.Data ?? new List<CompletedOrders>())
-                        {
-                            var orderDate = order?.RequestCreatedAt.ToString("yyyy-MM-dd");
-                            var isToday = orderDate == today;
-                            var rowClass = isToday ? "" : "initial-hide";
-
-                            <tr class="@rowClass" data-voucher="@order?.VoucherCode">
-                                <td class="text-center dtr-control">
-                                    @(order?.VoucherCode ?? "N/A")
-                                </td>
-                                <td class="text-center">
-                                    @(order?.CompanyName ?? "N/A")
-                                </td>
-                                <td class="text-center">
-                                    @(order?.BranchName ?? "N/A")
-                                </td>
-                                <td class="text-center">
-                                    @(order?.FirstName ?? "N/A")
-                                </td>
-                                <td class="text-center">
-                                    @(order?.PhoneNumber ?? "N/A")
-                                </td>
-                                <td class="text-center">
-                                    @order?.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm:ss")
-                                </td>
-                                <td data-order="@order?.Distance" class="text-center">
-                                    @(order?.Distance) K.M
-                                </td>
-                                <td data-order="@order?.Duration" class="text-center">
-                                    @(order?.Duration) Min
-                                </td>
-                                <td data-order="@order?.Eta" class="text-center">
-                                    @(order?.Eta) Min
-                                </td>
-                                <td class="driver-cell text-center">
-                                    @(order?.DriverPhoneNumber ?? "N/A")
-                                </td>
-                                <td class="text-center">
-                                    @(order?.SupervisorName ?? "N/A")
-                                </td>
-                                <td class="text-center">
-                                    @(order?.TotalAmount.ToString("N2") ?? "N/A")
-                                </td>
-                                <td class="text-center">
-                                    @(order?.Tip.ToString("N2") ?? "N/A")
-                                </td>
-                                <td class="text-center">
-                                    @(order?.Purpose ?? "N/A")
-                                </td>
-                                <td class="text-center note-cell">
-                                    @RenderExpandableText(order?.Note ?? "")
-                                </td>
-
-                                <td class="text-center review-cell">
-                                    @RenderExpandableText(order?.Review ?? "")
-                                </td>
-
-                                <td class="text-center">
-                                    @(order?.Rating.ToString() ?? "N/A")
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan="11" class="text-end">Page Total:</th>
-                        <th class="text-center"></th>
-                        <th colspan="3"></th>
-                        <th class="text-end">Average Rating:</th>
-                        <th class="text-center"></th>
+                        <th colspan="6" class="text-end">Totals</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        @if(isAllOrders)
+                        {
+                            <th></th>
+                        }
                     </tr>
                 </tfoot>
             </table>
         </div>
     </div>
 </div>
-@functions {
-    public IHtmlContent RenderExpandableText(string text, int maxLength = 50, int remainingThreshold = 10)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return new HtmlString("N/A");
-        }
-
-        bool showToggle = false;
-        string shortText = text;
-
-        if (text.Length > maxLength)
-        {
-            if (text.Length - maxLength > remainingThreshold)
-            {
-                shortText = text.Substring(0, maxLength) + "...";
-                showToggle = true;
-            }
-        }
-
-        if (showToggle)
-        {
-            return new HtmlString($@"
-                <span class='short-text'>{shortText}</span>
-                <span class='full-text' style='display:none;'>{text}</span>
-                <a href='#' class='toggle-text'>Read more</a>");
-        }
-        else
-        {
-            return new HtmlString(shortText);
-        }
-    }
-}
-@section Scripts{
+@section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" href="~/css/header-filters.css" asp-append-version="true">
+    <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script>
+    <script src="~/js/summary-datatable.js" asp-append-version="true"></script>
+    <script src="~/js/report-table-init.js" asp-append-version="true"></script>
     <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
     <script>
-        var js = jQuery.noConflict(true);
-
-        function initOrderTable(selector, emptyMessage, totalColumnIndex, nonOrderableTargets = [0]) {
-            return js(selector).DataTable({
-                responsive: true,
-                order: [[5, "desc"]],
-                pageLength: 50,
-                lengthMenu: [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
-                columnDefs: [{ orderable: false, targets: nonOrderableTargets }],
-                language: { emptyTable: emptyMessage },
-                footerCallback: function (row, data, start, end, display) {
-                    var api = this.api();
-
-                    var parseValue = function (i) {
-                        if (typeof i === "string") {
-                            return parseFloat(i.replace(/[^0-9.-]+/g, "")) || 0;
-                        } else if (typeof i === "number") {
-                            return i;
-                        }
-                        return 0;
-                    };
-
-                        // ===== TOTAL AMOUNT CALCULATION =====
-                    var columnData = api.column(totalColumnIndex, { page: "current" }).data();
-                    var pageTotal = columnData.reduce(function (a, b) {
-                        return parseValue(a) + parseValue(b);
-                    }, 0);
-
-                    js(api.column(totalColumnIndex).footer()).html(
-                        pageTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                    );
-
-                        // ===== RATING AVERAGE CALCULATION =====
-                    var ratingColIndex = 16; // change to your Rating column index (0-based)
-
-                    var sumPage = 0, countPage = 0;
-                    api.column(ratingColIndex, { page: "current" }).data().each(function (val) {
-                        var num = parseValue(val);
-                        if (num > 0) { sumPage += num; countPage++; }
-                    });
-
-                    var sumAll = 0, countAll = 0;
-                    api.column(ratingColIndex).data().each(function (val) {
-                        var num = parseValue(val);
-                        if (num > 0) { sumAll += num; countAll++; }
-                    });
-
-                    var avgPage = countPage > 0 ? (sumPage / countPage) : 0;
-                    var avgAll = countAll > 0 ? (sumAll / countAll) : 0;
-
-                    js(api.column(ratingColIndex).footer()).html(
-                        (avgPage > 0 ? avgPage.toFixed(2) : "N/A") 
-                    );
-                },
-            });
-        }
-        let startDate = moment().startOf('day');
-        let endDate = moment().endOf('day');
         js(() => {
-            js.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-                if (!startDate || !endDate) return true;
-
-                var orderDateStr = data[5]; // Adjust as needed for different tables
-                var orderDate = moment(orderDateStr, "YYYY-MM-DD HH:mm:ss");
-
-                return orderDate.isValid() && orderDate.isBetween(startDate, endDate, undefined, '[]');
-            });
-
-            js(`#completedOrders tbody tr.initial-hide`).removeClass('initial-hide');
-
-
-            var completedOrders = initOrderTable(
-                "#completedOrders",
-                "No orders history to display at the moment.",
-                11,
-                [0, 4, 9, 13, 14, 15]
-            );
-
-            const tableRef = completedOrders;
-
-            if (!tableRef) return;
-
-            js("#dateRange").daterangepicker({
-                startDate: startDate,
-                endDate: endDate,
-                maxDate: moment(),
-                autoUpdateInput: true,
-                locale: {
-                    cancelLabel: 'Clear',
-                    format: 'YYYY-MM-DD'
-                }
-            });
-
-            // Set initial date range text
-            js("#dateRange").val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
-
-            // Trigger initial draw
-            tableRef.draw();
-
-            // Handle apply
-            js("#dateRange").on('apply.daterangepicker', function (ev, picker) {
-                startDate = picker.startDate.startOf('day');
-                endDate = picker.endDate.endOf('day');
-                js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
-                tableRef.draw();
-            });
-
-            // Handle clear
-            js("#dateRange").on('cancel.daterangepicker', function () {
-                startDate = null;
-                endDate = null;
-                js(this).val('');
-                tableRef.draw();
+            initPageReportTable({
+                tableId: "@Model?.TableId",
+                ajaxUrl: "@Model?.AjaxUrl",    // ensure always a string
+                userType: "@Model?.Type",
+                sheetName: "@Model?.SheetName"
             });
         });
-         // Toggle long text in Note/Review cells
-        js(document).on('click', '.toggle-text', function(e) {
-            e.preventDefault();
-            var $cell = js(this).closest('td');
-            $cell.find('.short-text, .full-text').toggle();
-            js(this).text(js(this).text() === 'Read more' ? 'Show less' : 'Read more');
-        });
-
-        $("#exportToExcelBtn").on("click", function () {
-            exportTableToExcel({
-                tableSelector: "#completedOrders",
-                typePrefix: "@type",              // same as your initial code
-                sheetName: "Completed Orders",
-                startDate: startDate,             // moment object
-                endDate: endDate,
-                columnWidths: [
-                    { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 22 },
-                    { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 12 },
-                    { wch: 10 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, { wch: 10 }
-                ]
-            });
-        });
-
     </script>
 }

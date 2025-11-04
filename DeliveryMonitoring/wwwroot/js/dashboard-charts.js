@@ -71,60 +71,77 @@ const totalChart = createDoughnutChart(
     `Completed Orders Total ${new Date().toISOString().slice(0, 10)}`
 );
 
-async function fetchAndUpdateChart(maxRetries = 3) {
+async function fetchAndUpdateChart(maxRetries = 3, updateMode = "all-at-once") {
     const orderSlices = [
         { url: '/GetChartData?type=delivery', index: 1, label: 'Delivery' },
         { url: '/GetChartData?type=takeaway', index: 0, label: 'Takeaway' },
         { url: '/GetChartData?type=dinein', index: 2, label: 'Dine-in' }
     ];
 
-    // Helper: fetch and update a single slice
+    // fetch and update a single slice
     async function fetchSlice(slice) {
         try {
             const response = await fetch(slice.url);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
             const data = await response.json();
+
             const count = data.count || 0;
             const total = data.total || 0;
 
-            // Update both charts
-            countChart.data.datasets[0].data[slice.index] = count;
-            countChart.data.labels[slice.index] = `${slice.label} (${count})`;
+            // update charts immediately if in gradual mode
+            if (updateMode === "gradual") {
+                updateCharts(slice, count, total);
+            }
+
+            return { slice, count, total, success: true };
+        } catch (err) {
+            console.warn(`Failed to fetch ${slice.label}:`, err);
+            return { slice, success: false };
+        }
+    }
+
+    function updateCharts(slice, count, total) {
+        // Update count chart
+        countChart.data.datasets[0].data[slice.index] = count;
+        countChart.data.labels[slice.index] = `${slice.label} (${count})`;
+
+        // Update total chart
+        totalChart.data.datasets[0].data[slice.index] = total;
+        totalChart.data.labels[slice.index] = `${slice.label} (${total.toFixed(2)})`;
+
+        // Gradual mode updates immediately
+        if (updateMode === "gradual") {
             countChart.update();
-
-            totalChart.data.datasets[0].data[slice.index] = total;
-            totalChart.data.labels[slice.index] = `${slice.label} (${total.toFixed(2)})`;
             totalChart.update();
-
-            return true;
-        } catch (error) {
-            return false;
         }
     }
 
-    // Run one full round of fetches
-    async function runFetchRound(slices) {
-        const failed = [];
-        for (const slice of slices) {
-            const success = await fetchSlice(slice);
-            if (!success) failed.push(slice);
-        }
-        return failed;
+    // retry logic for failed slices
+    async function retryFailed(failed, attempt) {
+        if (!failed.length) return [];
+        console.log(`Retrying ${failed.length} slice(s), attempt ${attempt}...`);
+        await new Promise(r => setTimeout(r, 1000 * attempt));
+        const results = await Promise.all(failed.map(fetchSlice));
+        return results.filter(r => !r.success).map(r => r.slice);
     }
 
-    // First round
-    let failedSlices = await runFetchRound(orderSlices);
+    // --- Main run ---
+    let results = await Promise.all(orderSlices.map(fetchSlice));
 
-    // Retry rounds (only failed slices)
-    for (let attempt = 2; attempt <= maxRetries && failedSlices.length > 0; attempt++) {
-        console.log(` Retry round ${attempt - 1} for failed slices...`);
-        // Optional: add delay before retry
-        await new Promise(res => setTimeout(res, 1000 * attempt));
-        failedSlices = await runFetchRound(failedSlices);
+    // retry rounds if any failed
+    let failedSlices = results.filter(r => !r.success).map(r => r.slice);
+    for (let attempt = 2; attempt <= maxRetries && failedSlices.length; attempt++) {
+        failedSlices = await retryFailed(failedSlices, attempt);
+    }
+
+    // All done: final update (for all-at-once mode)
+    if (updateMode === "all-at-once") {
+        results = results.filter(r => r.success);
+        for (const r of results) updateCharts(r.slice, r.count, r.total);
+        countChart.update();
+        totalChart.update();
     }
 }
-
 // Orders Status Chart
 const ordersStatusChart = createDoughnutChart(
     orderChart,
@@ -248,9 +265,9 @@ async function fetchKotStatus() {
 
 $(function () {
     // Run on page load
+    setInterval(() => fetchAndUpdateChart(3, "all-at-once"), 60000);
     fetchAndUpdateChart();
     fetchKotStatus();
-
     setInterval(updateOrdersChart, 10000);
     setInterval(updateDriversChart, 30000);
     setInterval(fetchKotStatus, 60000);
