@@ -25,7 +25,7 @@ namespace DeliveryMonitoring.Controllers
 
         private const string DineInTableId = "dineIn";
         private const string TakeAwayTableId = "takeAway";
-        private const string DeliveryTableId = "takeAway";
+        private const string DeliveryTableId = "delivery";
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
         #endregion
 

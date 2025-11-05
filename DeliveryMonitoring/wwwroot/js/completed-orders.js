@@ -465,6 +465,14 @@ async function showCustomerReview({
 
                         ${customerReview ? `<p class="my-1"><strong class="text-muted">Review:</strong> ${customerReview}</p>` : ''}
                         ${foundReview.reply ? `<p class="my-1"><strong class="text-muted">Reply:</strong> ${foundReview.reply}</p>` : ''}
+                        ${foundReview.attachment ?
+                                    `<div class="mt-2">
+                                        <img src="${foundReview.attachment}" 
+                                         alt="Attachment" 
+                                         style=" cursor: ;">
+                                    </div>`
+                                    : ''
+                        }
                     </div>
                 </div>`;
         } else {

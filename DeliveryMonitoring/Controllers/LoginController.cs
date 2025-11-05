@@ -54,7 +54,7 @@ namespace DeliveryMonitoring.Controllers
             {
                 return RedirectToAction("Index", "Home"); 
             }
-            if (_authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) != null)
+            if (_authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) == null)
             {
                 return RedirectToAction("index", "Login");
             }

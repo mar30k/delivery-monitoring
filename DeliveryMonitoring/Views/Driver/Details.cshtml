@@ -228,55 +228,50 @@
                 var orderAssigned = false;
 
                 @{
-                                    if (Model != null)
-                                    {
-                                                        var status = Model.Status?.ToLower();
-                                                        var driverOrder = Orders?.FirstOrDefault(x => x.AssignedDriverPhoneNumber == Model.PhoneNumber);
-                                                        string destLat = "0.0";
-                                                        string destLng = "0.0";
+                    if (Model != null)
+                    {
+                        var status = Model.Status?.ToLower();
+                        var driverOrder = Orders?.FirstOrDefault(x => x.AssignedDriverPhoneNumber == Model.PhoneNumber);
+                        string destLat = "0.0";
+                        string destLng = "0.0";
 
-                                                        if (status == "delivering" || status == "arrivedatbranch")
-                                                        {
-                                                                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
-                                                                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
-                                                        }
-                                                        else if (status == "accepted")
-                                                        {
-                                                                            destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
-                                                                            destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
-                                                        }
-                                                        else if (driverOrder != null)
-                                                        {
-                                                                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
-                                                                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
-                                                        }
-                                                        <text>
-                                                            place = {
-                                                                Name: '@Model.FirstName',
-                                                                LastUpdatedAt: '@(Model?.UpdatedAt != null
-                                                                                                                                                                                                                    ? new DateTimeOffset(DateTime.SpecifyKind(Model.UpdatedAt.Value, DateTimeKind.Utc))
-                                                                                                                                                                                                                    .ToOffset(TimeSpan.FromHours(3))
-                                                                                                                                                                                                                    .ToString("yyyy-MM-dd hh:mm:ss tt")
-                                                                                                                                                                                                                    : "")',
-                                        Phone: '@Model.PhoneNumber',
-                                        Status: '@Model.Status',
-                                        lat: @(@Model?.LatLng?.lat ?? 0.0),
-                                        lng: @(@Model?.LatLng?.lng ?? 0.0),
-                                        DestLat: @destLat,
-                                        DestLng: @destLng
-                                    };
-                                </text>
+                        if (status == "delivering" || status == "arrivedatbranch")
+                        {
+                                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                        }
+                        else if (status == "accepted")
+                        {
+                                            destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
+                                            destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
+                        }
+                        else if (driverOrder != null)
+                        {
+                                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                        }
+                        <text>
+                        place = {
+                            Name: '@Model.FirstName',
+                            LastUpdatedAt: '@(Model?.UpdatedAt != null ? new DateTimeOffset(DateTime.SpecifyKind(Model.UpdatedAt.Value, DateTimeKind.Utc))
+                                                                            .ToOffset(TimeSpan.FromHours(3))
+                                                                            .ToString("yyyy-MM-dd hh:mm:ss tt")
+                                                                            : "")': "")',
+                            Phone: '@Model?.PhoneNumber',
+                            Status: '@Model?.Status',
+                            lat: @(@Model?.LatLng?.lat ?? 0.0),
+                            lng: @(@Model?.LatLng?.lng ?? 0.0),
+                            DestLat: @destLat,
+                            DestLng: @destLng
+                        };                                      
+                        </text>
 
-                                                                                                                                                if (driverOrder != null)
-                                                        {
-                                                                        <text>orderAssigned = true;</text>
-                                                        }
-                                    }
-
+                        if (driverOrder != null)
+                        {
+                            <text>orderAssigned = true;</text>
+                        }
+                    }
                 }
-
-
-
                 marker = new google.maps.Marker({
                     position: { lat: routeCoordinates[0].lat, lng: routeCoordinates[0].lng},
                     title:place.Name,

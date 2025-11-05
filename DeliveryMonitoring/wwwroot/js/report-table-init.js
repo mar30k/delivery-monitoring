@@ -63,11 +63,12 @@ function initPageReportTable(options) {
         { data: "review", className: "text-center", render: renderOrDefault },
         { data: "rating", className: "text-center" }
     ];
+    config.headerFilterColumns = [{ index: 1, name: 'Company' }, { index: 2, name: 'Branch' }, { index: 10, name: 'Supervisor' }];
     // Conditionally add column for all orders
     if (isAllOrders) {
         config.columns.push({ data: "tableId", className: "text-center" });
+        config.headerFilterColumns.push({ index: 17, name: 'Type' });
     }
-    config.headerFilterColumns = [{ index: 1, name: 'Company' }, { index: 2, name: 'Branch' }];
     config.floatCols = [6, 11, 12];
     config.avgCols = [{ index: 16, includeZeros: false }];
     config.nonOrderableTargets = [0, 4, 9, 13, 14, 15]

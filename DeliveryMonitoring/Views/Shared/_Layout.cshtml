@@ -143,25 +143,6 @@
                 closeAlert();
                 fetchAlerts();
             });
-                    // Mock sessionStorage for testing purposes
-            // sessionStorage.setItem("displayedAlerts", JSON.stringify({
-            //     "0912492953-15478-219": "Alert 1",
-            //     "0912492953-84835-4": "Alert 2"
-            // }));
-
-            // // Simulate the fetch function to mock the API response
-            // window.fetch = function() {
-            //     return Promise.resolve({
-            //         json: function() {
-            //             return Promise.resolve([
-            //                 { voucherCode: "0912492953-15478-219", alert: "New Alert 1" },
-            //                 { voucherCode: "0912492953-84835-4", alert: "New Alert 3" },
-            //                 { voucherCode: "JKL012", alert: "" }
-            //             ]);
-            //         }
-            //     });
-            // };
-
             var data = {};
             async function fetchAlerts() {
                 try {
@@ -289,11 +270,11 @@
                         <span><i class="bi bi-file-earmark-text"></i> Reports</span>
                         <i class="bi bi-chevron-down"></i>
                     </a>
-                    <ul class="collapse list-unstyled ps-3" id="reportSubmenu">
+                <ul class="collapse list-unstyled ps-3" id="reportSubmenu">
+                        <li><a href="/report?t=all"><i class="bi bi-grid"></i> All</a></li>
                         <li><a href="/report?t=delivery"><i class="bi bi-cart2"></i> Delivery</a></li>
                         <li><a href="/report?t=dinein"  ><i class="bi bi-shop"></i> Dine-in</a></li>
-                        <li><a href="/report?t=takeaway"  ><i class="bi bi-bag-check"></i> Takeaway</a></li>
-                        <li><a href="/report?t=all"><i class="bi bi-cart2"></i> All</a></li>
+                        <li><a href="/report?t=takeaway"  ><i class="bi bi-person-walking"></i> Takeaway</a></li>
                     </ul>
                 </li>
                 <li id="summaryMenu">

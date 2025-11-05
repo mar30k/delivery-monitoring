@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "Driver Reviews";
 }
-
 <div class="container mt-4">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
@@ -89,15 +88,19 @@
                                         }
                                         else
                                         {
-                                            <p class="text-muted fst-italic mb-2">No written review provided.</p>
+                                            <p class="text-muted fst-italic mb-1">No written review provided.</p>
                                         }
 
                                         @if (!string.IsNullOrWhiteSpace(review.Reply))
                                         {
-                                            <div class="bg-light p-3 rounded border-start border-primary border-3">
+                                            <div class="bg-light p-2 rounded border-start border-primary border-3">
                                                 <strong class="text-primary">Reply:</strong>
                                                 <div>@review.Reply</div>
                                             </div>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(review.Attachment))
+                                        {
+                                            <a href="#" class="zoomable" data-img="@review.Attachment">Attachement</a>
                                         }
                                     </div>
                                 </div>
@@ -105,7 +108,7 @@
                         </div>
                     }
                 </div>
-
+                <partial name="_ImageModal" />
                 <!-- Pagination -->
                 <nav>
                     <ul class="pagination justify-content-center mt-4" id="paginationContainer"></ul>

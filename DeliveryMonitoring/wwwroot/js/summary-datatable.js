@@ -188,6 +188,12 @@ function initSummaryTable({
         });
     });
 
+    // 🔄 Auto-reload every 10 seconds if tab is visible
+    setInterval(function () {
+        if (!document.hidden) {
+            table.ajax.reload(null, false);
+        }
+    }, 60000);
 
     return table;
 }
