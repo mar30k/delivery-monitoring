@@ -41,7 +41,7 @@ namespace DeliveryMonitoring.Controllers
             var status = StatusInfo.StatusMap;
             List<Driver> drivers =await _apiRequestService.GetAvailableDriversAsync();
             drivers = drivers
-                .OrderByDescending(d => status.GetValueOrDefault(d.Status?.ToLower() ?? "", status["default"]).Priority)
+                .OrderBy(d => status.GetValueOrDefault(d.Status?.ToLower() ?? "", status["default"]).Priority)
                 .ToList();
             return View(drivers);
         }

@@ -155,7 +155,10 @@ namespace DeliveryMonitoring.Controllers
                     lat = order.TargetBranchLat,
                     lng = order.TargetBranchLng
                 };
-                long unixMilliseconds = new DateTimeOffset(DateTime.Parse(order.CreatedAt.ToString(), null, System.Globalization.DateTimeStyles.RoundtripKind)).ToUnixTimeMilliseconds();
+                long unixMilliseconds = order.CreatedAt.HasValue
+                    ? new DateTimeOffset(DateTime.SpecifyKind(order.CreatedAt.Value, DateTimeKind.Utc))
+                        .ToUnixTimeMilliseconds()
+                    : 0;
                 order.RequestCreatedAtIso = order.CreatedAt;
                 order.RequestCreatedAt = unixMilliseconds;
                 order.IsAssignedAck = false;
@@ -281,7 +284,7 @@ namespace DeliveryMonitoring.Controllers
         {
             if (assignSuperVisorDTO.voucherCode == null)
                 return BadRequest("Invalid voucher data.");
-            var response = await _apiRequestService.ChangeOrderStatusAsync(assignSuperVisorDTO);
+            var response = await _apiRequestService.AssignOrderSupervisorAsync(assignSuperVisorDTO);
             if (!response.IsSuccessful)
                 return StatusCode(500, $"failed: {response.ErrorMessages?.FirstOrDefault()}");
             return Ok(response);

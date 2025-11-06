@@ -227,8 +227,7 @@ function updateDriversChart() {
             if (!Array.isArray(data) || data == null) return;
             const activeCount = data.filter(driver => !driver.isDisabled).length;
             const readyCount = data.filter(driver => driver.status === 'ready').length;
-            $("#totalDrivers").text(data.length);
-            $("#activeDrivers").text(activeCount);
+            $("#totalDrivers").text(activeCount);
             $("#readyDrivers").text(readyCount);
             // Count orders by status
             data.forEach(driver => {
@@ -262,7 +261,18 @@ async function fetchKotStatus() {
         console.error("Error fetching alerts:", error);
     }
 }
-
+async function fetchSupervisors() {
+    try {
+        const response = await fetch('order/getAvailableSupervisors');
+        let supervisors = await response.json();
+        if (!Array.isArray(supervisors)) return;
+        $("#totalSupervisors").text(supervisors.length);
+        $("#loggedinSupervisors").text(supervisors.filter(s => s.loggedInStatus).length);
+    }
+    catch (error) {
+        console.error("Error fetching alerts:", error);
+    }
+}
 $(function () {
     // Run on page load
     setInterval(() => fetchAndUpdateChart(3, "all-at-once"), 60000);
@@ -271,4 +281,5 @@ $(function () {
     setInterval(updateOrdersChart, 10000);
     setInterval(updateDriversChart, 30000);
     setInterval(fetchKotStatus, 60000);
+    setInterval(fetchSupervisors, 60000);
 });

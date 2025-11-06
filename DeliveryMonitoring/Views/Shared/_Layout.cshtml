@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="icon" type="image/png" sizes="32x32" href="~/images/hulubeje.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -134,107 +134,8 @@
 
     <body>
         @await Html.PartialAsync("_CopyToClipBoardAlert")
-        <script>
-            $(document).ready(function () {
-                $('#logoutButton').click(function () {
-                    // Handle logout logic here, e.g., redirect to the logout action
-                    window.location.href = '/Login/Logout';
-                });
-                closeAlert();
-                fetchAlerts();
-            });
-            var data = {};
-            async function fetchAlerts() {
-                try {
-                    const response = await fetch('/getorders');
-                    if (!response.ok) {
-                        return;
-                    }
-                    const newData = await response.json();
-                    data = newData;
+        <script src="~/js/alerts.js" asp-append-version="true"></script>
 
-                    const orderCount =  document.getElementById("orderCount");
-                    if(orderCount){
-                        orderCount.textContent = data.length;
-                    }
-                    const alertBox = document.getElementById("floating-alert");
-                    const alertList = document.getElementById("alert-list");
-
-                    // Retrieve previously displayed alerts from sessionStorage
-                    let storedAlerts = JSON.parse(sessionStorage.getItem("displayedAlerts")) || {};
-
-                    // Filter orders that have non-empty alerts
-                    const filteredOrders = data.filter(order => order.alert && order.alert.trim() !== "");
-
-                    // Track alerts that need to be displayed in this refresh
-                    let newAlerts = {};
-                    let hasNewAlerts = false;
-                    filteredOrders.forEach(order => {
-                        const { voucherCode, alert } = order;
-                        // Only add if it's a completely new alert or the alert message has changed
-                        if (!storedAlerts[voucherCode] || storedAlerts[voucherCode] !== alert) {
-                            hasNewAlerts = true;
-                            newAlerts[voucherCode] = alert;
-                        }
-                    });
-
-                    // If there are new alerts, update the UI
-                    if (hasNewAlerts) {
-                        alertList.innerHTML = ""; // Clear alert container
-
-                        for (const voucherCode in newAlerts) {
-                            const listItem = document.createElement("li");
-                            listItem.innerHTML = `<a class="alerts" style="text-decoration: none;" target="_blank" href="/order/${voucherCode}">Order ${voucherCode}: ${newAlerts[voucherCode]}</a>`;
-                            alertList.appendChild(listItem);
-                        }
-
-                        // Show the floating alert box only if there are new alerts
-                        alertBox.style.display = "block";
-                        // playAlertSound();
-
-                        // Update sessionStorage to track displayed alerts
-                        sessionStorage.setItem("displayedAlerts", JSON.stringify({ ...storedAlerts, ...newAlerts }));
-                    }
-
-                } catch (error) {
-                    console.error("Error fetching alerts:", error);
-                }
-                setTimeout(fetchAlerts, 10000);
-            }
-
-            let alertAudio = null;
-
-            function playAlertSound(times = 4) {
-                if (alertAudio) {
-                    alertAudio.pause(); // Stop any currently playing audio
-                    alertAudio.currentTime = 0;
-                }
-
-                alertAudio = new Audio('/images/alarm2.mp3');
-                let count = 0;
-
-                alertAudio.addEventListener("ended", function () {
-                    count++;
-                    if (count < times) {
-                        alertAudio.currentTime = 0;
-                        alertAudio.play();
-                    }
-                });
-
-                alertAudio.play().catch(error => console.error("Audio play failed:", error));
-            }
-
-            function closeAlert() {
-                document.getElementById("floating-alert").style.display = "none";
-
-                // Stop the audio
-                if (alertAudio) {
-                    alertAudio.pause();
-                    alertAudio.currentTime = 0;
-                }
-            }
-
-        </script>
         <!-- Floating Alert Box -->
         <div id="floating-alert" class="floating-alert">
             <div class="alert-content">

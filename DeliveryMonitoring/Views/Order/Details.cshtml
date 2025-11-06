@@ -128,17 +128,30 @@
 
                         <!-- Status dropdown -->
                         <div class="mb-3">
-                            <label for="statusSelect" class="form-label">Select Order Status</label>
+
                             @{
-                                var excludedStatuses = new HashSet<string> { "sos", "drivernotfound", "declined", "default" };
+                                // Define which statuses to exclude
+                                var excludedStatuses = new HashSet<RequestStat>
+                                                        {
+                                                        RequestStat.sos,
+                                                        RequestStat.driverNotFound,
+                                                        RequestStat.declined
+                                                        };
                             }
-                            <select id="statusSelect" name="orderStatus" class="form-select form-select-sm">
-                                <option value="" selected disabled>Select status</option>
-                                @foreach (var status in statusColors.Keys.Where(s => !excludedStatuses.Contains(s)))
-                                {
-                                    <option value="@status">@status</option>
-                                }
-                            </select>
+                            <div class="form-group">
+                                <label for="statusSelect" class="form-label">Select Order Status</label>
+                                <select id="statusSelect" name="OrderStatus" class="form-select form-select-sm">
+                                    <option value="" selected disabled>Select status</option>
+                                    @foreach (var status in Enum.GetValues(typeof(RequestStat)).Cast<RequestStat>())
+                                    {
+                                        if (!excludedStatuses.Contains(status))
+                                        {
+                                            // Both the value and text will match the TypeScript casing
+                                            <option value="@status.ToString()">@status</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -266,7 +279,7 @@
                                             Accept Order
                                         </button>
                                     }
-                                    <button type="button" class="btn btn-sm btn-outline-warning @(Model?.Status?.ToLower() == "sos" ? "" : "d-none")" id="changeOrderStatus"
+                                    <button type="button" class="btn btn-sm btn-outline-warning" id="changeOrderStatus"
                                                 data-voucher-code="@Model?.VoucherCode">
                                             Change Order Status
                                     </button>

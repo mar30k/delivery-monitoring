@@ -117,10 +117,10 @@ namespace DeliveryMonitoring.Services
         }
 
         public Task<HulubejeResponse<bool>> AssignOrderSupervisorAsync(AssignSuperVisorDTO assignSupervisorDto)
-            => PostAsync<bool>(_deliveryClient, _assignOrderSupervisor, assignSupervisorDto);
+            => SendAsync<bool>(_deliveryClient, _assignOrderSupervisor, assignSupervisorDto, HttpMethod.Patch);
 
         public Task<HulubejeResponse<bool>> ChangeOrderStatusAsync(object changeOrderStatusDto)
-            => PostAsync<bool>(_deliveryClient, _updateOrderStatus, changeOrderStatusDto);
+            => SendAsync<bool>(_deliveryClient, _updateOrderStatus, changeOrderStatusDto, HttpMethod.Patch);
         #endregion
 
         #region Drivers
@@ -158,7 +158,7 @@ namespace DeliveryMonitoring.Services
         public Task<HulubejeResponse<bool>> UpdateDriverDetailsAsync(UpdateDriverModel driverModel, string phoneNumber)
         {
             // Use PostAsync<T> helper (could be renamed PatchAsync<T> if needed)
-            return PostAsync<bool>(_deliveryClient, $"{_updateDriverDetails}{phoneNumber}", driverModel);
+            return SendAsync<bool>(_deliveryClient, $"{_updateDriverDetails}{phoneNumber}", driverModel, HttpMethod.Patch);
         }
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace DeliveryMonitoring.Services
         /// </summary>
         public Task<HulubejeResponse<bool>> RedispatchDriversAsync(OrderDetail orderDetail)
         {
-            return PostAsync<bool>(_client, _reDispatchDrivers, orderDetail);
+            return SendAsync<bool>(_client, _reDispatchDrivers, orderDetail);
         }
 
 
@@ -350,10 +350,10 @@ namespace DeliveryMonitoring.Services
 
         #region Message Sending & Activity Log
         public Task<HulubejeResponse<bool>> SendMessageAsync(AlertMessageDto messageDto)
-            => PostAsync<bool>(_deliveryClient, _sendMessage, messageDto);
+            => SendAsync<bool>(_deliveryClient, _sendMessage, messageDto);
 
         public Task<HulubejeResponse<bool>> InsertActivityLogAsync(object request)
-            => PostAsync<bool>(_client, _insertActivityLog, request);
+            => SendAsync<bool>(_client, _insertActivityLog, request);
 
         #endregion
 
@@ -483,16 +483,27 @@ namespace DeliveryMonitoring.Services
         }
         #endregion
 
-        #region HTTP POST Helper
-        private static async Task<HulubejeResponse<T>> PostAsync<T>(HttpClient client, string endpoint, object payload)
+        #region HTTP POST/PATCH Helper
+        private static async Task<HulubejeResponse<T>> SendAsync<T>(
+            HttpClient client,
+            string endpoint,
+            object payload,
+            HttpMethod? method = null)
         {
             try
             {
+                // Default to POST if not specified
+                var httpMethod = method ?? HttpMethod.Post;
+
                 var json = JsonConvert.SerializeObject(payload);
                 using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await client.PostAsync(endpoint, content);
+                using var request = new HttpRequestMessage(httpMethod, endpoint)
+                {
+                    Content = content
+                };
 
+                var response = await client.SendAsync(request);
                 var responseBody = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
@@ -504,7 +515,7 @@ namespace DeliveryMonitoring.Services
                     };
                 }
 
-                // If response body can be deserialized into T, use it, otherwise default
+                // Try to parse JSON
                 T? data = default;
                 try
                 {
@@ -512,7 +523,7 @@ namespace DeliveryMonitoring.Services
                 }
                 catch
                 {
-                    // Not all endpoints return JSON, fallback to default
+                    // Ignore parsing error if not JSON
                 }
 
                 return new HulubejeResponse<T> { IsSuccessful = true, Data = data };

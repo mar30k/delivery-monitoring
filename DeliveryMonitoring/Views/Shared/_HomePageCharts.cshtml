@@ -1,0 +1,200 @@
+﻿@model DeliveryMonitoring.Models.HomeViewModel
+@inject DeliveryMonitoring.Controllers.AuthenticationManager AuthManager
+@using DeliveryMonitoring.Constants
+@{
+    var companyTin = AuthManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? "";
+    var isRedCloud = companyTin == "0076217301";
+}
+<div class="d-flex flex-wrap justify-content-between gap-3">
+    <div class="card flex-grow-1">
+        <div class="card border-1" id="orderCard">
+            <div class="row">
+                <div class="col-3" id="dashboardIcon">
+                    <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i>
+                </div>
+                <div class="card-body col-7">
+                    <a class="card-title fw-semibold  text-decoration-none" href="/drivers">Total Drivers</a>
+
+                    <div class="d-flex align-items-center gap-4 flex-wrap">
+                        <div class="text-center">
+                            <h1 class="mb-0 fw-bold text-primary" id="totalDrivers">
+                                @(Model?.Drivers?.Count(x => x.IsDisabled != true) ?? 0)
+                            </h1>
+                            <small class="text-black">Total Active</small>
+                        </div>
+                        <div class="text-center">
+                            <h5 class="mb-0 text-success" id="readyDrivers">
+                                @(Model?.Drivers?.Count(x => x.Status?.ToLower() == "ready") ?? 0)
+                            </h5>
+                            <small class="text-muted">Ready</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card flex-grow-1">
+        <div class="card border-1" id="orderCard">
+            <div class="row">
+                <div class="col-3" id="dashboardIcon">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </div>
+                <div class="card-body col-7">
+                    <a class="card-title fw-semibold  text-decoration-none" href="/orders">Total Orders</a>
+                    <h1 class="card-text" id="orderCount">@Model?.Orders?.Count</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    @if (isRedCloud)
+    {
+        <div class="card flex-grow-1">
+            <div class="card border-1" id="orderCard">
+                <div class="row">
+                    <div class="col-3" id="dashboardIcon">
+                        <i class="fa-regular fa-building"></i>
+                    </div>
+                    <div class="card-body col-7">
+                        <a class="card-title fw-semibold  text-decoration-none" href="/companies">Companies</a>
+                        <h1 class="card-text">@(Model?.Comps?.companyTins?.Count ?? 0)</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="card flex-grow-1">
+        <div class="card border-1" id="orderCard">
+            <div class="row">
+                <div class="col-3" id="dashboardIcon">
+                    <i class="fas fa-cash-register"></i>
+                </div>
+                <div class="card-body col-7">
+                    <div class="mb-1">
+                        <a class="card-title fw-semibold  text-decoration-none"
+                           href="/deviceControl?date=@DateTime.Today.ToString("yyyy-MM-dd")">
+                            KOT Status
+                        </a><br />
+                        <small class="text-muted">@DateTime.Today.ToString("yyyy-MM-dd")</small>
+                    </div>
+                    <h1 class="card-text fw-bold mb-0" id="kotStatus">0</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    @if (isRedCloud)
+    {
+        <div class="card flex-grow-1">
+            <div class="card border-1" id="orderCard">
+                <div class="row">
+                    <div class="col-3" id="dashboardIcon">
+                        <i class="fa-duotone fa-solid fa-user"></i>
+                    </div>
+                    @* <div class="card-body col-7">
+                        <p class="card-title">Supervisors</p>
+                        <h1 class="card-text">@(Model?.Supervisors?.Count ?? 0)</h1>
+                    </div> *@
+                    <div class="card-body col-7">
+                        @*                         <p class="card-title">Supervisors</p>
+ *@                        <a class="card-title fw-semibold  text-decoration-none"
+                                                     href="/supervisors">
+                            Supervisors
+                        </a><br />
+                        <div class="d-flex align-items-center gap-4 flex-wrap">
+                            <div class="text-center">
+                                <h1 class="mb-0 fw-bold text-primary" id="totalSupervisors">
+                                    @(Model?.Supervisors?.Count ?? 0)
+                                </h1>
+                                <small class="text-black">Total</small>
+                            </div>
+                            <div class="text-center">
+                                <h5 class="mb-0 text-info" id="loggedinSupervisors">
+                                    @(Model?.Supervisors?.Count(x => x.LoggedInStatus == true) ?? 0)
+                                </h5>
+                                <small class="text-muted">Logged In</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+<div class="row mt-3 gy-2">
+    <!-- Chart 1 -->
+    <div class="col-md-6 mb-2">
+        <div class="card border-1 pb-2" id="driverCard">
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="collapse show col-12" id="donutchart">
+                    <canvas id="driversChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2 -->
+    <div class="col-md-6">
+        <div class="card border-1 pb-2">
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="collapse show col-12" id="donutchart">
+                    <canvas id="ordersChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <!-- Chart 3 -->
+    <div class="col-md-6 mb-3">
+        <div class="card border-1 pb-2">
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="collapse show col-12" id="donutchart">
+                    <canvas id="completdChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 4 -->
+    <div class="col-md-6">
+        <div class="card border-1 pb-2">
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="collapse show col-12" id="donutchart">
+                    <canvas id="completedTotalChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    //counts related to drivers
+    int offlineCount = Model.Drivers.Count(d => d.Status == "offline");
+    int readyCount = Model.Drivers.Count(d => d.Status == "ready");
+    int acceptedCount = Model.Drivers.Count(d => d.Status == "accepted");
+    int deliveringCount = Model.Drivers.Count(d => d.Status == "delivering");
+    int completedCount = Model.Drivers.Count(d => d.Status == "completed");
+    int arrivedatbranchCount = Model.Drivers.Count(d => d.Status?.ToLower() == "arrivedatbranch");
+    int arrivedCount = Model.Drivers.Count(d => d.Status?.ToLower() == "arrived");
+    //counts related to orders
+    int completedOrdersCount = Model.Orders.Count(d => d.Status == "completed");
+    int requestedOrdersCount = Model.Orders.Count(d => d.Status == "requested");
+    int assignedOrdersCount = Model.Orders.Count(d => d.Status == "assigned");
+    int acceptedOrdersCount = Model.Orders.Count(d => d.Status == "accepted");
+    int onTheWayOrdersCount = Model.Orders.Count(d => d.Status?.ToLower() == "ontheway");
+    int declinedOrdersCount = Model.Orders.Count(d => d.Status == "declined");
+    int driverNotFoundOrdersCount = Model.Orders.Count(d => d.Status == "driverNotFound");
+    int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrived");
+    int arrivedAtBranchOrdersCount = Model.Orders.Count(d => d.Status == "arrivedAtBranch");
+    int sosOrdersCount = Model.Orders.Count(d => d.Status == "sos");
+}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    window.initialChartData = {
+        driverDataSet: [ @readyCount,@offlineCount,@acceptedCount,@deliveringCount,@completedCount ,@arrivedatbranchCount,@arrivedCount],
+        orderDataSet: [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
+                       @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedAtBranchOrdersCount,@arrivedOrdersCount,@sosOrdersCount]
+    };
+</script>

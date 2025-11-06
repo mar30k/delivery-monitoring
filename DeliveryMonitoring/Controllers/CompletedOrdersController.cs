@@ -89,8 +89,8 @@ namespace DeliveryMonitoring.Controllers
         {
             DeliveryOrderTypes orderType = type switch
             {
-                "takeAwayTable" => DeliveryOrderTypes.PickUpAtBranch,
-                "dineInTable" => DeliveryOrderTypes.InHouseDining,
+                TakeAwayTableId => DeliveryOrderTypes.PickUpAtBranch,
+                DineInTableId => DeliveryOrderTypes.InHouseDining,
                 _ => DeliveryOrderTypes.DeliveryToLocation
             };
 
@@ -171,6 +171,7 @@ namespace DeliveryMonitoring.Controllers
 
             foreach (var item in getOrdersByTypeData.Data)
             {
+                item.TableId = type == (int)DeliveryOrderTypes.InHouseDining ? DineInTableId : TakeAwayTableId;
                 ParseSupervisor(item);
                 FormatRequestDate(item);
             }
