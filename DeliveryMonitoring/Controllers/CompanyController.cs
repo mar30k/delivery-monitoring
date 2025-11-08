@@ -1,6 +1,6 @@
 ﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
-using DeliveryMonitoring.Services;
+using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -15,6 +15,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
+        private const string AdminCompanyTin = "0076217301";
         public CompanyController(
             AuthenticationManager authenticationManager,
             IApiRequestService apiRequestService,
@@ -37,7 +38,7 @@ namespace DeliveryMonitoring.Controllers
             var companiesModel = await _apiRequestService.GetCompaniesAsync();
             // Call the second endpoint for each company TIN to get detailed information
             var companyDetailsList = new List<Company>();
-            if(!string.IsNullOrWhiteSpace(currentCompanyTin) && currentCompanyTin != "0076217301")
+            if(!string.IsNullOrWhiteSpace(currentCompanyTin) && currentCompanyTin != AdminCompanyTin)
             {
                 var companyDetailsModel = await _apiRequestService.GetCompanyDetailsAsync(currentCompanyTin);
                 companyDetailsList.Add(companyDetailsModel ?? new Company());
@@ -77,7 +78,7 @@ namespace DeliveryMonitoring.Controllers
             {
                 return RedirectToAction("Logout", "Login");
             }
-            else if (currentCompanyTin != "0076217301" && currentCompanyTin != companyTin) { return RedirectToAction("index", "company"); }
+            else if (currentCompanyTin != AdminCompanyTin && currentCompanyTin != companyTin) { return RedirectToAction("index", "company"); }
 
             try
             {

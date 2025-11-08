@@ -1,7 +1,7 @@
 ﻿using CNET_V7_Domain.Domain.SecuritySchema;
 using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
-using DeliveryMonitoring.Services;
+using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +23,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly AuthenticationManager _authenticationManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
+        private const string AdminCompanyTin = "0076217301";
         public LoginController(AuthenticationManager authenticationManager,
             IHttpContextAccessor httpContextAccessor,
             IWebHostEnvironment webHostEnvironment,
@@ -102,10 +103,10 @@ namespace DeliveryMonitoring.Controllers
             {
                 string baseAddress;
                 string message;
-                if (model.myId?.Trim().ToLower() == "0076217301")
+                if (model.myId?.Trim().ToLower() == AdminCompanyTin)
                 {
                     baseAddress = _configuration["DeliveryLogin"];
-                    _authenticationManager.AddSecureCookie(CNET_WebConstantes.IdentificationCookie, "0076217301", TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
+                    _authenticationManager.AddSecureCookie(CNET_WebConstantes.IdentificationCookie, AdminCompanyTin, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
                     _authenticationManager.AddSecureCookie(CNET_WebConstantes.ApiBaseAddress, baseAddress, TimeSpan.FromMinutes(CNET_WebConstantes.IdentificationCookieLifeTime));
                     return Json(new
                     {

@@ -1,6 +1,6 @@
 ﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
-using DeliveryMonitoring.Services;
+using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +21,7 @@ namespace DeliveryMonitoring.Controllers
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
+        private const string AdminCompanyTin = "0076217301";
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
 
         public DriverController(
@@ -89,7 +90,7 @@ namespace DeliveryMonitoring.Controllers
                 driver = await _apiRequestService.GetDriverDetailsByPhoneNumber<Driver>(phoneNumber);
                 if (driver!=null)
                 {
-                    if (CompanyTin != "0076217301" && CompanyTin != driver.CompanyTin)
+                    if (CompanyTin != AdminCompanyTin && CompanyTin != driver.CompanyTin)
                     {
                         return NotFound();
                     }

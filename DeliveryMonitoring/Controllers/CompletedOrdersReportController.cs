@@ -2,7 +2,7 @@
 using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
-using DeliveryMonitoring.Services;
+using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -24,10 +24,10 @@ namespace DeliveryMonitoring.Controllers
             _apiRequest = apiRequest;
             _authenticationManager = authenticationManager;
         }
-        [Route("/report")]
-        public IActionResult Index(ReportByOrderType t)
+        [Route("report/{type?}")]
+        public IActionResult Index(ReportByOrderType type = ReportByOrderType.All)
         {
-            var config = TableConfigFactory.CreateReport(t); // encapsulate config in one place
+            var config = TableConfigFactory.CreateReport(type);
             return View(config);
         }
     }

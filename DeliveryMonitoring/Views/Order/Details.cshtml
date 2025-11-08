@@ -279,7 +279,7 @@
                                             Accept Order
                                         </button>
                                     }
-                                    <button type="button" class="btn btn-sm btn-outline-warning" id="changeOrderStatus"
+                                    <button type="button" class="btn btn-sm btn-outline-warning @(Model?.Status?.ToLower() == "sos" ? "" : "d-none")" id="changeOrderStatus"
                                                 data-voucher-code="@Model?.VoucherCode">
                                             Change Order Status
                                     </button>

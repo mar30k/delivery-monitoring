@@ -114,12 +114,13 @@
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" href="~/css/header-filters.css" asp-append-version="true">
     <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script>
-    <script src="~/js/summary-datatable.js" asp-append-version="true"></script>
-    <script src="~/js/report-table-init.js" asp-append-version="true"></script>
+    <script src="~/js/datatable-renderers.js" asp-append-version="true"></script>
+    <script src="~/js/datatable-init.js" asp-append-version="true"></script>
+    <script src="~/js/datatable-config.js" asp-append-version="true"></script>
     <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
     <script>
         js(() => {
-            initPageReportTable({
+            initReportTableWrapper({
                 tableId: "@Model?.TableId",
                 ajaxUrl: "@Model?.AjaxUrl",    // ensure always a string
                 userType: "@Model?.Type",

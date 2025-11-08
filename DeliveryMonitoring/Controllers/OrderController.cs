@@ -1,7 +1,7 @@
 ﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
-using DeliveryMonitoring.Services;
+using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -17,7 +17,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
-
+        private const string AdminCompanyTin = "0076217301";
         public OrderController(
             IHttpContextAccessor httpContextAccessor,
             IWebHostEnvironment env,
@@ -47,7 +47,7 @@ namespace DeliveryMonitoring.Controllers
                 }
 
                 orders = await _apiRequestService.GetOrderRequestsAsync();
-                if (CompanyTin != "0076217301")
+                if (CompanyTin != AdminCompanyTin)
                 {
                     orders = orders?.Where(o => o.DeliveryTin == CompanyTin).ToList();
                 }
@@ -78,7 +78,7 @@ namespace DeliveryMonitoring.Controllers
                     response?.ForEach(x => x.CreatedAtString = new DateTimeOffset(DateTime.SpecifyKind(x.CreatedAt.Value, DateTimeKind.Utc))
                                     .ToOffset(TimeSpan.FromHours(3))
                                     .ToString("yyyy-MM-dd HH:mm:ss"));
-                if (!string.IsNullOrWhiteSpace(CompanyTin) && CompanyTin != "0076217301" && response != null)
+                if (!string.IsNullOrWhiteSpace(CompanyTin) && CompanyTin != AdminCompanyTin && response != null)
                 {
                     response = response.Where(order => order.DeliveryTin == CompanyTin).ToList();
                 }
@@ -108,7 +108,7 @@ namespace DeliveryMonitoring.Controllers
                     return RedirectToAction("Index");
                 }
 
-                if (CompanyTin != "0076217301" && CompanyTin != order?.DeliveryTin)
+                if (CompanyTin != AdminCompanyTin && CompanyTin != order?.DeliveryTin)
                 {
                     TempData["Message"] = $"You do not have the necessary permissions to view Order {voucherCode}.";
                     return RedirectToAction("index");

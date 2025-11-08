@@ -1,6 +1,6 @@
 ﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
-using DeliveryMonitoring.Services;
+using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -15,6 +15,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
+        private const string AdminCompanyTin = "0076217301";
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
         public RestaurantConnectivityController(
             IHttpContextAccessor httpContextAccessor,
@@ -50,7 +51,7 @@ namespace DeliveryMonitoring.Controllers
                 .GroupBy(d => new { d.Tin, d.BranchName, d.DeviceName }) // Group by Tin , BranchName and DeviceName
                 .Select(g => g.OrderByDescending(d => d.TimeStamp).First()) // Get the one with latest TimeStamp
                 .ToList();
-            if (CompanyTin != "0076217301")
+            if (CompanyTin != AdminCompanyTin)
             {
                 latestByTinAndBranch = latestByTinAndBranch?
                     .Where(x => x?.Tin?.ToString() == CompanyTin?.Trim())

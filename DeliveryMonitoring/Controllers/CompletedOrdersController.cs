@@ -1,6 +1,6 @@
 ﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
-using DeliveryMonitoring.Services;
+using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -26,6 +26,7 @@ namespace DeliveryMonitoring.Controllers
         private const string DineInTableId = "dineIn";
         private const string TakeAwayTableId = "takeAway";
         private const string DeliveryTableId = "delivery";
+        private const string AdminCompanyTin = "0076217301";
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
         #endregion
 
@@ -105,7 +106,7 @@ namespace DeliveryMonitoring.Controllers
             }
 
             var order = result.Data?.FirstOrDefault(o => o.VoucherCode == voucher);
-            if (CompanyTin != "0076217301" && CompanyTin != order?.Tin)
+            if (CompanyTin != AdminCompanyTin && CompanyTin != order?.Tin)
             {
                 TempData["Message"] = $"You do not have the necessary permissions to view Order: {voucher}.";
                 return RedirectToAction("Index");
@@ -227,7 +228,7 @@ namespace DeliveryMonitoring.Controllers
 
         private List<CompletedOrders> FilterOrders(List<CompletedOrders> orders, DateTime? startDate, DateTime? endDate, bool isClear)
         {
-            if (CompanyTin != "0076217301")
+            if (CompanyTin != AdminCompanyTin)
                 orders = orders.Where(o => o.Tin == CompanyTin).ToList();
 
             if (!isClear && startDate.HasValue && endDate.HasValue)

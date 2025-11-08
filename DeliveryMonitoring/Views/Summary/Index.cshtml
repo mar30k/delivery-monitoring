@@ -32,8 +32,8 @@
                     {
                         <tr>
                             <th class="text-center">Tin</th>
-                            <th class="text-center">Company Name</th>
-                            <th class="text-center">Branch Name</th>
+                            <th class="text-center">Company</th>
+                            <th class="text-center">Branch</th>
 
                             <!-- Dine-In Orders -->
                             <th class="text-center">Dine-In Orders</th>
@@ -266,12 +266,13 @@
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" href="~/css/header-filters.css" asp-append-version="true">
     <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script>
-    <script src="~/js/summary-datatable.js" asp-append-version="true"></script>
-    <script src="~/js/summary-table-init.js" asp-append-version="true"></script>
+    <script src="~/js/datatable-renderers.js" asp-append-version="true"></script>
+    <script src="~/js/datatable-init.js" asp-append-version="true"></script>
+    <script src="~/js/datatable-config.js" asp-append-version="true"></script>
     <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
     <script>
         js(() => {
-            initPageSummaryTable({
+            initSummaryTableWrapper({
                 tableId: "@Model.TableId",
                 ajaxUrl: "@Model.AjaxUrl",
                 userType: "@Model.Type",

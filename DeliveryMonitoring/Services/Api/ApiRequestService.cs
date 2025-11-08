@@ -10,7 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeliveryMonitoring.Services
+namespace DeliveryMonitoring.Services.Api
 {
     public class ApiRequestService : IApiRequestService
     {
@@ -49,6 +49,7 @@ namespace DeliveryMonitoring.Services
         private readonly string _getCompletedOrdersByType;
         private readonly IDataProtector _protector;
 
+        private const string AdminCompanyTin = "0076217301";
         private string CompanyTin => GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? "";
         private string ApibaseAddress => GetSecureCookie(CNET_WebConstantes.ApiBaseAddress) ?? "";
         #endregion
@@ -126,7 +127,7 @@ namespace DeliveryMonitoring.Services
         #region Drivers
         public async Task<List<Driver>> GetAvailableDriversAsync()
         {
-            string endpoint = CompanyTin == "0076217301" ? _getDrivers : $"{_getDrivers}?companyTin={CompanyTin}";
+            string endpoint = CompanyTin == AdminCompanyTin ? _getDrivers : $"{_getDrivers}?companyTin={CompanyTin}";
             var response = await _deliveryClient.GetAsync(endpoint);
             if (response.IsSuccessStatusCode)
             {

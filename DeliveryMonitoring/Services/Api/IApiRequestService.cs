@@ -4,7 +4,7 @@ using DeliveryMonitoring.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DeliveryMonitoring.Services
+namespace DeliveryMonitoring.Services.Api
 {
     /// <summary>
     /// Defines all API communication contracts for Delivery Monitoring.

@@ -1,6 +1,6 @@
 ﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
-using DeliveryMonitoring.Services;
+using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -13,6 +13,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
+        private const string AdminCompanyTin = "0076217301";
         public SupervisorsController(
             IHttpContextAccessor httpContextAccessor,
             IApiRequestService apiRequestService,
@@ -37,7 +38,7 @@ namespace DeliveryMonitoring.Controllers
             }
 
             orders = await _apiRequestService.GetOrderRequestsAsync();
-            if ( companyTin== "0076217301" )
+            if ( companyTin== AdminCompanyTin )
             {
                 superVisors = await _apiRequestService.GetSupervisorsAsync();
                 completedOrders = await _apiRequestService.GetCompletedOrdersAsync();
@@ -51,7 +52,7 @@ namespace DeliveryMonitoring.Controllers
             var orderViewModel = new OrderViewModel
             {
                 OrderDetail = orders,
-                Supervisors = companyTin== "0076217301" ?superVisors : new List<SupervisorsDTO>(),
+                Supervisors = companyTin== AdminCompanyTin ?superVisors : new List<SupervisorsDTO>(),
                 CompletedOrders = completedOrders?.Data?.Where(o=>o.SupervisorPhoneNumber!=null).ToList() ?? new List<CompletedOrders>()
             };
             return View(orderViewModel);

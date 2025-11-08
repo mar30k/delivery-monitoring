@@ -2,8 +2,9 @@
 @inject DeliveryMonitoring.Controllers.AuthenticationManager AuthManager
 @using DeliveryMonitoring.Constants
 @{
+    var adminCompanyTin = "0076217301";
     var companyTin = AuthManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? "";
-    var isRedCloud = companyTin == "0076217301";
+    var isRedCloud = companyTin == adminCompanyTin;
 }
 <div class="d-flex flex-wrap justify-content-between gap-3">
     <div class="card flex-grow-1">

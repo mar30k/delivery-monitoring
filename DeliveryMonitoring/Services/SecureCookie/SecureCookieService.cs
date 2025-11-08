@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.DataProtection;
 
-namespace DeliveryMonitoring.Services
+namespace DeliveryMonitoring.Services.SecureCookie
 {
     public class SecureCookieService : ISecureCookieService
     {

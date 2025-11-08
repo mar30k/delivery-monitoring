@@ -1,6 +1,6 @@
 ﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
-using DeliveryMonitoring.Services;
+using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
@@ -12,6 +12,7 @@ namespace DeliveryMonitoring.Controllers
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
+        private const string AdminCompanyTin = "0076217301";
         public AnalyticsController(IHttpContextAccessor httpContextAccessor
             , IApiRequestService apiRequestService,
             AuthenticationManager authenticationManager)
@@ -54,7 +55,7 @@ namespace DeliveryMonitoring.Controllers
                 .GroupBy(d => new { d.Tin, d.BranchName, d.DeviceName }) // Group by Tin , BranchName and DeviceName
                 .Select(g => g.OrderByDescending(d => d.TimeStamp).First()) // Get the one with latest TimeStamp
                 .ToList();
-            if (companyTin != "0076217301")
+            if (companyTin != AdminCompanyTin)
             {
                 latestByTinAndBranch = latestByTinAndBranch?
                     .Where(x => x?.Tin?.ToString() == companyTin?.Trim())

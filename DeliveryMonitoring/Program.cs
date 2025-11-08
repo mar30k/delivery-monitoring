@@ -1,7 +1,9 @@
 using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Models;
-using DeliveryMonitoring.Services;
+using DeliveryMonitoring.Services.Api;
+using DeliveryMonitoring.Services.SecureCookie;
+using DeliveryMonitoring.Services.SummaryReport;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Configuration;
 
@@ -53,6 +55,7 @@ builder.Services.AddDataProtection();
 builder.Services.AddScoped<ISecureCookieService, SecureCookieService>();
 builder.Services.AddScoped<AuthenticationManager>();
 builder.Services.AddScoped<IApiRequestService, ApiRequestService>();
+builder.Services.AddScoped<ISummaryReportService, SummaryReportService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -70,6 +73,8 @@ app.UseRouting();
 //Added for Authentication
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseStatusCodePagesWithReExecute("/404", "?path={0}"); // Executes /404 without redirect
 
 app.MapControllerRoute(
     name: "default",

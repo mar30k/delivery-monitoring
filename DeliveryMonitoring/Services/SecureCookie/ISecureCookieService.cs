@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DeliveryMonitoring.Services
+namespace DeliveryMonitoring.Services.SecureCookie
 {
     /// <summary>
     /// Provides methods for setting, retrieving, and deleting secure cookies.

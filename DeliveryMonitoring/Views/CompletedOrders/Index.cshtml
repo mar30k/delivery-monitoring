@@ -1,8 +1,9 @@
 @model DeliveryMonitoring.Models.CompletedOrdersViewModel
 @{
+    var adminCompanyTin = "0076217301";
     ViewData["Title"] = "Completed Orders";
     var disTinctSupervisors = Model?.CompletedOrders?.Data?.DistinctBy(x => x.SupervisorPhoneNumber).Where(x => x.SupervisorPhoneNumber != null).ToList();
-    var isRedCloud = Model?.CompanyTin == "0076217301";
+    var isRedCloud = Model?.CompanyTin == adminCompanyTin;
 }
 <style>
 .initial-hide {
