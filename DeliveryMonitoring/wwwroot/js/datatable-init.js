@@ -25,7 +25,7 @@ js(() => {
     js("#dateRange").val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
 });
 var isClear = false;
-function initSummaryTable({
+function initTable({
     tableSelector,
     orderingColumn = [1, "asc"],
     ajaxUrl,
@@ -36,40 +36,15 @@ function initSummaryTable({
     headerFilterColumns = [],
     nonOrderableTargets = []
 }) {
-    // Helper render functions
-    const numericRender = (type, isFloat) => (data, type_, row) => {
-        if (type_ === 'sort' || type_ === 'type') {
-            return isFloat ? parseFloat(data) || 0 : parseInt(data) || 0;
-        }
-        if (isFloat) {
-            // Format as currency with Br prefix
-            const value = parseFloat(data) || 0;
-            return value.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-        return data;
-    };
-
-    const stringRender = (data, type_, row) => {
-        if (type_ === 'sort' || type_ === 'type') {
-            if (!data) return '';
-            const text = $('<div>').html(data).text(); // strip HTML
-            return text.trim().toLowerCase();
-        }
-        return data;
-    };
-
     // Apply numeric render only if no custom render is already defined
     columns.forEach((col, idx) => {
         if (!col.render) { // Preserve custom renderers
             if (floatCols.includes(idx)) {
-                col.render = numericRender('sort', true);
+                col.render = Renderers.numericRender(true);   // ✅ isFloat = true
             } else if (intCols.includes(idx)) {
-                col.render = numericRender('sort', false);
+                col.render = Renderers.numericRender(false);  // ✅ isFloat = false
             } else {
-                col.render = stringRender;
+                col.render = Renderers.stringRender;
             }
         }
     });

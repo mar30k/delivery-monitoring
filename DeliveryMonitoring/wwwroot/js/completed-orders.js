@@ -43,12 +43,6 @@ js(() => {
         return parseFloat(d).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
-    const renderCurrency = (d, type) => {
-        if (type === 'sort' || type === 'type') return parseFloat(d) || 0;
-        if (!d) return "0.00";
-        return parseFloat(d).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    };
-
     const renderRequestDate = (td, cellData, rowData) => {
         if (rowData.requestCreatedAt) {
             const parsed = moment(rowData.requestCreatedAt, "YYYY-MM-DD hh:mm:ss");
