@@ -3,6 +3,7 @@ using CNET_V7_Domain.Misc;
 using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Models;
+using DeliveryMonitoring.Services.Cache;
 using Microsoft.AspNetCore.DataProtection;
 using Newtonsoft.Json;
 using System;
@@ -15,6 +16,7 @@ namespace DeliveryMonitoring.Services.Api
     public class ApiRequestService : IApiRequestService
     {
         #region Fields
+        private readonly ICacheService _cacheService;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly string _getDeviceControl;
@@ -57,8 +59,11 @@ namespace DeliveryMonitoring.Services.Api
         #region Constructor
         public ApiRequestService(IHttpClientFactory httpClientFactory,
             IHttpContextAccessor httpContextAccessor, 
-            IConfiguration configuration, IDataProtectionProvider dataProtectionProvider)
+            IConfiguration configuration, 
+            ICacheService cacheService,
+            IDataProtectionProvider dataProtectionProvider)
         {
+            _cacheService = cacheService;
             _client = httpClientFactory.CreateClient("CnetApiBaseUrl");
             _deliveryClient = httpClientFactory.CreateClient("Delivery");
             _deviceControlClient = httpClientFactory.CreateClient("ApiBaseUrl");
@@ -259,28 +264,46 @@ namespace DeliveryMonitoring.Services.Api
         #endregion
 
         #region Completed Orders
-        public async Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync()
+        public async Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(bool skipCache = false)
         {
-            var response = await _client.GetAsync(_getCompletedOrders);
-            if (response.IsSuccessStatusCode)
-            {
-                var data = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(data)
-                       ?? new HulubejeResponse<List<CompletedOrders>>();
-            }
-            return new HulubejeResponse<List<CompletedOrders>>();
+            string cacheKey = "completed_orders";
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _client.GetAsync(_getCompletedOrders);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(data)
+                               ?? new HulubejeResponse<List<CompletedOrders>>();
+                    }
+                    return new HulubejeResponse<List<CompletedOrders>>();
+                },
+                skipCache,
+                10 // cache for 10 minutes
+            );
         }
 
-        public async Task<HulubejeResponse<List<CompletedOrders>>> GetOrdersByTypeAsync(int type)
+        public async Task<HulubejeResponse<List<CompletedOrders>>> GetOrdersByTypeAsync(int type, bool skipCache = false)
         {
-            var response = await _client.GetAsync($"{_getCompletedOrdersByType}type={type}");
-            if (response.IsSuccessStatusCode)
-            {
-                var data = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(data)
-                       ?? new HulubejeResponse<List<CompletedOrders>>();
-            }
-            return new HulubejeResponse<List<CompletedOrders>>();
+            string cacheKey = $"orders_by_type_{type}";
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _client.GetAsync($"{_getCompletedOrdersByType}type={type}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(data)
+                               ?? new HulubejeResponse<List<CompletedOrders>>();
+                    }
+                    return new HulubejeResponse<List<CompletedOrders>>();
+                },
+                skipCache,
+                10
+            );
         }
         public async Task<HulubejeResponse<LineItemsDetail>> Gethistorydetail(string voucherCode, string companyCode, int industryType = 1992)
         {

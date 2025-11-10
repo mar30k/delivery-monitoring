@@ -135,7 +135,8 @@
                                                         {
                                                         RequestStat.sos,
                                                         RequestStat.driverNotFound,
-                                                        RequestStat.declined
+                                                        RequestStat.declined,
+                                                        RequestStat.completed
                                                         };
                             }
                             <div class="form-group">
@@ -197,7 +198,12 @@
                                 padding: 0px 8px;">
                                 <strong class="@(bgColor == "lawngreen" || bgColor == "yellow" ? "text-black" : "text-white")" id="orderStatus">@Html.DisplayFor(model => model.Status) </strong>
                             </div>
-                            <span class="text-info bg-aqua" id="sosReason">@(Model?.Status == "sos" && Model.SosReason != null ? $"{Model.SosReason}" : "")</span>
+                            <span class="text-info bg-aqua" id="sosReason">@(Model?.Status == "sos" && Model.SosReason != null ? $"{Model.SosReason}" : "")</span> 
+                            @if (!string.IsNullOrWhiteSpace(Model?.PhotoAttachment))
+                            {
+                                <a href="#" class="zoomable" id="sosAttachment" data-img="@Model?.PhotoAttachment">Attachement</a>
+                            }
+                            @await Html.PartialAsync("_ImageModal")
                         </div>
                     </div>
                 </div>

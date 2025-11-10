@@ -9,7 +9,7 @@ function updateOrderStatuses() {
     const matchedOrder = data.find(order => order.voucherCode === voucherCode);
     if (matchedOrder) {
         $("#orderStatus").text(matchedOrder.status);
-        $("#sosReason").text('');
+        $("#sosReason").text(matchedOrder.status === 'sos' && matchedOrder.sosReason ? matchedOrder.sosReason : '');
         $("#driverPhoneNumber").text(matchedOrder.assignedDriverPhoneNumber?.trim() || "N/A");
         phoneNumber = matchedOrder.assignedDriverPhoneNumber;
         const isDriverPhoneInvalid = !phoneNumber || phoneNumber.length < 10;
@@ -26,14 +26,21 @@ function updateOrderStatuses() {
         $("#actualArrival").text(formatted);
         $("#actualArrival").closest('div').removeClass('d-none');
     }
-    if (matchedOrder && matchedOrder.status === 'sos' && matchedOrder.sosReason) {
-        $("#sosReason").text(matchedOrder.sosReason);
-    }
     if (matchedOrder && matchedOrder.status === 'sos') {
         $("#changeOrderStatus").removeClass('d-none');
     }
     if (matchedOrder && matchedOrder.status !== 'sos') {
         $("#changeOrderStatus").addClass('d-none');
+    }
+    // Update photo attachment link
+    const $attachmentLink = $("#sosAttachment");
+    if (matchedOrder.photoAttachment) {
+            $attachmentLink
+            .attr("href", "#")
+            .attr("data-img", matchedOrder.photoAttachment)
+            .removeClass("d-none");
+    } else {
+        $attachmentLink.addClass("d-none");
     }
 }
 function showModalAlert(message, containerId, type = "warning", timeout = 4000) {

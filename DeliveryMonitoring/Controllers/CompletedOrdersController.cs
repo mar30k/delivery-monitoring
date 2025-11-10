@@ -1,6 +1,9 @@
 ﻿using DeliveryMonitoring.Constants;
+using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services.Api;
+using DeliveryMonitoring.Services.Cache;
+using DeliveryMonitoring.Services.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -22,7 +25,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
-
+        private readonly ICompletedOrdersService _ordersService;
         private const string DineInTableId = "dineIn";
         private const string TakeAwayTableId = "takeAway";
         private const string DeliveryTableId = "delivery";
@@ -31,13 +34,8 @@ namespace DeliveryMonitoring.Controllers
         #endregion
 
         #region Constructor
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CompletedOrdersController"/> class.
-        /// </summary>
-        /// <param name="apiRequestService">API service for backend operations.</param>
-        /// <param name="httpContextAccessor">HTTP context accessor for cookie retrieval.</param>
-        /// <param name="authenticationManager">Authentication manager for user-related operations.</param>
         public CompletedOrdersController(
+            ICompletedOrdersService ordersService,
             IApiRequestService apiRequestService,
             IHttpContextAccessor httpContextAccessor,
             AuthenticationManager authenticationManager)
@@ -45,14 +43,11 @@ namespace DeliveryMonitoring.Controllers
             _httpContextAccessor = httpContextAccessor;
             _authenticationManager = authenticationManager;
             _apiRequestService = apiRequestService;
+            _ordersService = ordersService;
         }
         #endregion
 
         #region Views
-        /// <summary>
-        /// Displays the Completed Orders page with purpose options and company info.
-        /// </summary>
-        /// <returns>The CompletedOrders view.</returns>
         public async Task<IActionResult> Index()
         {
             var CompletedOrdersViewModel = new CompletedOrdersViewModel
@@ -146,15 +141,7 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/getCompletedOrders")]
         public async Task<IActionResult> GetCompletedOrdersApi([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] bool isClear = false)
         {
-            var result = await _apiRequestService.GetCompletedOrdersAsync();
-            if (result?.Data == null)
-                return NotFound("Failed to retrieve or parse completed orders.");
-
-            result.Data = FilterOrders(result.Data, startDate, endDate, isClear);
-
-            foreach (var item in result.Data)
-                FormatRequestDate(item);
-
+            var result = await _ordersService.GetCompletedOrdersAsync(startDate, endDate, isClear);
             return Ok(result);
         }
 
@@ -162,102 +149,23 @@ namespace DeliveryMonitoring.Controllers
         /// Fetches completed orders by type and filters by company and date range.
         /// </summary>
         [HttpGet("/getordersbytype")]
-        public async Task<IActionResult> GetOrdersByType([FromQuery] int type, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] bool isClear = false)
+        public async Task<IActionResult> GetOrdersByType(
+            [FromQuery] int type,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
+            [FromQuery] bool isClear = false)
         {
-            var getOrdersByTypeData = await _apiRequestService.GetOrdersByTypeAsync(type);
-            if (getOrdersByTypeData?.Data == null)
-                return NotFound("Failed to retrieve or parse completed orders.");
-
-            getOrdersByTypeData.Data = FilterOrders(getOrdersByTypeData.Data, startDate, endDate, isClear);
-
-            foreach (var item in getOrdersByTypeData.Data)
-            {
-                item.TableId = type == (int)DeliveryOrderTypes.InHouseDining ? DineInTableId : TakeAwayTableId;
-                ParseSupervisor(item);
-                FormatRequestDate(item);
-            }
-
-            return Ok(getOrdersByTypeData);
+            var orders = await _ordersService.GetOrdersByTypeAsync(type, startDate, endDate, isClear);
+            return Ok(new HulubejeResponse<List<CompletedOrders>> { Data = orders, IsSuccessful = orders?.Any() ?? false });
         }
 
         [HttpGet("/getAllOrders")]
-        public async Task<IActionResult> GetAll([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] bool isClear = false)
+        public async Task<IActionResult> GetAllOrders([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] bool isClear = false)
         {
-            var dineInTask = GetProcessedOrdersByType((int)DeliveryOrderTypes.InHouseDining);
-            var takeAwayTask = GetProcessedOrdersByType((int)DeliveryOrderTypes.PickUpAtBranch);
-            var deliveryTask = _apiRequestService.GetCompletedOrdersAsync();
 
-            await Task.WhenAll(dineInTask, takeAwayTask, deliveryTask);
-
-            var dineInOrders = await dineInTask;
-            var takeAwayOrders = await takeAwayTask;
-            var deliveryOrders = await deliveryTask;
-            
-            foreach (var item in deliveryOrders.Data ?? new List<CompletedOrders>())
-            {
-                FormatRequestDate(item);
-                item.TableId = DeliveryTableId;
-            }
-
-            var allOrdersData = (deliveryOrders.Data ?? new List<CompletedOrders>())
-                                .Concat(dineInOrders)
-                                .Concat(takeAwayOrders)
-                                .ToList();
-
-            allOrdersData = FilterOrders(allOrdersData, startDate, endDate, isClear);
-
-            return Ok(new HulubejeResponse<List<CompletedOrders>>
-            {
-                Data = allOrdersData,
-                IsSuccessful = true
-            });
+            var orders = await _ordersService.GetAllOrdersAsync(startDate, endDate, isClear);
+            return Ok(new HulubejeResponse<List<CompletedOrders>> { Data = orders, IsSuccessful = orders?.Any() ?? false });
         }
-
-        private async Task<List<CompletedOrders>> GetProcessedOrdersByType(int type)
-        {
-            var ordersData = await _apiRequestService.GetOrdersByTypeAsync(type);
-            var orders = ordersData?.Data ?? new List<CompletedOrders>();
-            foreach (var order in orders)
-            {
-                FormatRequestDate(order);
-                ParseSupervisor(order);
-                order.TableId = type == (int)DeliveryOrderTypes.PickUpAtBranch ? TakeAwayTableId : DineInTableId;
-            }
-            return orders;
-        }
-
-        private List<CompletedOrders> FilterOrders(List<CompletedOrders> orders, DateTime? startDate, DateTime? endDate, bool isClear)
-        {
-            if (CompanyTin != AdminCompanyTin)
-                orders = orders.Where(o => o.Tin == CompanyTin).ToList();
-
-            if (!isClear && startDate.HasValue && endDate.HasValue)
-                orders = orders.Where(o => o.RequestCreatedAt.Date >= startDate.Value.Date &&
-                                           o.RequestCreatedAt.Date <= endDate.Value.Date).ToList();
-
-            return orders;
-        }
-
-        private static void ParseSupervisor(CompletedOrders order)
-        {
-            string supervisorName = "N/A";
-            if (!string.IsNullOrEmpty(order.Note) && order.Note.StartsWith("{"))
-            {
-                var match = Regex.Match(order.Note, @"^\{(.*?)\}");
-                if (match.Success)
-                {
-                    supervisorName = match.Groups[1].Value;
-                    order.Note = order.Note[match.Length..].TrimStart();
-                }
-            }
-            order.SupervisorName = supervisorName;
-        }
-
-        private static void FormatRequestDate(CompletedOrders order)
-        {
-            order.RequestCreatedAtString = order.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm tt");
-        }
-        
         /// <summary>
         /// Saves a review or note for a completed order.
         /// </summary>
@@ -265,33 +173,41 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> SaveOrderReview([FromBody] CompletedOrders request)
         {
             if (request == null)
-                return BadRequest("Please fill all the required fields.");
+                return BadRequest("Request cannot be null.");
 
+            // Manual validation since properties are nullable
+            if (string.IsNullOrWhiteSpace(request.VoucherCode))
+                return BadRequest("VoucherCode is required.");
+            if (string.IsNullOrWhiteSpace(request.Note))
+                return BadRequest("Note is required.");
+            if (string.IsNullOrWhiteSpace(request.Purpose))
+                return BadRequest("Purpose is required.");
             try
             {
-                if (!request.IsDelivery)
-                {
-                    var user = _authenticationManager.GetUserFromCookie();
-                    if (user != null)
-                    {
-                        var supervisors = await _apiRequestService.GetSupervisorsAsync();
-                        var supervisor = supervisors.FirstOrDefault(s => s.UserName == user.UserName);
-                        if (supervisor != null)
-                            request.Note = $"{{{supervisor.FirstName} {supervisor.SecondName}}} {request.Note}";
-                        else
-                            return BadRequest("Unable to find the supervisor. Please try again!");
-                    }
-                }
+                request.Note = await OrderHelpers.BuildSupervisorNoteAsync(
+                    request,
+                    _authenticationManager,
+                    _apiRequestService
+                );
 
-                var result = await _apiRequestService.SaveDeliveryNote(request.VoucherCode ?? "", request.Note ?? "", request.Purpose ?? "");
+                var result = await _apiRequestService.SaveDeliveryNote(
+                    request.VoucherCode,
+                    request.Note,
+                    request.Purpose
+                );
+
                 if (!result.IsSuccessful)
                     return BadRequest();
 
                 return Ok(result.IsSuccessful);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message[0]);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return BadRequest("An unexpected error occurred.");
             }
         }
         /// <summary>

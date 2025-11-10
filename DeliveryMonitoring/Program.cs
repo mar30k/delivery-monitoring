@@ -2,6 +2,8 @@ using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services.Api;
+using DeliveryMonitoring.Services.Cache;
+using DeliveryMonitoring.Services.Orders;
 using DeliveryMonitoring.Services.SecureCookie;
 using DeliveryMonitoring.Services.SummaryReport;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -52,6 +54,9 @@ builder.Services.AddSession();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDataProtection();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<ICompletedOrdersService, CompletedOrdersService>();
 builder.Services.AddScoped<ISecureCookieService, SecureCookieService>();
 builder.Services.AddScoped<AuthenticationManager>();
 builder.Services.AddScoped<IApiRequestService, ApiRequestService>();

@@ -350,3 +350,10 @@ img {
 .modal-header, .modal-body, .modal-footer {
     border: 0;
 }
+
+/* Applies to all DataTables processing spinners */
+div[id$="_processing"].dt-processing {
+    position: absolute !important;
+    top: 10px !important;
+    left: 50% !important;
+}

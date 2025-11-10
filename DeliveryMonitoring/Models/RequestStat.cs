@@ -6,7 +6,7 @@
         assigned,
         accepted,
         declined,
-        onTheWay,
+        ontheway,
         arrived,
         completed,
         sos,

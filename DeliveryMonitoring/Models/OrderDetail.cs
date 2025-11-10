@@ -73,6 +73,7 @@ namespace DeliveryMonitoring.Models
 
         public string? VoucherCode { get; set; }
         public string? Alert { get; set; }
+        public string? PhotoAttachment { get; set; }
         public bool? OrderPrinted { get; set; }
 
         public LineItemsDetail? LineItemsDetail { get; set; }
