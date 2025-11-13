@@ -10,29 +10,3 @@
         </div>
     </div>
 </div>
-<script>
-    function copyToClipboard(text) {
-        if (!text || text === "null") return;
-
-        navigator.clipboard.writeText(text)
-            .then(() => {
-                const toastEl = document.getElementById('copyToast');
-                if (toastEl) {
-                    const toast = new bootstrap.Toast(toastEl);
-                    toast.show();
-                }
-            })
-            .catch(err => {
-                alert("Failed to copy: " + err);
-            });
-    }
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.copy-btn').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault();
-                const phone = this.getAttribute('data-phone');
-                copyToClipboard(phone);
-            });
-        });
-    });
-</script>

@@ -39,7 +39,7 @@ namespace DeliveryMonitoring.Controllers
             {
                 var startDate = DateTime.Today.ToString("yyyy-MM-dd");
                 // Fetch drivers and orders
-                drivers = await _apiRequestService.GetAvailableDriversAsync();
+                drivers = new List<Driver>();
                 orders = await _apiRequestService.GetOrderRequestsAsync();
                 company = await _apiRequestService.GetCompaniesAsync();
                 superVisors = await _apiRequestService.GetSupervisorsAsync();

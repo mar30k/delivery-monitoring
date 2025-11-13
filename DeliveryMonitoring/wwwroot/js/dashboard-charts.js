@@ -278,6 +278,7 @@ $(function () {
     setInterval(() => fetchAndUpdateChart(3, "all-at-once"), 60000);
     fetchAndUpdateChart();
     fetchKotStatus();
+    updateDriversChart();
     setInterval(updateOrdersChart, 10000);
     setInterval(updateDriversChart, 30000);
     setInterval(fetchKotStatus, 60000);

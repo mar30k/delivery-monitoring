@@ -19,13 +19,13 @@
                     <div class="d-flex align-items-center gap-4 flex-wrap">
                         <div class="text-center">
                             <h1 class="mb-0 fw-bold text-primary" id="totalDrivers">
-                                @(Model?.Drivers?.Count(x => x.IsDisabled != true) ?? 0)
+                                <span class="loading-dots"></span>
                             </h1>
                             <small class="text-black">Total Active</small>
                         </div>
                         <div class="text-center">
                             <h5 class="mb-0 text-success" id="readyDrivers">
-                                @(Model?.Drivers?.Count(x => x.Status?.ToLower() == "ready") ?? 0)
+                                <span class="loading-dots"></span>
                             </h5>
                             <small class="text-muted">Ready</small>
                         </div>
@@ -77,7 +77,9 @@
                         </a><br />
                         <small class="text-muted">@DateTime.Today.ToString("yyyy-MM-dd")</small>
                     </div>
-                    <h1 class="card-text fw-bold mb-0" id="kotStatus">0</h1>
+                    <h1 class="card-text fw-bold mb-0" id="kotStatus">
+                            <span class="loading-dots"></span>
+                    </h1>
                 </div>
             </div>
         </div>

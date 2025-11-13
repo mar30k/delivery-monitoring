@@ -50,7 +50,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly string _getCompletedOrders;
         private readonly string _getCompletedOrdersByType;
         private readonly IDataProtector _protector;
-
+        private readonly string _googleMapsKey;
         private const string AdminCompanyTin = "0076217301";
         private string CompanyTin => GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? "";
         private string ApibaseAddress => GetSecureCookie(CNET_WebConstantes.ApiBaseAddress) ?? "";
@@ -96,6 +96,7 @@ namespace DeliveryMonitoring.Services.Api
             _getCompletedOrders = "voucher/getcompletedorders";
             _getCompletedOrdersByType = "voucher/getordersbytype?";
             _configuration = configuration;
+            _googleMapsKey = _configuration["GoogleMapsApiKey"]; // ✅ Initialize here
             _protector = dataProtectionProvider.CreateProtector("DeliveryMonitoring.Cookies");
         }
         #endregion
@@ -121,9 +122,6 @@ namespace DeliveryMonitoring.Services.Api
             var data = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<OrderDetail>(data);
         }
-
-        public Task<HulubejeResponse<bool>> AssignOrderSupervisorAsync(AssignSuperVisorDTO assignSupervisorDto)
-            => SendAsync<bool>(_deliveryClient, _assignOrderSupervisor, assignSupervisorDto, HttpMethod.Patch);
 
         public Task<HulubejeResponse<bool>> ChangeOrderStatusAsync(object changeOrderStatusDto)
             => SendAsync<bool>(_deliveryClient, _updateOrderStatus, changeOrderStatusDto, HttpMethod.Patch);
@@ -240,6 +238,8 @@ namespace DeliveryMonitoring.Services.Api
             }
             return new List<SupervisorsDTO>();
         }
+        public Task<HulubejeResponse<bool>> AssignOrderSupervisorAsync(AssignSuperVisorDTO assignSupervisorDto)
+            => SendAsync<bool>(_deliveryClient, _assignOrderSupervisor, assignSupervisorDto, HttpMethod.Patch);
 
         public async Task<Companies> GetCompaniesAsync()
         {
@@ -264,7 +264,7 @@ namespace DeliveryMonitoring.Services.Api
         #endregion
 
         #region Completed Orders
-        public async Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(bool skipCache = false)
+        public async Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(bool skipCache = true)
         {
             string cacheKey = "completed_orders";
             return await _cacheService.GetOrSetAsync(
@@ -285,7 +285,7 @@ namespace DeliveryMonitoring.Services.Api
             );
         }
 
-        public async Task<HulubejeResponse<List<CompletedOrders>>> GetOrdersByTypeAsync(int type, bool skipCache = false)
+        public async Task<HulubejeResponse<List<CompletedOrders>>> GetOrdersByTypeAsync(int type, bool skipCache = true)
         {
             string cacheKey = $"orders_by_type_{type}";
             return await _cacheService.GetOrSetAsync(
@@ -384,8 +384,7 @@ namespace DeliveryMonitoring.Services.Api
         #region map
         public async Task<string> GetGoogleMapsJsAsync()
         {
-            string googleMapsKey = _configuration["GoogleMapsApiKey"];
-            string apiUrl = $"https://maps.googleapis.com/maps/api/js?key={googleMapsKey}&callback=initMap&libraries=places,geometry&v=weekly";
+            string apiUrl = $"https://maps.googleapis.com/maps/api/js?key={_googleMapsKey}&callback=initMap&libraries=places,geometry&v=weekly";
 
             using var client = _httpClientFactory.CreateClient();
             var result = await client.GetStringAsync(apiUrl);

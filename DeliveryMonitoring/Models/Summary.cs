@@ -43,9 +43,14 @@
     {
         public string? SupervisorPhoneNumber { get; set; }
         public string? SupervisorName { get; set; }
-        public string? PurposeSummary { get; set; } // Could be HTML or structured string
+        public List<PurposeItem>? PurposeSummary { get; set; } // Could be HTML or structured string
         public int TotalConsigneeCount { get; set; }
         public int TotalMerchantCount { get; set; }
     }
-
+    public class PurposeItem
+    {
+        public string Purpose { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public string Color { get; set; } = "gray";
+    }
 }

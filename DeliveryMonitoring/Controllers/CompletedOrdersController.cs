@@ -139,9 +139,9 @@ namespace DeliveryMonitoring.Controllers
         /// Fetches completed orders filtered by company and optionally by date range.
         /// </summary>
         [HttpGet("/getCompletedOrders")]
-        public async Task<IActionResult> GetCompletedOrdersApi([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] bool isClear = false)
+        public async Task<IActionResult> GetCompletedOrdersApi([FromQuery] OrderQueryParams query)
         {
-            var result = await _ordersService.GetCompletedOrdersAsync(startDate, endDate, isClear);
+            var result = await _ordersService.GetCompletedOrdersAsync(query.StartDate, query.EndDate, query.IsClear);
             return Ok(result);
         }
 
@@ -150,20 +150,17 @@ namespace DeliveryMonitoring.Controllers
         /// </summary>
         [HttpGet("/getordersbytype")]
         public async Task<IActionResult> GetOrdersByType(
-            [FromQuery] int type,
-            [FromQuery] DateTime? startDate,
-            [FromQuery] DateTime? endDate,
-            [FromQuery] bool isClear = false)
+            [FromQuery] OrderQueryParams query)
         {
-            var orders = await _ordersService.GetOrdersByTypeAsync(type, startDate, endDate, isClear);
+            var orders = await _ordersService.GetOrdersByTypeAsync(query.Type, query.StartDate, query.EndDate, query.IsClear);
             return Ok(new HulubejeResponse<List<CompletedOrders>> { Data = orders, IsSuccessful = orders?.Any() ?? false });
         }
 
         [HttpGet("/getAllOrders")]
-        public async Task<IActionResult> GetAllOrders([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] bool isClear = false)
+        public async Task<IActionResult> GetAllOrders([FromQuery] OrderQueryParams query)
         {
 
-            var orders = await _ordersService.GetAllOrdersAsync(startDate, endDate, isClear);
+            var orders = await _ordersService.GetAllOrdersAsync(query.StartDate, query.EndDate, query.IsClear);
             return Ok(new HulubejeResponse<List<CompletedOrders>> { Data = orders, IsSuccessful = orders?.Any() ?? false });
         }
         /// <summary>

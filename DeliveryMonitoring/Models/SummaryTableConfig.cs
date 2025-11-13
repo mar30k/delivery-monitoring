@@ -8,4 +8,11 @@
         public string AjaxUrl { get; set; } = "";
         public string SheetName { get; set; } = "";
     }
+    public class OrderQueryParams
+    {
+        public int Type { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public bool IsClear { get; set; } = false;
+    }
 }

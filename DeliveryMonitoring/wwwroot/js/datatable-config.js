@@ -83,7 +83,11 @@ function getSummaryTableConfig(userType) {
                 { data: "supervisorName", className: "text-center" },
                 { data: "totalDeliveryOrders", className: "text-center" },
                 { data: "deliveryAmount", className: "text-center", render: Renderers.amount },
-                { data: "purposeSummary", className: "text-center" },
+                {
+                    data: "purposeSummary",
+                    className: "text-center",
+                    render: Renderers.purposeSummary
+                },
                 { data: "totalConsigneeCount", className: "text-center" },
                 { data: "totalMerchantCount", className: "text-center" }
             ],
@@ -130,7 +134,7 @@ function getReportTableConfig(tableId) {
             render: (d, type) => Renderers.number(d, type, 2) + ' min'
         },
         { data: "driverPhoneNumber", className: "text-center", render: Renderers.phone },
-        { data: "supervisorName", className: "text-center" },
+        { data: "supervisorName", className: "text-center", render: Renderers.orDefault},
         { data: "totalAmount", className: "text-center", render: Renderers.amount },
         { data: "tip", className: "text-center", render: (d, type) => Renderers.number(d, type, 2, false) },
         {

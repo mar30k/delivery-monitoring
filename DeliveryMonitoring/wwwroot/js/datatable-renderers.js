@@ -54,7 +54,7 @@ const Renderers = {
             }
         }
     },
-    amount: (d, type) => Renderers.number(d, type, 2),
+    amount: (d, type) => Renderers.number(d, type, 2, false),
     rating: (d, type) => {
         if (type === 'sort' || type === 'type') return parseFloat(d) || 0;
         const value = parseFloat(d) || 0;
@@ -80,7 +80,70 @@ const Renderers = {
             <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-primary text-decoration-none">
                 <i class="bi bi-clipboard"></i>
             </a>
-        </div>`
+        </div>`,
+    purposeSummary: function (data, type, row) {
+        if (!data || !Array.isArray(data) || data.length === 0) return "N/A";
+
+        // Sorting or type operations: sum of counts
+        if (type === 'sort' || type === 'type') {
+            return data.reduce((sum, item) => sum + (item.count || 0), 0);
+        }
+
+        // Display HTML
+        return data.map(item =>
+            `<span style="color:${item.color}; font-weight:600;">${item.purpose}: ${item.count}</span>`
+        ).join('<br>');
+    },
+
+    reviewOrShow: (row, isDelivery) => {
+        if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
+        const purposeKey = Object.keys(purposeOptions).find(k => purposeOptions[k] === row.purpose) || '';
+
+        if (row.note || row.purpose) {
+            return `
+            <button class="btn btn-outline-secondary btn-sm"
+                data-note="${row.note || ''}"
+                data-purpose="${row.purpose || ''}"
+                data-purpose-key="${purposeKey}"
+                data-voucher-code="${row.voucherCode}"
+                data-customer-phone="${row.phoneNumber || ''}"
+                data-customer-review="${row.review || ''}"
+                data-customer-rating="${row.rating || 0}"
+                data-phone-number="${row.driverPhoneNumber || ''}"
+                data-is-delivery="${isDelivery}"
+                onclick="showDetailsModal(this)">
+                Show
+            </button>`;
+        } else {
+            return `
+            <button class="btn btn-outline-secondary btn-sm"
+                data-voucher-code="${row.voucherCode}"
+                data-phone-number="${row.driverPhoneNumber || ''}"
+                data-customer-phone="${row.phoneNumber || ''}"
+                data-customer-review="${row.review || ''}"
+                data-customer-rating="${row.rating || 0}"
+                data-is-delivery="${isDelivery}"
+                onclick="showReviewModal(this)">
+                Review
+            </button>`;
+        }
+    },
+
+    activityBtn: (row) => `
+        <button class="btn btn-outline-secondary activityBtn btn-sm"
+            data-voucher="${row.voucherCode}"
+            data-company-code="${row.companyCode}"
+            onclick="showActivity(this)">
+            Show
+        </button>`,
+
+    detailsLink: (row, isDelivery) => {
+        if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
+        const href = isDelivery
+            ? `orderdetail?voucher=${row.voucherCode}`
+            : `orderdetail?voucher=${row.voucherCode}&type=${row.tableId}`;
+        return `<a class="btn btn-outline-secondary activityBtn btn-sm" target="_blank" href="${href}">Details</a>`;
+    }
 };
 
 //#endregion

@@ -118,13 +118,13 @@ namespace DeliveryMonitoring.Services.Api
         /// <summary>
         /// Retrieves all completed orders for the logged-in company.
         /// </summary>
-        Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(bool skipCache = false);
+        Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(bool skipCache = true);
 
         /// <summary>
         /// Retrieves completed orders filtered by order type.
         /// </summary>
         /// <param name="type">Order type identifier.</param>
-        Task<HulubejeResponse<List<CompletedOrders>>> GetOrdersByTypeAsync(int type, bool skipCache = false);
+        Task<HulubejeResponse<List<CompletedOrders>>> GetOrdersByTypeAsync(int type, bool skipCache = true);
         /// <summary>
         /// Retrieves completed orders filtered by order type.
         /// </summary>

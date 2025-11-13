@@ -357,3 +357,25 @@ div[id$="_processing"].dt-processing {
     top: 10px !important;
     left: 50% !important;
 }
+
+.loading-dots {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+    .loading-dots::after {
+        content: '...';
+        letter-spacing: 2px;
+        animation: fadeDots 1s infinite;
+    }
+
+@keyframes fadeDots {
+    0%, 100% {
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}

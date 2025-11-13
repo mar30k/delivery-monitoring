@@ -32,7 +32,10 @@ namespace DeliveryMonitoring.Helpers
             if (companyTin != adminCompanyTin)
                 orders = orders.Where(o => o.Tin == companyTin).ToList();
 
-            if (!isClear && startDate.HasValue && endDate.HasValue)
+            if (isClear)
+                return orders;
+
+            if ( startDate.HasValue && endDate.HasValue)
                 orders = orders.Where(o => o.RequestCreatedAt.Date >= startDate.Value.Date &&
                                            o.RequestCreatedAt.Date <= endDate.Value.Date).ToList();
 

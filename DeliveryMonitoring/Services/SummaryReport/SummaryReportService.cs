@@ -148,24 +148,23 @@ namespace DeliveryMonitoring.Services.SummaryReport
                         .GroupBy(o => o.Purpose!)
                         .ToDictionary(g => g.Key!, g => g.Count());
 
-                    string purposeSummary = "";
-                    if (purposeCounts != null)
-                    {
-                        var htmlList = purposeCounts.Select(pc =>
-                        {
-                            string category = purposeCategories.TryGetValue(pc.Key, out var cat) ? cat : "Other";
-                            string color = categoryColors[category];
-                            return $"<span style='color:{color}; font-weight:600;'>{pc.Key}: {pc.Value}</span>";
-                        });
-                        purposeSummary = string.Join("<br>", htmlList);
-                    }
-
+                    
                     return new SupervisorSummary
                     {
                         SupervisorName = first?.SupervisorName,
                         SupervisorPhoneNumber = first?.SupervisorPhoneNumber,
                         TotalDeliveryOrders = group.Count(),
-                        PurposeSummary = string.IsNullOrEmpty(purposeSummary) ? "N/A" : purposeSummary,
+                        PurposeSummary = purposeCounts?.Select(pc =>
+                        {
+                            string category = purposeCategories.TryGetValue(pc.Key, out var cat) ? cat : "Other";
+                            string color = categoryColors[category];
+                            return new PurposeItem
+                            {
+                                Purpose = pc.Key,
+                                Count = pc.Value,
+                                Color = color
+                            };
+                        }).ToList() ?? new List<PurposeItem>(),
                         DeliveryAmount = Math.Round(group.Sum(o => o.TotalAmount), 2),
                         TotalConsigneeCount = totalConsigneeCount,
                         TotalMerchantCount = totalMerchantCount
@@ -236,12 +235,12 @@ namespace DeliveryMonitoring.Services.SummaryReport
                     var takeAway = allOrders.TakeAwayOrders?.Data?.Where(c => groupKeySelector(c)!.Equals(group.Key));
                     var delivery = allOrders.CompletedOrders?.Data?.Where(c => groupKeySelector(c)!.Equals(group.Key));
 
-                    summary.DineInAmount = dineIn.Sum(c => c.TotalAmount);
-                    summary.TakeawayAmount = takeAway.Sum(c => c.TotalAmount);
-                    summary.DeliveryAmount = delivery.Sum(c => c.TotalAmount);
-                    summary.TotalDineInOrders = dineIn.Count();
-                    summary.TotalTakeAwayOrders = takeAway.Count();
-                    summary.TotalDeliveryOrders = delivery.Count();
+                    summary.DineInAmount = dineIn?.Sum(c => c.TotalAmount) ?? 0;
+                    summary.TakeawayAmount = takeAway?.Sum(c => c.TotalAmount) ?? 0;
+                    summary.DeliveryAmount = delivery?.Sum(c => c.TotalAmount) ?? 0;
+                    summary.TotalDineInOrders = dineIn?.Count() ?? 0;
+                    summary.TotalTakeAwayOrders = takeAway?.Count() ?? 0;
+                    summary.TotalDeliveryOrders = delivery?.Count() ?? 0;
                     summary.GrandTotal = summary.DineInAmount + summary.TakeawayAmount + summary.DeliveryAmount;
 
                     return summary;

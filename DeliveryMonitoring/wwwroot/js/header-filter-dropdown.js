@@ -62,7 +62,7 @@
         var valueCounts = {};
 
         columnData.forEach(function (value) {
-            value = value.trim() || 'N/A';
+            value = (value || '').toString().trim() || 'N/A';
             valueCounts[value] = (valueCounts[value] || 0) + 1;
         });
 

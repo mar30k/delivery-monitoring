@@ -38,7 +38,7 @@ namespace DeliveryMonitoring.Controllers
             {
                 var viewModel = new HomeViewModel
                 {
-                    Drivers = await _apiRequestService.GetAvailableDriversAsync(),
+                    Drivers = new List<Driver>(),
                     Orders = await _apiRequestService.GetOrderRequestsAsync(),
                     Comps = await _apiRequestService.GetCompaniesAsync(),
                     Supervisors = await _apiRequestService.GetSupervisorsAsync(),
@@ -54,14 +54,18 @@ namespace DeliveryMonitoring.Controllers
         }
 
         [HttpGet("/GetChartData")]
-        public async Task<IActionResult> GetChartData([FromQuery] string type)
+        public async Task<IActionResult> GetChartData([FromQuery] ReportByOrderType type)
         {
             var today = DateTime.Today;
-            if (type is null)
-                return BadRequest("Invalid type parameter. Use takeaway, delivery, or dinein.");
+            
 
-            var response = type?.ToLower()== "delivery" ? await _apiRequestService.GetCompletedOrdersAsync() 
-                : await _apiRequestService.GetOrdersByTypeAsync(type?.ToLower() == "takeaway" ? (int)DeliveryOrderTypes.PickUpAtBranch : (int)DeliveryOrderTypes.InHouseDining);
+            var response = type == ReportByOrderType.Delivery
+                ? await _apiRequestService.GetCompletedOrdersAsync()
+                : await _apiRequestService.GetOrdersByTypeAsync(
+                    type == ReportByOrderType.Takeaway
+                        ? (int)DeliveryOrderTypes.PickUpAtBranch
+                        : (int)DeliveryOrderTypes.InHouseDining
+                );
 
             var count = response.Data?.Count(x => x.RequestCreatedAt.Date == today) ?? 0;
             var total = response.Data?.Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
