@@ -159,11 +159,15 @@ function updateOrders() {
             : '';
         let assign = (order.supervisedBy === null || order.supervisedBy === undefined)
             ? `<a class="btn btn-outline-dark btn-sm" onclick="openAssignSupervisorModal('${order.voucherCode}')">Assign</a>`
-            : `<a href="tel:${order.supervisedBy}">${supervisor ? supervisor.firstName + ' ' + supervisor.secondName : order.supervisedBy}</a> <a onclick="openAssignSupervisorModal('${order.voucherCode}')"> <i class="fa-solid fa-pen-to-square"></i></a>`;
+            : `<a href="tel:${order.supervisedBy}">${supervisor ? supervisor.firstName + ' ' + supervisor.secondName : order.supervisedBy}</a> 
+            <a onclick="openAssignSupervisorModal('${order.voucherCode}')"> <i class="fa-solid fa-pen-to-square"></i></a>`;
         newRow.innerHTML = `                    
                     <td>${order.voucherCode}</td>
                     <td class="text-center">${order.companyName || 'N/A'}</td>
-                    <td class="text-center">${order.branchName || 'N/A'}</td>
+                    <td class="text-center">
+                        ${order.branchName || 'N/A'}
+                        <a onclick="openChangeBranchModal('${order.companyTin}','${order.companyName}','${order.branchName}')"> <i class="fa-solid fa-pen-to-square"></i></a>
+                    </td>
                     <td class="text-center">${order.customerFirstName || 'N/A'}</td>
                     <td class="text-center">
                         <div class="d-inline-flex align-items-center gap-1">
@@ -449,13 +453,24 @@ async function assignSupervisor(voucherCode, phoneNumber = "all") {
         data: JSON.stringify(data),
         success: function (response) {
             hideLoading("assignLoading");
-            alert("Supervisor Assignment successful!");
-            window.location.reload();
+            $("#assignSupervisor").modal("hide");
+            Toastify({
+                text: "Supervisor assigned successfully!",
+                backgroundColor: "green",
+                duration: 3000,
+                gravity: "top",
+                position: "right"
+            }).showToast();
         },
         error: function (xhr) {
             hideLoading("assignLoading");
-            showAlert("Supervisor Assignment failed " , "danger", "assignSupervisor");
-        }
+            Toastify({
+                text: "Error assigning supervisor.",
+                backgroundColor: "red",
+                duration: 3000,
+                gravity: "top",
+                position: "right"
+            }).showToast();        }
     });
 }
 
@@ -534,4 +549,87 @@ function confirmAssignToSupervisor() {
         return;
     }
     assignSupervisor(assignSupervisorVoucherCode, supervisorPhone);
+}
+
+
+function openChangeBranchModal(companyTin, companyName, currentBranchName) {
+    $("#branchSelectDropdown").html(`<option disabled selected>Loading branches...</option>`);
+    $('#companyNameLable').text(`- ${companyName}`);
+    $("#changeBranchModal").modal("show");
+
+    $.ajax({
+        url: `/getCompanyBranches?tin=${companyTin}`,
+        method: "GET",
+        success: function (response) {
+            if (!response.isSuccessful || !response.data || !response.data.branches) {
+                $("#branchSelectDropdown").html(`<option disabled selected>No branches found</option>`);
+                return;
+            }
+
+            const branches = response.data.branches;
+
+            let options = "";
+
+            branches.forEach(branch => {
+                if (branch.name.toLowerCase() !== currentBranchName.toLowerCase()) {
+                    options += `
+                        <option value="${branch.code}">
+                            ${branch.name}
+                        </option>
+                    `;
+                }
+            });
+
+            options += `
+                <option value="" disabled selected>
+                    ${currentBranchName} (Current)
+                </option>
+            `;
+            if (options === "") {
+                options = `<option disabled>No other branches available</option>`;
+            }
+
+            $("#branchSelectDropdown").html(options);
+        },
+        error: function () {
+            $("#branchSelectDropdown").html(`<option disabled>Error loading branches</option>`);
+        }
+    });
+}
+
+function confirmBranchChange() {
+    const selectedBranchCode = $("#branchSelectDropdown").val();
+
+    if (!selectedBranchCode) {
+        Toastify({ text: "Please select a branch.", backgroundColor: "red" }).showToast();
+        return;
+    }
+
+    $("#branchChangeLoading").removeClass("d-none");
+
+    // TODO: Implement your branch linking API call here
+    // Example:
+    $.ajax({
+        url: `/changeBranch?branchCode=${selectedBranchCode}`,
+        method: "POST",
+        success: function () {
+            $("#branchChangeLoading").addClass("d-none");
+            $("#changeBranchModal").modal("hide");
+
+            Toastify({
+                text: "Branch changed successfully!",
+                backgroundColor: "green"
+            }).showToast();
+
+            // Reload or update UI here
+        },
+        error: function () {
+            $("#branchChangeLoading").addClass("d-none");
+
+            Toastify({
+                text: "Error changing branch.",
+                backgroundColor: "red"
+            }).showToast();
+        }
+    });
 }

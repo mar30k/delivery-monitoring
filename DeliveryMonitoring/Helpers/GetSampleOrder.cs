@@ -123,13 +123,13 @@ namespace DeliveryMonitoring.Helpers
                     Alert = "Driver Delayed",
                     ActivityResponse = new List<ActivityResponse>
                     {
-                        new ActivityResponse
+                        new ()
                         {
                             Name = "Picked Up",
                             Time = DateTime.UtcNow.AddMinutes(-30),
                             TimeElapsed = "30 minutes ago"
                         },
-                        new ActivityResponse
+                        new ()
                         {
                             Name = "En Route",
                             Time = DateTime.UtcNow.AddMinutes(-10),

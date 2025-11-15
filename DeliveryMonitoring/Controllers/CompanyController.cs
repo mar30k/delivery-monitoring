@@ -41,7 +41,7 @@ namespace DeliveryMonitoring.Controllers
             if(!string.IsNullOrWhiteSpace(currentCompanyTin) && currentCompanyTin != AdminCompanyTin)
             {
                 var companyDetailsModel = await _apiRequestService.GetCompanyDetailsAsync(currentCompanyTin);
-                companyDetailsList.Add(companyDetailsModel ?? new Company());
+                companyDetailsList.Add(companyDetailsModel?.Data ?? new Company());
                 if (companiesModel != null)
                 {
                     companiesModel.companyTins = new List<string> { currentCompanyTin };
@@ -56,7 +56,7 @@ namespace DeliveryMonitoring.Controllers
             foreach (var companyTin in companiesModel?.companyTins ?? new List<string>())
             {
                 var companyDetailsModel = await _apiRequestService.GetCompanyDetailsAsync(companyTin);
-                companyDetailsList.Add(companyDetailsModel ?? new Company());
+                companyDetailsList.Add(companyDetailsModel?.Data ?? new Company());
             }
 
             // Create the CompanyIndex view model
@@ -74,28 +74,48 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Details(string companyTin)
         {
             var currentCompanyTin = _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie);
-            if (string.IsNullOrWhiteSpace(currentCompanyTin))
-            {
-                return RedirectToAction("Logout", "Login");
-            }
-            else if (currentCompanyTin != AdminCompanyTin && currentCompanyTin != companyTin) { return RedirectToAction("index", "company"); }
 
+            if (string.IsNullOrWhiteSpace(currentCompanyTin))
+                return RedirectToAction("Logout", "Login");
+
+            if (currentCompanyTin != AdminCompanyTin && currentCompanyTin != companyTin)
+                return RedirectToAction("Index", "Company");
             try
             {
-                var company = await _apiRequestService.GetCompanyDetailsAsync(companyTin);
-                if (company == null )
+                var companyResponse = await _apiRequestService.GetCompanyDetailsAsync(companyTin);
+                if (companyResponse !=null && !companyResponse.IsSuccessful && companyResponse?.Data == null )
                 {
                     // Return a view indicating that company details are not found
                     return View("Error");
                 }
 
-                return View(company);
+                return View(companyResponse?.Data);
             }
             catch (HttpRequestException)
             {
                 return StatusCode(500); // Handle exception with a 500 Internal Server Error
             }
         }
-        
+        [HttpGet("/getCompanyBranches")]
+        public async Task<IActionResult> GetCompanyBranches([FromQuery] string tin)
+        {
+            if (string.IsNullOrWhiteSpace(tin))
+                return BadRequest("tin is required.");
+
+            try
+            {
+                var companyResponse = await _apiRequestService.GetCompanyDetailsAsync(tin);
+
+                if (companyResponse == null)
+                    return NotFound();
+
+                return Ok(companyResponse);
+            }
+            catch
+            {
+                return StatusCode(500);
+            }
+        }
+
     }
 }

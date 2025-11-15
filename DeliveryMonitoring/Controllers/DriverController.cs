@@ -44,7 +44,7 @@ namespace DeliveryMonitoring.Controllers
             drivers = drivers
                 .OrderBy(d => status.GetValueOrDefault(d.Status?.ToLower() ?? "", status["default"]).Priority)
                 .ToList();
-            return View(drivers);
+            return View(tin != null ? drivers.Where(c=> c.CompanyTin == tin) : drivers);
         }
         //Driver Index Page - ends here
 

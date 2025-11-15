@@ -110,50 +110,31 @@ function closeAlert() {
         alertAudio.currentTime = 0;
     }
 }
-function showToast(message, type = 'info', iconClass = '', delay = 3000) {
-    const container = document.querySelector('.toast-container');
-    if (!container) return;
-
-    // 🔹 Determine color based on type
-    const bgColor = {
-        success: 'bg-success text-white',
-        error: 'bg-danger text-white',
-        warning: 'bg-warning text-dark',
-        info: 'bg-primary text-white'
-    }[type] || 'bg-primary text-white';
-
-    // 🔹 Create toast element
-    const toastEl = document.createElement('div');
-    toastEl.className = `toast align-items-center border-0 shadow ${bgColor}`;
-    toastEl.setAttribute('role', 'alert');
-    toastEl.setAttribute('aria-live', 'assertive');
-    toastEl.setAttribute('aria-atomic', 'true');
-
-    toastEl.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body d-flex align-items-center gap-2">
-                    ${iconClass ? `<i class="${iconClass} fs-5"></i>` : ''}
-                    <span>${message}</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
-
-    container.appendChild(toastEl);
-
-    const toast = new bootstrap.Toast(toastEl, { delay });
-    toast.show();
-
-    // Remove from DOM after hidden
-    toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
-}
-
 // Example: clipboard copy using reusable toast
 function copyToClipboard(text) {
     if (!text || text === "null") return;
+
     navigator.clipboard.writeText(text)
-        .then(() => showToast("Phone number copied!", "success", "bi bi-clipboard-check-fill"))
-        .catch(err => showToast("Failed to copy: " + err, "error", "bi bi-x-circle-fill"));
+        .then(() => {
+            Toastify({
+                text: "Phone number copied!",
+                duration: 1500,
+                close: true,
+                gravity: "bottom",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #28a745, #218838)" // success green
+            }).showToast();
+        })
+        .catch(err => {
+            Toastify({
+                text: "Failed to copy: " + err,
+                duration: 3000,
+                close: true,
+                gravity: "bottom",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #dc3545, #c82333)" // error red
+            }).showToast();
+        });
 }
 
 // Example: attach to copy buttons

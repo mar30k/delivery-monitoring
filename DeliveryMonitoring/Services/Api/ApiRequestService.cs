@@ -38,7 +38,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly string _getDriverReviews;
         private readonly string _getSupervisors;
         private readonly string _getCompanies;
-        private readonly string _getCompanyDetails;
+        private readonly string _getCompany;
         private readonly string _getOrderDetailByVoucher;
         private readonly string _getDriverActivityAsync;
         private readonly string _getHistroyDetail;
@@ -81,7 +81,7 @@ namespace DeliveryMonitoring.Services.Api
             _getRouteDetails = "routing/getRouteDetail";
             _getSupervisors = "auth/getsupervisors";
             _getCompanies = "companies";
-            _getCompanyDetails = "companies/";
+            _getCompany= "routing/getcompanybytin";
             _sendMessage = "messaging/sendMessage";
             _insertActivityLog = "delivery/insertActivityLog";
             _reDispatchDrivers = "driver/dispatch";
@@ -251,13 +251,13 @@ namespace DeliveryMonitoring.Services.Api
             }
             return new Companies();
         }
-        public async Task<Company?> GetCompanyDetailsAsync(string companyTin)
+        public async Task<HulubejeResponse<Company>?> GetCompanyDetailsAsync(string companyTin)
         {
-            var response = await _deliveryClient.GetAsync($"{_getCompanyDetails}{companyTin}");
+            var response = await _client.GetAsync($"{_getCompany}?tin={companyTin}");
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();
-                return !string.IsNullOrWhiteSpace(data) ? JsonConvert.DeserializeObject<Company>(data) ?? new Company() : null;
+                return !string.IsNullOrWhiteSpace(data) ? JsonConvert.DeserializeObject<HulubejeResponse<Company>>(data) ?? new HulubejeResponse<Company>() : null;
             }
             return null;
         }

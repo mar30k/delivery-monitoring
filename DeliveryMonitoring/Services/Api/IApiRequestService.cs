@@ -109,7 +109,7 @@ namespace DeliveryMonitoring.Services.Api
         /// Retrieves detailed information about a specific company.
         /// </summary>
         /// <param name="companyTin">The company’s Tax Identification Number (TIN).</param>
-        Task<Company?> GetCompanyDetailsAsync(string companyTin);
+        Task<HulubejeResponse<Company>?> GetCompanyDetailsAsync(string companyTin);
 
         #endregion
 

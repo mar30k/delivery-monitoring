@@ -127,8 +127,9 @@
                                 <td class="text-center">
                                     @(order?.CompanyName ?? "N/A")
                                 </td>
-                                <td class="text-center" data-company-tin="@order?.CompanyTin">
+                                <td class="text-center">
                                     @(order?.BranchName ?? "N/A")
+                                    <a onclick="openChangeBranchModal('@order?.CompanyTin','@order?.CompanyName','@order?.BranchName')"> <i class="fa-solid fa-pen-to-square"></i></a>
                                 </td>
                                 <td class="text-center">
                                     @(order?.CustomerFirstName ?? "N/A")
@@ -254,7 +255,7 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content shadow">
                     <div class="modal-header bg-secondary text-white">
-                        <h5 class="modal-title" id="reDispatchModalLabel">Re-dispatch Order <span id="voucherCodeLabel" class="text-warning fw-normal"></span></h5>
+                        <h5 class="modal-title text-white" id="reDispatchModalLabel">Re-dispatch Order <span id="voucherCodeLabel" class="text-warning fw-normal"></span></h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
@@ -291,7 +292,7 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content shadow">
                     <div class="modal-header bg-secondary text-white">
-                        <h5 class="modal-title" id="assignSupervisorModalLabel">Assign Supervisor Order <span id="assignVoucherCodeLabel" class="text-warning fw-normal"></span></h5>
+                        <h5 class="modal-title text-white" id="assignSupervisorModalLabel">Assign Supervisor Order <span id="assignVoucherCodeLabel" class="text-warning fw-normal"></span></h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
@@ -318,6 +319,38 @@
                             </div>
                             <p class="text-muted mt-2">Processing supervisor assignment...</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Branch Modal -->
+        <div class="modal fade" id="changeBranchModal" tabindex="-1" aria-labelledby="changeBranchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content shadow">
+                    <div class="modal-header bg-secondary text-white">
+                        <h5 class="modal-title text-white" id="changeBranchModalLabel">
+                            Change Branch for <span id="companyNameLable" class="text-warning fw-normal"></span>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <label for="branchSelectDropdown" class="form-label fw-bold">Select a branch:</label>
+                        <select id="branchSelectDropdown" class="form-select mb-3">
+                            <option selected disabled>Loading branches...</option>
+                        </select>
+
+                        <button class="btn btn-outline-success w-100 mt-2" onclick="confirmBranchChange()">
+                            ✅ Change Branch
+                        </button>
+
+                        <div id="branchChangeLoading" class="text-center mt-4 d-none">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="text-muted mt-2">Processing branch change...</p>
+                        </div>
+
                     </div>
                 </div>
             </div>
