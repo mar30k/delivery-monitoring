@@ -6,6 +6,7 @@ using DeliveryMonitoring.Services.Cache;
 using DeliveryMonitoring.Services.Orders;
 using DeliveryMonitoring.Services.SecureCookie;
 using DeliveryMonitoring.Services.SummaryReport;
+using DeliveryMonitoring.Services.Supervisor;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Configuration;
 
@@ -61,6 +62,7 @@ builder.Services.AddScoped<ISecureCookieService, SecureCookieService>();
 builder.Services.AddScoped<AuthenticationManager>();
 builder.Services.AddScoped<IApiRequestService, ApiRequestService>();
 builder.Services.AddScoped<ISummaryReportService, SummaryReportService>();
+builder.Services.AddScoped<ISupervisorService, SupervisorService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

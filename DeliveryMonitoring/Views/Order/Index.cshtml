@@ -127,7 +127,7 @@
                                 <td class="text-center">
                                     @(order?.CompanyName ?? "N/A")
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center" data-company-tin="@order?.CompanyTin">
                                     @(order?.BranchName ?? "N/A")
                                 </td>
                                 <td class="text-center">
@@ -286,6 +286,7 @@
             </div>
         </div>
 
+        <!-- Assign Supervisor Modal -->
         <div class="modal fade" id="assignSupervisor" tabindex="-1" aria-labelledby="assignSupervisorModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content shadow">

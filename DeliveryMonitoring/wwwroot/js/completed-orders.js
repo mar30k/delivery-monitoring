@@ -7,24 +7,23 @@ const DeliveryOrderTypes = {
     InHouseDining: 3203
 };
 var js = jQuery.noConflict(true);
-var dineInTable, takeAwayTable, tablelist;
+var dineInTable, takeAwayTable, deliveryTable;
 var tableDateRanges = {
-    dineInTable: { start: moment().startOf('day'), end: moment().endOf('day') },
-    takeAwayTable: { start: moment().startOf('day'), end: moment().endOf('day') },
-    tablelist: { start: moment().startOf('day'), end: moment().endOf('day') }
+    dineInTable: { start: moment().startOf('day'), end: moment().endOf('day'), isClear : false},
+    takeAwayTable: { start: moment().startOf('day'), end: moment().endOf('day'), isClear: false },
+    deliveryTable: { start: moment().startOf('day'), end: moment().endOf('day'), isClear: false }
 };
-var isClear = false;
+
 var takeAwayOrderType = DeliveryOrderTypes.PickUpAtBranch; // 2076
-var dineInOrderType = DeliveryOrderTypes.InHouseDining; // 2076
+var dineInOrderType = DeliveryOrderTypes.InHouseDining; // 3203
 
 var dateFilterMappings = [
     { id: "dineInDateRange", tableName: "dineInTable" },
-    { id: "dateRange", tableName: "tablelist" },
+    { id: "dateRange", tableName: "deliveryTable" },
     { id: "takeAwayDateRange", tableName: "takeAwayTable" }
 ];
 
 js(() => {
-    // Shared helper functions
 
     const renderPhone = (data) => {
         if (!data) return "N/A";
@@ -109,11 +108,12 @@ js(() => {
         { data: "companyName", className: "text-center" },
         { data: "branchName", className: "text-center" },
         { data: "firstName", className: "text-center" },
-        { data: "phoneNumber", className: "text-center", render: renderPhone },
+        { data: "phoneNumber", className: "text-center", render: Renderers.phone },
         {
             data: "requestCreatedAt",
             className: "text-center",
-            createdCell: renderRequestDate
+            render: Renderers.requestDate.render,
+            createdCell: Renderers.requestDate.createdCell
         }
     ];
 
@@ -121,42 +121,42 @@ js(() => {
     const dineInAndTakeawayColumns = [
         ...baseColumns,
         { data: "supervisorName", className: "text-center" },
-        { data: "totalAmount", className: "text-center", render: renderAmount },
+        { data: "totalAmount", className: "text-center", render: Renderers.amount },
         {
             data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => renderReviewOrShow(row, false)
+            render: (data, type, row) => Renderers.reviewOrShow(row, false)
         },
         {
             data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => renderActivityBtn(row)
+            render: (data, type, row) => Renderers.activityBtn(row)
         },
         {
             data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => renderDetailsLink(row, false)
+            render: (data, type, row) =>Renderers.detailsLink(row, false)
         }
     ];
 
     // Delivery columns (adds distance/duration/tip)
     const deliveryColumns = [
         ...baseColumns,
-        { data: "distance", className: "text-center", render: d => d + " K.M" },
-        { data: "duration", className: "text-center", render: d => d + " Min" },
-        { data: "eta", className: "text-center", render: d => d + " Min" },
-        { data: "driverPhoneNumber", className: "text-center", render: renderPhone },
-        { data: "supervisorName", className: "text-center" },
-        { data: "totalAmount", className: "text-center", render: renderAmount },
-        { data: "tip", className: "text-center", render: renderAmount },
+        { data: "distance", className: "text-center", render: Renderers.distance },
+        { data: "duration", className: "text-center", render: Renderers.duration },
+        { data: "eta", className: "text-center", render: Renderers.duration },
+        { data: "driverPhoneNumber", className: "text-center", render: Renderers.phone },
+        { data: "supervisorName", className: "text-center", render: Renderers.orDefault},
+        { data: "totalAmount", className: "text-center", render: Renderers.amount },
+        { data: "tip", className: "text-center", render: Renderers.amount},
         {
             data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => renderReviewOrShow(row, true)
+            render: (data, type, row) => Renderers.reviewOrShow(row, true)
         },
         {
             data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => renderActivityBtn(row)
+            render: (data, type, row) => Renderers.activityBtn(row)
         },
         {
             data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => renderDetailsLink(row, true)
+            render: (data, type, row) => Renderers.detailsLink(row, true)
         }
     ];
     // Initialize tables first
@@ -169,8 +169,10 @@ js(() => {
         7,
         [0, 1, 2, 4, 7, 8, 9],
         [
-            { index: 1, name: 'Branch' },
-            { index: 2, name: 'Supervisor' }
+            { index: 1, name: 'Company' },
+            { index: 2, name: 'Branch' },
+            { index: 3, name: 'Customer' },
+            { index: 6, name: 'Supervisor' }
         ]
     );
     
@@ -184,12 +186,14 @@ js(() => {
         [0, 1, 2, 4, 7, 8, 9],
         [
             { index: 1, name: 'Company' },
-            { index: 2, name: 'Branch' }
+            { index: 2, name: 'Branch' },
+            { index: 3, name: 'Customer' },
+            { index: 6, name: 'Supervisor' }
         ]
     );
 
-    tablelist = initOrderTable(
-        "#tablelist",
+    deliveryTable = initOrderTable(
+        "#deliveryTable",
         "#dateRange",
         deliveryColumns,
         "/getcompletedorders",
@@ -197,8 +201,9 @@ js(() => {
         11,
         [0, 1, 2, 4, 9, 10, 13, 14, 15],
         [
-            { index: 2, name: 'Branch' },
             { index: 1, name: 'Company' },
+            { index: 2, name: 'Branch' },
+            { index: 3, name: 'Customer' },
             { index: 10, name: 'Supervisor' }
         ]
     );
@@ -211,7 +216,7 @@ function initDateRangePickers() {
         const selector = `#${id}`;
         const tableRef = (tableName === "dineInTable") ? dineInTable :
             (tableName === "takeAwayTable") ? takeAwayTable :
-                (tableName === "tablelist") ? tablelist : null;
+                (tableName === "deliveryTable") ? deliveryTable : null;
 
         if (!tableRef) return;
 
@@ -233,21 +238,35 @@ function initDateRangePickers() {
         );
 
         js(selector).on('apply.daterangepicker', function (ev, picker) {
+            const startDate = picker.startDate.startOf('day');
+            const endDate = picker.endDate.endOf('day');
+
+            // Store for your filter
             tableDateRanges[tableName] = {
-                start: picker.startDate.startOf('day'),
-                end: picker.endDate.endOf('day')
+                start: startDate,
+                end: endDate,
+                isClear: false
             };
-            js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+
+            // Update input display
+            js(this).val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
+
+            // 🟢 Update empty message dynamically
+            if (startDate.isSame(endDate, 'day')) {
+                tableRef.settings()[0].oLanguage.sEmptyTable =
+                    `No records found for ${startDate.format('YYYY-MM-DD')}`;
+            } else {
+                tableRef.settings()[0].oLanguage.sEmptyTable =
+                    `No records found between ${startDate.format('YYYY-MM-DD')} and ${endDate.format('YYYY-MM-DD')}`;
+            }
+
             tableRef.ajax.reload();
         });
 
         js(selector).on('cancel.daterangepicker', function () {
-            tableDateRanges[tableName] = { start: null, end: null };
+            tableDateRanges[tableName] = { start: null, end: null , isClear: true};
             js(this).val('');
-            isClear = true;
-            tableRef.ajax.reload(function () {
-                isClear = false;
-            });
+            tableRef.ajax.reload();
         });
     });
 }
@@ -259,7 +278,7 @@ function initOrderTable(selector, daterangepicker, columns, ajaxUrl, emptyMessag
         ajax: function (data, callback, settings) {
             const url = new URL(ajaxUrl, window.location.origin);
             const tableName = selector.replace('#', '');
-            const { start, end } = tableDateRanges[tableName] || {};
+            const { start, end, isClear} = tableDateRanges[tableName] || {};
 
             if (start && end && !isClear) {
                 url.searchParams.append("startDate", start.format("YYYY-MM-DD"));
@@ -327,6 +346,7 @@ function initOrderTable(selector, daterangepicker, columns, ajaxUrl, emptyMessag
     });
 
     return table;
+    
 }
 async function showDetailsModal(button) {
     const note = button.getAttribute('data-note').replace(/\n/g, '<br>');;
