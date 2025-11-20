@@ -90,7 +90,7 @@ js(() => {
         `/getordersbytype?type=${dineInOrderType}`,
         "No dine-in orders available.",
         7,
-        [0, 1, 2, 4, 7, 8, 9],
+        [0, 1, 2, 4, 8, 9],
         [
             { index: 1, name: 'Company' },
             { index: 2, name: 'Branch' },
@@ -106,7 +106,7 @@ js(() => {
         `/getordersbytype?type=${takeAwayOrderType}`,
         "No takeaway orders available.",
         7,
-        [0, 1, 2, 4, 7, 8, 9],
+        [0, 1, 2, 4, 8, 9],
         [
             { index: 1, name: 'Company' },
             { index: 2, name: 'Branch' },
