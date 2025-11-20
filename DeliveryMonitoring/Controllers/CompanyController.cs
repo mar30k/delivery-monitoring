@@ -15,7 +15,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
-        private const string AdminCompanyTin = "0076217301";
+        private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         public CompanyController(
             AuthenticationManager authenticationManager,
             IApiRequestService apiRequestService,
@@ -115,6 +115,29 @@ namespace DeliveryMonitoring.Controllers
             {
                 return StatusCode(500);
             }
+        }
+
+        [HttpPost("/changeBranch")]
+        public async Task<IActionResult> ChangeBranch([FromBody] ChangeBranchDTO request)
+        {
+            // Simulate server processing delay
+            await Task.Delay(1000);
+
+            // Simple validation
+            if (string.IsNullOrWhiteSpace(request.BranchCode))
+                return BadRequest(new { success = false, message = "Branch code is required." });
+
+            if (new Random().NextDouble() < 0.2)
+                return StatusCode(500, new { success = false, message = "Random failure" });
+
+            // Mock success
+            return Ok(new
+            {
+                success = true,
+                message = $"Branch '{request.BranchCode}' changed successfully!",
+                voucherCode = request.VoucherCode,
+                remark = request.Remark
+            });
         }
 
     }

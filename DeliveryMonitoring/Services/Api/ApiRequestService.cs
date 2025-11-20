@@ -51,7 +51,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly string _getCompletedOrdersByType;
         private readonly IDataProtector _protector;
         private readonly string _googleMapsKey;
-        private const string AdminCompanyTin = "0076217301";
+        private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         private string CompanyTin => GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? "";
         private string ApibaseAddress => GetSecureCookie(CNET_WebConstantes.ApiBaseAddress) ?? "";
         #endregion
@@ -128,32 +128,48 @@ namespace DeliveryMonitoring.Services.Api
         #endregion
 
         #region Drivers
-        public async Task<List<Driver>> GetAvailableDriversAsync()
+        public async Task<List<Driver>> GetAvailableDriversAsync(bool skipCahce = true)
         {
+            string cacheKey = "available_drivers";
             string endpoint = CompanyTin == AdminCompanyTin ? _getDrivers : $"{_getDrivers}?companyTin={CompanyTin}";
-            var response = await _deliveryClient.GetAsync(endpoint);
-            if (response.IsSuccessStatusCode)
-            {
-                var data = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
-            }
-            return new List<Driver>();
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _deliveryClient.GetAsync(endpoint);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<List<Driver>>(data) ?? new List<Driver>();
+                    }
+                    return new List<Driver>();
+                },
+                skipCahce,
+                10
+            );
+            
         }
 
-        public async Task<T?> GetDriverDetailsByPhoneNumber<T>(string phoneNumber)
+        public async Task<T?> GetDriverDetailsByPhoneNumber<T>(string phoneNumber, bool skipCache = true)
         {
-            var response = await _deliveryClient.GetAsync($" {_getDriverDetails}{phoneNumber}");
-            if (!response.IsSuccessStatusCode) return default;
-
-            var data = await response.Content.ReadAsStringAsync();
-            try
-            {
-                return JsonConvert.DeserializeObject<T>(data);
-            }
-            catch
-            {
+            if (string.IsNullOrEmpty(phoneNumber))
                 return default;
-            }
+            var cacheKey = $"driver_details_{phoneNumber}";
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _deliveryClient.GetAsync($"{_getDriverDetails}{phoneNumber}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<T>(data);
+                    }
+                    return default;
+                },
+                skipCache,
+                60 // cache for 60 minutes
+            );
         }
 
         /// <summary>
@@ -215,15 +231,25 @@ namespace DeliveryMonitoring.Services.Api
             return new RouteModel();
         }
 
-        public async Task<HulubejeResponse<Activities>?> GetDriverActivityAsync(string companyCode, string voucherCode)
+        public async Task<HulubejeResponse<Activities>?> GetDriverActivityAsync(string companyCode, string voucherCode, bool skipCache = true)
         {
-            var response = await _client.GetAsync( $"{_getDriverActivityAsync}companyCode={companyCode}&voucherCode={voucherCode}");
-            if (response.IsSuccessStatusCode)
-            {
-                var data = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<HulubejeResponse<Activities>>(data) ?? new HulubejeResponse<Activities>();
-            }
-            return null;
+            var cacheKey = $"driver_activity{companyCode}{voucherCode}";
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _client.GetAsync($"{_getDriverActivityAsync}companyCode={companyCode}&voucherCode={voucherCode}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<HulubejeResponse<Activities>>(data) ?? new HulubejeResponse<Activities>();
+                    }
+                    return null;
+                },
+                skipCache,
+                30
+            );
+
         }
         #endregion
 
@@ -251,15 +277,32 @@ namespace DeliveryMonitoring.Services.Api
             }
             return new Companies();
         }
-        public async Task<HulubejeResponse<Company>?> GetCompanyDetailsAsync(string companyTin)
+        public async Task<HulubejeResponse<Company>?> GetCompanyDetailsAsync(string companyTin, bool skipCache = false)
         {
-            var response = await _client.GetAsync($"{_getCompany}?tin={companyTin}");
-            if (response.IsSuccessStatusCode)
-            {
-                var data = await response.Content.ReadAsStringAsync();
-                return !string.IsNullOrWhiteSpace(data) ? JsonConvert.DeserializeObject<HulubejeResponse<Company>>(data) ?? new HulubejeResponse<Company>() : null;
-            }
-            return null;
+            if (string.IsNullOrWhiteSpace(companyTin))
+                return null;
+
+            string cacheKey = $"company_details_{companyTin}";
+
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _client.GetAsync($"{_getCompany}?tin={companyTin}");
+
+                    if (!response.IsSuccessStatusCode)
+                        return null; // Don't cache failed requests
+
+                    var data = await response.Content.ReadAsStringAsync();
+
+                    return !string.IsNullOrWhiteSpace(data)
+                        ? JsonConvert.DeserializeObject<HulubejeResponse<Company>>(data) ?? new HulubejeResponse<Company>()
+                        : null;
+
+                },
+                skipCache,
+                24 * 60 // cache for 24 hours (in minutes)
+            );
         }
         #endregion
 
@@ -305,15 +348,25 @@ namespace DeliveryMonitoring.Services.Api
                 10
             );
         }
-        public async Task<HulubejeResponse<LineItemsDetail>> Gethistorydetail(string voucherCode, string companyCode, int industryType = 1992)
+        public async Task<HulubejeResponse<LineItemsDetail>> Gethistorydetail(string voucherCode, string companyCode, int industryType = 1992, bool skipCache = true)
         {
-            var response = await _client.GetAsync($"{_getHistroyDetail}companyCode={companyCode}&voucherCode={voucherCode}&industryType={industryType}");
-            if (response.IsSuccessStatusCode)
-            {
-                var data = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<HulubejeResponse<LineItemsDetail>>(data) ?? new HulubejeResponse<LineItemsDetail>();
-            }
-            return new HulubejeResponse<LineItemsDetail>();
+            var cacheKey = $"history_{companyCode}_{voucherCode}_{industryType}";
+            return await _cacheService.GetOrSetAsync(
+                cacheKey, 
+                async () =>
+                {
+                    var response = await _client.GetAsync($"{_getHistroyDetail}companyCode={companyCode}&voucherCode={voucherCode}&industryType={industryType}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<HulubejeResponse<LineItemsDetail>>(data) ?? new HulubejeResponse<LineItemsDetail>();
+                    }
+                    return new HulubejeResponse<LineItemsDetail>();
+                },
+                skipCache,
+                10
+            );
+            
         }
         #endregion
 

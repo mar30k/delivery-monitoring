@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Humanizer;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Humanizer;
-using System.ComponentModel;
 
 namespace DeliveryMonitoring.Models
 {
@@ -13,6 +14,7 @@ namespace DeliveryMonitoring.Models
     {
         public string? Id { get; set; }
         public string? AssignedDriverPhoneNumber { get; set; }
+        public string? AssignedDriverName{ get; set; }
 
         public string? BranchName { get; set; }
         public int? CompanyCode { get; set; }
@@ -53,7 +55,7 @@ namespace DeliveryMonitoring.Models
         public string? Platform { get; set; }
 
         public long RequestCreatedAt { get; set; }
-        public string CreatedAtString { get; set; }
+        public string? CreatedAtString { get; set; }
         public DateTime? RequestCreatedAtIso { get; set; }
         public DateTime? DriverAssignedTime { get; set; }
         public DateTime? DeliveryDateTime { get; set; }
@@ -229,9 +231,21 @@ namespace DeliveryMonitoring.Models
 
     public class AlertMessageDto
     {
+        [JsonProperty("id")]
         public string? Id { get; set; }
+
+        [JsonProperty("title")]
         public string? Title { get; set; }
+
+        [JsonProperty("body")]
         public string? Body { get; set; }
+    }
+    public class ChangeBranchDTO
+    {
+        public string? BranchCode { get; set; }
+        public string? VoucherCode { get; set; }
+        public string? Remark { get; set; }
+
     }
     public class OrderViewModel
     {

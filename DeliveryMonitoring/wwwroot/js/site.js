@@ -117,12 +117,17 @@ function copyToClipboard(text) {
     navigator.clipboard.writeText(text)
         .then(() => {
             Toastify({
-                text: "Phone number copied!",
-                duration: 1500,
+                text: `${text} copied to clipboard!`,
+                duration: 2000,
                 close: true,
-                gravity: "bottom",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #28a745, #218838)" // success green
+                gravity: "top",
+                position: "center",
+                style: {
+                    background: "linear-gradient(to right, #28a745, #218838)",
+                    fontSize: "13px",     // smaller font
+                    padding: "6px 10px",  // smaller padding
+                    minHeight: "30px"     // smaller overall height
+                }
             }).showToast();
         })
         .catch(err => {
@@ -130,20 +135,14 @@ function copyToClipboard(text) {
                 text: "Failed to copy: " + err,
                 duration: 3000,
                 close: true,
-                gravity: "bottom",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #dc3545, #c82333)" // error red
+                gravity: "top",
+                position: "center",
+                style: {
+                    background: "linear-gradient(to right, #dc3545, #c82333)",
+                    fontSize: "13px",
+                    padding: "6px 10px",
+                    minHeight: "30px"
+                }
             }).showToast();
         });
 }
-
-// Example: attach to copy buttons
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.copy-btn').forEach(btn => {
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            const phone = this.getAttribute('data-phone');
-            copyToClipboard(phone);
-        });
-    });
-});

@@ -12,7 +12,7 @@ namespace DeliveryMonitoring.Controllers
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
-        private const string AdminCompanyTin = "0076217301";
+        private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         public AnalyticsController(IHttpContextAccessor httpContextAccessor
             , IApiRequestService apiRequestService,
             AuthenticationManager authenticationManager)
@@ -43,7 +43,6 @@ namespace DeliveryMonitoring.Controllers
                 orders = await _apiRequestService.GetOrderRequestsAsync();
                 company = await _apiRequestService.GetCompaniesAsync();
                 superVisors = await _apiRequestService.GetSupervisorsAsync();
-                deviceControl = await _apiRequestService.GetDeviceControlAsync(startDate);
             }
             catch (HttpRequestException)
             {

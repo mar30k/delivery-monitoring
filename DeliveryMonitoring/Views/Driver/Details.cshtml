@@ -5,7 +5,7 @@
     var Orders = ViewData["Orders"] as List<OrderDetail>;
     var routedata = ViewData["Routedata"] as RouteModel;
 
-    var coordinatesJson = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Coordinates);
+    var coordinatesJson = Newtonsoft.Json.JsonConvert.SerializeObject(Model?.Coordinates);
     double totalRating = Model?.Review?.totalRating ?? 0.0;
     double totalReviews = Model?.Review?.totalReviews ?? 0;
     double rating = totalRating / totalReviews;

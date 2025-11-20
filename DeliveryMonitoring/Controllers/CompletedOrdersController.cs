@@ -1,4 +1,5 @@
 ﻿using DeliveryMonitoring.Constants;
+using DeliveryMonitoring.Filters;
 using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services.Api;
@@ -26,10 +27,10 @@ namespace DeliveryMonitoring.Controllers
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
         private readonly ICompletedOrdersService _ordersService;
-        private const string DineInTableId = "dineIn";
-        private const string TakeAwayTableId = "takeAway";
-        private const string DeliveryTableId = "delivery";
-        private const string AdminCompanyTin = "0076217301";
+        private const string DineInTableId = AppConstants.TableIds.DineIn;
+        private const string TakeAwayTableId = AppConstants.TableIds.TakeAway;
+        private const string DeliveryTableId = AppConstants.TableIds.Delivery;
+        private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
         #endregion
 
@@ -91,8 +92,8 @@ namespace DeliveryMonitoring.Controllers
             };
 
             var result = orderType == DeliveryOrderTypes.DeliveryToLocation
-                ? await _apiRequestService.GetCompletedOrdersAsync()
-                : await _apiRequestService.GetOrdersByTypeAsync((int)orderType);
+                ? await _apiRequestService.GetCompletedOrdersAsync(skipCache: false)
+                : await _apiRequestService.GetOrdersByTypeAsync((int)orderType, skipCache:false);
 
             if (result == null)
             {
@@ -107,16 +108,11 @@ namespace DeliveryMonitoring.Controllers
                 return RedirectToAction("Index");
             }
 
-            var voucherDetail = await _apiRequestService.Gethistorydetail(voucher, order?.CompanyCode.ToString() ?? "");
-            var supervisors = await _apiRequestService.GetSupervisorsAsync();
-            var supervisor = supervisors?.FirstOrDefault(s => s.UserName == order?.SupervisorPhoneNumber);
+            var voucherDetail = await _apiRequestService.Gethistorydetail(voucher, order?.CompanyCode.ToString() ?? "", skipCache: false);
 
-            if (order != null)
-            {
-                order.SupervisorName = $"{supervisor?.FirstName} {supervisor?.SecondName}";
-            }
+            var driver = await _apiRequestService.GetDriverDetailsByPhoneNumber<Driver>(phoneNumber: order?.DriverPhoneNumber ?? "", skipCache: false);
 
-            var driverActivity = await _apiRequestService.GetDriverActivityAsync(order?.CompanyCode.ToString() ?? "", voucher);
+            var driverActivity = await _apiRequestService.GetDriverActivityAsync(order?.CompanyCode.ToString() ?? "", voucher, skipCache: false);
 
             var viewModel = new OrderDetail
             {
@@ -127,7 +123,8 @@ namespace DeliveryMonitoring.Controllers
                 AssignedDriverPhoneNumber = order?.DriverPhoneNumber,
                 LineItemsDetail = voucherDetail.Data,
                 Activities = driverActivity?.Data,
-                VoucherCode = voucher
+                VoucherCode = voucher,
+                AssignedDriverName = driver?.Detail?.FullName,
             };
 
             return View(viewModel);
@@ -166,7 +163,7 @@ namespace DeliveryMonitoring.Controllers
         /// <summary>
         /// Saves a review or note for a completed order.
         /// </summary>
-        [HttpPost("savenote")]
+        [HttpPost("/savenote")]
         public async Task<IActionResult> SaveOrderReview([FromBody] CompletedOrders request)
         {
             if (request == null)
@@ -194,7 +191,11 @@ namespace DeliveryMonitoring.Controllers
                 );
 
                 if (!result.IsSuccessful)
-                    return BadRequest();
+                    return BadRequest(
+                        result.ErrorMessages != null && result.ErrorMessages.Any()
+                            ? string.Join(", ", result.ErrorMessages)
+                            : "Failed to save delivery note."
+                    );
 
                 return Ok(result.IsSuccessful);
             }
@@ -210,7 +211,7 @@ namespace DeliveryMonitoring.Controllers
         /// <summary>
         /// Retrieves delivery activity for a specific voucher.
         /// </summary>
-        [HttpGet("getDeliveryActivity")]
+        [HttpGet("/getDeliveryActivity")]
         public async Task<IActionResult> GetDeliveryActivity(string voucherCode, string companyCode)
         {
             try

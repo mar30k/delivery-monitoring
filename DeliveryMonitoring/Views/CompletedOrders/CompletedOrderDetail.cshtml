@@ -50,41 +50,67 @@
                     </span>
                 </div>
             </div>
+            @{
+                bool hasSupPhone = !string.IsNullOrWhiteSpace(Model?.SupervisedBy);
+                bool hasSupName = !string.IsNullOrWhiteSpace(Model?.SupervisorName)
+                && Model.SupervisorName != "N/A";
 
+                bool showSupervisor = hasSupPhone || hasSupName;
+
+                bool hasDriverPhone = !string.IsNullOrWhiteSpace(Model?.AssignedDriverPhoneNumber);
+                bool hasDriverName = !string.IsNullOrWhiteSpace(Model?.AssignedDriverName);
+
+                bool showDriver = hasDriverPhone || hasDriverName;
+            }
             <!-- Supervisor Section -->
-            @if (!string.IsNullOrEmpty(Model?.SupervisedBy) || !string.IsNullOrEmpty(Model?.SupervisorName))
+            @if (showSupervisor)
             {
                 <div class="col-md-3 mb-3">
-                    <h4 style="margin-bottom: 5px;"><i class="bi bi-person-circle icon"></i>Supervisor</h4>
-                    <div>
-                        <span id="letters">Phone:</span>
-                        <span id="outputs">
-                            @(Model?.SupervisedBy ?? "Not Assigned")
-                        </span>
-                    </div>
-                    @if (!string.IsNullOrWhiteSpace(Model?.SupervisorName))
+                    <h4 style="margin-bottom: 5px;">
+                        <i class="bi bi-person-circle icon"></i> Supervisor
+                    </h4>
+
+                    @if (hasSupPhone)
+                    {
+                        <div>
+                            <span id="letters">Phone:</span>
+                            <span id="outputs">@Model?.SupervisedBy</span>
+                        </div>
+                    }
+
+                    @if (hasSupName)
                     {
                         <div>
                             <span id="letters">Name:</span>
-                            <span id="outputs">
-                                @Model?.SupervisorName
-                            </span>
+                            <span id="outputs">@Model?.SupervisorName</span>
                         </div>
                     }
                 </div>
             }
 
             <!-- Driver Section -->
-            @if (!string.IsNullOrEmpty(Model?.AssignedDriverPhoneNumber))
+            @if (showDriver)
             {
                 <div class="col-md-3 mb-3">
-                    <h4 style="margin-bottom: 5px;"> <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Driver</h4>
-                    <div>
-                        <span id="letters">Phone:</span>
-                        <span id="outputs">
-                            @Html.DisplayFor(model => model.AssignedDriverPhoneNumber)
-                        </span>
-                    </div>
+                    <h4 style="margin-bottom: 5px;">
+                        <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Driver
+                    </h4>
+
+                    @if (hasDriverPhone)
+                    {
+                        <div>
+                            <span id="letters">Phone:</span>
+                            <span id="outputs">@Model?.AssignedDriverPhoneNumber</span>
+                        </div>
+                    }
+
+                    @if (hasDriverName)
+                    {
+                        <div>
+                            <span id="letters">Name:</span>
+                            <span id="outputs">@Model?.AssignedDriverName</span>
+                        </div>
+                    }
                 </div>
             }
 

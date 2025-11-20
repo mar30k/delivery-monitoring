@@ -2,8 +2,8 @@
 @inject DeliveryMonitoring.Controllers.AuthenticationManager AuthManager
 @using DeliveryMonitoring.Constants
 @{
-    var adminCompanyTin = "0076217301";
-    var companyTin = AuthManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? "";
+    var adminCompanyTin = AppConstants.Company.AdminTin;
+    var companyTin = Model.CompanyTin;
     var isRedCloud = companyTin == adminCompanyTin;
 }
 <div class="d-flex flex-wrap justify-content-between gap-3">
@@ -173,14 +173,6 @@
 </div>
 
 @{
-    //counts related to drivers
-    int offlineCount = Model.Drivers.Count(d => d.Status == "offline");
-    int readyCount = Model.Drivers.Count(d => d.Status == "ready");
-    int acceptedCount = Model.Drivers.Count(d => d.Status == "accepted");
-    int deliveringCount = Model.Drivers.Count(d => d.Status == "delivering");
-    int completedCount = Model.Drivers.Count(d => d.Status == "completed");
-    int arrivedatbranchCount = Model.Drivers.Count(d => d.Status?.ToLower() == "arrivedatbranch");
-    int arrivedCount = Model.Drivers.Count(d => d.Status?.ToLower() == "arrived");
     //counts related to orders
     int completedOrdersCount = Model.Orders.Count(d => d.Status == "completed");
     int requestedOrdersCount = Model.Orders.Count(d => d.Status == "requested");
@@ -196,7 +188,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     window.initialChartData = {
-        driverDataSet: [ @readyCount,@offlineCount,@acceptedCount,@deliveringCount,@completedCount ,@arrivedatbranchCount,@arrivedCount],
+        driverDataSet: new Array(7).fill(0),
         orderDataSet: [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
                        @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedAtBranchOrdersCount,@arrivedOrdersCount,@sosOrdersCount]
     };

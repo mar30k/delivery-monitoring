@@ -1,4 +1,5 @@
-﻿using DeliveryMonitoring.Models;
+﻿using DeliveryMonitoring.Constants;
+using DeliveryMonitoring.Models;
 
 namespace DeliveryMonitoring.Helpers
 {
@@ -9,12 +10,12 @@ namespace DeliveryMonitoring.Helpers
             return new OrderDetail
             {
                 Id = "ORD123456",
-                AssignedDriverPhoneNumber = "0990002862",
+                AssignedDriverPhoneNumber = "0966767628",
                 BranchName = "Addis Branch",
                 CompanyCode = 1001,
                 CompanyName = "Tech Logistics",
-                CompanyTin = "1234567890",
-                DeliveryTin = "0987654321",
+                CompanyTin = "0039441045",
+                DeliveryTin = AppConstants.Company.AdminTin,
                 SupervisedBy = "SUP001",
                 SupervisorName = "Mr. Dawit",
                 SosReason = "Delayed",
@@ -37,7 +38,7 @@ namespace DeliveryMonitoring.Helpers
                 TargetBranchLat = 8.9806,
                 TargetBranchLng = 38.7578,
                 VoucherCode = "PROMO2025",
-                Alert = "Check Package",
+                Alert = string.Empty,
                 ExceptDrivers = "DRV002,DRV003",
 
                 Customer = new CustomerDetail

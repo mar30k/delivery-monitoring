@@ -40,6 +40,7 @@ namespace DeliveryMonitoring.Models
         public int NumberOfAcceptedOrders { get; set; }
         public int NumberOfRejectedOrders { get; set; }
         public string? Status { get; set; }
+        public int? BatteryStatus { get; set; }
         public string? LastUpdatedAtIso { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? CreatedAt { get; set; }

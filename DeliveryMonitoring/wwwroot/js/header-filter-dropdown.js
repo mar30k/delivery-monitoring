@@ -108,7 +108,7 @@
     // Select All functionality
     selectAll.on('change', function () {
         var isChecked = $(this).prop('checked');
-        filterItems.find('.filter-item').prop('checked', isChecked);
+        filterItems.find('.form-check:visible .filter-item').prop('checked', isChecked).trigger('change');
     });
 
     // Apply filter

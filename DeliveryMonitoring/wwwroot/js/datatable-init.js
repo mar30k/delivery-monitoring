@@ -49,6 +49,8 @@ function initTable({
         }
     });
 
+    js.fn.dataTable.ext.errMode = 'none';
+
     var table = js(tableSelector).DataTable({
         responsive: true,
         processing: true,
@@ -62,12 +64,12 @@ function initTable({
                     d.startDate = picker.startDate.format("YYYY-MM-DD");
                     d.endDate = picker.endDate.format("YYYY-MM-DD");
                     d.isClear = false;
-                } else if(isClear){
+                } else if (isClear) {
                     d.startDate = null;
                     d.endDate = null;
                     d.isClear = true;
                 }
-            }
+            }            
         },
         columnDefs: [
             { orderable: false, targets: nonOrderableTargets },
@@ -140,6 +142,7 @@ function initTable({
         startDate = picker.startDate.startOf('day');
         endDate = picker.endDate.endOf('day');
         js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+        isClear = false;
         table.ajax.reload();
     });
 
@@ -157,18 +160,52 @@ function initTable({
         endDate = null;
         isClear = true;
 
-        // Reload table with isClear = true
-        table.ajax.reload(function () {
-            isClear = false;
-        });
+        table.ajax.reload();
     });
 
-    // 🔄 Auto-reload every 10 seconds if tab is visible
-    setInterval(function () {
-        if (!document.hidden) {
-            table.ajax.reload(null, false);
+    const tableEntry = {
+        table: table,
+        get range() {
+            return { start: startDate, end: endDate, isClear: isClear };
         }
-    }, 60000);
+    };
+
+    // GLOBAL AJAX ERROR HANDLER
+    js(tableSelector).on("xhr.dt", function (e, settings, json, xhr) {
+
+        if (xhr.status !== 200) {
+
+            console.log("❌ AJAX load failed:", xhr.status);
+
+            const $table = js(tableSelector);
+            const dt = $table.DataTable();
+            const colCount = $table.find("thead th").length;
+
+            // ❗ Only insert error row if table is currently empty
+            const hasData = dt.data().any();  // true if table already has rows
+
+            if (!hasData) {
+                $table.find("tbody").html(`
+                <tr class="text-center">
+                    <td colspan="${colCount}" class="text-danger">
+                        ⚠️ Failed to load data. Please check your connection or try again.
+                    </td>
+                </tr>
+            `);
+            }
+
+            table.processing(false);
+        }
+    });
+
+    //// 🔄 Auto-reload every 10 seconds if tab is visible
+    //setInterval(function () {
+    //    if (!document.hidden) {
+    //        table.ajax.reload(null, false);
+    //    }
+    //}, 60000);
+
+    startTableAutoRefresh([tableEntry], 60000);
 
     return table;
 }

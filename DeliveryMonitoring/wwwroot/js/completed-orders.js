@@ -25,86 +25,9 @@ var dateFilterMappings = [
 
 js(() => {
 
-    const renderPhone = (data) => {
-        if (!data) return "N/A";
-        return `
-        <div class="d-inline-flex align-items-center gap-1">
-            <a href="tel:${data}">${data}</a>
-            <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-primary text-decoration-none">
-                <i class="bi bi-clipboard"></i>
-            </a>
-        </div>`;
-    };
-
-    const renderAmount = (d, type) => {
-        if (type === 'sort' || type === 'type') return parseFloat(d) || 0;
-        if (!d) return "0.00";
-        return parseFloat(d).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    };
-
-    const renderRequestDate = (td, cellData, rowData) => {
-        if (rowData.requestCreatedAt) {
-            const parsed = moment(rowData.requestCreatedAt, "YYYY-MM-DD hh:mm:ss");
-            td.setAttribute("data-order", parsed.format("YYYY-MM-DDTHH:mm:ss"));
-            td.innerText = rowData.requestCreatedAtString;
-        } else {
-            td.innerText = "N/A";
-        }
-    };
-
-    const renderReviewOrShow = (row, isDelivery) => {
-        if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
-        const purposeKey = Object.keys(purposeOptions).find(k => purposeOptions[k] === row.purpose) || '';
-
-        if (row.note || row.purpose) {
-            return `
-        <button class="btn btn-outline-secondary btn-sm"
-            data-note="${row.note || ''}"
-            data-purpose="${row.purpose || ''}"
-            data-purpose-key="${purposeKey}"
-            data-voucher-code="${row.voucherCode}"
-            data-customer-phone="${row.phoneNumber || ''}"
-            data-customer-review="${row.review || ''}"
-            data-customer-rating="${row.rating || 0}"
-            data-phone-number="${row.driverPhoneNumber || ''}"
-            data-is-delivery="${isDelivery}"
-            onclick="showDetailsModal(this)">
-            Show
-        </button>`;
-        } else {
-            return `
-        <button class="btn btn-outline-secondary btn-sm"
-            data-voucher-code="${row.voucherCode}"
-            data-phone-number="${row.driverPhoneNumber || ''}"
-            data-customer-phone="${row.phoneNumber || ''}"
-            data-customer-review="${row.review || ''}"
-            data-customer-rating="${row.rating || 0}"
-            data-is-delivery="${isDelivery}"
-            onclick="showReviewModal(this)">
-            Review
-        </button>`;
-        }
-    };
-
-    const renderActivityBtn = (row) => `
-    <button class="btn btn-outline-secondary activityBtn btn-sm"
-        data-voucher="${row.voucherCode}"
-        data-company-code="${row.companyCode}"
-        onclick="showActivity(this)">
-        Show
-    </button>`;
-
-    const renderDetailsLink = (row, isDelivery) => {
-        if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
-        const href = isDelivery
-            ? `orderdetail?voucher=${row.voucherCode}`
-            : `orderdetail?voucher=${row.voucherCode}&type=${row.tableId}`;
-        return `<a class="btn btn-outline-secondary activityBtn btn-sm" target="_blank" href="${href}">Details</a>`;
-    };
-
     // Shared base columns (used by all tables)
     const baseColumns = [
-        { data: "voucherCode", className: "text-center" },
+        { data: "voucherCode", className: "text-center", render: Renderers.voucherCode },
         { data: "companyName", className: "text-center" },
         { data: "branchName", className: "text-center" },
         { data: "firstName", className: "text-center" },
@@ -271,6 +194,7 @@ function initDateRangePickers() {
     });
 }
 function initOrderTable(selector, daterangepicker, columns, ajaxUrl, emptyMessage, totalColumnIndex, nonOrderableTargets = [0], headerFilterColumns = []) {
+    js.fn.dataTable.ext.errMode = 'none';
     const table = js(selector).DataTable({
         responsive: true,
         processing: true,
@@ -287,8 +211,34 @@ function initOrderTable(selector, daterangepicker, columns, ajaxUrl, emptyMessag
 
             url.searchParams.append("isClear", isClear);
 
-            js.getJSON(url.toString(), function (json) {
-                callback(json);
+            js.ajax({
+                url: url.toString(),
+                type: "GET",
+                dataType: "json",
+                success: function (json) {
+                    callback(json);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error("❌ AJAX request failed:", textStatus, errorThrown);
+
+                    // Only display error row if table is empty
+                    if (!table.data().any()) {
+                        const $table = js(selector);
+                        const colCount = $table.find("thead th").length;
+
+                        $table.find("tbody").html(`
+                            <tr class="text-center">
+                                <td colspan="${colCount}" class="text-danger">
+                                    ⚠️ Failed to load data. Please check your connection or try again.
+                                </td>
+                            </tr>
+                        `);
+                    }
+
+                    table.processing(false);
+                    // Do NOT clear existing table data
+                    callback(); // just call callback without data
+                }
             });
         },
         order: [[5, "desc"]],
@@ -551,7 +501,7 @@ document.getElementById('reviewForm').addEventListener('submit', async function 
     const note = document.getElementById('reviewNote').value || '';
     const isDelivery = document.getElementById('isDelivery').value == "true";
     try {
-        const response = await fetch('/CompletedOrders/savenote', {
+        const response = await fetch('/savenote', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -578,7 +528,7 @@ document.getElementById('reviewForm').addEventListener('submit', async function 
 async function showActivity(button) {
     const voucherCode = button.getAttribute('data-voucher');
     const companyCode = button.getAttribute('data-company-code');
-    const url = `/CompletedOrders/getDeliveryActivity?voucherCode=${encodeURIComponent(voucherCode)}&companyCode=${encodeURIComponent(companyCode)}`;
+    const url = `/getDeliveryActivity?voucherCode=${encodeURIComponent(voucherCode)}&companyCode=${encodeURIComponent(companyCode)}`;
 
     // Get modal elements
     const modalEl = document.getElementById('activityModal');
@@ -657,8 +607,16 @@ function showActivityAlert(message, type = 'danger') {
     `;
 }
 
-setInterval(() => {
-    if (dineInTable) dineInTable.ajax.reload(null, false); // false = don't reset paging
-    if (takeAwayTable) takeAwayTable.ajax.reload(null, false);
-    if (tablelist) tablelist.ajax.reload(null, false);
-}, 60000)
+//setInterval(() => {
+//    if (dineInTable) dineInTable.ajax.reload(null, false); // false = don't reset paging
+//    if (takeAwayTable) takeAwayTable.ajax.reload(null, false);
+//    if (deliveryTable) deliveryTable.ajax.reload(null, false);
+//}, 60000)
+
+setTimeout(() => {
+    startTableAutoRefresh([
+        { table: dineInTable, range: () => tableDateRanges.dineInTable },
+        { table: takeAwayTable, range: () => tableDateRanges.takeAwayTable },
+        { table: deliveryTable, range: () => tableDateRanges.deliveryTable }
+    ], 60000);
+}, 2000);

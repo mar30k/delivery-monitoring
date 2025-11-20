@@ -34,7 +34,7 @@ function updateOrderStatuses() {
     }
     // Update photo attachment link
     const $attachmentLink = $("#sosAttachment");
-    if (matchedOrder.photoAttachment) {
+    if (matchedOrder && matchedOrder.photoAttachment) {
             $attachmentLink
             .attr("href", "#")
             .attr("data-img", matchedOrder.photoAttachment)
@@ -43,29 +43,32 @@ function updateOrderStatuses() {
         $attachmentLink.addClass("d-none");
     }
 }
-function showModalAlert(message, containerId, type = "warning", timeout = 4000) {
-    const alertContainer = document.getElementById(containerId);
-    if (!alertContainer) return;
+function showToast(message, type = "info") {
+    let bgColor = "";
 
-    // Clear any existing alerts
-    alertContainer.innerHTML = "";
+    switch (type) {
+        case "success":
+            bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
+            break;
+        case "error":
+            bgColor = "linear-gradient(to right, #ff5f6d, #ffc371)";
+            break;
+        case "warning":
+            bgColor = "linear-gradient(to right, #f2994a, #f2c94c)";
+            break;
+        default:
+            bgColor = "linear-gradient(to right, #616161, #9bc5c3)";
+    }
 
-    const alertDiv = document.createElement("div");
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-    alertDiv.role = "alert";
-    alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          `;
-
-    alertContainer.appendChild(alertDiv);
-
-    setTimeout(() => {
-        // Trigger Bootstrap fade out and remove alert
-        alertDiv.classList.remove("show");
-        alertDiv.classList.add("hide");
-        setTimeout(() => alertDiv.remove(), 150);
-    }, timeout);
+    Toastify({
+        text: message,
+        duration: 4000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        style: { background: bgColor },
+        stopOnFocus: true,
+    }).showToast();
 }
 
 document.querySelectorAll('input[name="recipient"]').forEach((radio) => {
@@ -84,7 +87,7 @@ document.querySelectorAll('input[name="recipient"]').forEach((radio) => {
         } else if (radio.value === 'driver') {
 
             if (!phoneNumber || phoneNumber.trim() === '') {
-                showModalAlert("No driver has been assigned to this order yet.", "sendAlertContainer");
+                showToast("No driver has been assigned to this order yet.", "warning");
                 form.style.display = 'none';
                 sendButton.disabled = true;
                 return;
@@ -95,7 +98,7 @@ document.querySelectorAll('input[name="recipient"]').forEach((radio) => {
                 const response = await fetch(`/getDeviceID/${encodeURIComponent(phoneNumber)}`);
 
                 if (!response.ok) {
-                    showModalAlert(`Failed to fetch driver info`, "sendAlertContainer");
+                    showToast(`Failed to fetch driver info`, "error");
                     form.style.display = 'none';
                     sendButton.disabled = true;
                     return;
@@ -105,12 +108,12 @@ document.querySelectorAll('input[name="recipient"]').forEach((radio) => {
                 deviceIdInput.value = data.deviceId || '';
 
                 if (!data.deviceId) {
-                    showModalAlert("Driver device ID not found.", "sendAlertContainer");
+                    showToast("Driver device ID not found.", "error");
                     form.style.display = 'none';
                     sendButton.disabled = true;
                 }
             } catch (error) {
-                showModalAlert('Error fetching driver info: ' + error.message, "sendAlertContainer");
+                showToast('Error fetching driver info: ' + error.message, "error");
                 form.style.display = 'none';
                 sendButton.disabled = true;
             }
@@ -126,7 +129,7 @@ document.getElementById('sendAlertBtn').addEventListener('click', async () => {
     const body = document.getElementById('body').value.trim();
 
     if (!recipient || !title || !body) {
-        showModalAlert("Please fill in all fields.", "sendAlertContainer");
+        showToast("Please fill in all fields.", "warning");
         return;
     }
 
@@ -147,18 +150,18 @@ document.getElementById('sendAlertBtn').addEventListener('click', async () => {
 
         if (!response.ok) {
             const errorText = await response.text();
-            showModalAlert('Failed to send alert: ', "sendAlertContainer");
+            showToast(`Failed to send alert: ${errorText}`, "error");
         } else {
             const result = await response.text();
             console.log('Alert sent successfully:', result);
-            showModalAlert('Alert sent successfully!', "sendAlertContainer");
+            showToast("Alert sent successfully!", "success");
 
             // Close modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('sendAlertModal'));
             modal.hide();
         }
     } catch (error) {
-        showModalAlert('Error sending alert: ' + error.message, "sendAlertContainer");
+        showToast('Error sending alert: ' + error.message, "error");
     }
 });
 
@@ -195,14 +198,14 @@ $('#confirmSupervisorBtn').on('click', async function () {
         });
 
         if (!response.ok) {
-            showModalAlert('Error: Could not accept order supervision.', "accetOrderAlertContainer");
+            showToast('Error: Could not accept order supervision.', "error");
             $confirmBtn.prop('disabled', false).text('Confirm');
         } else {
-            showModalAlert('Order supervision accepted successfully!', "accetOrderAlertContainer", "success");
+            showToast('Order supervision accepted successfully!', "success");
             setTimeout(() => window.location.reload(), 5000);
         }
     } catch (error) {
-        showModalAlert('Error:' + error.message, "accetOrderAlertContainer");
+        showToast('Error:' + error.message, "error");
         $confirmBtn.prop('disabled', false).text('Confirm');
     }
 });
@@ -231,7 +234,6 @@ function loadAvailableDrivers() {
     });
 }
 $('#changeOrderStatus').on('click', async function () {
-    console.log("changeOrderStatus")
     const voucherCode = $(this).data('voucher-code');
     $('#voucherCode').text(voucherCode);
     $('#voucherCodeInput').val(voucherCode);
@@ -257,12 +259,12 @@ $('#changeOrderStatusForm').on('submit', function (e) {
     const assignedDriverPhoneNumber = $('#driverSelect').val();
 
     // ✅ Validation
-    if (!orderStatus) {
-        showModalAlert("Please select an order status.", "changeOrderStatusAlertContainer", "warning");
+    if (!status) {
+        showToast("Please select an order status.", "warning");
         return;
     }
     if (!assignedDriverPhoneNumber) {
-        showModalAlert("Please select a driver.", "changeOrderStatusAlertContainer", "warning");
+        showToast("Please select a driver.", "warning");
         return;
     }
 
@@ -278,12 +280,12 @@ $('#changeOrderStatusForm').on('submit', function (e) {
         contentType: 'application/json',
         data: JSON.stringify(data),
         success: function (response) {
-            showModalAlert("Order status updated successfully!", "changeOrderStatusAlertContainer", "success");
+            showToast("Order status updated successfully!", "success");
             setTimeout(() => window.location.reload(), 5000);
         },
         error: function (xhr) {
             const errorMessage = xhr.responseText || "An error occurred while updating order status.";
-            showModalAlert(errorMessage, "changeOrderStatusAlertContainer", "danger");
+            showToast(errorMessage, "danger");
             $('#orderStatusButton').prop('disabled', false).text('Submit');
         }
     });

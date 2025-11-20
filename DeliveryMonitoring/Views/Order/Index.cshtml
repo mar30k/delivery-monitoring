@@ -123,13 +123,18 @@
                             <tr data-voucher="@order?.VoucherCode" data-supervisor="@order?.SupervisedBy" style="font-size: 13px;">
                                 <td>
                                     @order?.VoucherCode
+                                    <a onclick="copyToClipboard('@order?.VoucherCode')" title="Copy to clipboard" class="text-secondary text-decoration-none">
+                                        <i class="bi bi-clipboard"></i>
+                                    </a>
                                 </td>
                                 <td class="text-center">
                                     @(order?.CompanyName ?? "N/A")
                                 </td>
                                 <td class="text-center">
                                     @(order?.BranchName ?? "N/A")
-                                    <a onclick="openChangeBranchModal('@order?.CompanyTin','@order?.CompanyName','@order?.BranchName')"> <i class="fa-solid fa-pen-to-square"></i></a>
+                                    @*<a onclick="openChangeBranchModal('@order?.CompanyTin','@order?.CompanyName','@order?.BranchName','@order?.VoucherCode')"> <i class="fa-solid fa-pen-to-square"></i></a>
+                                      <a onclick="openChangeBranchModal('${order.companyTin}','${order.companyName}','${order.branchName}','${order.voucherCode}')"> <i class="fa-solid fa-pen-to-square"></i></a>
+                                    *@
                                 </td>
                                 <td class="text-center">
                                     @(order?.CustomerFirstName ?? "N/A")
@@ -246,8 +251,10 @@
                onclick="openRedispatchModal(this)"
                id="@testOrder.VoucherCode?.ToString()">
                 Redispatch
-            </a>  <a class="btn btn-outline-dark btn-sm" onclick="openAssignSupervisorModal('@voucher')">Assign</a> *@
-           
+            </a>  <a class="btn btn-outline-dark btn-sm" onclick="openAssignSupervisorModal('@testOrder.VoucherCode')">Assign</a> 
+            <a onclick="openChangeBranchModal('@testOrder?.CompanyTin','@testOrder?.CompanyName','@testOrder?.BranchName', '@testOrder?.VoucherCode')"> <i class="fa-solid fa-pen-to-square"></i></a>
+             *@
+
         </div>
 
         <!-- Re-dispatch Modal -->
@@ -336,11 +343,26 @@
                     </div>
 
                     <div class="modal-body">
+                        <!-- Voucher Code (readonly) -->
+                        <label for="voucherCodeInput" class="form-label fw-bold">Voucher Code:</label>
+                        <input id="voucherCodeInput"
+                               type="text"
+                               class="form-control mb-3"
+                               placeholder="No voucher assigned"
+                               readonly />
 
+                        <!-- Branch Select -->
                         <label for="branchSelectDropdown" class="form-label fw-bold">Select a branch:</label>
                         <select id="branchSelectDropdown" class="form-select mb-3">
                             <option selected disabled>Loading branches...</option>
                         </select>
+
+                        <!-- Remark Text Area -->
+                        <label for="remarkInput" class="form-label fw-bold">Remark:</label>
+                        <textarea id="remarkInput"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Add an optional remark..."></textarea>
 
                         <button class="btn btn-outline-success w-100 mt-2" onclick="confirmBranchChange()">
                             ✅ Change Branch

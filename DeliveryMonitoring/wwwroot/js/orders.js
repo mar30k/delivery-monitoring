@@ -74,7 +74,7 @@ js(() => {
 let supervisors = null;
 function getAvailableSupervisors() {
     return $.ajax({
-        url: "order/getAvailableSupervisors",
+        url: "/getAvailableSupervisors",
         method: "GET"
     });
 }
@@ -162,11 +162,15 @@ function updateOrders() {
             : `<a href="tel:${order.supervisedBy}">${supervisor ? supervisor.firstName + ' ' + supervisor.secondName : order.supervisedBy}</a> 
             <a onclick="openAssignSupervisorModal('${order.voucherCode}')"> <i class="fa-solid fa-pen-to-square"></i></a>`;
         newRow.innerHTML = `                    
-                    <td>${order.voucherCode}</td>
+                    <td>
+                        ${order.voucherCode}
+                        <a onclick="copyToClipboard('${order.voucherCode}')" title="Copy to clipboard" class="text-secondary text-decoration-none">
+                            <i class="bi bi-clipboard"></i>
+                        </a>
+                    </td>
                     <td class="text-center">${order.companyName || 'N/A'}</td>
                     <td class="text-center">
                         ${order.branchName || 'N/A'}
-                        <a onclick="openChangeBranchModal('${order.companyTin}','${order.companyName}','${order.branchName}')"> <i class="fa-solid fa-pen-to-square"></i></a>
                     </td>
                     <td class="text-center">${order.customerFirstName || 'N/A'}</td>
                     <td class="text-center">
@@ -456,17 +460,24 @@ async function assignSupervisor(voucherCode, phoneNumber = "all") {
             $("#assignSupervisor").modal("hide");
             Toastify({
                 text: "Supervisor assigned successfully!",
-                backgroundColor: "green",
+                style: {
+                    background: "green",
+                },
                 duration: 3000,
                 gravity: "top",
                 position: "right"
             }).showToast();
+
+            // Reload the page after 1 second
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
         },
         error: function (xhr) {
             hideLoading("assignLoading");
             Toastify({
                 text: "Error assigning supervisor.",
-                backgroundColor: "red",
+                style: { background: "red", },
                 duration: 3000,
                 gravity: "top",
                 position: "right"
@@ -552,11 +563,11 @@ function confirmAssignToSupervisor() {
 }
 
 
-function openChangeBranchModal(companyTin, companyName, currentBranchName) {
+function openChangeBranchModal(companyTin, companyName, currentBranchName, voucherCode) {
     $("#branchSelectDropdown").html(`<option disabled selected>Loading branches...</option>`);
     $('#companyNameLable').text(`- ${companyName}`);
     $("#changeBranchModal").modal("show");
-
+    $("#voucherCodeInput").val(voucherCode || "");
     $.ajax({
         url: `/getCompanyBranches?tin=${companyTin}`,
         method: "GET",
@@ -565,6 +576,7 @@ function openChangeBranchModal(companyTin, companyName, currentBranchName) {
                 $("#branchSelectDropdown").html(`<option disabled selected>No branches found</option>`);
                 return;
             }
+            $('#companyNameLable').text(`- ${response.data.brandName}`);
 
             const branches = response.data.branches;
 
@@ -599,36 +611,50 @@ function openChangeBranchModal(companyTin, companyName, currentBranchName) {
 
 function confirmBranchChange() {
     const selectedBranchCode = $("#branchSelectDropdown").val();
-
+    const voucherCode = $("#voucherCodeInput").val();
+    const remark = $("#remarkInput").val();
     if (!selectedBranchCode) {
-        Toastify({ text: "Please select a branch.", backgroundColor: "red" }).showToast();
+        Toastify({ text: "Please select a branch.", style: { background: "red" } }).showToast();
         return;
     }
 
+
+    var data = {
+        branchCode: selectedBranchCode,
+        voucherCode: voucherCode,
+        remark: remark
+    };
+    console.log(data);
     $("#branchChangeLoading").removeClass("d-none");
 
-    // TODO: Implement your branch linking API call here
-    // Example:
     $.ajax({
-        url: `/changeBranch?branchCode=${selectedBranchCode}`,
+        url: "/changeBranch",
         method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(data),
         success: function () {
             $("#branchChangeLoading").addClass("d-none");
             $("#changeBranchModal").modal("hide");
 
             Toastify({
                 text: "Branch changed successfully!",
-                backgroundColor: "green"
+                style: { background: "green" }
             }).showToast();
 
-            // Reload or update UI here
+            // Reload the page after 1 second
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
         },
-        error: function () {
+        error: function (jqXHR, textStatus, errorThrown) {
             $("#branchChangeLoading").addClass("d-none");
 
+            // Try to get server message from response
+            let msg = jqXHR.responseJSON?.message || errorThrown || textStatus || "Unknown error";
+
             Toastify({
-                text: "Error changing branch.",
-                backgroundColor: "red"
+                text: `Error changing branch. ${msg}`,
+                style: { background: "red" }
             }).showToast();
         }
     });

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Text;
+using static NuGet.Packaging.PackagingConstants;
 namespace DeliveryMonitoring.Controllers
 {
     [Authorize]
@@ -17,7 +18,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
-        private const string AdminCompanyTin = "0076217301";
+        private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         public OrderController(
             IHttpContextAccessor httpContextAccessor,
             IWebHostEnvironment env,
@@ -52,12 +53,20 @@ namespace DeliveryMonitoring.Controllers
                     orders = orders?.Where(o => o.DeliveryTin == CompanyTin).ToList();
                 }
                 superVisors = await _apiRequestService.GetSupervisorsAsync();
-                var orderViewModel = new OrderViewModel
+
+                //if (orders != null && orders.Count == 0 && _env.IsDevelopment())
+                //{
+                //    return View(new OrderViewModel
+                //    {
+                //        OrderDetail = new List<OrderDetail> { GetSampleOrder.CreateSampleOrder() },
+                //        Supervisors = superVisors
+                //    });
+                //}
+                return View(new OrderViewModel
                 {
                     OrderDetail = orders,
                     Supervisors = superVisors
-                };
-                return View(orderViewModel);
+                });
             }
             catch (Exception ex)
             {
@@ -82,6 +91,10 @@ namespace DeliveryMonitoring.Controllers
                 {
                     response = response.Where(order => order.DeliveryTin == CompanyTin).ToList();
                 }
+                //if (response != null && response.Count == 0 && _env.IsDevelopment())
+                //{
+                //    return new List<OrderDetail> { GetSampleOrder.CreateSampleOrder() };
+                //}
                 return response ?? new List<OrderDetail>();
             }
             catch
@@ -208,7 +221,7 @@ namespace DeliveryMonitoring.Controllers
             }
         }
 
-        [HttpGet("order/getAvailableSupervisors")]
+        [HttpGet("/getAvailableSupervisors")]
         public async Task<IActionResult> GetAvailableSupervisors()
         {
             try
@@ -233,7 +246,7 @@ namespace DeliveryMonitoring.Controllers
 
             var response = await _apiRequestService.SendMessageAsync(messageDto);
             if(!response.IsSuccessful)
-                return StatusCode(500, $"failed: {response.ErrorMessages?.FirstOrDefault()}");
+                return StatusCode(500, $"failed: {string.Join("", response.ErrorMessages ?? new List<string>())}");
             return Ok("Message sent successfully.");
         }
         [Route("/supervisorAccept")]

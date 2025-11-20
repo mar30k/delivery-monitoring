@@ -44,7 +44,7 @@ function getSummaryTableConfig(userType) {
         },
         [USER_TYPE.CONSIGNEE]: {
             columns: [
-                { data: "phoneNumber", className: "text-center" },
+                { data: "phoneNumber", className: "text-center", render: Renderers.phone },
                 { data: "name", className: "text-center" },
                 { data: "totalDineInOrders", className: "text-center" },
                 { data: "dineInAmount", className: "text-center", render: Renderers.amount },
@@ -61,7 +61,7 @@ function getSummaryTableConfig(userType) {
         },
         [USER_TYPE.DRIVER]: {
             columns: [
-                { data: "driverPhoneNumber", className: "text-center" },
+                { data: "driverPhoneNumber", className: "text-center", render: Renderers.phone },
                 { data: "name", className: "text-center" },
                 { data: "totalDeliveryOrders", className: "text-center" },
                 { data: "deliveryAmount", className: "text-center", render: Renderers.amount },
@@ -79,7 +79,7 @@ function getSummaryTableConfig(userType) {
         },
         [USER_TYPE.SUPERVISOR]: {
             columns: [
-                { data: "supervisorPhoneNumber", className: "text-center" },
+                { data: "supervisorPhoneNumber", className: "text-center", render: Renderers.phone },
                 { data: "supervisorName", className: "text-center" },
                 { data: "totalDeliveryOrders", className: "text-center" },
                 { data: "deliveryAmount", className: "text-center", render: Renderers.amount },
@@ -107,7 +107,7 @@ function getReportTableConfig(tableId) {
     const isAllOrders = tableId === "allOrders";
 
     const columns = [
-        { data: "voucherCode", className: "text-center" },
+        { data: "voucherCode", className: "text-center", render: Renderers.voucherCode},
         { data: "companyName", className: "text-center" },
         { data: "branchName", className: "text-center" },
         { data: "firstName", className: "text-center" },

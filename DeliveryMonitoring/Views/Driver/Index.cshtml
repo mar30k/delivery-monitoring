@@ -76,6 +76,9 @@
                                 Is Active
                             </th>
                             <th class="text-center">
+                                Battery
+                            </th>
+                            <th class="text-center">
                                 Driver Details
                             </th>
                         </tr>
@@ -126,6 +129,20 @@
                                 <td class="text-center">
                                     @((driver !=null && driver.IsDisabled) ? "no" : "yes")
                                 </td>
+                                <td class="text-center" data-order="@driver?.BatteryStatus">
+                                    @{
+                                        int? battery = driver?.BatteryStatus;
+                                        string color = BatteryColor(battery);
+                                    }
+                                    @if (battery != null)
+                                    {
+                                        <span style="font-weight:600; color:@color;">@battery%</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:#777;">N/A</span>
+                                    }
+                                </td>
                                 <td class="text-center">
                                     <a class="btn btn-outline-dark btn-sm" href="/driverdetail/@driver?.PhoneNumber">Details</a>
                                 </td>
@@ -139,4 +156,19 @@
 </div>
 @section Scripts {
     <script src="~/js/driver.js" asp-append-version="true"></script>
+}
+@functions{
+    string BatteryColor(int? battery)
+    {
+        if (battery == null)
+            return "#777777"; // gray for N/A
+
+        int b = Math.Clamp(battery.Value, 0, 100);
+
+        if (b < 20) return "#ff0000";      // red
+        if (b < 40) return "#ff6600";      // orange
+        if (b < 60) return "#ffcc00";      // yellow
+        if (b < 80) return "#99cc00";      // yellow-green
+        return "#00cc00";                  // green
+    }
 }

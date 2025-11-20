@@ -18,6 +18,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly AuthenticationManager _authenticationManager;
         private string CompanyTin =>_authenticationManager.GetSecureCookie(
                 CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
+        private const string AdminComanyTin = AppConstants.Company.AdminTin;
         public HomeController(
             IHttpContextAccessor httpContextAccessor,
             IApiRequestService apiRequestService,
@@ -56,9 +57,6 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/GetChartData")]
         public async Task<IActionResult> GetChartData([FromQuery] ReportByOrderType type)
         {
-            var today = DateTime.Today;
-            
-
             var response = type == ReportByOrderType.Delivery
                 ? await _apiRequestService.GetCompletedOrdersAsync()
                 : await _apiRequestService.GetOrdersByTypeAsync(
@@ -67,10 +65,20 @@ namespace DeliveryMonitoring.Controllers
                         : (int)DeliveryOrderTypes.InHouseDining
                 );
 
-            var count = response.Data?.Count(x => x.RequestCreatedAt.Date == today) ?? 0;
-            var total = response.Data?.Where(x => x.RequestCreatedAt.Date == today).Sum(x => x.TotalAmount) ?? 0;
+            if (response?.Data == null || !response.Data.Any())
+                return Ok(new { count = 0, total = 0m });
 
-            return Ok(new { count, total });
+            var filteredData = (CompanyTin == AdminComanyTin)
+                ? response.Data
+                : response.Data.Where(r => r.Tin == CompanyTin);
+
+            var todayOrders = filteredData.Where(x => x.RequestCreatedAt.Date == DateTime.Today).ToList();
+
+            return Ok(new
+            {
+                count = todayOrders.Count,
+                total = todayOrders.Sum(x => x.TotalAmount)
+            });
         }
     }
 

@@ -14,10 +14,10 @@ js( ()=> {
     if (!js.fn.DataTable.isDataTable('#tablelist')) {
         tablelist = js('#tablelist').DataTable({
             responsive: true,
-            pageLength: 13,
+            pageLength: 25,
             "lengthMenu": [[10, 13, 25, 50, 100], [10, 13, 25, 50, 100]],
             columnDefs: [
-                { orderable: false, targets: [3, 1, 6] } // Disable sorting on specified columns
+                { orderable: false, targets: [3, 1, 7] } // Disable sorting on specified columns
             ],
             order: [[4, 'desc']]
         });
@@ -102,6 +102,7 @@ function fetchDataAndUpdateMarkers() {
             places = places.filter(place => place !== undefined);
             // Process the places array after fetching the data
             // ---- UPDATE DRIVER STATUS IN TABLE ----
+
             data.forEach(driver => {
                 let rowIndex = tablelist.rows().eq(0).filter(function (index) {
                     let cellText = tablelist.cell(index, 3).node().innerText.trim();
@@ -109,27 +110,40 @@ function fetchDataAndUpdateMarkers() {
                 });
 
                 if (rowIndex.length) {
-                    // Update the data
+
+                    // =====================
+                    // Update STATUS cell
+                    // =====================
                     tablelist.cell(rowIndex, 4).data(driver.status);
-                    // Get the actual cell element
                     const statuscell = tablelist.cell(rowIndex, 4).node();
 
                     const driverStatus = (driver.status || "default").toLowerCase();
                     const statusInfo = statusColors[driverStatus] || statusColors.default;
 
-                    const bgColor = statusInfo.color;
-                    const priority = statusInfo.priority;
+                    statuscell.style.backgroundColor = statusInfo.color;
+                    $(statuscell).attr('data-order', statusInfo.priority);
 
-                    // Apply background color
-                    statuscell.style.backgroundColor = bgColor;
-                    $(statuscell).attr('data-order', priority);
-                    // Get the cell for last updated
+                    // ===========================
+                    // Update LAST UPDATED cell
+                    // ===========================
                     let lastUpdatedCell = tablelist.cell(rowIndex, 1).node();
-                    // Update the data-order attribute and cell content
                     $(lastUpdatedCell).attr('data-order', driver.updatedAt);
                     tablelist.cell(rowIndex, 2).data(driver.lastUpdatedAtIso);
 
-                    // Invalidate row data for DataTables
+                    // ===========================
+                    // ✅ Update BATTERY cell
+                    // ===========================
+                    const batteryValue = driver.batteryStatus;
+                    const batteryCell = tablelist.cell(rowIndex, 6).node();
+
+                    $(batteryCell).attr("data-order", batteryValue ?? -1);
+
+                    const batteryHtml = renderBatteryCell(batteryValue);
+                    tablelist.cell(rowIndex, 6).data(batteryHtml);
+
+                    // ===========================
+                    // Refresh row
+                    // ===========================
                     tablelist.row(rowIndex).invalidate();
                 }
             });
@@ -193,4 +207,27 @@ function fetchDataAndUpdateMarkers() {
         })
         .catch(error => console.error('Error fetching live location:', error, error.responseText));
 
+}
+function batteryColor(battery) {
+    if (battery == null) return "#777777"; // gray
+
+    if (battery < 20) return "#ff0000";      // red
+    if (battery < 40) return "#ff6600";      // orange
+    if (battery < 60) return "#ffcc00";      // yellow
+    if (battery < 80) return "#99cc00";      // yellow-green
+    return "#00cc00";                        // green
+}
+
+function renderBatteryCell(battery) {
+    if (battery == null) {
+        return `<span style="color:#777;">N/A</span>`;
+    }
+
+    const color = batteryColor(battery);
+
+    return `
+        <span style="font-weight:600; color:${color};">
+            ${battery}%
+        </span>
+    `;
 }

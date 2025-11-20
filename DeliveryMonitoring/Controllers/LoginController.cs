@@ -23,7 +23,7 @@ namespace DeliveryMonitoring.Controllers
         private readonly AuthenticationManager _authenticationManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
-        private const string AdminCompanyTin = "0076217301";
+        private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         public LoginController(AuthenticationManager authenticationManager,
             IHttpContextAccessor httpContextAccessor,
             IWebHostEnvironment webHostEnvironment,
@@ -36,7 +36,7 @@ namespace DeliveryMonitoring.Controllers
             _configuration = configuration;
             _apiRequestService = apiRequestService;
         }
-        [Route("/verifyId")]
+        [Route("/verifyId", Name = "verifyId")]
         public async Task<IActionResult> index() 
         {
             var identificationResult = await _authenticationManager.identificationValid();

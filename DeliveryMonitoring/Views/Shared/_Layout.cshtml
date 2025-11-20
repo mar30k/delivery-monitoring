@@ -2,7 +2,7 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject DeliveryMonitoring.Controllers.AuthenticationManager AuthManager
 @{
-    var adminCompanyTin = "0076217301";
+    var adminCompanyTin = AppConstants.Company.AdminTin;
     var companyTin = AuthManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie);
 }
 <!DOCTYPE html>

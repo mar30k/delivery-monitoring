@@ -11,10 +11,10 @@ namespace DeliveryMonitoring.Services.Orders
     public class CompletedOrdersService : ICompletedOrdersService
     {
         private readonly AuthenticationManager _authenticationManager;
-        private const string DineInTableId = "dineIn";
-        private const string TakeAwayTableId = "takeAway";
-        private const string DeliveryTableId = "delivery";
-        private const string AdminCompanyTin = "0076217301";
+        private const string DineInTableId = AppConstants.TableIds.DineIn;
+        private const string TakeAwayTableId = AppConstants.TableIds.TakeAway;
+        private const string DeliveryTableId = AppConstants.TableIds.Delivery;
+        private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         private readonly IApiRequestService _apiRequestService;
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
 

@@ -66,13 +66,15 @@ namespace DeliveryMonitoring.Helpers
             AuthenticationManager authManager,
             IApiRequestService apiService)
         {
-            if (order.IsDelivery)
-                return order.Note ?? "";
+            
 
             var user = authManager.GetUserFromCookie() ?? throw new InvalidOperationException("User not authenticated.");
             var supervisors = await apiService.GetSupervisorsAsync();
             var supervisor = supervisors.FirstOrDefault(s => s.UserName == user.UserName) 
                 ?? throw new InvalidOperationException("Unable to find the supervisor. Please try again!");
+
+            if (order.IsDelivery)
+                return order.Note ?? "";
 
             return $"{{{supervisor.FirstName} {supervisor.SecondName}}} {order.Note ?? ""}";
         }

@@ -163,7 +163,7 @@
         });
         async function fetchSupervisors(){
             try {
-                const response = await fetch('order/getAvailableSupervisors');
+                const response = await fetch('/getAvailableSupervisors');
                 let supervisors = await response.json();
                 if(!Array.isArray(supervisors), !Array.isArray(data)) return;
                 updateSupervisorsTable(supervisors, data);

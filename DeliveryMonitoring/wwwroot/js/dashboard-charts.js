@@ -71,76 +71,43 @@ const totalChart = createDoughnutChart(
     `Completed Orders Total ${new Date().toISOString().slice(0, 10)}`
 );
 
-async function fetchAndUpdateChart(maxRetries = 3, updateMode = "all-at-once") {
+
+async function fetchAndUpdateChart() {
     const orderSlices = [
-        { url: '/GetChartData?type=delivery', index: 1, label: 'Delivery' },
-        { url: '/GetChartData?type=takeaway', index: 0, label: 'Takeaway' },
-        { url: '/GetChartData?type=dinein', index: 2, label: 'Dine-in' }
+        { url: '/getChartData?type=delivery', index: 1, label: 'Delivery' },
+        { url: '/getChartData?type=takeaway', index: 0, label: 'Takeaway' },
+        { url: '/getChartData?type=dinein', index: 2, label: 'Dine-in' }
     ];
 
-    // fetch and update a single slice
+    // fetch a single slice
     async function fetchSlice(slice) {
         try {
             const response = await fetch(slice.url);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
-
-            const count = data.count || 0;
-            const total = data.total || 0;
-
-            // update charts immediately if in gradual mode
-            if (updateMode === "gradual") {
-                updateCharts(slice, count, total);
-            }
-
-            return { slice, count, total, success: true };
+            return { slice, count: data.count || 0, total: data.total || 0, success: true };
         } catch (err) {
             console.warn(`Failed to fetch ${slice.label}:`, err);
-            return { slice, success: false };
+            return { slice, count: 0, total: 0, success: false };
         }
     }
 
-    function updateCharts(slice, count, total) {
-        // Update count chart
-        countChart.data.datasets[0].data[slice.index] = count;
-        countChart.data.labels[slice.index] = `${slice.label} (${count})`;
+    // fetch all slices
+    const results = await Promise.all(orderSlices.map(fetchSlice));
 
-        // Update total chart
-        totalChart.data.datasets[0].data[slice.index] = total;
-        totalChart.data.labels[slice.index] = `${slice.label} (${total.toFixed(2)})`;
+    // update charts once at the end only for successful slices
+    results
+        .filter(r => r.success)
+        .forEach(r => {
+            countChart.data.datasets[0].data[r.slice.index] = r.count;
+            countChart.data.labels[r.slice.index] = `${r.slice.label} (${r.count})`;
 
-        // Gradual mode updates immediately
-        if (updateMode === "gradual") {
-            countChart.update();
-            totalChart.update();
-        }
-    }
+            totalChart.data.datasets[0].data[r.slice.index] = r.total;
+            totalChart.data.labels[r.slice.index] = `${r.slice.label} (${r.total.toFixed(2)})`;
+        });
 
-    // retry logic for failed slices
-    async function retryFailed(failed, attempt) {
-        if (!failed.length) return [];
-        console.log(`Retrying ${failed.length} slice(s), attempt ${attempt}...`);
-        await new Promise(r => setTimeout(r, 1000 * attempt));
-        const results = await Promise.all(failed.map(fetchSlice));
-        return results.filter(r => !r.success).map(r => r.slice);
-    }
-
-    // --- Main run ---
-    let results = await Promise.all(orderSlices.map(fetchSlice));
-
-    // retry rounds if any failed
-    let failedSlices = results.filter(r => !r.success).map(r => r.slice);
-    for (let attempt = 2; attempt <= maxRetries && failedSlices.length; attempt++) {
-        failedSlices = await retryFailed(failedSlices, attempt);
-    }
-
-    // All done: final update (for all-at-once mode)
-    if (updateMode === "all-at-once") {
-        results = results.filter(r => r.success);
-        for (const r of results) updateCharts(r.slice, r.count, r.total);
-        countChart.update();
-        totalChart.update();
-    }
+    countChart.update();
+    totalChart.update();
 }
 // Orders Status Chart
 const ordersStatusChart = createDoughnutChart(
@@ -263,7 +230,7 @@ async function fetchKotStatus() {
 }
 async function fetchSupervisors() {
     try {
-        const response = await fetch('order/getAvailableSupervisors');
+        const response = await fetch('/getAvailableSupervisors');
         let supervisors = await response.json();
         if (!Array.isArray(supervisors)) return;
         $("#totalSupervisors").text(supervisors.length);
@@ -274,9 +241,8 @@ async function fetchSupervisors() {
     }
 }
 $(function () {
-    // Run on page load
-    setInterval(() => fetchAndUpdateChart(3, "all-at-once"), 60000);
     fetchAndUpdateChart();
+    setInterval(fetchAndUpdateChart, 60000);
     fetchKotStatus();
     updateDriversChart();
     setInterval(updateOrdersChart, 10000);

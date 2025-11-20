@@ -44,14 +44,14 @@ namespace DeliveryMonitoring.Services.Api
         /// <summary>
         /// Retrieves a list of available drivers for dispatching orders.
         /// </summary>
-        Task<List<Driver>> GetAvailableDriversAsync();
+        Task<List<Driver>> GetAvailableDriversAsync(bool skipCache = true);
 
         /// <summary>
         /// Retrieves driver details by their registered phone number.
         /// </summary>
         /// <typeparam name="T">Type of the driver model to deserialize to.</typeparam>
         /// <param name="phoneNumber">Driver’s phone number.</param>
-        Task<T?> GetDriverDetailsByPhoneNumber<T>(string phoneNumber);
+        Task<T?> GetDriverDetailsByPhoneNumber<T>(string phoneNumber, bool skipCache = true);
 
         /// <summary>
         /// Updates driver details such as location, availability, or assigned orders.
@@ -89,7 +89,7 @@ namespace DeliveryMonitoring.Services.Api
         /// </summary>
         /// <param name="companyCode">company code.</param>
         /// <param name="voucherCode">order unique identification</param>
-        Task<HulubejeResponse<Activities>?> GetDriverActivityAsync(string companyCode, string voucherCode);
+        Task<HulubejeResponse<Activities>?> GetDriverActivityAsync(string companyCode, string voucherCode,  bool skipCache = true);
 
         #endregion
 
@@ -106,30 +106,39 @@ namespace DeliveryMonitoring.Services.Api
         Task<Companies> GetCompaniesAsync();
 
         /// <summary>
-        /// Retrieves detailed information about a specific company.
+        /// Retrieves detailed information for a specific company.
         /// </summary>
-        /// <param name="companyTin">The company’s Tax Identification Number (TIN).</param>
-        Task<HulubejeResponse<Company>?> GetCompanyDetailsAsync(string companyTin);
+        /// <param name="companyTin">The Tax Identification Number (TIN) of the company.</param>
+        /// <param name="skipCache">
+        /// If set to <c>true</c>, bypasses the cache and fetches fresh data.
+        /// </param>
+        Task<HulubejeResponse<Company>?> GetCompanyDetailsAsync(string companyTin, bool skipCache = false);
 
         #endregion
 
         #region Completed Orders
 
         /// <summary>
-        /// Retrieves all completed orders for the logged-in company.
+        /// Retrieves all completed orders associated with the logged-in company.
         /// </summary>
+        /// <param name="skipCache">
+        /// If set to <c>true</c>, bypasses the cache and fetches the latest data.
+        /// </param>
         Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(bool skipCache = true);
 
         /// <summary>
-        /// Retrieves completed orders filtered by order type.
+        /// Retrieves completed orders filtered by the specified order type.
         /// </summary>
-        /// <param name="type">Order type identifier.</param>
+        /// <param name="type">The identifier of the order type to filter by.</param>
+        /// <param name="skipCache">
+        /// If set to <c>true</c>, bypasses the cache and fetches the latest data.
+        /// </param>
         Task<HulubejeResponse<List<CompletedOrders>>> GetOrdersByTypeAsync(int type, bool skipCache = true);
         /// <summary>
         /// Retrieves completed orders filtered by order type.
         /// </summary>
         /// <param name="type">Order type identifier.</param>
-        Task<HulubejeResponse<LineItemsDetail>> Gethistorydetail(string voucherCode, string companyCode, int industryType = 1992);
+        Task<HulubejeResponse<LineItemsDetail>> Gethistorydetail(string voucherCode, string companyCode, int industryType = 1992, bool skipCache = true);
 
         #endregion
 

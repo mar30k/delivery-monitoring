@@ -81,6 +81,11 @@ const Renderers = {
                 <i class="bi bi-clipboard"></i>
             </a>
         </div>`,
+    voucherCode: (data) => !data ? "N/A" : `
+            ${data}
+            <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-secondary text-decoration-none">
+                <i class="bi bi-clipboard"></i>
+            </a>`,
     purposeSummary: function (data, type, row) {
         if (!data || !Array.isArray(data) || data.length === 0) return "N/A";
 
