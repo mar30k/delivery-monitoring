@@ -242,9 +242,11 @@ namespace DeliveryMonitoring.Models
     }
     public class ChangeBranchDTO
     {
-        public string? BranchCode { get; set; }
+        public int? BranchCode { get; set; }
+        public string? BranchName { get; set; }
         public string? VoucherCode { get; set; }
         public string? Remark { get; set; }
+        public OrderDetail? DeliveryOrderRequest { get; set; }
 
     }
     public class OrderViewModel

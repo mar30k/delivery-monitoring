@@ -37,7 +37,7 @@ namespace DeliveryMonitoring.Helpers
                 },
                 TargetBranchLat = 8.9806,
                 TargetBranchLng = 38.7578,
-                VoucherCode = "PROMO2025",
+                VoucherCode = "0939977886-132754-255",
                 Alert = string.Empty,
                 ExceptDrivers = "DRV002,DRV003",
 

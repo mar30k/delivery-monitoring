@@ -1,8 +1,10 @@
 ﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Controllers;
+using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services.Api;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,7 +57,7 @@ namespace DeliveryMonitoring.Services.SummaryReport
             );
         }
 
-        private async Task<IEnumerable<ConsigneeSummary>> BuildConsigneeSummary(DateTime? start, DateTime? end, bool isClear)
+        private async Task<IEnumerable<ConsigneeSummary>> BuildConsigneeSummary(DateTime? startDate, DateTime? endDate, bool isClear)
         {
             return await BuildSummaryReport(
                 c => c.PhoneNumber ?? string.Empty,
@@ -69,19 +71,23 @@ namespace DeliveryMonitoring.Services.SummaryReport
                         TotalMerchantCount = consignee.Select(c => new { c.Tin, c.BranchCode }).Distinct().Count()
                     };
                 },
-                start, end, isClear
+                startDate, endDate, isClear
             );
         }
 
-        private async Task<IEnumerable<DriverSummary>> BuildDriverSummary(DateTime? start, DateTime? end, bool isClear)
+        private async Task<IEnumerable<DriverSummary>> BuildDriverSummary(DateTime? startDate, DateTime? endDate, bool isClear)
         {
-            var availableDrivers = await _apiRequestService.GetAvailableDriversAsync();
-            var orders = FilterOrdersByCompany(await _apiRequestService.GetCompletedOrdersAsync(), CompanyTin);
+            bool skipCache = OrderHelpers.IsTodayIncluded(startDate, endDate) || isClear;
+
+            var availableDrivers = await _apiRequestService.GetAvailableDriversAsync(skipCache);
+
+            var rawOrders = await _apiRequestService.GetCompletedOrdersAsync(skipCache);
+            var orders = FilterOrdersByCompany(Clone(rawOrders), CompanyTin);
 
             if (orders?.Data == null || availableDrivers == null)
                 return new List<DriverSummary>();
 
-            orders.Data = FilterByDateRange(orders.Data, start, end, isClear);
+            orders.Data = FilterByDateRange(orders.Data, startDate, endDate, isClear);
 
             var availablePhones = availableDrivers
                 .Where(d => !string.IsNullOrWhiteSpace(d.PhoneNumber))
@@ -127,7 +133,11 @@ namespace DeliveryMonitoring.Services.SummaryReport
 
         private async Task<IEnumerable<SupervisorSummary>> BuildSupervisorSummary(DateTime? start, DateTime? end, bool isClear)
         {
-            var orders = FilterOrdersByCompany(await _apiRequestService.GetCompletedOrdersAsync(), CompanyTin);
+            bool skipCache = OrderHelpers.IsTodayIncluded(start, end) || isClear;
+
+            var rawOrders = await _apiRequestService.GetCompletedOrdersAsync(skipCache);
+            var orders = FilterOrdersByCompany(Clone(rawOrders), CompanyTin);
+
 
             if (orders?.Data == null) return new  List<SupervisorSummary>();
             orders.Data = FilterByDateRange(orders.Data, start, end, isClear);
@@ -252,15 +262,14 @@ namespace DeliveryMonitoring.Services.SummaryReport
         private async Task<CompletedOrdersViewModel> CompletedOrdersViewModelAsync(
             string companyTin, DateTime startDate, DateTime endDate, bool isClear = false)
         {
-            var deliveryTask = _apiRequestService.GetCompletedOrdersAsync();
-            var dineInTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderTypes.InHouseDining);
-            var takeAwayTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderTypes.PickUpAtBranch);
+            bool skipCache = OrderHelpers.IsTodayIncluded(startDate, endDate) || isClear;
+            var deliveryTask = _apiRequestService.GetCompletedOrdersAsync(skipCache);
+            var dineInTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderTypes.InHouseDining, skipCache);
+            var takeAwayTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderTypes.PickUpAtBranch, skipCache);
 
-            await Task.WhenAll(deliveryTask, dineInTask, takeAwayTask);
-
-            var delivery = FilterOrdersByCompany(await deliveryTask, companyTin);
-            var dineIn = FilterOrdersByCompany(await dineInTask, companyTin);
-            var takeAway = FilterOrdersByCompany(await takeAwayTask, companyTin);
+            var delivery = FilterOrdersByCompany(Clone(await deliveryTask), companyTin);
+            var dineIn = FilterOrdersByCompany(Clone(await dineInTask), companyTin);
+            var takeAway = FilterOrdersByCompany(Clone(await takeAwayTask), companyTin);
 
             HulubejeResponse<List<CompletedOrders>> FilterByDate(HulubejeResponse<List<CompletedOrders>>? resp)
             {
@@ -279,6 +288,12 @@ namespace DeliveryMonitoring.Services.SummaryReport
                 TakeAwayOrders = FilterByDate(takeAway),
                 CompanyTin = companyTin
             };
+        }
+        private static T Clone<T>(T source)
+        {
+            return JsonConvert.DeserializeObject<T>(
+                JsonConvert.SerializeObject(source)
+            )!;
         }
     }
 }

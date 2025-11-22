@@ -51,17 +51,17 @@ namespace DeliveryMonitoring.Controllers
         #region Views
         public async Task<IActionResult> Index()
         {
-            var CompletedOrdersViewModel = new CompletedOrdersViewModel
+            var viewModel = new CompletedOrdersViewModel
             {
-                PurposeOptions = new Dictionary<int, string>(), // default empty dictionary
-                CompanyTin = CompanyTin
+                CompanyTin = CompanyTin,
+                OrderTables = TableConfigFactory.CreateCompletedOrderTables()
             };
 
             try
             {
-                var purposeResponseData = await _apiRequestService.GetDeliveryPurposeAsync();
-                var purposeResult = JsonConvert.DeserializeObject<Dictionary<int, string>>(purposeResponseData);
-                CompletedOrdersViewModel.PurposeOptions = purposeResult ?? new Dictionary<int, string>();
+                var purposeResponse = await _apiRequestService.GetDeliveryPurposeAsync();
+                var purposeOptions = JsonConvert.DeserializeObject<Dictionary<int, string>>(purposeResponse);
+                viewModel.PurposeOptions = purposeOptions ?? new Dictionary<int, string>();
             }
             catch (HttpRequestException)
             {
@@ -72,7 +72,7 @@ namespace DeliveryMonitoring.Controllers
                 ViewBag.ErrorMessage = "Invalid JSON received from the service.";
             }
 
-            return View(CompletedOrdersViewModel);
+            return View(viewModel);
         }
 
         /// <summary>

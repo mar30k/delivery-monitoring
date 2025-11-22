@@ -55,6 +55,22 @@ namespace DeliveryMonitoring.Helpers
                     AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.InHouseDining}",
                     SheetName = "Dine-in Report"
                 },
+                ReportByOrderType.ScheduledDeliveryToLocation => new TableConfig
+                {
+                    Type = "ScheduledDeliveryToLocation",
+                    Title = "Scheduled Delivery To Location Report",
+                    TableId = "sDelivery",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.ScheduledDeliveryToLocation}",
+                    SheetName = "Scheduled Delivery Report"
+                },
+                ReportByOrderType.ScheduledPickUp => new TableConfig
+                {
+                    Type = "ScheduledPickUp",
+                    Title = "Scheduled Takeaway Report",
+                    TableId = "sTakeaway",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.ScheduledPickUp}",
+                    SheetName = "Scheduled Takeaway Report"
+                },
                 ReportByOrderType.Takeaway => new TableConfig
                 {
                     Type = "Takeaway",
@@ -80,5 +96,53 @@ namespace DeliveryMonitoring.Helpers
                     SheetName = "Delivery Report"
                 }
             };
+        // --- Report table configs ---
+        public static List<TableConfig> CreateCompletedOrderTables() {
+            return new List<TableConfig> { 
+                new ()
+                {
+                    Type = "Delivery",
+                    Title = "Delivery",
+                    TableId = "delivery",
+                    AjaxUrl = "/getCompletedOrders",
+                    SheetName = "_DeliveryOrders"
+                },
+                new ()
+                {
+                    Type = DeliveryOrderTypes.ScheduledDeliveryToLocation.ToString(),
+                    Title = "Scheduled Delivery",
+                    TableId = "scheduledDelivery",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.ScheduledDeliveryToLocation}",
+                    SheetName = "_DeliveryOrders"
+                },
+                new ()
+                {
+                    Type = "Takeaway",
+                    Title = "Takeaway",
+                    TableId = "takeaway",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.PickUpAtBranch}",
+                    SheetName = "_NonDeliveryOrders"
+                },
+                
+                new ()
+                {
+                    Type = DeliveryOrderTypes.ScheduledPickUp.ToString(),
+                    Title = "Scheduled Pick Up",
+                    TableId = "scheduledPickUp",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.ScheduledPickUp}",
+                    SheetName = "_NonDeliveryOrders"
+                },
+                new()
+                {
+                    Type = "Dine-in",
+                    Title = "Dine-in",
+                    TableId = "dinein",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.InHouseDining}",
+                    SheetName = "_NonDeliveryOrders"
+                }
+                
+            };
+        }
+            
     }
 }

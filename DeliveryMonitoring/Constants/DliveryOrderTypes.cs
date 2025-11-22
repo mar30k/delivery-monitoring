@@ -42,6 +42,8 @@
     public enum ReportByOrderType
     {
         Delivery,
+        ScheduledDeliveryToLocation,
+        ScheduledPickUp,
         Dinein,
         Takeaway,
         All

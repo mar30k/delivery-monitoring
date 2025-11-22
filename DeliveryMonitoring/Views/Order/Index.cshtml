@@ -132,9 +132,7 @@
                                 </td>
                                 <td class="text-center">
                                     @(order?.BranchName ?? "N/A")
-                                    @*<a onclick="openChangeBranchModal('@order?.CompanyTin','@order?.CompanyName','@order?.BranchName','@order?.VoucherCode')"> <i class="fa-solid fa-pen-to-square"></i></a>
-                                      <a onclick="openChangeBranchModal('${order.companyTin}','${order.companyName}','${order.branchName}','${order.voucherCode}')"> <i class="fa-solid fa-pen-to-square"></i></a>
-                                    *@
+                                    <a onclick="openChangeBranchModal('@order?.CompanyTin','@order?.CompanyName','@order?.BranchName','@order?.VoucherCode')"> <i class="fa-solid fa-pen-to-square"></i></a>
                                 </td>
                                 <td class="text-center">
                                     @(order?.CustomerFirstName ?? "N/A")
@@ -245,15 +243,15 @@
                         <th></th>
                     </tr>
                 </tfoot>
-            </table>
-            @* <a class="btn btn-outline-dark btn-sm"
+            </table>@* 
+            <a class="btn btn-outline-dark btn-sm"
                data-order='@Html.Raw(testJsonOrder)'
                onclick="openRedispatchModal(this)"
                id="@testOrder.VoucherCode?.ToString()">
                 Redispatch
             </a>  <a class="btn btn-outline-dark btn-sm" onclick="openAssignSupervisorModal('@testOrder.VoucherCode')">Assign</a> 
-            <a onclick="openChangeBranchModal('@testOrder?.CompanyTin','@testOrder?.CompanyName','@testOrder?.BranchName', '@testOrder?.VoucherCode')"> <i class="fa-solid fa-pen-to-square"></i></a>
-             *@
+            <a onclick="openChangeBranchModal('@testOrder?.CompanyTin','@testOrder?.CompanyName','@testOrder?.BranchName', '@testOrder?.VoucherCode')"> <i class="fa-solid fa-pen-to-square"></i></a> *@
+            
 
         </div>
 

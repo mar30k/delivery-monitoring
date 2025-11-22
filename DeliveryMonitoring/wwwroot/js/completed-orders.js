@@ -1,146 +1,126 @@
-﻿// Usage
-const DeliveryOrderTypes = {
-    PickUpAtBranch: 2076,
-    DeliveryToLocation: 2077,
-    ScheduledPickUp: 2078,
-    ScheduledDeliveryToLocation: 2079,
-    InHouseDining: 3203
+﻿var js = jQuery.noConflict(true);
+var tableDateRanges = {};
+var tables = {};
+
+var TableConfigs = window.AppData?.tableConfigs || [];
+// Mapping for headerFilterColumns
+const headerFilterColumnsMapping = {
+    "_DeliveryOrders": [
+        { index: 1, name: 'Company' },
+        { index: 2, name: 'Branch' },
+        { index: 3, name: 'Customer' },
+        { index: 10, name: 'Supervisor' }
+    ],
+    "_NonDeliveryOrders": [
+        { index: 1, name: 'Company' },
+        { index: 2, name: 'Branch' },
+        { index: 3, name: 'Customer' },
+        { index: 6, name: 'Supervisor' }
+    ]
 };
-var js = jQuery.noConflict(true);
-var dineInTable, takeAwayTable, deliveryTable;
-var tableDateRanges = {
-    dineInTable: { start: moment().startOf('day'), end: moment().endOf('day'), isClear : false},
-    takeAwayTable: { start: moment().startOf('day'), end: moment().endOf('day'), isClear: false },
-    deliveryTable: { start: moment().startOf('day'), end: moment().endOf('day'), isClear: false }
-};
+// Table type configurations
 
-var takeAwayOrderType = DeliveryOrderTypes.PickUpAtBranch; // 2076
-var dineInOrderType = DeliveryOrderTypes.InHouseDining; // 3203
 
-var dateFilterMappings = [
-    { id: "dineInDateRange", tableName: "dineInTable" },
-    { id: "dateRange", tableName: "deliveryTable" },
-    { id: "takeAwayDateRange", tableName: "takeAwayTable" }
-];
-
-js(() => {
-
-    // Shared base columns (used by all tables)
-    const baseColumns = [
-        { data: "voucherCode", className: "text-center", render: Renderers.voucherCode },
-        { data: "companyName", className: "text-center" },
-        { data: "branchName", className: "text-center" },
-        { data: "firstName", className: "text-center" },
-        { data: "phoneNumber", className: "text-center", render: Renderers.phone },
-        {
-            data: "requestCreatedAt",
-            className: "text-center",
-            render: Renderers.requestDate.render,
-            createdCell: Renderers.requestDate.createdCell
-        }
-    ];
-
-    // Dine-In & Takeaway columns
-    const dineInAndTakeawayColumns = [
-        ...baseColumns,
-        { data: "supervisorName", className: "text-center" },
-        { data: "totalAmount", className: "text-center", render: Renderers.amount },
-        {
-            data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => Renderers.reviewOrShow(row, false)
-        },
-        {
-            data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => Renderers.activityBtn(row)
-        },
-        {
-            data: null, className: "text-center", orderable: false,
-            render: (data, type, row) =>Renderers.detailsLink(row, false)
-        }
-    ];
-
-    // Delivery columns (adds distance/duration/tip)
-    const deliveryColumns = [
-        ...baseColumns,
-        { data: "distance", className: "text-center", render: Renderers.distance },
-        { data: "duration", className: "text-center", render: Renderers.duration },
-        { data: "eta", className: "text-center", render: Renderers.duration },
-        { data: "driverPhoneNumber", className: "text-center", render: Renderers.phone },
-        { data: "supervisorName", className: "text-center", render: Renderers.orDefault},
-        { data: "totalAmount", className: "text-center", render: Renderers.amount },
-        { data: "tip", className: "text-center", render: Renderers.amount},
-        {
-            data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => Renderers.reviewOrShow(row, true)
-        },
-        {
-            data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => Renderers.activityBtn(row)
-        },
-        {
-            data: null, className: "text-center", orderable: false,
-            render: (data, type, row) => Renderers.detailsLink(row, true)
-        }
-    ];
-    // Initialize tables first
-    dineInTable = initOrderTable(
-        "#dineInTable",
-        "#dineInDateRange",
-        dineInAndTakeawayColumns,
-        `/getordersbytype?type=${dineInOrderType}`,
-        "No dine-in orders available.",
-        7,
-        [0, 1, 2, 4, 8, 9],
-        [
-            { index: 1, name: 'Company' },
-            { index: 2, name: 'Branch' },
-            { index: 3, name: 'Customer' },
-            { index: 6, name: 'Supervisor' }
-        ]
-    );
-    
-    takeAwayTable = initOrderTable(
-        "#takeAwayTable",
-        "#takeAwayDateRange",
-        dineInAndTakeawayColumns,
-        `/getordersbytype?type=${takeAwayOrderType}`,
-        "No takeaway orders available.",
-        7,
-        [0, 1, 2, 4, 8, 9],
-        [
-            { index: 1, name: 'Company' },
-            { index: 2, name: 'Branch' },
-            { index: 3, name: 'Customer' },
-            { index: 6, name: 'Supervisor' }
-        ]
-    );
-
-    deliveryTable = initOrderTable(
-        "#deliveryTable",
-        "#dateRange",
-        deliveryColumns,
-        "/getcompletedorders",
-        "No orders history to display at the moment.",
-        11,
-        [0, 1, 2, 4, 9, 10, 13, 14, 15],
-        [
-            { index: 1, name: 'Company' },
-            { index: 2, name: 'Branch' },
-            { index: 3, name: 'Customer' },
-            { index: 10, name: 'Supervisor' }
-        ]
-    );
-    // Initialize date range pickers AFTER tables are created
-    initDateRangePickers();
+// Build initial date ranges and table mappings
+(TableConfigs || []).forEach(cfg => {
+    tableDateRanges[cfg.TableId] = {
+        start: moment().startOf('day'),
+        end: moment().endOf('day'),
+        isClear: false
+    };
 });
 
-function initDateRangePickers() {
-    dateFilterMappings.forEach(({ id, tableName }) => {
-        const selector = `#${id}`;
-        const tableRef = (tableName === "dineInTable") ? dineInTable :
-            (tableName === "takeAwayTable") ? takeAwayTable :
-                (tableName === "deliveryTable") ? deliveryTable : null;
+var dateFilterMappings = (TableConfigs || []).map(cfg => {
+    return {
+        id: `${cfg.TableId}DateRange`,
+        tableName: cfg.TableId
+    };
+});
 
+// Column sets
+const baseColumns = [
+    { data: "voucherCode", className: "text-center", render: Renderers.voucherCode },
+    { data: "companyName", className: "text-center" },
+    { data: "branchName", className: "text-center" },
+    { data: "firstName", className: "text-center" },
+    { data: "phoneNumber", className: "text-center", render: Renderers.phone },
+    {
+        data: "requestCreatedAt",
+        className: "text-center",
+        render: Renderers.requestDate.render,
+        createdCell: Renderers.requestDate.createdCell
+    }
+];
+
+const dineInAndTakeawayColumns = [
+    ...baseColumns,
+    { data: "supervisorName", className: "text-center" },
+    { data: "totalAmount", className: "text-center", render: Renderers.amount },
+    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.reviewOrShow(r, false) },
+    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.activityBtn(r) },
+    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.detailsLink(r, false) }
+];
+
+const deliveryColumns = [
+    ...baseColumns,
+    { data: "distance", className: "text-center", render: Renderers.distance },
+    { data: "duration", className: "text-center", render: Renderers.duration },
+    { data: "eta", className: "text-center", render: Renderers.duration },
+    { data: "driverPhoneNumber", className: "text-center", render: Renderers.phone },
+    { data: "supervisorName", className: "text-center", render: Renderers.orDefault },
+    { data: "totalAmount", className: "text-center", render: Renderers.amount },
+    { data: "tip", className: "text-center", render: Renderers.amount },
+    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.reviewOrShow(r, true) },
+    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.activityBtn(r) },
+    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.detailsLink(r, true) }
+];
+
+
+const TableTypeConfigs = {
+    "_DeliveryOrders": {
+        columns: deliveryColumns,
+        totalColumnIndex: 11,
+        nonOrderableTargets: [0, 1, 2, 4, 9, 10, 13, 14, 15],
+        headerFilterColumns: headerFilterColumnsMapping["_DeliveryOrders"]
+    },
+    "_NonDeliveryOrders": {
+        columns: dineInAndTakeawayColumns,
+        totalColumnIndex: 7,
+        nonOrderableTargets: [0, 1, 2, 4, 8, 9],
+        headerFilterColumns: headerFilterColumnsMapping["_NonDeliveryOrders"]
+    }
+};
+
+// Initialize tables dynamically
+js(() => {
+    (TableConfigs || []).forEach(cfg => {
+        const selector = `#${cfg.TableId}`;
+        const datePickerId = `#${cfg.TableId}DateRange`;
+
+        const tableConfig = TableTypeConfigs[cfg.SheetName] || TableTypeConfigs["_NonDeliveryOrders"];
+
+        // Initialize DataTable
+        tables[cfg.TableId] = initOrderTable(
+            selector,
+            datePickerId,
+            tableConfig.columns,
+            cfg.AjaxUrl,
+            `No ${cfg.Title.toLowerCase()} orders available.`,
+            tableConfig.totalColumnIndex,
+            tableConfig.nonOrderableTargets,
+            tableConfig.headerFilterColumns
+        );
+    });
+
+    // Initialize date range pickers dynamically
+    initDateRangePickers();
+});
+// Date range pickers dynamic
+function initDateRangePickers() {
+    (TableConfigs || []).forEach(cfg => {
+        const tableName = cfg.TableId;
+        const selector = `#${tableName}DateRange`;
+        const tableRef = tables[tableName];
         if (!tableRef) return;
 
         const tableRange = tableDateRanges[tableName];
@@ -150,45 +130,24 @@ function initDateRangePickers() {
             endDate: tableRange.end,
             maxDate: moment(),
             autoUpdateInput: true,
-            locale: {
-                cancelLabel: 'Clear',
-                format: 'YYYY-MM-DD'
-            }
+            locale: { cancelLabel: 'Clear', format: 'YYYY-MM-DD' }
         });
 
-        js(selector).val(
-            tableRange.start.format('YYYY-MM-DD') + ' to ' + tableRange.end.format('YYYY-MM-DD')
-        );
+        js(selector).val(tableRange.start.format('YYYY-MM-DD') + ' to ' + tableRange.end.format('YYYY-MM-DD'));
 
         js(selector).on('apply.daterangepicker', function (ev, picker) {
-            const startDate = picker.startDate.startOf('day');
-            const endDate = picker.endDate.endOf('day');
-
-            // Store for your filter
-            tableDateRanges[tableName] = {
-                start: startDate,
-                end: endDate,
-                isClear: false
-            };
-
-            // Update input display
-            js(this).val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
-
-            // 🟢 Update empty message dynamically
-            if (startDate.isSame(endDate, 'day')) {
-                tableRef.settings()[0].oLanguage.sEmptyTable =
-                    `No records found for ${startDate.format('YYYY-MM-DD')}`;
-            } else {
-                tableRef.settings()[0].oLanguage.sEmptyTable =
-                    `No records found between ${startDate.format('YYYY-MM-DD')} and ${endDate.format('YYYY-MM-DD')}`;
-            }
-
+            tableDateRanges[tableName] = { start: picker.startDate.startOf('day'), end: picker.endDate.endOf('day'), isClear: false };
+            js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+            tableRef.settings()[0].oLanguage.sEmptyTable =
+                picker.startDate.isSame(picker.endDate, 'day') ?
+                    `No records found for ${picker.startDate.format('YYYY-MM-DD')}` :
+                    `No records found between ${picker.startDate.format('YYYY-MM-DD')} and ${picker.endDate.format('YYYY-MM-DD')}`;
             tableRef.ajax.reload();
         });
 
         js(selector).on('cancel.daterangepicker', function () {
-            tableDateRanges[tableName] = { start: null, end: null , isClear: true};
-            js(this).val('');
+            tableDateRanges[tableName] = { start: null, end: null, isClear: true };
+            js(this).val(' ');
             tableRef.ajax.reload();
         });
     });
@@ -614,9 +573,11 @@ function showActivityAlert(message, type = 'danger') {
 //}, 60000)
 
 setTimeout(() => {
-    startTableAutoRefresh([
-        { table: dineInTable, range: () => tableDateRanges.dineInTable },
-        { table: takeAwayTable, range: () => tableDateRanges.takeAwayTable },
-        { table: deliveryTable, range: () => tableDateRanges.deliveryTable }
-    ], 60000);
+    startTableAutoRefresh(
+        (TableConfigs || []).map(cfg => ({
+            table: tables[cfg.TableId],
+            range: () => tableDateRanges[cfg.TableId]
+        })),
+        60000
+    );
 }, 2000);

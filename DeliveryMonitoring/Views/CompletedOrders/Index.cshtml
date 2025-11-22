@@ -1,4 +1,5 @@
 @using DeliveryMonitoring.Constants
+@using Newtonsoft.Json
 @model DeliveryMonitoring.Models.CompletedOrdersViewModel
 @{
     var adminCompanyTin = AppConstants.Company.AdminTin;
@@ -30,145 +31,78 @@
             }, 5000);
         </script>
     }
+
+    @{
+        var sections = Model?.OrderTables ?? new List<TableConfig>();
+    }
+
     <ul class="nav nav-tabs" id="orderTabs" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link text-decoration-none active" id="completed-delivery-tab" data-bs-toggle="tab" href="#completed-delivery" role="tab" aria-controls="completed-delivery" aria-selected="true">Delivery</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-decoration-none" id="dinein-orders-tab" data-bs-toggle="tab" href="#dine-in-orders" role="tab" aria-controls="dine-in-orders" aria-selected="false">Dine-in</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-decoration-none" id="takeaway-tab" data-bs-toggle="tab" href="#takeaway" role="tab" aria-controls="takeaway" aria-selected="false">Takeaway</a>
-        </li>
+        @for (int i = 0; i < sections.Count; i++)
+        {
+            var sec = sections[i];
+            var tabId = $"tab-{sec.TableId}";
+            var linkId = $"tab-link-{sec.TableId}";
+            var isActive = i == 0 ? "active" : "";
+            var ariaSelected = i == 0 ? "true" : "false";
+
+            <li class="nav-item" role="presentation">
+                <a class="nav-link text-decoration-none @isActive"
+                   id="@linkId"
+                   data-bs-toggle="tab"
+                   href="#@tabId"
+                   role="tab"
+                   aria-controls="@tabId"
+                   aria-selected="@ariaSelected">
+                    @sec.Title
+                </a>
+            </li>
+        }
     </ul>
 
     <div class="tab-content border border-top-0 p-3">
-        <div class="tab-pane fade show active" id="completed-delivery" role="tabpanel" aria-labelledby="completed-delivery-tab">
-            <div id="alertContainer"></div>
-            <div class="row align-items-center justify-content-between p-2 mb-3">
-                <div class="col-12 col-md-6 mb-2 mb-md-0">
-                    <h4 class="mb-0"> Completed Delivery Orders</h4>
-                </div>
-                <div class="col-12 col-md-6">
-                    <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
-                        <label for="dateRange" class="form-label mb-0 fw-semibold">Filter by Date:</label>
-                        <input type="text" id="dateRange" class="form-control" placeholder="@DateTime.Today.ToString("yyyy-MM-dd") to @DateTime.Today.ToString("yyyy-MM-dd")" style="max-width: 220px;" readonly />
+        @for (int i = 0; i < sections.Count; i++)
+        {
+            var sec = sections[i];
+            var tabId = $"tab-{sec.TableId}";
+            var linkId = $"tab-link-{sec.TableId}";
+            var isActive = i == 0 ? "show active" : "";
+
+            <div class="tab-pane fade @isActive"
+                 id="@tabId"
+                 role="tabpanel"
+                 aria-labelledby="@linkId">
+
+                <div class="row align-items-center justify-content-between p-2 mb-3">
+                    <div class="col-12 col-md-6 mb-2 mb-md-0">
+                        <h4 class="mb-0">@sec.Title Orders</h4>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
+                            <label for="@($"{sec.TableId}DateRange")" class="form-label mb-0 fw-semibold">Filter by Date:</label>
+                            <input type="text"
+                                   id="@($"{sec.TableId}DateRange")"
+                                   class="form-control"
+                                   placeholder="@DateTime.Today:yyyy-MM-dd to @DateTime.Today:yyyy-MM-dd"
+                                   style="max-width: 220px;"
+                                   readonly />
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="row card">
-                <div class="table-responsive pt-3 pb-3">
-                    <table class="table compact stripe hover pt-3" id="deliveryTable" style="font-size: 13px;">
-                        <thead class="">
-                            <tr>
-                                <th class="text-center">
-                                    Order Number
-                                </th>
-                                <th class="text-center">
-                                    Company
-                                </th>
-                                <th class="text-center">
-                                    Branch
-                                </th>
-                                <th class="text-center">
-                                    Customer
-                                </th>
-                                <th class="text-center">
-                                    Phone
-                                </th>
-                                <th class="text-center">
-                                    Order DateTime
-                                </th>
-                                <th class="text-center">
-                                    Distance
-                                </th>
-                                <th class="text-center">
-                                    Duration
-                                </th>
-                                <th class="text-center">
-                                    Eta
-                                </th>
 
-                                <th class="text-center">
-                                    Driver
-                                </th>
-                                <th class="text-center">
-                                    Supervisor
-                                </th>
-                                <th class="text-center">
-                                    Total
-                                </th>
-                                <th class="text-center">
-                                    Tip
-                                </th>
-                                <th class="text-center">
-                                    Review
-                                </th>
-                                <th class="text-center">
-                                    Activities
-                                </th>
-                                <th class="text-center">
-                                    Details
-                                </th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                            <tr>
-                                <th colspan="11" class="text-end">Page Total:</th>
-                                <th class="text-center"></th>
-                                <th colspan="4"></th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                @await Html.PartialAsync(
+                        sec.SheetName,
+                        new List<CompletedOrders>(), // replace with actual data
+                        new ViewDataDictionary(ViewData)
+                        {
+                            ["TableId"] = sec.TableId,
+                            ["Title"] = sec.Title,
+                            ["IsRedCloud"] = isRedCloud,
+                            ["PurposeOptions"] = Model?.PurposeOptions
+                        }
+                )
             </div>
-        </div>
-        
-        <div class="tab-pane fade" id="dine-in-orders" role="tabpanel" aria-labelledby="dinein-orders-tab">
-            <div class="row align-items-center justify-content-between p-2 mb-3">
-                <div class="col-12 col-md-6 mb-2 mb-md-0">
-                    <h4 class="mb-0"> Dine-in Orders</h4>
-                </div>
-                <div class="col-12 col-md-6">
-                    <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
-                        <label for="dateRange" class="form-label mb-0 fw-semibold">Filter by Date:</label>
-                        <input type="text" id="dineInDateRange" class="form-control" placeholder="@DateTime.Today.ToString("yyyy-MM-dd") to @DateTime.Today.ToString("yyyy-MM-dd")" style="max-width: 220px;" readonly />
-                    </div>
-                </div>
-            </div>
-            @await Html.PartialAsync("_NonDeliveryOrders", Model?.DineInOders?.Data,
-            new ViewDataDictionary(ViewData)
-            {
-                ["TableId"] = "dineInTable",
-                ["Title"] = "Dine-in Orders",
-                ["IsRedCloud"] = isRedCloud,
-                ["PurposeOptions"] = Model?.PurposeOptions
-            })
-        </div>
-
-
-        <div class="tab-pane fade" id="takeaway" role="tabpanel" aria-labelledby="takeaway-tab">
-            <div class="row align-items-center justify-content-between p-2 mb-3">
-                <div class="col-12 col-md-6 mb-2 mb-md-0">
-                    <h4 class="mb-0"> Takeaway Order</h4>
-                </div>
-                <div class="col-12 col-md-6">
-                    <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
-                        <label for="dateRange" class="form-label mb-0 fw-semibold">Filter by Date:</label>
-                        <input type="text" id="takeAwayDateRange" class="form-control" placeholder="@DateTime.Today.ToString("yyyy-MM-dd") to @DateTime.Today.ToString("yyyy-MM-dd")" style="max-width: 220px;" readonly />
-                    </div>
-                </div>
-            </div>
-            @await Html.PartialAsync("_NonDeliveryOrders", Model?.TakeAwayOrders?.Data,
-                    new ViewDataDictionary(ViewData) {
-                         ["TableId"] = "takeAwayTable" ,
-                         ["Title"] = "Takeaway Orders",
-                         ["IsRedCloud"] = isRedCloud,
-                         ["PurposeOptions"] = Model?.PurposeOptions
-                    })
-        </div>
+        }
     </div>
-
 </div>
 <div class="modal fade" id="reviewDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -291,7 +225,19 @@
 </div>
 
 @section Scripts {
+
+    @{
+
+        var jsTableConfigs = JsonConvert.SerializeObject(Model?.OrderTables);
+    }
+
     <script>
+        window.AppData = {
+            tableConfigs: @Html.Raw(jsTableConfigs)
+        };
+    </script>
+
+    <script>  
         $(document).ready(function () {
             // Activate tab based on URL hash on page load
             var hash = window.location.hash;

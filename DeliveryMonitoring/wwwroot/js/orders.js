@@ -171,6 +171,7 @@ function updateOrders() {
                     <td class="text-center">${order.companyName || 'N/A'}</td>
                     <td class="text-center">
                         ${order.branchName || 'N/A'}
+                        <a onclick="openChangeBranchModal('${order.companyTin}','${order.companyName}','${order.branchName}','${order.voucherCode}')"> <i class="fa-solid fa-pen-to-square"></i></a>
                     </td>
                     <td class="text-center">${order.customerFirstName || 'N/A'}</td>
                     <td class="text-center">
@@ -612,6 +613,7 @@ function openChangeBranchModal(companyTin, companyName, currentBranchName, vouch
 function confirmBranchChange() {
     const selectedBranchCode = $("#branchSelectDropdown").val();
     const voucherCode = $("#voucherCodeInput").val();
+    const selectedBranchName = $("#branchSelectDropdown option:selected").text().trim(); // <-- get branch name
     const remark = $("#remarkInput").val();
     if (!selectedBranchCode) {
         Toastify({ text: "Please select a branch.", style: { background: "red" } }).showToast();
@@ -620,6 +622,7 @@ function confirmBranchChange() {
 
 
     var data = {
+        branchName: selectedBranchName,
         branchCode: selectedBranchCode,
         voucherCode: voucherCode,
         remark: remark
@@ -644,7 +647,7 @@ function confirmBranchChange() {
             // Reload the page after 1 second
             setTimeout(() => {
                 location.reload();
-            }, 1000);
+            }, 2000);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             $("#branchChangeLoading").addClass("d-none");

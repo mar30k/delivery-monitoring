@@ -35,8 +35,10 @@ namespace DeliveryMonitoring.Models
     {
         public HulubejeResponse<List<CompletedOrders>>? CompletedOrders { get; set; }
         public HulubejeResponse<List<CompletedOrders>>? DineInOders { get; set; }
+        public Dictionary<string, int>? OrderTypes { get; set; }
         public HulubejeResponse<List<CompletedOrders>>? TakeAwayOrders { get; set; }
         public Dictionary<int, string>? PurposeOptions { get; set; }
+        public List<TableConfig> OrderTables { get; set; } = new();
         public string? CompanyTin { get; set; }
         public string? Type { get; set; }
     }

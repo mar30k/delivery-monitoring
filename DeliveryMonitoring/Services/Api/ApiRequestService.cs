@@ -22,6 +22,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly string _getDeviceControl;
         private readonly string _getRouteDetails;
         private readonly string _assignOrderSupervisor;
+        private readonly string _changeorderbranch;
         private readonly string _updateOrderStatus;
         private readonly string _updateDriverDetails;
         private readonly HttpClient _client;
@@ -94,6 +95,7 @@ namespace DeliveryMonitoring.Services.Api
             _authenicateUser = "SysInitialize/authenticate?";
             _getUserByUserName = "User/filter?";
             _getCompletedOrders = "voucher/getcompletedorders";
+            _changeorderbranch = "voucher/changeorderbranch";
             _getCompletedOrdersByType = "voucher/getordersbytype?";
             _configuration = configuration;
             _googleMapsKey = _configuration["GoogleMapsApiKey"]; // ✅ Initialize here
@@ -303,6 +305,10 @@ namespace DeliveryMonitoring.Services.Api
                 skipCache,
                 24 * 60 // cache for 24 hours (in minutes)
             );
+        }
+        public Task<HulubejeResponse<bool>> ChangeOrderBranchAsync(ChangeBranchDTO changeBranchDTO)
+        {
+            return SendAsync<bool>(_client, _changeorderbranch, changeBranchDTO);
         }
         #endregion
 

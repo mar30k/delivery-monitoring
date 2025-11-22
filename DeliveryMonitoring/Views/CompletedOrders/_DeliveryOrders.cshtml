@@ -1,0 +1,72 @@
+﻿@{
+    var tableId = ViewData["TableId"] as string ?? "defaultTableId";
+    var ff = ViewData["IsRedCloud"];
+    bool isRedCloud = bool.TryParse(ff?.ToString(), out var parsed) && parsed;
+    var purposeOptions = ViewData["PurposeOptions"] as Dictionary<int, string> ?? new Dictionary<int, string>();
+}
+<div class="row card">
+    <div class="table-responsive pt-3 pb-3">
+        <table class="table compact stripe hover pt-3" id="@tableId" style="font-size: 13px;">
+            <thead class="">
+                <tr>
+                    <th class="text-center">
+                        Order Number
+                    </th>
+                    <th class="text-center">
+                        Company
+                    </th>
+                    <th class="text-center">
+                        Branch
+                    </th>
+                    <th class="text-center">
+                        Customer
+                    </th>
+                    <th class="text-center">
+                        Phone
+                    </th>
+                    <th class="text-center">
+                        Order DateTime
+                    </th>
+                    <th class="text-center">
+                        Distance
+                    </th>
+                    <th class="text-center">
+                        Duration
+                    </th>
+                    <th class="text-center">
+                        Eta
+                    </th>
+
+                    <th class="text-center">
+                        Driver
+                    </th>
+                    <th class="text-center">
+                        Supervisor
+                    </th>
+                    <th class="text-center">
+                        Total
+                    </th>
+                    <th class="text-center">
+                        Tip
+                    </th>
+                    <th class="text-center">
+                        Review
+                    </th>
+                    <th class="text-center">
+                        Activities
+                    </th>
+                    <th class="text-center">
+                        Details
+                    </th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <th colspan="11" class="text-end">Page Total:</th>
+                    <th class="text-center"></th>
+                    <th colspan="4"></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

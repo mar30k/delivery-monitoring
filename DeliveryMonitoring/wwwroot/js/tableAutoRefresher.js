@@ -29,15 +29,20 @@
 
                 logWithTime("currentRange.isClear", currentRange.isClear);
 
-                if (currentRange.isClear) {
-                    logWithTime("Table range cleared — skipping reload.");
-                    continue;
-                }
+                
 
                 const inRange =
-                    currentRange.start &&
-                    currentRange.end &&
-                    today.isBetween(moment(currentRange.start), moment(currentRange.end), 'day', '[]');
+                    currentRange.isClear ||
+                    (
+                        currentRange.start &&
+                        currentRange.end &&
+                        today.isBetween(
+                            moment(currentRange.start),
+                            moment(currentRange.end),
+                            "day",
+                            "[]"
+                        )
+                    );
 
                 logWithTime(
                     "Checking range:",
