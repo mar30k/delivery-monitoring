@@ -128,10 +128,10 @@ namespace DeliveryMonitoring.Models
         public decimal? GrandTotal { get; set; }
 
         [DisplayName("Extra Information")]
-        public Dictionary<string, object>? ExtraInformation { get; set; }
+        public Dictionary<string, string>? ExtraInformation { get; set; }
 
         [DisplayName("Extra Data")]
-        public ExtraData? ExtraData { get; set; }
+        public Dictionary<string, string>? ExtraData { get; set; }
 
         [DisplayName("Issued Date")]
         public DateTime IssuedDate { get; set; }
@@ -177,6 +177,10 @@ namespace DeliveryMonitoring.Models
 
         [DisplayName("TIN")]
         public string? Tin { get; set; }
+        [DisplayName("Phone")]
+        public string? Restaurant { get; set; }
+        [DisplayName("Status")]
+        public string? Status { get; set; }
     }
 
     public class Activities
@@ -242,8 +246,11 @@ namespace DeliveryMonitoring.Models
     }
     public class ChangeBranchDTO
     {
+        [Required]
         public int? BranchCode { get; set; }
+        [Required]
         public string? BranchName { get; set; }
+        [Required]
         public string? VoucherCode { get; set; }
         public string? Remark { get; set; }
         public OrderDetail? DeliveryOrderRequest { get; set; }

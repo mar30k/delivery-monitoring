@@ -108,7 +108,7 @@ namespace DeliveryMonitoring.Controllers
                 var companyResponse = await _apiRequestService.GetCompanyDetailsAsync(tin);
 
                 if (companyResponse == null)
-                    return NotFound();
+                    return NotFound("company not found");
 
                 return Ok(companyResponse);
             }
@@ -121,65 +121,93 @@ namespace DeliveryMonitoring.Controllers
         [HttpPost("/changeBranch")]
         public async Task<IActionResult> ChangeBranch([FromBody] ChangeBranchDTO request)
         {
-            // Validate input
-            if (request == null)
-                return BadRequest(new { success = false, message = "Request cannot be null." });
+            // ----- 1. Model Validation -----
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
 
-            if (string.IsNullOrWhiteSpace(request.VoucherCode))
-                return BadRequest(new { success = false, message = "Voucher code is required." });
+                return BadRequest(new HulubejeResponse<object>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = errors
+                });
+            }
 
-            if (string.IsNullOrWhiteSpace(request.BranchCode?.ToString()))
-                return BadRequest(new { success = false, message = "Branch code is required." });
-
-            if (string.IsNullOrWhiteSpace(request.BranchName))
-                return BadRequest(new { success = false, message = "Branch name is required." });
-
-            // Get the order
+            // ----- 2. Retrieve Order -----
             var orders = await _apiRequestService.GetOrderRequestsAsync();
             var order = orders?.FirstOrDefault(o => o.VoucherCode == request.VoucherCode);
-            if (order == null)
-                return NotFound(new { success = false, message = "Order not found." });
 
-            // Get authenticated user
+            if (order == null)
+            {
+                return NotFound(new HulubejeResponse<object>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new List<string> { "Order not found." }
+                });
+            }
+
+            // ----- 3. Authenticated User -----
             var user = _authenticationManager.GetUserFromCookie();
             if (user == null)
-                return Unauthorized(new { success = false, message = "User not authenticated." });
+            {
+                return Unauthorized(new HulubejeResponse<object>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new List<string> { "User not authenticated." }
+                });
+            }
 
-            // Get supervisor
+            // ----- 4. Supervisor Check -----
             var supervisors = await _apiRequestService.GetSupervisorsAsync();
             var supervisor = supervisors.FirstOrDefault(s => s.UserName == user.UserName);
 
             if (supervisor == null)
-                return BadRequest(new { success = true, message = "Unable to find supervisor. Please try again." });
-
-            // Authorization check
-            if (order.SupervisedBy != supervisor.UserName)
-                return BadRequest(new { success = false, message = "You are not authorized to change the branch for this order." });
-
-            // Update branch info
-            order.BranchName = request.BranchName.Trim();
-            request.DeliveryOrderRequest = order;
-
-            // Call service to persist the change
-            var updateResult = await _apiRequestService.ChangeOrderBranchAsync(request); // Use proper naming
-            if (!updateResult.IsSuccessful)
             {
-                var errorMessage = updateResult.ErrorMessages != null && updateResult.ErrorMessages.Count > 0
-                    ? string.Join("; ", updateResult.ErrorMessages)
-                    : "Failed to change branch. Please try again.";
-                return BadRequest(new { success = false, message = errorMessage });
+                return NotFound(new HulubejeResponse<object>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new List<string> { "Unable to find supervisor. Please try again." }
+                });
             }
 
-            // Return success
-            return Ok(new
+            // ----- 5. Authorization -----
+            if (order.SupervisedBy != supervisor.UserName)
             {
-                success = true,
-                message = $"Branch '{request.BranchName}' changed successfully!",
-                voucherCode = request.VoucherCode,
-                remark = request.Remark
+                return StatusCode(403, new HulubejeResponse<object>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new List<string> { "You are not authorized to change the branch for this order." }
+                });
+            }
+
+            // ----- 6. Update Order -----
+            order.BranchName = request.BranchName?.Trim();
+            request.DeliveryOrderRequest = order;
+
+            var updateResult = await _apiRequestService.ChangeOrderBranchAsync(request);
+            if (!updateResult.IsSuccessful)
+            {
+                return BadRequest(new HulubejeResponse<object>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = updateResult.ErrorMessages ??
+                                    new List<string> { "Failed to change branch. Please try again." }
+                });
+            }
+
+            // ----- 7. SUCCESS -----
+            return Ok(new HulubejeResponse<ChangeBranchDTO>
+            {
+                IsSuccessful = true,
+                Data = new ChangeBranchDTO
+                {
+                    VoucherCode = request.VoucherCode,
+                    Remark = request.Remark
+                }
             });
         }
-
-
     }
 }

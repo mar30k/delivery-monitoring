@@ -21,6 +21,29 @@
                     <strong class="text-muted">Phone:</strong>
                     <span>@(Model?.LineItemsDetail?.PhoneNumber ?? "N/A")</span>
                 </div>
+                @if (Model?.LineItemsDetail?.ExtraInformation != null &&
+                                Model.LineItemsDetail.ExtraInformation.TryGetValue("Delivery Address Name:", out var value))
+                {
+                    string address = value?.ToString() ?? "";
+
+                    if (Model.LineItemsDetail.ExtraInformation.TryGetValue("Specific Address:", out var specificAddress))
+                    {
+                        var specific = specificAddress?.ToString();
+
+                        if (!string.IsNullOrWhiteSpace(specific))
+                            address += "-" + specific;
+                    }
+
+                    address = address.Trim();
+
+                    if (!string.IsNullOrWhiteSpace(address))
+                    {
+                        <div>
+                            <strong class="text-muted">Address:</strong>
+                            <span>@address</span>
+                        </div>
+                    }
+                }
             </div>
 
             <!-- Company Section -->
@@ -35,12 +58,19 @@
                     <span>@(Model?.BranchName ?? "N/A")</span>
                 </div>
                 <div>
+                    <strong class="text-muted">Branch Phone:</strong>
+                    @if (Model?.LineItemsDetail?.ExtraData!=null && Model.LineItemsDetail.ExtraData.TryGetValue("restaurant", out var restaurantValue))
+                    {
+                        <span>@(!string.IsNullOrWhiteSpace(restaurantValue) ? restaurantValue : "N/A")</span>
+                    }
+                </div>
+                <div>
                     <strong class="text-muted">TIN:</strong>
                     <span>
-                        @if (!string.IsNullOrEmpty(Model?.LineItemsDetail?.ExtraData?.Tin))
+                        @if (Model?.LineItemsDetail?.ExtraData != null && Model.LineItemsDetail.ExtraData.TryGetValue("tin", out var tin))
                         {
-                            <a href="/company/@Model.LineItemsDetail.ExtraData.Tin">
-                                @Model.LineItemsDetail.ExtraData.Tin
+                            <a href="/company/@tin">
+                                @tin
                             </a>
                         }
                         else
@@ -115,11 +145,7 @@
             }
 
             <!-- ETA Section -->
-            <div class="@colClass mb-3">
-                <div>
-                    <span><strong>Current Time:</strong></span>
-                    <span>@Model?.Activities?.CurrentTime?.ToString("dd-MM-yyyy hh:mm:ss tt")</span>
-                </div>
+            <div class="@colClass">
                 @{
                     var activities = Model?.Activities;
                 }
@@ -147,10 +173,55 @@
                         <span>@activities.EtaDifference</span>
                     </div>
                 }
+                
+                @if (Model?.LineItemsDetail?.ExtraInformation != null && Model.LineItemsDetail.ExtraInformation.Any())
+                {
+                    <div class="mt-1">
+                        <span><strong>Extra Information:</strong></span>
+                        <button type="button" class="btn btn-link p-0 ms-1 text-decoration-none text-primary"
+                                data-bs-toggle="modal" data-bs-target="#extraInfoModal">
+                            View
+                            <i class="bi bi-arrow-up-right-square"></i>
+                        </button>
+                    </div>
+                }
+                <!-- Extra Information Modal -->
+                <div class="modal fade" id="extraInfoModal" tabindex="-1" aria-labelledby="extraInfoModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title text-white" id="extraInfoModalLabel">Extra Information</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var kvp in Model?.LineItemsDetail?.ExtraInformation ?? new Dictionary<string, string>())
+                                        {
+                                            <tr>
+                                                <td>@kvp.Key</td>
+                                                <td>@(!string.IsNullOrWhiteSpace(kvp.Value) ? kvp.Value : "N/A")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Voucher Section -->
-            <div class="@colClass mb-3">
+            <div class="@colClass">
                 <div>
                     <span><strong>VoucherCode:</strong></span>
                     <span>@Model?.VoucherCode</span>

@@ -620,7 +620,10 @@ function confirmBranchChange() {
         return;
     }
 
-
+    const isConfirmed = window.confirm(
+        `Are you sure you want to change the branch to "${selectedBranchName}"? This action cannot be undone.`
+    );
+    if (!isConfirmed) return;
     var data = {
         branchName: selectedBranchName,
         branchCode: selectedBranchCode,
@@ -635,8 +638,19 @@ function confirmBranchChange() {
         method: "POST",
         contentType: "application/json",
         data: JSON.stringify(data),
-        success: function () {
+        success: function (response) {
             $("#branchChangeLoading").addClass("d-none");
+
+            if (!response.isSuccessful) {
+                let msg = response.errorMessages?.join(", ") || "Something went wrong.";
+
+                Toastify({
+                    text: `Error: ${msg}`,
+                    style: { background: "red" }
+                }).showToast();
+
+                return;
+            }
             $("#changeBranchModal").modal("hide");
 
             Toastify({
@@ -644,19 +658,21 @@ function confirmBranchChange() {
                 style: { background: "green" }
             }).showToast();
 
-            // Reload the page after 1 second
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
+            setTimeout(() => location.reload(), 2000);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             $("#branchChangeLoading").addClass("d-none");
 
-            // Try to get server message from response
-            let msg = jqXHR.responseJSON?.message || errorThrown || textStatus || "Unknown error";
+            let res = jqXHR.responseJSON;
+
+            let msg =
+                res?.errorMessages?.join(", ") ||
+                res?.message ||
+                jqXHR.statusText ||
+                "Unknown error";
 
             Toastify({
-                text: `Error changing branch. ${msg}`,
+                text: `Error changing branch: ${msg}`,
                 style: { background: "red" }
             }).showToast();
         }

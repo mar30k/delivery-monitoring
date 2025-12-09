@@ -74,7 +74,7 @@ namespace DeliveryMonitoring.Helpers
                 {
                     LineItems = new List<LineItem>
                     {
-                        new LineItem
+                        new ()
                         {
                             Article = 101,
                             Name = "Laptop",
@@ -82,7 +82,7 @@ namespace DeliveryMonitoring.Helpers
                             Quantity = 1,
                             TaxableAmount = 1200.00m
                         },
-                        new LineItem
+                        new ()
                         {
                             Article = 202,
                             Name = "Mouse",
@@ -97,15 +97,15 @@ namespace DeliveryMonitoring.Helpers
                         { "Delivery", 50.00m }
                     },
                     GrandTotal = 1500.00m,
-                    ExtraInformation = new Dictionary<string, object>
+                    ExtraInformation = new Dictionary<string, string>
                     {
                         { "DeliveredBy", "Drone" },
                         { "Packaging", "Eco-friendly" }
                     },
-                    ExtraData = new ExtraData
+                    ExtraData = new Dictionary<string, string>
                     {
-                        VoucherId = 555,
-                        Tin = "1234567890"
+                        { "VoucherId", "555" },
+                        { "Tin", "1234567890" }
                     },
                     IssuedDate = DateTime.UtcNow,
                     BranchCode = 10,

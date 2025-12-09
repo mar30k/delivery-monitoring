@@ -113,14 +113,16 @@ namespace DeliveryMonitoring.Services.Api
         /// If set to <c>true</c>, bypasses the cache and fetches fresh data.
         /// </param>
         Task<HulubejeResponse<Company>?> GetCompanyDetailsAsync(string companyTin, bool skipCache = false);
+
         /// <summary>
-        /// Retrieves detailed information for a specific company.
+        /// Updates the branch information for a specific order.
         /// </summary>
-        /// <param name="companyTin">The Tax Identification Number (TIN) of the company.</param>
-        /// <param name="skipCache">
-        /// If set to <c>true</c>, bypasses the cache and fetches fresh data.
-        /// </param>
+        /// <param name="changeBranchDTO">The DTO containing the order voucher, new branch code, branch name, and optional remark.</param>
+        /// <returns>
+        /// A <see cref="HulubejeResponse{bool}"/> indicating whether the branch change was successful, including any error messages if applicable.
+        /// </returns>
         Task<HulubejeResponse<bool>> ChangeOrderBranchAsync(ChangeBranchDTO changeBranchDTO);
+
 
         #endregion
 

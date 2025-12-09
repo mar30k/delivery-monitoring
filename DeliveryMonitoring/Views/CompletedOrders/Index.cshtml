@@ -153,11 +153,10 @@
                         <label for="reviewPurpose" class="form-label fw-bold">Purpose</label>
                         <select class="form-select" id="reviewPurpose" name="Purpose" required>
                             <option value="" selected disabled>-- Select Purpose --</option>
-                            @foreach (var purpose in Model?.PurposeOptions ?? new Dictionary<int, string>())
+                            @foreach (var purpose in Model?.PurposeOptions?.OrderBy(c => c.Value) ?? Enumerable.Empty<KeyValuePair<int, string>>())
                             {
                                 <option value="@purpose.Key">@purpose.Value</option>
                             }
-)
                         </select>
                     </div>
 

@@ -34,7 +34,7 @@ namespace DeliveryMonitoring.Services.Orders
                 return new HulubejeResponse<List<CompletedOrders>> { Data = new List<CompletedOrders>(), IsSuccessful = false };
 
             var filtered = OrderHelpers.FilterOrders(result.Data, startDate, endDate, isClear, CompanyTin, AdminCompanyTin);
-            filtered.ForEach(OrderHelpers.FormatRequestDate);
+            filtered.ForEach(OrderHelpers.PrepareOrderDisplayValues);
 
             return new HulubejeResponse<List<CompletedOrders>>
             {
@@ -52,8 +52,7 @@ namespace DeliveryMonitoring.Services.Orders
 
             foreach (var order in orders)
             {
-                OrderHelpers.FormatRequestDate(order);
-                OrderHelpers.ParseSupervisor(order);
+                OrderHelpers.PrepareOrderDisplayValues(order);
                 order.TableId = type == (int)DeliveryOrderTypes.PickUpAtBranch ? TakeAwayTableId : DineInTableId;
             }
 
@@ -72,7 +71,7 @@ namespace DeliveryMonitoring.Services.Orders
 
             foreach (var item in deliveryOrders.Data ?? new List<CompletedOrders>())
             {
-                OrderHelpers.FormatRequestDate(item);
+                OrderHelpers.PrepareOrderDisplayValues(item);
                 item.TableId = DeliveryTableId;
             }
 

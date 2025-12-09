@@ -9,7 +9,7 @@ const headerFilterColumnsMapping = {
         { index: 1, name: 'Company' },
         { index: 2, name: 'Branch' },
         { index: 3, name: 'Customer' },
-        { index: 10, name: 'Supervisor' }
+        { index: 11, name: 'Supervisor' }
     ],
     "_NonDeliveryOrders": [
         { index: 1, name: 'Company' },
@@ -66,6 +66,7 @@ const deliveryColumns = [
     { data: "distance", className: "text-center", render: Renderers.distance },
     { data: "duration", className: "text-center", render: Renderers.duration },
     { data: "eta", className: "text-center", render: Renderers.duration },
+    { data: "etaDifference", className: "text-center", render: Renderers.timeDeviationRenderer },
     { data: "driverPhoneNumber", className: "text-center", render: Renderers.phone },
     { data: "supervisorName", className: "text-center", render: Renderers.orDefault },
     { data: "totalAmount", className: "text-center", render: Renderers.amount },
@@ -79,14 +80,14 @@ const deliveryColumns = [
 const TableTypeConfigs = {
     "_DeliveryOrders": {
         columns: deliveryColumns,
-        totalColumnIndex: 11,
-        nonOrderableTargets: [0, 1, 2, 4, 9, 10, 13, 14, 15],
+        totalColumnIndex: [12, 13],
+        nonOrderableTargets: [0, 4, 10, 11,, 14, 15, 16],
         headerFilterColumns: headerFilterColumnsMapping["_DeliveryOrders"]
     },
     "_NonDeliveryOrders": {
         columns: dineInAndTakeawayColumns,
-        totalColumnIndex: 7,
-        nonOrderableTargets: [0, 1, 2, 4, 8, 9],
+        totalColumnIndex: [7],
+        nonOrderableTargets: [0, 4, 8, 9],
         headerFilterColumns: headerFilterColumnsMapping["_NonDeliveryOrders"]
     }
 };
@@ -237,14 +238,18 @@ function initOrderTable(selector, daterangepicker, columns, ajaxUrl, emptyMessag
                 return 0;
             };
 
-            var columnData = api.column(totalColumnIndex, { page: "current" }).data();
-            var pageTotal = columnData.reduce(function (a, b) {
-                return parseValue(a) + parseValue(b);
-            }, 0);
+            totalColumnIndex.forEach(function (colIndex) {
+                var columnData = api.column(colIndex, { page: "current" }).data();
 
-            js(api.column(totalColumnIndex).footer()).html(
-                pageTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-            );
+                var pageTotal = columnData.reduce(function (a, b) {
+                    return parseValue(a) + parseValue(b);
+                }, 0);
+
+                js(api.column(colIndex).footer()).html(
+                    pageTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                );
+            });
+            
         },
         initComplete: function () {
             var dt = this;

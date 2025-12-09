@@ -106,7 +106,7 @@ const Renderers = {
 
         if (row.note || row.purpose) {
             return `
-            <button class="btn btn-outline-secondary btn-sm"
+            <button class="btn btn-outline-success btn-sm"
                 data-note="${row.note || ''}"
                 data-purpose="${row.purpose || ''}"
                 data-purpose-key="${purposeKey}"
@@ -121,7 +121,7 @@ const Renderers = {
             </button>`;
         } else {
             return `
-            <button class="btn btn-outline-secondary btn-sm"
+            <button class="btn btn-outline-danger btn-sm"
                 data-voucher-code="${row.voucherCode}"
                 data-phone-number="${row.driverPhoneNumber || ''}"
                 data-customer-phone="${row.phoneNumber || ''}"
@@ -135,7 +135,7 @@ const Renderers = {
     },
 
     activityBtn: (row) => `
-        <button class="btn btn-outline-secondary activityBtn btn-sm"
+        <button class="btn btn-outline-primary activityBtn btn-sm"
             data-voucher="${row.voucherCode}"
             data-company-code="${row.companyCode}"
             onclick="showActivity(this)">
@@ -147,7 +147,7 @@ const Renderers = {
         const href = isDelivery
             ? `orderdetail?voucher=${row.voucherCode}`
             : `orderdetail?voucher=${row.voucherCode}&type=${row.tableId}`;
-        return `<a class="btn btn-outline-secondary activityBtn btn-sm" target="_blank" href="${href}">Details</a>`;
+        return `<a class="btn btn-outline-info activityBtn btn-sm text-decoration-none" target="_blank" href="${href}">Details</a>`;
     }
 };
 

@@ -122,7 +122,7 @@ namespace DeliveryMonitoring.Services.SummaryReport
                         TotalConsigneeCount = group.Select(o => o.PhoneNumber).Distinct().Count(),
                         TotalMerchantCount = group.Select(o => new { o.Tin, o.BranchCode }).Distinct().Count(),
                         AverageRating = avgRating,
-                        TotalTimeDeviation = Math.Round(group.Sum(o => o.Eta) - group.Sum(o => o.Duration), 2),
+                        TotalEtaDifference = Math.Round(group.Sum(o => o.Eta) - group.Sum(o => o.Duration), 2),
                         MostOrdersDate = topDate?.Date.ToString("ddd MM dd, yyyy"),
                         MostOrdersCount = topDate?.Count ?? 0
                     };

@@ -626,7 +626,7 @@ namespace DeliveryMonitoring.Services.Api
             var request = _httpContextAccessor.HttpContext?.Request;
             if (request?.Cookies.TryGetValue(key, out var protectedValue) ?? false)
             {
-                try { return _protector.Unprotect(protectedValue); }
+                try { return _protector.Unprotect(protectedValue!); }
                 catch { return null; }
             }
             return null;

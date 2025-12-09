@@ -7,9 +7,11 @@ namespace DeliveryMonitoring.Helpers
 {
     public static class OrderHelpers
     {
-        public static void ParseSupervisor(CompletedOrders order)
+        public static void PrepareOrderDisplayValues(CompletedOrders order)
         {
-            string supervisorName = "N/A";
+            order.RequestCreatedAtString = order.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm tt");
+            order.EtaDifference = order.Eta - order.Duration;
+            string supervisorName = order.SupervisorName ?? "N/A";
             if (!string.IsNullOrEmpty(order.Note) && order.Note.StartsWith("{"))
             {
                 var match = Regex.Match(order.Note, @"^\{(.*?)\}");
@@ -20,11 +22,6 @@ namespace DeliveryMonitoring.Helpers
                 }
             }
             order.SupervisorName = supervisorName;
-        }
-
-        public static void FormatRequestDate(CompletedOrders order)
-        {
-            order.RequestCreatedAtString = order.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm tt");
         }
 
         public static List<CompletedOrders> FilterOrders(List<CompletedOrders> orders, DateTime? startDate, DateTime? endDate, bool isClear, string companyTin, string adminCompanyTin)

@@ -1,7 +1,6 @@
 ﻿function initHeaderFilterDropdown(tableObj, columnIndex, columnName) {
     var column = tableObj.api().column(columnIndex);
     var header = js(column.header());
-
     // Store original header content
     var originalContent = header.html();
 
@@ -17,7 +16,7 @@
                 <i class="bi bi-funnel"></i>
             </button>
             <div class="filter-dropdown" 
-                 style="display: none; position: absolute; top: 100%; right: 0; 
+                 style="display: none; position: absolute; top: 100%; ${(columnIndex < 2) ? 'left' : 'right'}: 0; 
                         background: white; border: 1px solid #ddd; border-radius: 4px; 
                         box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; 
                         min-width: 200px; padding: 10px; margin-top: 5px;">

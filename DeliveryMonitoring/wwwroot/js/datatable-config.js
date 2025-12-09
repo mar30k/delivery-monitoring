@@ -66,7 +66,7 @@ function getSummaryTableConfig(userType) {
                 { data: "totalDeliveryOrders", className: "text-center" },
                 { data: "deliveryAmount", className: "text-center", render: Renderers.amount },
                 { data: "totalDistance", className: "text-center", render: Renderers.distance },
-                { data: "totalTimeDeviation", className: "text-center", render: Renderers.timeDeviationRenderer },
+                { data: "totalEtaDifference", className: "text-center", render: Renderers.timeDeviationRenderer },
                 { data: "averageRating", className: "text-center", render: Renderers.rating },
                 { data: "tip", className: "text-center", render: (d, type) => Renderers.number(d, type, 2, false)},
                 { data: "totalConsigneeCount", className: "text-center" },

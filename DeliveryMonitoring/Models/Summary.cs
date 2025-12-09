@@ -32,7 +32,7 @@
         public double TotalDistance { get; set; }
         public double Tip { get; set; }
         public double AverageRating { get; set; }
-        public double TotalTimeDeviation { get; set; }
+        public double TotalEtaDifference { get; set; }
         public string? MostOrdersDate { get; set; } // e.g., "Mon Nov 01, 2025"
         public int MostOrdersCount { get; set; }
         public int TotalConsigneeCount { get; set; }
