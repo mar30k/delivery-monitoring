@@ -12,7 +12,7 @@ namespace DeliveryMonitoring.Controllers
     [Authorize]
     public class OrderController : Controller
     {
-        private IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IWebHostEnvironment _env;
         //HttpClient Setup starts here
         private readonly IApiRequestService _apiRequestService;
@@ -84,9 +84,15 @@ namespace DeliveryMonitoring.Controllers
 
                 var response = await _apiRequestService.GetOrderRequestsAsync();
                 if (response.Count > 0)
-                    response?.ForEach(x => x.CreatedAtString = new DateTimeOffset(DateTime.SpecifyKind(x.CreatedAt.Value, DateTimeKind.Utc))
-                                    .ToOffset(TimeSpan.FromHours(3))
-                                    .ToString("yyyy-MM-dd HH:mm:ss"));
+                {
+                    response?.ForEach(x => {
+                        var createdAt = x.CreatedAt ?? DateTime.MinValue;
+                        x.CreatedAtString = new DateTimeOffset(DateTime.SpecifyKind(createdAt, DateTimeKind.Utc))
+                                        .ToOffset(TimeSpan.FromHours(3))
+                                        .ToString("yyyy-MM-dd HH:mm:ss");
+                    });
+
+                }
                 if (!string.IsNullOrWhiteSpace(CompanyTin) && CompanyTin != AdminCompanyTin && response != null)
                 {
                     response = response.Where(order => order.DeliveryTin == CompanyTin).ToList();
@@ -249,9 +255,47 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500, $"failed: {string.Join("", response.ErrorMessages ?? new List<string>())}");
             return Ok("Message sent successfully.");
         }
+
+
         [Route("/supervisorAccept")]
         public async Task<IActionResult> AcceptOrderBySupervisor([FromBody] OrderDetail order)
         {
+            // 1. Payload validation
+            if (order == null)
+            {
+                return BadRequest(new HulubejeResponse<object>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new() { "Order payload is missing." }
+                });
+            }
+
+            // 2. Authentication
+            var user = _authenticationManager.GetUserFromCookie();
+            if (user == null)
+            {
+                return Unauthorized(new HulubejeResponse<object>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new() { "User is not authenticated." }
+                });
+            }
+
+            // 3. Authorization (Supervisor validation)
+            if (!string.Equals(user.UserName, order.SupervisedBy, StringComparison.OrdinalIgnoreCase))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    new HulubejeResponse<object>
+                    {
+                        IsSuccessful = false,
+                        ErrorMessages = new()
+                        {
+                            "You are not the assigned supervisor for this order."
+                        }
+                    });
+            }
+
+            // 4. Prepare API payload
             var requestPayload = new
             {
                 tin = order.CompanyTin,
@@ -261,11 +305,33 @@ namespace DeliveryMonitoring.Controllers
                 status = "seen"
             };
 
-            var response = await _apiRequestService.InsertActivityLogAsync(requestPayload);
-            if (!response.IsSuccessful)
-                return StatusCode(500, $"failed: {response.ErrorMessages?.FirstOrDefault()}");
+            // 5. Call external API
+            var apiResponse = await _apiRequestService.InsertActivityLogAsync(requestPayload);
 
-            return Ok("Order accepted and activity logged successfully.");
+            if (!apiResponse.IsSuccessful)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new HulubejeResponse<object>
+                    {
+                        IsSuccessful = false,
+                        ErrorMessages = apiResponse.ErrorMessages ?? new()
+                        {
+                    "Unknown error occurred while logging activity."
+                        }
+                    });
+            }
+
+            // 6. Success response
+            return Ok(new HulubejeResponse<object>
+            {
+                IsSuccessful = true,
+                Data = new
+                {
+                    message = "Order accepted and activity logged successfully.",
+                    supervisor = user.UserName,
+                    order = order.VoucherCode
+                }
+            });
         }
 
         [HttpGet]

@@ -145,9 +145,12 @@ namespace DeliveryMonitoring.Services.Api
         /// </param>
         Task<HulubejeResponse<List<CompletedOrders>>> GetOrdersByTypeAsync(int type, bool skipCache = true);
         /// <summary>
-        /// Retrieves completed orders filtered by order type.
+        /// Retrieves detailed historical order information for a specific voucher and company.
         /// </summary>
-        /// <param name="type">Order type identifier.</param>
+        /// <param name="voucherCode">The voucher code identifying the order.</param>
+        /// <param name="companyCode">The company code associated with the order.</param>
+        /// <param name="industryType">The industry type identifier (default is 1992).</param>
+        /// <param name="skipCache">Indicates whether to bypass the cache and fetch fresh data.</param>
         Task<HulubejeResponse<LineItemsDetail>> Gethistorydetail(string voucherCode, string companyCode, int industryType = 1992, bool skipCache = true);
 
         #endregion

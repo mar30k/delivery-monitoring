@@ -142,11 +142,16 @@ const Renderers = {
             Show
         </button>`,
 
-    detailsLink: (row, isDelivery) => {
+    detailsLink: (row) => {
         if (!isRedCloud) return `<p class="text-muted mb-0">N/A</p>`;
-        const href = isDelivery
-            ? `orderdetail?voucher=${row.voucherCode}`
-            : `orderdetail?voucher=${row.voucherCode}&type=${row.tableId}`;
+        const hasValidTableId = row.tableId !== null && row.tableId !== undefined && row.tableId !== "";
+
+        let href = `orderdetail?voucher=${row.voucherCode}`;
+
+        if (hasValidTableId) {
+            href += `&type=${row.tableId}`;
+        }
+
         return `<a class="btn btn-outline-info activityBtn btn-sm text-decoration-none" target="_blank" href="${href}">Details</a>`;
     }
 };

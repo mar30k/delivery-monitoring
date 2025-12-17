@@ -103,7 +103,7 @@ namespace DeliveryMonitoring.Helpers
                 {
                     Type = "Delivery",
                     Title = "Delivery",
-                    TableId = "delivery",
+                    TableId = AppConstants.TableIds.Delivery,
                     AjaxUrl = "/getCompletedOrders",
                     SheetName = "_DeliveryOrders"
                 },
@@ -111,7 +111,7 @@ namespace DeliveryMonitoring.Helpers
                 {
                     Type = DeliveryOrderTypes.ScheduledDeliveryToLocation.ToString(),
                     Title = "Scheduled Delivery",
-                    TableId = "scheduledDelivery",
+                    TableId = AppConstants.TableIds.ScheduledDelivery,
                     AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.ScheduledDeliveryToLocation}",
                     SheetName = "_DeliveryOrders"
                 },
@@ -119,7 +119,7 @@ namespace DeliveryMonitoring.Helpers
                 {
                     Type = "Takeaway",
                     Title = "Takeaway",
-                    TableId = "takeaway",
+                    TableId = AppConstants.TableIds.TakeAway,
                     AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.PickUpAtBranch}",
                     SheetName = "_NonDeliveryOrders"
                 },
@@ -128,7 +128,7 @@ namespace DeliveryMonitoring.Helpers
                 {
                     Type = DeliveryOrderTypes.ScheduledPickUp.ToString(),
                     Title = "Scheduled Pick Up",
-                    TableId = "scheduledPickUp",
+                    TableId = AppConstants.TableIds.ScheduledPickUp,
                     AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.ScheduledPickUp}",
                     SheetName = "_NonDeliveryOrders"
                 },
@@ -136,7 +136,7 @@ namespace DeliveryMonitoring.Helpers
                 {
                     Type = "Dine-in",
                     Title = "Dine-in",
-                    TableId = "dinein",
+                    TableId = AppConstants.TableIds.DineIn,
                     AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.InHouseDining}",
                     SheetName = "_NonDeliveryOrders"
                 }

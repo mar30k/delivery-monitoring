@@ -95,7 +95,7 @@
                             }
                             <p>
                                 <span class="fw-bold">Status: </span>
-                                <span class="text-white px-2 py-1 rounded" style="background-color: @bgColor;">
+                                <span class="text-white px-2 py-1 rounded" id="statusInfo" style="background-color: @bgColor;">
                                     @Model?.Status
                                 </span>
                             </p>
@@ -183,14 +183,14 @@
     <script>
         let infowindow = null;
         const statusColors = {
-            offline: { color: "#dc3545", priority: "1" },  // Bootstrap danger - Offline
-            ready: { color: "#28a745", priority: "8" },  // Bootstrap success - Ready
-            accepted: { color: "seagreen", priority: "6" },  // Bootstrap primary - Accepted
-            delivering: { color: "darkorange", priority: "7" },  // Bootstrap orange - Delivering
-            arrivedatbranch: { color: "coral", priority: "5" },  // Bootstrap info - Arrived
-            arrived: { color: "#17a2b8", priority: "4" },  // Bootstrap info - Arrived
-            completed: { color: "#20c997", priority: "3" },  // Bootstrap teal - Completed
-            default: { color: "#ffc107", priority: "2" }   // Bootstrap warning - Default
+            offline:         { color: "#dc3545", priority: "1" },
+            default:         { color: "#ffc107", priority: "2" },
+            completed:       { color: "#20c997", priority: "3" },
+            arrived:         { color: "#F7BEA2", priority: "4" },
+            arrivedatbranch: { color: "coral",   priority: "5" },
+            accepted:        { color: "seagreen", priority: "6" },
+            delivering:      { color: "darkorange", priority: "7" },
+            ready:           { color: "#28a745", priority: "8" }
         };
         var routeCoordinates = @Html.Raw(coordinatesJson);
         var coordinate = {
@@ -234,21 +234,21 @@
                         var driverOrder = Orders?.FirstOrDefault(x => x.AssignedDriverPhoneNumber == Model.PhoneNumber);
                         string destLat = "0.0";
                         string destLng = "0.0";
-
+                        
                         if (status == "delivering" || status == "arrivedatbranch")
                         {
-                                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
-                                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
                         }
                         else if (status == "accepted")
                         {
-                                            destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
-                                            destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
+                            destLat = driverOrder?.TargetBranchLat?.ToString() ?? "0.0";
+                            destLng = driverOrder?.TargetBranchLng?.ToString() ?? "0.0";
                         }
                         else if (driverOrder != null)
                         {
-                                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
-                                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
+                            destLat = driverOrder?.CustomerLat?.ToString() ?? "0.0";
+                            destLng = driverOrder?.CustomerLng?.ToString() ?? "0.0";
                         }
                         <text>
                         place = {

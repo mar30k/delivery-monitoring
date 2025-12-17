@@ -119,6 +119,15 @@ namespace DeliveryMonitoring.Controllers
                     var userValidation = await _apiRequestService.GetFilteredConsigneesAsync(tin: model.myId?.Trim());
                     if (userValidation?.Count > 0)
                     {
+                        var authenticatedCompanys = await _apiRequestService.GetCompaniesAsync();
+                        if (!(authenticatedCompanys.companyTins.Any(c => c == model.myId?.Trim())))
+                        {
+                            return Json(new
+                            {
+                                d = false,
+                                m = "Unauthorized company access."
+                            });
+                        }
                         if (_appEnvironment.IsDevelopment())
                         {
                             baseAddress = "http://196.191.244.156:7038/api/";  // dev

@@ -14,6 +14,8 @@ namespace DeliveryMonitoring.Services.Orders
         private const string DineInTableId = AppConstants.TableIds.DineIn;
         private const string TakeAwayTableId = AppConstants.TableIds.TakeAway;
         private const string DeliveryTableId = AppConstants.TableIds.Delivery;
+        private const string ScheduledDeliveryTableId = AppConstants.TableIds.ScheduledDelivery;
+        private const string ScheduledPickUpTableId = AppConstants.TableIds.ScheduledPickUp;
         private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         private readonly IApiRequestService _apiRequestService;
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
@@ -53,7 +55,15 @@ namespace DeliveryMonitoring.Services.Orders
             foreach (var order in orders)
             {
                 OrderHelpers.PrepareOrderDisplayValues(order);
-                order.TableId = type == (int)DeliveryOrderTypes.PickUpAtBranch ? TakeAwayTableId : DineInTableId;
+                order.TableId = ((DeliveryOrderTypes)type) switch
+                {
+                    DeliveryOrderTypes.PickUpAtBranch => TakeAwayTableId,
+                    DeliveryOrderTypes.InHouseDining => DineInTableId,
+                    DeliveryOrderTypes.DeliveryToLocation => DeliveryTableId,
+                    DeliveryOrderTypes.ScheduledDeliveryToLocation => ScheduledDeliveryTableId,
+                    DeliveryOrderTypes.ScheduledPickUp => ScheduledPickUpTableId,
+                    _ => DeliveryTableId // fallback
+                };
             }
 
             return OrderHelpers.FilterOrders(orders, startDate, endDate, isClear, CompanyTin, AdminCompanyTin);
@@ -65,6 +75,8 @@ namespace DeliveryMonitoring.Services.Orders
 
             var dineInTask = GetOrdersByTypeAsync((int)DeliveryOrderTypes.InHouseDining, startDate, endDate, isClear);
             var takeAwayTask = GetOrdersByTypeAsync((int)DeliveryOrderTypes.PickUpAtBranch, startDate, endDate, isClear);
+            var scheduledDeliveryTask = GetOrdersByTypeAsync((int)DeliveryOrderTypes.ScheduledDeliveryToLocation, startDate, endDate, isClear);
+            var scheduledPickUpTask = GetOrdersByTypeAsync((int)DeliveryOrderTypes.ScheduledPickUp, startDate, endDate, isClear);
 
             var deliveryTask = _apiRequestService.GetCompletedOrdersAsync(skipCache);
             var deliveryOrders = await deliveryTask;
@@ -75,11 +87,13 @@ namespace DeliveryMonitoring.Services.Orders
                 item.TableId = DeliveryTableId;
             }
 
-            await Task.WhenAll(dineInTask, takeAwayTask);
+            await Task.WhenAll(dineInTask, takeAwayTask, scheduledDeliveryTask, scheduledPickUpTask);
 
             var allOrders = (deliveryOrders.Data ?? new List<CompletedOrders>())
                             .Concat(await dineInTask)
                             .Concat(await takeAwayTask)
+                            .Concat(await scheduledDeliveryTask)
+                            .Concat(await scheduledPickUpTask)
                             .ToList();
 
             return OrderHelpers.FilterOrders(allOrders, startDate, endDate, isClear, CompanyTin, AdminCompanyTin);

@@ -6,49 +6,10 @@
 
 <div class="container-fluid g-0">
 
-    <!--Find the map here-->
-    <div class="col-12 col-xl-12 pb-3" id="map">
+
+    <div class="pb-3" id="map">
     </div>
-    <!--Map ends here-->
-
-    <div class="container-fluid col-10 pt-3 pb-3">
-        <a class="btn btn-dark" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-            <i class="bi bi-filter"></i>Filter
-        </a>
-    </div>
-
-    <div class="container-fluid col-10">
-        <div class="collapse" id="collapseExample">
-            <form id="driverFilterForm">
-                <div class="row mb-3">
-                    <div class="col-12 col-lg-2">
-                        <label for="status">Status:</label>
-                        <select class="form-control" name="status">
-                            <option value="">All</option>
-                            <option value="offline">Offline</option>
-                            <option value="ready">Ready</option>
-                            <option value="accepted">Accepted</option>
-                            <option value="delivering">Delivering</option>
-                            <!-- Add other status options as needed -->
-                        </select>
-                    </div>
-
-                    <div class="col-12 col-lg-2">
-                        <label for="companyTin">Company TIN:</label>
-                        <input type="text" class="form-control" id="companyTin" name="companyTin" placeholder="Enter Company TIN">
-                    </div>
-
-                    <div class="col-2">
-                        <br />
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                        <button type="button" class="btn btn-secondary" onclick="resetFilters()">Reset</button>
-                    </div>
-
-                </div>
-            </form>
-        </div>
-
-
+    <div class="p-4">
         <div class="row card">
             <!--The table is Written Here-->
             <div class="pt-3 pb-3 col-12 col-xl-12 table-responsive">
@@ -156,6 +117,8 @@
     </div>
 </div>
 @section Scripts {
+    <link rel="stylesheet" href="~/css/header-filters.css" asp-append-version="true">
+    <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script>
     <script src="~/js/driver.js" asp-append-version="true"></script>
 }
 @functions{

@@ -172,7 +172,9 @@ $('#supervisorAccept').on('click', function () {
         tin: $btn.data('tin'),
         voucherCode: $btn.data('voucher-code'),
         clientPhone: $btn.data('client-phone'),
-        driverPhone: $btn.data('driver-phone')
+        driverPhone: $btn.data('driver-phone'),
+        superviserName: $btn.data('supervisor-name'),
+        superviserPhone: $btn.data('supervisor-phone'),
     });
 
 
@@ -188,7 +190,9 @@ $('#confirmSupervisorBtn').on('click', async function () {
         voucherCode: $confirmBtn.data('voucherCode'),
         companyTin: String($confirmBtn.data('tin')),
         assignedDriverPhoneNumber: $confirmBtn.data('driverPhone'),
-        customerPhoneNumber: $confirmBtn.data('clientPhone')
+        customerPhoneNumber: $confirmBtn.data('clientPhone'),
+        supervisedBy: $confirmBtn.data('superviserPhone'),
+        supervisorName: $confirmBtn.data('superviserName')
     };
     try {
         const response = await fetch('/supervisoraccept', {
@@ -197,15 +201,22 @@ $('#confirmSupervisorBtn').on('click', async function () {
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) {
-            showToast('Error: Could not accept order supervision.', "error");
+        const result = await response.json();
+        if (!response.ok || !result.isSuccessful) {
+            const message =
+                result?.errorMessages?.join(', ') ||
+                'An unexpected error occurred.';
+
+            showToast(message, 'error');
             $confirmBtn.prop('disabled', false).text('Confirm');
-        } else {
-            showToast('Order supervision accepted successfully!', "success");
-            setTimeout(() => window.location.reload(), 5000);
+            return;
         }
-    } catch (error) {
-        showToast('Error:' + error.message, "error");
+
+        showToast(result.data.message, "success");
+        setTimeout(() => window.location.reload(), 5000);
+
+    } catch (err) {
+        showToast(`Network error: ${err.message}`, "error");
         $confirmBtn.prop('disabled', false).text('Confirm');
     }
 });

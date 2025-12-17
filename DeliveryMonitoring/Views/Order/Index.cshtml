@@ -130,9 +130,10 @@
                                 <td class="text-center">
                                     @(order?.CompanyName ?? "N/A")
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center" data-tin="@order?.CompanyTin" data-branch="@System.Net.WebUtility.HtmlEncode(@order?.BranchName)"
+                                    data-voucher="@order?.VoucherCode" data-company="@System.Net.WebUtility.HtmlEncode(order?.CompanyName)">
                                     @(order?.BranchName ?? "N/A")
-                                    <a onclick="openChangeBranchModal('@order?.CompanyTin','@order?.CompanyName','@order?.BranchName','@order?.VoucherCode')"> <i class="fa-solid fa-pen-to-square"></i></a>
+                                    <a onclick="openChangeBranchModal(this)"> <i class="fa-solid fa-pen-to-square"></i></a>
                                 </td>
                                 <td class="text-center">
                                     @(order?.CustomerFirstName ?? "N/A")

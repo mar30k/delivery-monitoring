@@ -159,6 +159,8 @@ namespace DeliveryMonitoring.Models
 
         [DisplayName("Name")]
         public string? Name { get; set; }
+        [DisplayName("Note")]
+        public string? Note { get; set; }
 
         [DisplayName("Unit Amount")]
         public decimal? UnitAmount { get; set; }

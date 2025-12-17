@@ -10,6 +10,10 @@ var js = jQuery.noConflict(true);
 var tablelist; // Define the variable globally
 var map;
 const driverMarkerMap = new Map();
+var headerFilterColumns = [
+    { index: 1, name: 'Company' },
+    { index: 4, name: 'Status' }
+];
 js( ()=> {
     if (!js.fn.DataTable.isDataTable('#tablelist')) {
         tablelist = js('#tablelist').DataTable({
@@ -17,48 +21,46 @@ js( ()=> {
             pageLength: 25,
             "lengthMenu": [[10, 13, 25, 50, 100], [10, 13, 25, 50, 100]],
             columnDefs: [
-                { orderable: false, targets: [3, 1, 7] } // Disable sorting on specified columns
+                {
+                    orderable: false, targets: [3, 1, 7]
+                },
+                {
+                    targets: headerFilterColumns.map(col => col.index),
+                    orderable: true,
+                    render: function (data, type, row) {
+                        if (type === 'sort') {
+                            return data;
+                        }
+                        return data;
+                    }
+                },
+                {
+                    orderSequence: ['asc', 'desc'],
+                    targets: '_all'
+                }
             ],
-            order: [[4, 'desc']]
+            order: [[4, 'desc']],
+            
+            initComplete: function () {
+                var dt = this;
+                headerFilterColumns.forEach(function (col) {
+                    initHeaderFilterDropdown(dt, col.index, col.name);
+                });
+            }
         });
     } else {
         tablelist = js('#tablelist').DataTable();
     }
-
-    // Custom filter logic
-    js.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-        const status = js('select[name="status"]').val()?.toLowerCase() || '';
-        const companyTin = js('#companyTin').val()?.toLowerCase() || '';
-
-        const rowStatus = data[4]?.toLowerCase().trim();    // status column
-        const rowCompanyTin = data[1]?.toLowerCase().trim(); // company column
-
-        const statusMatch = !status || rowStatus === status;
-        const companyMatch = !companyTin || rowCompanyTin.includes(companyTin);
-
-        return statusMatch && companyMatch;
-    });
-
-    // On submit, trigger redraw with new filters
-    js('#driverFilterForm').on('submit', function (e) {
-        e.preventDefault();
-        tablelist.draw();
-    });
 });
-function resetFilters() {
-    js('select[name="status"]').val('');
-    js('input[name="companyTin"]').val('');
-    tablelist.column(4).search('').column(1).search('').draw();
-}
 const statusColors = {
-    offline: { color: "#dc3545", priority: "1" },  // Bootstrap danger - Offline
-    ready: { color: "#28a745", priority: "8" },  // Bootstrap success - Ready
-    accepted: { color: "seagreen", priority: "6" },  // Bootstrap primary - Accepted
-    delivering: { color: "darkorange", priority: "7" },  // Bootstrap orange - Delivering
-    arrivedatbranch: { color: "coral", priority: "5" },  // Bootstrap info - Arrived
-    arrived: { color: "#17a2b8", priority: "4" },  // Bootstrap info - Arrived
-    completed: { color: "#20c997", priority: "3" },  // Bootstrap teal - Completed
-    default: { color: "#ffc107", priority: "2" }   // Bootstrap warning - Default
+    offline:         { color: "#dc3545",    priority: "1" },  // Bootstrap danger - Offline
+    default:         { color: "#ffc107",    priority: "2" },  // Bootstrap warning - Default
+    completed:       { color: "#20c997",    priority: "3" },  // Bootstrap teal - Completed
+    arrived:         { color: "#F7BEA2",    priority: "4" },  // Bootstrap info - Arrived
+    arrivedatbranch: { color: "coral",      priority: "5" },  // Bootstrap info - Arrived
+    accepted:        { color: "seagreen",   priority: "6" },  // Bootstrap primary - Accepted
+    delivering:      { color: "darkorange", priority: "7" },  // Bootstrap orange - Delivering
+    ready:           { color: "#28a745",    priority: "8" }   // Bootstrap success - Ready
 };
 
 

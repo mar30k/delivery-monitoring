@@ -30,6 +30,8 @@ namespace DeliveryMonitoring.Controllers
         private const string DineInTableId = AppConstants.TableIds.DineIn;
         private const string TakeAwayTableId = AppConstants.TableIds.TakeAway;
         private const string DeliveryTableId = AppConstants.TableIds.Delivery;
+        private const string ScheduledDeliveryTableId = AppConstants.TableIds.ScheduledDelivery; 
+        private const string ScheduledPickUpTableId = AppConstants.TableIds.ScheduledPickUp;
         private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
         #endregion
@@ -88,6 +90,8 @@ namespace DeliveryMonitoring.Controllers
             {
                 TakeAwayTableId => DeliveryOrderTypes.PickUpAtBranch,
                 DineInTableId => DeliveryOrderTypes.InHouseDining,
+                ScheduledDeliveryTableId => DeliveryOrderTypes.ScheduledDeliveryToLocation,
+                ScheduledPickUpTableId => DeliveryOrderTypes.ScheduledPickUp,
                 _ => DeliveryOrderTypes.DeliveryToLocation
             };
 
@@ -121,7 +125,7 @@ namespace DeliveryMonitoring.Controllers
                 SupervisedBy = order?.SupervisorPhoneNumber,
                 SupervisorName = order?.SupervisorName,
                 AssignedDriverPhoneNumber = order?.DriverPhoneNumber,
-                LineItemsDetail = voucherDetail.Data,
+                LineItemsDetail = voucherDetail?.Data,
                 Activities = driverActivity?.Data,
                 VoucherCode = voucher,
                 AssignedDriverName = driver?.Detail?.FullName,

@@ -169,9 +169,10 @@ function updateOrders() {
                         </a>
                     </td>
                     <td class="text-center">${order.companyName || 'N/A'}</td>
-                    <td class="text-center">
+                    <td class="text-center" data-tin="${order.companyTin}" data-company="${order.companyName}"
+                        data-branch="${order.branchName}" data-voucher="${order.voucherCode}">
                         ${order.branchName || 'N/A'}
-                        <a onclick="openChangeBranchModal('${order.companyTin}','${order.companyName}','${order.branchName}','${order.voucherCode}')"> <i class="fa-solid fa-pen-to-square"></i></a>
+                        <a onclick="openChangeBranchModal(this)"> <i class="fa-solid fa-pen-to-square"></i></a>
                     </td>
                     <td class="text-center">${order.customerFirstName || 'N/A'}</td>
                     <td class="text-center">
@@ -564,7 +565,14 @@ function confirmAssignToSupervisor() {
 }
 
 
-function openChangeBranchModal(companyTin, companyName, currentBranchName, voucherCode) {
+function openChangeBranchModal(element) {
+    const container = $(element).closest("td");
+
+    const companyTin = container.data("tin");
+    const companyName = container.data("company");
+    const currentBranchName = container.data("branch");
+    const voucherCode = container.data("voucher");
+
     $("#branchSelectDropdown").html(`<option disabled selected>Loading branches...</option>`);
     $('#companyNameLable').text(`- ${companyName}`);
     $("#changeBranchModal").modal("show");
@@ -630,7 +638,6 @@ function confirmBranchChange() {
         voucherCode: voucherCode,
         remark: remark
     };
-    console.log(data);
     $("#branchChangeLoading").removeClass("d-none");
 
     $.ajax({

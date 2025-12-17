@@ -40,7 +40,7 @@ function getSummaryTableConfig(userType) {
             ],
             intCols: [3, 5, 7, 10],
             floatCols: [4, 6, 8, 9],
-            headerFilterColumns: [{ index: 1, name: 'Company Name' }, { index: 2, name: 'Branch Name' }]
+            headerFilterColumns: [{ index: 1, name: 'Company' }, { index: 2, name: 'Branch' }]
         },
         [USER_TYPE.CONSIGNEE]: {
             columns: [

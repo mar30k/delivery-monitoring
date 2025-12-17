@@ -58,7 +58,7 @@ const dineInAndTakeawayColumns = [
     { data: "totalAmount", className: "text-center", render: Renderers.amount },
     { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.reviewOrShow(r, false) },
     { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.activityBtn(r) },
-    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.detailsLink(r, false) }
+    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.detailsLink(r) }
 ];
 
 const deliveryColumns = [
@@ -73,7 +73,7 @@ const deliveryColumns = [
     { data: "tip", className: "text-center", render: Renderers.amount },
     { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.reviewOrShow(r, true) },
     { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.activityBtn(r) },
-    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.detailsLink(r, true) }
+    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.detailsLink(r) }
 ];
 
 
@@ -81,7 +81,7 @@ const TableTypeConfigs = {
     "_DeliveryOrders": {
         columns: deliveryColumns,
         totalColumnIndex: [12, 13],
-        nonOrderableTargets: [0, 4, 10, 11,, 14, 15, 16],
+        nonOrderableTargets: [0, 4, 10, 11, 14, 15, 16],
         headerFilterColumns: headerFilterColumnsMapping["_DeliveryOrders"]
     },
     "_NonDeliveryOrders": {
