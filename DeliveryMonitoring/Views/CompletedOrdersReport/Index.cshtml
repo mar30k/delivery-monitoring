@@ -117,16 +117,16 @@
     <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script>
     <script src="~/js/datatable-renderers.js" asp-append-version="true"></script>
     <script src="~/js/datatable-init.js" asp-append-version="true"></script>
-    <script src="~/js/datatable-config.js" asp-append-version="true"></script>
+    <script src="~/js/table-utils.js" type="module" asp-append-version="true"></script>
+    <script src="~/js/report-table.js" type="module" asp-append-version="true"></script>
     <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
-    <script>
-        js(() => {
-            initReportTableWrapper({
-                tableId: "@Model?.TableId",
-                ajaxUrl: "@Model?.AjaxUrl",    // ensure always a string
-                userType: "@Model?.Type",
-                sheetName: "@Model?.SheetName"
-            });
+    <script type="module">
+        import { ReportTable } from '/js/report-table.js';
+        ReportTable.init({
+            tableId: "@Model?.TableId",
+            ajaxUrl: "@Model?.AjaxUrl",
+            userType: "@Model?.Type" + "_report",
+            sheetName: "@Model?.SheetName"
         });
     </script>
 }

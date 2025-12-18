@@ -43,33 +43,6 @@ function updateOrderStatuses() {
         $attachmentLink.addClass("d-none");
     }
 }
-function showToast(message, type = "info") {
-    let bgColor = "";
-
-    switch (type) {
-        case "success":
-            bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
-            break;
-        case "error":
-            bgColor = "linear-gradient(to right, #ff5f6d, #ffc371)";
-            break;
-        case "warning":
-            bgColor = "linear-gradient(to right, #f2994a, #f2c94c)";
-            break;
-        default:
-            bgColor = "linear-gradient(to right, #616161, #9bc5c3)";
-    }
-
-    Toastify({
-        text: message,
-        duration: 4000,
-        close: true,
-        gravity: "top",
-        position: "right",
-        style: { background: bgColor },
-        stopOnFocus: true,
-    }).showToast();
-}
 
 document.querySelectorAll('input[name="recipient"]').forEach((radio) => {
     radio.addEventListener('click', async () => {

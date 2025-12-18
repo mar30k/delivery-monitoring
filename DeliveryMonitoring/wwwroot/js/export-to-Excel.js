@@ -10,7 +10,7 @@
  */
 function exportTableToExcel({
     tableSelector,
-    typePrefix = "report",
+    typePrefix = "",
     sheetName = "Sheet1",
     startDate = null,
     endDate = null,
@@ -18,14 +18,14 @@ function exportTableToExcel({
 }) {
     var table = js(tableSelector);
     if (table.length === 0) {
-        console.warn("Table not found:", tableSelector);
+        showToast(`Table not found: ${tableSelector}`, "warning");
         return;
     }
 
     // Get DataTable instance
     var dt = table.DataTable();
     if (!dt) {
-        console.warn("DataTable not initialized:", tableSelector);
+        showToast(`DataTable not initialized: ${tableSelector}`, "warning");
         return;
     }
 
@@ -40,7 +40,7 @@ function exportTableToExcel({
     var allRows = dt.rows({ search: 'applied', page: 'all' }).data().toArray();
 
     if (!allRows.length) {
-        console.warn("No data found for export.");
+        showToast("No data found for export.", "info");
         return;
     }
 
@@ -64,7 +64,7 @@ function exportTableToExcel({
                 try {
                     cellValue = col.render(rowData[col.data], "display", rowData);
                 } catch (e) {
-                    console.warn("Render error in column:", col.data, e);
+                    showToast(`Render error in column: ${col.data}`, "error");
                     cellValue = rowData[col.data];
                 }
             } else {
@@ -110,21 +110,27 @@ function exportTableToExcel({
         worksheet['!cols'] = columnWidths;
     }
 
-    // Create workbook
-    var workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    try {
+        // Create workbook
+        var workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
 
-    // Generate filename
-    var startStr = startDate ? startDate.format("YYYY-MM-DD") + "_to_" : "all_dates";
-    var endStr = endDate ? endDate.format("YYYY-MM-DD") : "";
-    var filename = `${typePrefix}_report_${startStr}${endStr}.xlsx`;
+        // Generate filename
+        var startStr = startDate ? startDate.format("YYYY-MM-DD") + "_to_" : "all_dates";
+        var endStr = endDate ? endDate.format("YYYY-MM-DD") : "";
+        var filename = `${typePrefix}_${startStr}${endStr}.xlsx`;
 
-    if (startDate && endDate && startDate.isSame(endDate, 'day')) {
-        filename = `${typePrefix}_report_${startDate.format("YYYY-MM-DD")}.xlsx`;
+        if (startDate && endDate && startDate.isSame(endDate, 'day')) {
+            filename = `${typePrefix}_${startDate.format("YYYY-MM-DD")}.xlsx`;
+        }
+
+        // Save Excel file
+        XLSX.writeFile(workbook, filename);
+
+        showToast(`Excel file generated: ${filename}`, "success");
+    } catch (e){
+        showToast(`Failed to export Excel: ${e.message}`, "error");
     }
-
-    // Save Excel file
-    XLSX.writeFile(workbook, filename);
 }
 
 /**

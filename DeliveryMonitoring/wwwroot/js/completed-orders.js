@@ -1,6 +1,6 @@
-﻿var js = jQuery.noConflict(true);
-var tableDateRanges = {};
-var tables = {};
+﻿const js = jQuery.noConflict(true);
+const tableDateRanges = {};
+const tables = {};
 
 var TableConfigs = window.AppData?.tableConfigs || [];
 // Mapping for headerFilterColumns

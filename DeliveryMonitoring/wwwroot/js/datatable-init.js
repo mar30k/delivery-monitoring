@@ -12,7 +12,8 @@
  * @param {Array<number>} [options.nonOrderableTargets=[]] - Column indexes that should be non-orderable
  * @returns {DataTable} - Initialized DataTable instance
  */
-
+var startDate = moment().startOf('day');
+var endDate = moment().endOf('day');
 var js = jQuery.noConflict(true);
 js(() => {
     js("#dateRange").daterangepicker({
@@ -59,10 +60,9 @@ function initTable({
             url: ajaxUrl,
             type: 'GET',
             data: function (d) {
-                const picker = js("#dateRange").data('daterangepicker');
-                if (picker && !isClear) {
-                    d.startDate = picker.startDate.format("YYYY-MM-DD");
-                    d.endDate = picker.endDate.format("YYYY-MM-DD");
+                if (!isClear && startDate && endDate) {
+                    d.startDate = startDate.format("YYYY-MM-DD");
+                    d.endDate = endDate.format("YYYY-MM-DD");
                     d.isClear = false;
                 } else if (isClear) {
                     d.startDate = null;
@@ -197,13 +197,6 @@ function initTable({
             table.processing(false);
         }
     });
-
-    //// 🔄 Auto-reload every 10 seconds if tab is visible
-    //setInterval(function () {
-    //    if (!document.hidden) {
-    //        table.ajax.reload(null, false);
-    //    }
-    //}, 60000);
 
     startTableAutoRefresh([tableEntry], 60000);
 
