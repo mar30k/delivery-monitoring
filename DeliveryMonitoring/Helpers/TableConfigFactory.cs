@@ -14,7 +14,7 @@ namespace DeliveryMonitoring.Helpers
                     Type = "merchant",
                     Title = "Merchant Summary",
                     TableId = "merchantSummary",
-                    AjaxUrl = $"/summary/data?type={type}",
+                    AjaxUrl = $"/summary/data?stype={type}",
                     SheetName = "Merchant Summary"
                 },
                 SummaryReportType.Driver => new TableConfig
@@ -22,7 +22,7 @@ namespace DeliveryMonitoring.Helpers
                     Type = "driver",
                     Title = "Driver Summary",
                     TableId = "driverSummary",
-                    AjaxUrl = $"/summary/data?type={type}",
+                    AjaxUrl = $"/summary/data?stype={type}",
                     SheetName = "Driver Summary"
                 },
                 SummaryReportType.Supervisor=> new TableConfig
@@ -30,7 +30,7 @@ namespace DeliveryMonitoring.Helpers
                     Type = "supervisor",
                     Title = "Supervisor Summary",
                     TableId = "supervisorSummary",
-                    AjaxUrl = $"/summary/data?type={type}",
+                    AjaxUrl = $"/summary/data?stype={type}",
                     SheetName = "Supervisor Summary"
                 },
                 SummaryReportType.Consignee or _ => new TableConfig
@@ -38,7 +38,7 @@ namespace DeliveryMonitoring.Helpers
                     Type = "consignee",
                     Title = "Consignee Summary",
                     TableId = "consigneeSummary",
-                    AjaxUrl = "/summary/data?type=consignee",
+                    AjaxUrl = "/summary/data?stype=consignee",
                     SheetName = "Consignee Summary"
                 }
             };

@@ -142,7 +142,7 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/getCompletedOrders")]
         public async Task<IActionResult> GetCompletedOrdersApi([FromQuery] OrderQueryParams query)
         {
-            var result = await _ordersService.GetCompletedOrdersAsync(query.StartDate, query.EndDate, query.IsClear);
+            var result = await _ordersService.GetCompletedOrdersAsync(query);
             return Ok(result);
         }
 
@@ -153,7 +153,7 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> GetOrdersByType(
             [FromQuery] OrderQueryParams query)
         {
-            var orders = await _ordersService.GetOrdersByTypeAsync(query.Type, query.StartDate, query.EndDate, query.IsClear);
+            var orders = await _ordersService.GetOrdersByTypeAsync(query);
             return Ok(new HulubejeResponse<List<CompletedOrders>> { Data = orders, IsSuccessful = orders?.Any() ?? false });
         }
 
@@ -161,7 +161,7 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> GetAllOrders([FromQuery] OrderQueryParams query)
         {
 
-            var orders = await _ordersService.GetAllOrdersAsync(query.StartDate, query.EndDate, query.IsClear);
+            var orders = await _ordersService.GetAllOrdersAsync(query);
             return Ok(new HulubejeResponse<List<CompletedOrders>> { Data = orders, IsSuccessful = orders?.Any() ?? false });
         }
         /// <summary>

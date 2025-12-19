@@ -1,4 +1,6 @@
-﻿namespace DeliveryMonitoring.Models
+﻿using DeliveryMonitoring.Constants;
+
+namespace DeliveryMonitoring.Models
 {
     public class TableConfig
     {
@@ -11,6 +13,7 @@
     public class OrderQueryParams
     {
         public int Type { get; set; }
+        public SummaryType? SType { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public bool IsClear { get; set; } = false;

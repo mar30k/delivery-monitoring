@@ -1,13 +1,17 @@
 ﻿using DeliveryMonitoring.Constants;
+using DeliveryMonitoring.Models;
 
 namespace DeliveryMonitoring.Services.SummaryReport
 {
     public interface ISummaryReportService
     {
-        Task<IEnumerable<object>> GetSummaryDataAsync(
-            SummaryType type,
-            DateTime? startDate,
-            DateTime? endDate,
-            bool isClear);
+
+        Task<IEnumerable<MerchantSummary>> BuildMerchantSummary(OrderQueryParams @params);
+
+        Task<IEnumerable<ConsigneeSummary>> BuildConsigneeSummary(OrderQueryParams @params);
+
+        Task<IEnumerable<DriverSummary>> BuildDriverSummary(OrderQueryParams @params);
+
+        Task<IEnumerable<SupervisorSummary>> BuildSupervisorSummary(OrderQueryParams @params);
     }
 }

@@ -4,9 +4,9 @@ namespace DeliveryMonitoring.Services.Orders
 {
     public interface ICompletedOrdersService
     {
-        Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(DateTime? startDate, DateTime? endDate, bool isClear);
-        Task<List<CompletedOrders>> GetOrdersByTypeAsync(int type, DateTime? startDate, DateTime? endDate, bool isClear);
-        Task<List<CompletedOrders>> GetAllOrdersAsync(DateTime? startDate, DateTime? endDate, bool isClear);
+        Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(OrderQueryParams @params);
+        Task<List<CompletedOrders>> GetOrdersByTypeAsync( OrderQueryParams @params);
+        Task<List<CompletedOrders>> GetAllOrdersAsync(OrderQueryParams @params);
     }
 
 }

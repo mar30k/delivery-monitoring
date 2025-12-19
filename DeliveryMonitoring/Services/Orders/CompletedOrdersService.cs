@@ -26,16 +26,16 @@ namespace DeliveryMonitoring.Services.Orders
             _authenticationManager = authenticationManager;
         }
 
-        public async Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(DateTime? startDate, DateTime? endDate, bool isClear)
+        public async Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(OrderQueryParams @params)
         {
-            bool skipCache = OrderHelpers.IsTodayIncluded(startDate, endDate) || isClear;
+            bool skipCache = OrderHelpers.IsTodayIncluded(@params) || @params.IsClear;
 
             var result = await _apiRequestService.GetCompletedOrdersAsync(skipCache);
 
             if (result?.Data == null)
                 return new HulubejeResponse<List<CompletedOrders>> { Data = new List<CompletedOrders>(), IsSuccessful = false };
 
-            var filtered = OrderHelpers.FilterOrders(result.Data, startDate, endDate, isClear, CompanyTin, AdminCompanyTin);
+            var filtered = OrderHelpers.FilterOrders(result.Data, @params, CompanyTin, AdminCompanyTin);
             filtered.ForEach(OrderHelpers.PrepareOrderDisplayValues);
 
             return new HulubejeResponse<List<CompletedOrders>>
@@ -45,17 +45,17 @@ namespace DeliveryMonitoring.Services.Orders
             };
         }
 
-        public async Task<List<CompletedOrders>> GetOrdersByTypeAsync(int type, DateTime? startDate, DateTime? endDate, bool isClear)
+        public async Task<List<CompletedOrders>> GetOrdersByTypeAsync(OrderQueryParams @params)
         {
-            bool skipCache = OrderHelpers.IsTodayIncluded(startDate, endDate) || isClear;
+            bool skipCache = OrderHelpers.IsTodayIncluded(@params) || @params.IsClear;
 
-            var ordersData = await _apiRequestService.GetOrdersByTypeAsync(type, skipCache);
+            var ordersData = await _apiRequestService.GetOrdersByTypeAsync(@params.Type, skipCache);
             var orders = ordersData?.Data ?? new List<CompletedOrders>();
 
             foreach (var order in orders)
             {
                 OrderHelpers.PrepareOrderDisplayValues(order);
-                order.TableId = ((DeliveryOrderTypes)type) switch
+                order.TableId = ((DeliveryOrderTypes)@params.Type) switch
                 {
                     DeliveryOrderTypes.PickUpAtBranch => TakeAwayTableId,
                     DeliveryOrderTypes.InHouseDining => DineInTableId,
@@ -66,18 +66,26 @@ namespace DeliveryMonitoring.Services.Orders
                 };
             }
 
-            return OrderHelpers.FilterOrders(orders, startDate, endDate, isClear, CompanyTin, AdminCompanyTin);
+            return OrderHelpers.FilterOrders(orders, @params, CompanyTin, AdminCompanyTin);
         }
 
-        public async Task<List<CompletedOrders>> GetAllOrdersAsync(DateTime? startDate, DateTime? endDate, bool isClear)
+        public async Task<List<CompletedOrders>> GetAllOrdersAsync( OrderQueryParams @params)
         {
-            bool skipCache = OrderHelpers.IsTodayIncluded(startDate, endDate) || isClear;
+            bool skipCache = OrderHelpers.IsTodayIncluded(@params) || @params.IsClear;
 
-            var dineInTask = GetOrdersByTypeAsync((int)DeliveryOrderTypes.InHouseDining, startDate, endDate, isClear);
-            var takeAwayTask = GetOrdersByTypeAsync((int)DeliveryOrderTypes.PickUpAtBranch, startDate, endDate, isClear);
-            var scheduledDeliveryTask = GetOrdersByTypeAsync((int)DeliveryOrderTypes.ScheduledDeliveryToLocation, startDate, endDate, isClear);
-            var scheduledPickUpTask = GetOrdersByTypeAsync((int)DeliveryOrderTypes.ScheduledPickUp, startDate, endDate, isClear);
+            OrderQueryParams WithType(int type) => new()
+            {
+                Type = type,
+                SType = @params.SType,
+                StartDate = @params.StartDate,
+                EndDate = @params.EndDate,
+                IsClear = @params.IsClear
+            };
 
+            var dineInTask = GetOrdersByTypeAsync(WithType((int)DeliveryOrderTypes.InHouseDining));
+            var takeAwayTask = GetOrdersByTypeAsync(WithType((int)DeliveryOrderTypes.PickUpAtBranch));
+            var scheduledDeliveryTask = GetOrdersByTypeAsync(WithType((int)DeliveryOrderTypes.ScheduledDeliveryToLocation));
+            var scheduledPickUpTask = GetOrdersByTypeAsync(WithType((int)DeliveryOrderTypes.ScheduledPickUp));
             var deliveryTask = _apiRequestService.GetCompletedOrdersAsync(skipCache);
             var deliveryOrders = await deliveryTask;
 
@@ -96,7 +104,7 @@ namespace DeliveryMonitoring.Services.Orders
                             .Concat(await scheduledPickUpTask)
                             .ToList();
 
-            return OrderHelpers.FilterOrders(allOrders, startDate, endDate, isClear, CompanyTin, AdminCompanyTin);
+            return OrderHelpers.FilterOrders(allOrders, @params, CompanyTin, AdminCompanyTin);
         }
 
     }

@@ -24,36 +24,36 @@ namespace DeliveryMonitoring.Helpers
             order.SupervisorName = supervisorName;
         }
 
-        public static List<CompletedOrders> FilterOrders(List<CompletedOrders> orders, DateTime? startDate, DateTime? endDate, bool isClear, string companyTin, string adminCompanyTin)
+        public static List<CompletedOrders> FilterOrders(List<CompletedOrders> orders, OrderQueryParams @params, string companyTin, string adminCompanyTin)
         {
             if (companyTin != adminCompanyTin)
                 orders = orders.Where(o => o.Tin == companyTin).ToList();
 
-            if (isClear)
+            if (@params.IsClear)
                 return orders;
 
-            if ( startDate.HasValue && endDate.HasValue)
-                orders = orders.Where(o => o.RequestCreatedAt.Date >= startDate.Value.Date &&
-                                           o.RequestCreatedAt.Date <= endDate.Value.Date).ToList();
+            if (@params.StartDate.HasValue && @params.EndDate.HasValue)
+                orders = orders.Where(o => o.RequestCreatedAt.Date >= @params.StartDate.Value.Date &&
+                                           o.RequestCreatedAt.Date <= @params.EndDate.Value.Date).ToList();
 
             return orders;
         }
 
-        public static bool IsTodayIncluded(DateTime? startDate, DateTime? endDate)
+        public static bool IsTodayIncluded(OrderQueryParams @params)
         {
             var today = DateTime.UtcNow.Date;
 
-            if (!startDate.HasValue && !endDate.HasValue)
+            if (!@params.StartDate.HasValue && !@params.EndDate.HasValue)
                 return true;
 
-            if (startDate.HasValue && endDate.HasValue)
-                return startDate.Value.Date <= today && endDate.Value.Date >= today;
+            if (@params.StartDate.HasValue && @params.EndDate.HasValue)
+                return @params.StartDate.Value.Date <= today && @params.EndDate.Value.Date >= today;
 
-            if (startDate.HasValue)
-                return startDate.Value.Date <= today;
+            if (@params.StartDate.HasValue)
+                return @params.StartDate.Value.Date <= today;
 
-            if (endDate.HasValue)
-                return endDate.Value.Date >= today;
+            if (@params.EndDate.HasValue)
+                return @params.EndDate.Value.Date >= today;
 
             return false;
         }

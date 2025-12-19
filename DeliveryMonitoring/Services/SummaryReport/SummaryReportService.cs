@@ -24,21 +24,9 @@ namespace DeliveryMonitoring.Services.SummaryReport
             _authenticationManager = authenticationManager;
         }
 
-        public async Task<IEnumerable<object>> GetSummaryDataAsync(
-            SummaryType type, DateTime? startDate, DateTime? endDate, bool isClear)
-        {
-            return type switch
-            {
-                SummaryType.Merchant => await BuildMerchantSummary(startDate, endDate, isClear),
-                SummaryType.Driver => await BuildDriverSummary(startDate, endDate, isClear),
-                SummaryType.Supervisor => await BuildSupervisorSummary(startDate, endDate, isClear),
-                _ => await BuildConsigneeSummary(startDate, endDate, isClear),
-            };
-        }
-
         // --- Summary builders ---
 
-        private async Task<IEnumerable<MerchantSummary>> BuildMerchantSummary(DateTime? start, DateTime? end, bool isClear)
+        public async Task<IEnumerable<MerchantSummary>> BuildMerchantSummary(OrderQueryParams @params)
         {
             return await BuildSummaryReport(
                 c => c.BranchCode,
@@ -53,11 +41,11 @@ namespace DeliveryMonitoring.Services.SummaryReport
                         TotalConsigneeCount = merchant.Select(c => c.PhoneNumber).Distinct().Count()
                     };
                 },
-                start, end, isClear
+                @params.StartDate, @params.EndDate, @params.IsClear
             );
         }
 
-        private async Task<IEnumerable<ConsigneeSummary>> BuildConsigneeSummary(DateTime? startDate, DateTime? endDate, bool isClear)
+        public async Task<IEnumerable<ConsigneeSummary>> BuildConsigneeSummary(OrderQueryParams @params)
         {
             return await BuildSummaryReport(
                 c => c.PhoneNumber ?? string.Empty,
@@ -71,13 +59,13 @@ namespace DeliveryMonitoring.Services.SummaryReport
                         TotalMerchantCount = consignee.Select(c => new { c.Tin, c.BranchCode }).Distinct().Count()
                     };
                 },
-                startDate, endDate, isClear
+                @params.StartDate, @params.EndDate, @params.IsClear
             );
         }
 
-        private async Task<IEnumerable<DriverSummary>> BuildDriverSummary(DateTime? startDate, DateTime? endDate, bool isClear)
+        public async Task<IEnumerable<DriverSummary>> BuildDriverSummary(OrderQueryParams @params)
         {
-            bool skipCache = OrderHelpers.IsTodayIncluded(startDate, endDate) || isClear;
+            bool skipCache = OrderHelpers.IsTodayIncluded(@params) || @params.IsClear;
 
             var availableDrivers = await _apiRequestService.GetAvailableDriversAsync(skipCache);
 
@@ -87,7 +75,7 @@ namespace DeliveryMonitoring.Services.SummaryReport
             if (orders?.Data == null || availableDrivers == null)
                 return new List<DriverSummary>();
 
-            orders.Data = FilterByDateRange(orders.Data, startDate, endDate, isClear);
+            orders.Data = FilterByDateRange(orders.Data, @params);
 
             var availablePhones = availableDrivers
                 .Where(d => !string.IsNullOrWhiteSpace(d.PhoneNumber))
@@ -131,16 +119,16 @@ namespace DeliveryMonitoring.Services.SummaryReport
             return driverSummary;
         }
 
-        private async Task<IEnumerable<SupervisorSummary>> BuildSupervisorSummary(DateTime? start, DateTime? end, bool isClear)
+        public async Task<IEnumerable<SupervisorSummary>> BuildSupervisorSummary(OrderQueryParams @params)
         {
-            bool skipCache = OrderHelpers.IsTodayIncluded(start, end) || isClear;
+            bool skipCache = OrderHelpers.IsTodayIncluded(@params) || @params.IsClear;
 
             var rawOrders = await _apiRequestService.GetCompletedOrdersAsync(skipCache);
             var orders = FilterOrdersByCompany(Clone(rawOrders), CompanyTin);
 
 
             if (orders?.Data == null) return new  List<SupervisorSummary>();
-            orders.Data = FilterByDateRange(orders.Data, start, end, isClear);
+            orders.Data = FilterByDateRange(orders.Data, @params);
 
             var purposeCategories = OrderCategoryMappings.PurposeCategories;
             var categoryColors = OrderCategoryMappings.CategoryColors;
@@ -185,13 +173,13 @@ namespace DeliveryMonitoring.Services.SummaryReport
         // --- Helpers ---
 
         private static List<CompletedOrders> FilterByDateRange(
-            IEnumerable<CompletedOrders> orders, DateTime? start, DateTime? end, bool isClear)
+            IEnumerable<CompletedOrders> orders, OrderQueryParams @params)
         {
-            if (isClear || !start.HasValue || !end.HasValue)
+            if (@params.IsClear || !@params.StartDate.HasValue || !@params.EndDate.HasValue)
                 return orders.ToList();
 
-            return orders.Where(o => o.RequestCreatedAt.Date >= start.Value.Date &&
-                                     o.RequestCreatedAt.Date <= end.Value.Date).ToList();
+            return orders.Where(o => o.RequestCreatedAt.Date >= @params.StartDate.Value.Date &&
+                                     o.RequestCreatedAt.Date <= @params.EndDate.Value.Date).ToList();
         }
 
         private static HulubejeResponse<List<CompletedOrders>>? FilterOrdersByCompany(
@@ -262,7 +250,7 @@ namespace DeliveryMonitoring.Services.SummaryReport
         private async Task<CompletedOrdersViewModel> CompletedOrdersViewModelAsync(
             string companyTin, DateTime startDate, DateTime endDate, bool isClear = false)
         {
-            bool skipCache = OrderHelpers.IsTodayIncluded(startDate, endDate) || isClear;
+            bool skipCache = OrderHelpers.IsTodayIncluded(new OrderQueryParams { StartDate =startDate, EndDate = endDate}) || isClear;
             var deliveryTask = _apiRequestService.GetCompletedOrdersAsync(skipCache);
             var dineInTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderTypes.InHouseDining, skipCache);
             var takeAwayTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderTypes.PickUpAtBranch, skipCache);

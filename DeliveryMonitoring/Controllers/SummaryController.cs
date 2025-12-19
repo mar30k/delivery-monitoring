@@ -26,18 +26,33 @@ namespace DeliveryMonitoring.Controllers
         }
 
         [HttpGet("/summary/data")]
-        public async Task<IActionResult> SummaryData(SummaryType type, DateTime? startDate, DateTime? endDate, bool isClear)
+        public async Task<IActionResult> SummaryData(OrderQueryParams queryParams)
         {
             try
             {
-                var result = await _summaryReportService.GetSummaryDataAsync(
-                    type, startDate, endDate, isClear);
+                var data = queryParams.SType switch
+                {
+                    SummaryType.Merchant =>
+                        (object) await _summaryReportService.BuildMerchantSummary(queryParams),
 
-                return Json(new { data = result});
+                    SummaryType.Driver =>
+                        (object) await _summaryReportService.BuildDriverSummary(queryParams),
+
+                    SummaryType.Supervisor =>
+                        (object) await _summaryReportService.BuildSupervisorSummary(queryParams),
+
+                    _ =>
+                       (object) await _summaryReportService.BuildConsigneeSummary(queryParams),
+                };
+                return Json(new { data });
             }
             catch (Exception ex)
             {
-                return Json(new { data = new List<object>(), error = $"Failed to generate summary data.{ex.Message}" });
+                return Json(new
+                {
+                    data = new List<object>(),
+                    error = $"Failed to generate summary data. {ex.Message}"
+                });
             }
         }
     }
