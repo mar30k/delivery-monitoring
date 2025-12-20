@@ -14,9 +14,9 @@ namespace DeliveryMonitoring.Models
         public string? VoucherCode { get; set; }
         public double Distance { get; set; }
         public double Eta { get; set; }
-        public double EtaDifference { get; set; }
-        public double TotalAmount { get; set; }
         public double Duration { get; set; }
+        public double EtaDifference => Math.Round(Eta - Duration, 2);
+        public double TotalAmount { get; set; }
         public string? Note { get; set; }
         public string? Purpose { get; set; }
         public string? CompanyName { get; set; }

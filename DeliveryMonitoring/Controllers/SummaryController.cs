@@ -33,16 +33,16 @@ namespace DeliveryMonitoring.Controllers
                 var data = queryParams.SType switch
                 {
                     SummaryType.Merchant =>
-                        (object) await _summaryReportService.BuildMerchantSummary(queryParams),
+                        (object) await _summaryReportService.MerchantSummary(queryParams),
 
                     SummaryType.Driver =>
-                        (object) await _summaryReportService.BuildDriverSummary(queryParams),
+                        (object) await _summaryReportService.DriverSummary(queryParams),
 
                     SummaryType.Supervisor =>
-                        (object) await _summaryReportService.BuildSupervisorSummary(queryParams),
+                        (object) await _summaryReportService.SupervisorSummary(queryParams),
 
                     _ =>
-                       (object) await _summaryReportService.BuildConsigneeSummary(queryParams),
+                       (object) await _summaryReportService.ConsigneeSummary(queryParams),
                 };
                 return Json(new { data });
             }

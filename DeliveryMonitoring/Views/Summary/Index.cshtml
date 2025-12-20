@@ -107,8 +107,14 @@
                             <!-- Total Distance -->
                             <th class="text-center">Total Distance (km)</th>
 
-                            <!-- Time Deviation -->
+                            <!-- Total ETA Difference -->
                             <th class="text-center">Total Eta Difference</th>
+
+                            <!-- On Time Deliveries Count -->
+                            <th class="text-center">Timely Deliveries</th>
+
+                            <!-- Late Deliveries Count-->
+                            <th class="text-center">Late Deliveries</th>
 
                             <!-- Average Rating -->
                             <th class="text-center">Average Rating</th>
@@ -219,7 +225,13 @@
                             <!-- Total Distance -->
                             <th></th>
 
-                            <!-- Time Deviation -->
+                            <!-- Total ETA Difference -->
+                            <th></th>
+
+                            <!-- On Time Deliveries Count -->
+                            <th></th>
+
+                            <!-- Late Deliveries Count-->
                             <th></th>
 
                             <!-- Average Rating -->
@@ -270,10 +282,9 @@
     <script src="~/js/datatable-renderers.js" asp-append-version="true"></script>
     <script src="~/js/datatable-init.js" asp-append-version="true"></script>
     <script src="~/js/table-utils.js" type="module" asp-append-version="true"></script>
-    <script src="~/js/summary-table.js" type="module" asp-append-version="true"></script>
     <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
     <script type="module">
-        import { SummaryTable } from '/js/summary-table.js';
+        import { SummaryTable } from '/js/summary-table.js?v=@DateTime.Now.Ticks';
         SummaryTable.init({
             tableId: "@Model.TableId",
             ajaxUrl: "@Model.AjaxUrl",

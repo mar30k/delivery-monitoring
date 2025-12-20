@@ -10,7 +10,6 @@ namespace DeliveryMonitoring.Helpers
         public static void PrepareOrderDisplayValues(CompletedOrders order)
         {
             order.RequestCreatedAtString = order.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm tt");
-            order.EtaDifference = order.Eta - order.Duration;
             string supervisorName = order.SupervisorName ?? "N/A";
             if (!string.IsNullOrEmpty(order.Note) && order.Note.StartsWith("{"))
             {

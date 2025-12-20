@@ -6,12 +6,12 @@ namespace DeliveryMonitoring.Services.SummaryReport
     public interface ISummaryReportService
     {
 
-        Task<IEnumerable<MerchantSummary>> BuildMerchantSummary(OrderQueryParams @params);
+        Task<IEnumerable<MerchantSummary>> MerchantSummary(OrderQueryParams @params);
 
-        Task<IEnumerable<ConsigneeSummary>> BuildConsigneeSummary(OrderQueryParams @params);
+        Task<IEnumerable<ConsigneeSummary>> ConsigneeSummary(OrderQueryParams @params);
 
-        Task<IEnumerable<DriverSummary>> BuildDriverSummary(OrderQueryParams @params);
+        Task<IEnumerable<DriverSummary>> DriverSummary(OrderQueryParams @params);
 
-        Task<IEnumerable<SupervisorSummary>> BuildSupervisorSummary(OrderQueryParams @params);
+        Task<IEnumerable<SupervisorSummary>> SupervisorSummary(OrderQueryParams @params);
     }
 }

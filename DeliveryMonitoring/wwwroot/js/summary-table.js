@@ -42,10 +42,12 @@ export const SummaryTable = (function () {
             DELIVERY_AMOUNT: 3,
             TOTAL_DISTANCE: 4,
             TOTAL_ETA_DIFFERENCE: 5,
-            AVERAGE_RATING: 6,
-            TIP: 7,
-            TOTAL_CONSIGNEE_COUNT: 8,
-            TOTAL_MERCHANT_COUNT: 9
+            TIMELY_DELIVERIES: 6,
+            LATE_DELIVERIES: 7,
+            AVERAGE_RATING: 8,
+            TIP: 9,
+            TOTAL_CONSIGNEE_COUNT: 10,
+            TOTAL_MERCHANT_COUNT: 11
         },
         SUPERVISOR: {
             PHONE: 0,
@@ -139,6 +141,8 @@ export const SummaryTable = (function () {
                     center({ data: "deliveryAmount", render: Renderers.amount }),
                     center({ data: "totalDistance", render: Renderers.distance }),
                     center({ data: "totalEtaDifference", render: Renderers.timeDeviationRenderer }),
+                    center({ data: "timelyDeliveriesCount" }),
+                    center({ data: "lateDeliveriesCount" }),
                     center({ data: "averageRating", render: Renderers.rating }),
                     center({
                         data: "tip",
@@ -147,7 +151,7 @@ export const SummaryTable = (function () {
                     center({ data: "totalConsigneeCount" }),
                     center({ data: "totalMerchantCount" })
                 ],
-                intCols: [COL_INDEX.DRIVER.TOTAL_DELIVERY_ORDERS],
+                intCols: [COL_INDEX.DRIVER.TOTAL_DELIVERY_ORDERS, COL_INDEX.DRIVER.TIMELY_DELIVERIES, COL_INDEX.DRIVER.LATE_DELIVERIES],
                 floatCols: [
                     COL_INDEX.DRIVER.DELIVERY_AMOUNT,
                     COL_INDEX.DRIVER.TOTAL_DISTANCE,

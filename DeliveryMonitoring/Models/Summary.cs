@@ -35,7 +35,9 @@
         public double TotalEtaDifference { get; set; }
         public string? MostOrdersDate { get; set; } // e.g., "Mon Nov 01, 2025"
         public int MostOrdersCount { get; set; }
-        public int TotalConsigneeCount { get; set; }
+        public int TimelyDeliveriesCount { get; set; }
+        public int LateDeliveriesCount { get; set; }
+        public int TotalConsigneeCount  { get; set; }
         public int TotalMerchantCount { get; set; }
     }
 
