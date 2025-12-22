@@ -32,20 +32,5 @@
     }
 
 
-    public enum SummaryReportType
-    {
-        Merchant,
-        Consignee,
-        Supervisor,
-        Driver
-    }
-    public enum ReportByOrderType
-    {
-        Delivery,
-        ScheduledDeliveryToLocation,
-        ScheduledPickUp,
-        Dinein,
-        Takeaway,
-        All
-    }
+    
 }

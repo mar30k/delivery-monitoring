@@ -6,6 +6,11 @@ namespace DeliveryMonitoring.Services.SummaryReport
 {
     internal static class SummaryBuilders
     {
+        private const string DineInTableId = AppConstants.TableIds.DineIn;
+        private const string TakeAwayTableId = AppConstants.TableIds.TakeAway;
+        private const string DeliveryTableId = AppConstants.TableIds.Delivery;
+        private const string ScheduledDeliveryTableId = AppConstants.TableIds.ScheduledDelivery;
+        private const string ScheduledTakeawayTableId = AppConstants.TableIds.ScheduledPickUp;
         public static IEnumerable<MerchantSummary> BuildMerchantSummary(
             IEnumerable<CompletedOrders> orders)
         {
@@ -13,15 +18,47 @@ namespace DeliveryMonitoring.Services.SummaryReport
                 .GroupBy(o => o.BranchCode)
                 .Select(g =>
                 {
-                    var first = g.First();
+                    var list = g.ToList();
+                    var first = list[0];
                     return new MerchantSummary
                     {
                         Tin = first.Tin,
                         CompanyName = first.CompanyName,
                         BranchName = first.BranchName,
-                        TotalConsigneeCount = g.Select(x => x.PhoneNumber).Distinct().Count(),
-                        DeliveryAmount = g.Sum(x => x.TotalAmount),
-                        TotalDeliveryOrders = g.Count()
+
+                        TotalConsigneeCount = list
+                            .Select(x => x.PhoneNumber)
+                            .Where(p => !string.IsNullOrWhiteSpace(p))
+                            .Distinct()
+                            .Count(),
+
+                        TotalDeliveryOrders = list.Count(x => x.TableId == DeliveryTableId),
+                        TotalDineInOrders = list.Count(x => x.TableId == DineInTableId),
+                        TotalTakeAwayOrders = list.Count(x => x.TableId == TakeAwayTableId),
+                        TotalScheduledDeliveryOrders = list.Count(x => x.TableId == ScheduledDeliveryTableId),
+                        TotalScheduledTakeawayOrders = list.Count(x => x.TableId == ScheduledTakeawayTableId),
+
+                        DineInAmount = list
+                            .Where(x => x.TableId == DineInTableId)
+                            .Sum(x => x.TotalAmount),
+
+                        TakeawayAmount = list
+                            .Where(x => x.TableId == TakeAwayTableId)
+                            .Sum(x => x.TotalAmount),
+
+                        DeliveryAmount = list
+                            .Where(x => x.TableId == DeliveryTableId)
+                            .Sum(x => x.TotalAmount),
+
+                        ScheduledDeliveryAmount = list
+                            .Where(x => x.TableId == ScheduledDeliveryTableId)
+                            .Sum(x => x.TotalAmount),
+
+                        ScheduledTakeawayAmount = list
+                            .Where(x => x.TableId == ScheduledTakeawayTableId)
+                            .Sum(x => x.TotalAmount),
+
+                        GrandTotal = list.Sum(x => x.TotalAmount)
                     };
                 });
         }
@@ -34,15 +71,45 @@ namespace DeliveryMonitoring.Services.SummaryReport
                 .GroupBy(o => o.PhoneNumber!)
                 .Select(g =>
                 {
-                    var first = g.First();
+                    var list = g.ToList();
+                    var first = list[0];
                     return new ConsigneeSummary
                     {
                         PhoneNumber = first.PhoneNumber,
                         Name = first.FirstName,
-                        TotalMerchantCount = g
+
+                        TotalMerchantCount = list
                             .Select(x => new { x.Tin, x.BranchCode })
                             .Distinct()
-                            .Count()
+                            .Count(),
+
+                        TotalDeliveryOrders = list.Count(x => x.TableId == DeliveryTableId),
+                        TotalDineInOrders = list.Count(x => x.TableId == DineInTableId),
+                        TotalTakeAwayOrders = list.Count(x => x.TableId == TakeAwayTableId),
+                        TotalScheduledDeliveryOrders = list.Count(x => x.TableId == ScheduledDeliveryTableId),
+                        TotalScheduledTakeawayOrders = list.Count(x => x.TableId == ScheduledTakeawayTableId),
+
+                        DineInAmount = list
+                            .Where(x => x.TableId == DineInTableId)
+                            .Sum(x => x.TotalAmount),
+
+                        TakeawayAmount = list
+                            .Where(x => x.TableId == TakeAwayTableId)
+                            .Sum(x => x.TotalAmount),
+
+                        DeliveryAmount = list
+                            .Where(x => x.TableId == DeliveryTableId)
+                            .Sum(x => x.TotalAmount),
+
+                        ScheduledDeliveryAmount = list
+                            .Where(x => x.TableId == ScheduledDeliveryTableId)
+                            .Sum(x => x.TotalAmount),
+
+                        ScheduledTakeawayAmount = list
+                            .Where(x => x.TableId == ScheduledTakeawayTableId)
+                            .Sum(x => x.TotalAmount),
+
+                        GrandTotal = list.Sum(x => x.TotalAmount)
                     };
                 });
         }
@@ -53,37 +120,62 @@ namespace DeliveryMonitoring.Services.SummaryReport
         {
             var driverLookup = drivers
                 .Where(d => !string.IsNullOrWhiteSpace(d.PhoneNumber))
-                .ToDictionary(d => d.PhoneNumber!);
+                .GroupBy(d => d.PhoneNumber!)
+                .ToDictionary(g => g.Key, g => g.First());
+
 
             return orders
                 .Where(o => !string.IsNullOrWhiteSpace(o.DriverPhoneNumber) && driverLookup.ContainsKey(o.DriverPhoneNumber))
                 .GroupBy(o => o.DriverPhoneNumber!)
                 .Select(g =>
                 {
-                    var first = g.First();
+                    var list = g.ToList();
+                    var first = list[0];
+
                     driverLookup.TryGetValue(first.DriverPhoneNumber!, out var driver);
 
-                    var ratings = g.Where(o => o.Rating > 0).Select(o => o.Rating);
-                    var topDay = g.GroupBy(o => o.RequestCreatedAt.Date)
-                                  .OrderByDescending(x => x.Count())
-                                  .FirstOrDefault();
+                    var ratings = list
+                        .Where(o => o.Rating > 0)
+                        .Select(o => o.Rating)
+                        .ToList();
+
+                    var topDay = list
+                        .GroupBy(o => o.RequestCreatedAt.Date)
+                        .OrderByDescending(x => x.Count())
+                        .FirstOrDefault();
 
                     return new DriverSummary
                     {
                         DriverPhoneNumber = first.DriverPhoneNumber,
                         Name = driver?.FirstName ?? "N/A",
-                        TotalDeliveryOrders = g.Count(),
-                        DeliveryAmount = g.Sum(o => o.TotalAmount),
-                        TotalDistance = g.Sum(o => o.Distance),
-                        TotalEtaDifference  = g.Sum(o => o.Eta - o.Duration),
-                        TimelyDeliveriesCount = g.Count(o => o.EtaDifference >= 0),
-                        LateDeliveriesCount = g.Count(o => o.EtaDifference < 0),
-                        Tip = g.Sum(o => o.Tip),
+
+                        TotalDeliveryOrders = list.Count,
+                        DeliveryAmount = list.Sum(o => o.TotalAmount),
+                        TotalDistance = list.Sum(o => o.Distance),
+
+                        TotalEtaDifference = list.Sum(o => o.EtaDifference),
+                        TimelyDeliveriesCount = list.Count(o => o.EtaDifference >= 0),
+                        LateDeliveriesCount = list.Count(o => o.EtaDifference < 0),
+
+                        Tip = list.Sum(o => o.Tip),
+
                         AverageRating = ratings.Any()
                             ? Math.Round(ratings.Average(), 2)
                             : 0,
+
                         MostOrdersDate = topDay?.Key.ToString("ddd MM dd, yyyy"),
-                        MostOrdersCount = topDay?.Count() ?? 0
+                        MostOrdersCount = topDay?.Count() ?? 0,
+
+                        TotalConsigneeCount = list
+                            .Select(x => x.PhoneNumber)
+                            .Where(p => !string.IsNullOrWhiteSpace(p))
+                            .Distinct()
+                            .Count(),
+
+                        TotalMerchantCount = list
+                            .Select(x => new { x.Tin, x.BranchCode })
+                            .Distinct()
+                            .Count()
                     };
                 });
         }
@@ -99,15 +191,18 @@ namespace DeliveryMonitoring.Services.SummaryReport
                 .GroupBy(o => o.SupervisorPhoneNumber!)
                 .Select(g =>
                 {
-                    var first = g.First();
+                     var list = g.ToList();
+                    var first = list[0];
 
                     return new SupervisorSummary
                     {
                         SupervisorName = first.SupervisorName,
                         SupervisorPhoneNumber = first.SupervisorPhoneNumber,
-                        TotalDeliveryOrders = g.Count(),
-                        DeliveryAmount = Math.Round(g.Sum(o => o.TotalAmount), 2),
-                        PurposeSummary = g
+
+                        TotalDeliveryOrders = list.Count,
+                        DeliveryAmount = Math.Round(list.Sum(o => o.TotalAmount), 2),
+
+                        PurposeSummary = list
                             .Where(o => !string.IsNullOrWhiteSpace(o.Purpose))
                             .GroupBy(o => o.Purpose!)
                             .Select(p =>
@@ -123,7 +218,18 @@ namespace DeliveryMonitoring.Services.SummaryReport
                                     Color = colors[category]
                                 };
                             })
-                            .ToList()
+                            .ToList(),
+
+                        TotalConsigneeCount = list
+                            .Select(x => x.PhoneNumber)
+                            .Where(p => !string.IsNullOrWhiteSpace(p))
+                            .Distinct()
+                            .Count(),
+
+                        TotalMerchantCount = list
+                            .Select(x => new { x.Tin, x.BranchCode })
+                            .Distinct()
+                            .Count()
                     };
                 });
         }

@@ -1,15 +1,59 @@
-﻿const ctx = document.getElementById('driversChart');
-const orderChart = document.getElementById('ordersChart');
-var driverDataSet = window.initialChartData.driverDataSet;
-var orderDataSet = window.initialChartData.orderDataSet;
-function createDoughnutChart(ctx, label, labels, dataSet, colors, titleText) {
+﻿/* =========================================================
+   DASHBOARD CONFIGURATION
+========================================================= */
+
+const CONFIG = {
+    refresh: {
+        orders: 10000,
+        drivers: 30000,
+        charts: 60000
+    },
+    api: {
+        driverLive: '/driver/liveLocation',
+        orderChart: '/getChartData',
+        kotStatus: '/getDeviceControl',
+        supervisors: '/getAvailableSupervisors'
+    },
+    colors: {
+        drivers: [
+            '#28a745', '#dc3545', 'seagreen', 'darkorange',
+            '#20c997', 'coral', '#F7BEA2'
+        ],
+        orderTypes: ['#17a2b8', '#007bff', '#ffc107'],
+        orderStatus: [
+            'green', 'deepskyblue', 'lawngreen', 'seagreen',
+            'darkorange', 'red', 'firebrick',
+            'coral', '#F7BEA2', 'darkred'
+        ]
+    }
+};
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+async function fetchJson(url) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+}
+
+function today() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+/* =========================================================
+   CHART FACTORY
+========================================================= */
+
+function createDoughnutChart({ ctx, label, labels, data, colors, title }) {
     return new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: labels,
+            labels,
             datasets: [{
-                label: label,
-                data: dataSet,
+                label,
+                data,
                 backgroundColor: colors,
                 hoverOffset: 4
             }]
@@ -18,130 +62,75 @@ function createDoughnutChart(ctx, label, labels, dataSet, colors, titleText) {
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: {
-                        font: {
-                            size: 14
-                        }
-                    }
+                    labels: { font: { size: 14 } }
                 },
                 title: {
                     display: true,
-                    text: titleText,
-                    font: {
-                        size: 18
-                    }
+                    text: title,
+                    font: { size: 18 }
                 }
             }
         }
     });
 }
-const driverChart = createDoughnutChart(
-    ctx,
-    'Drivers',
-    ['Ready', 'Offline', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
-    driverDataSet,
-    [
-        '#28a745',     // Ready
-        '#dc3545',     // Offline
-        'seagreen',    // Accepted
-        'darkorange',  // Delivering
-        '#20c997',     // Completed
-        'coral',       // ArrivedAtBranch
-        '#F7BEA2'      // Arrived
-    ],
-    'Drivers Status'
-);
 
-// Initialize empty charts first
-const countChart = createDoughnutChart(
-    document.getElementById('completdChart'),
-    'Orders',
-    ['Takeaway (0)', 'Delivery (0)', 'Dine-in (0)'],
-    [0, 0, 0],
-    ['#17a2b8', '#007bff', '#ffc107'],
-    `Completed Orders ${new Date().toISOString().slice(0, 10)}`
-);
+/* =========================================================
+   CHART INITIALIZATION
+========================================================= */
 
-const totalChart = createDoughnutChart(
-    document.getElementById('completedTotalChart'),
-    'Orders',
-    ['Takeaway (0)', 'Delivery (0)', 'Dine-in (0)'],
-    [0, 0, 0],
-    ['#17a2b8', '#007bff', '#ffc107'],
-    `Completed Orders Total ${new Date().toISOString().slice(0, 10)}`
-);
+const charts = {
+    drivers: createDoughnutChart({
+        ctx: document.getElementById('driversChart'),
+        label: 'Drivers',
+        labels: [
+            'Ready', 'Offline', 'Accepted',
+            'Delivering', 'Completed',
+            'ArrivedAtBranch', 'Arrived'
+        ],
+        data: window.initialChartData.driverDataSet,
+        colors: CONFIG.colors.drivers,
+        title: 'Drivers Status'
+    }),
 
+    completedCount: createDoughnutChart({
+        ctx: document.getElementById('completdChart'),
+        label: 'Orders',
+        labels: ['Takeaway (0)', 'Delivery (0)', 'Dine-in (0)'],
+        data: [0, 0, 0],
+        colors: CONFIG.colors.orderTypes,
+        title: `Completed Orders ${today()}`
+    }),
 
-async function fetchAndUpdateChart() {
-    const orderSlices = [
-        { url: '/getChartData?type=delivery', index: 1, label: 'Delivery' },
-        { url: '/getChartData?type=takeaway', index: 0, label: 'Takeaway' },
-        { url: '/getChartData?type=dinein', index: 2, label: 'Dine-in' }
-    ];
+    completedTotal: createDoughnutChart({
+        ctx: document.getElementById('completedTotalChart'),
+        label: 'Orders',
+        labels: ['Takeaway (0)', 'Delivery (0)', 'Dine-in (0)'],
+        data: [0, 0, 0],
+        colors: CONFIG.colors.orderTypes,
+        title: `Completed Orders Total ${today()}`
+    }),
 
-    // fetch a single slice
-    async function fetchSlice(slice) {
-        try {
-            const response = await fetch(slice.url);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
-            return { slice, count: data.count || 0, total: data.total || 0, success: true };
-        } catch (err) {
-            console.warn(`Failed to fetch ${slice.label}:`, err);
-            return { slice, count: 0, total: 0, success: false };
-        }
-    }
+    orderStatus: createDoughnutChart({
+        ctx: document.getElementById('ordersChart'),
+        label: 'Orders',
+        labels: [
+            'Completed', 'Requested', 'Assigned', 'Accepted',
+            'On The Way', 'Declined', 'Driver Not Found',
+            'ArrivedAtBranch', 'Arrived', 'SOS'
+        ],
+        data: window.initialChartData.orderDataSet,
+        colors: CONFIG.colors.orderStatus,
+        title: 'Orders Status'
+    })
+};
 
-    // fetch all slices
-    const results = await Promise.all(orderSlices.map(fetchSlice));
-
-    // update charts once at the end only for successful slices
-    results
-        .filter(r => r.success)
-        .forEach(r => {
-            countChart.data.datasets[0].data[r.slice.index] = r.count;
-            countChart.data.labels[r.slice.index] = `${r.slice.label} (${r.count})`;
-
-            totalChart.data.datasets[0].data[r.slice.index] = r.total;
-            totalChart.data.labels[r.slice.index] = `${r.slice.label} (${r.total.toFixed(2)})`;
-        });
-
-    countChart.update();
-    totalChart.update();
-}
-// Orders Status Chart
-const ordersStatusChart = createDoughnutChart(
-    orderChart,
-    'Orders',
-    [
-        'Completed',
-        'Requested',
-        'Assigned',
-        'Accepted',
-        'On The Way',
-        'Declined',
-        'Driver Not Found',
-        'ArrivedAtBranch',
-        'Arrived',
-        'sos'
-    ],
-    orderDataSet,
-    [
-        'green',       // Completed
-        'deepskyblue', // Requested
-        'lawngreen',   // Assigned
-        'seagreen',    // Accepted
-        'darkorange',  // On The Way
-        'red',         // Declined
-        'firebrick',   // Driver Not Found
-        'coral',       // ArrivedAtBranch
-        '#F7BEA2',     // Arrived
-        'darkred'      // SOS
-    ],
-    'Orders Status'
-);
+/* =========================================================
+   DATA UPDATERS
+========================================================= */
 
 function updateOrdersChart() {
+    if (!Array.isArray(data)) return;
+
     const statusCounts = {
         completed: 0,
         requested: 0,
@@ -155,15 +144,13 @@ function updateOrdersChart() {
         sos: 0
     };
 
-    // Count orders by status
     data.forEach(order => {
         if (statusCounts.hasOwnProperty(order.status)) {
             statusCounts[order.status]++;
         }
     });
 
-    // Update chart data
-    ordersStatusChart.data.datasets[0].data = [
+    charts.orderStatus.data.datasets[0].data = [
         statusCounts.completed,
         statusCounts.requested,
         statusCounts.assigned,
@@ -176,77 +163,88 @@ function updateOrdersChart() {
         statusCounts.sos
     ];
 
-    ordersStatusChart.update();
+    charts.orderStatus.update();
 }
-function updateDriversChart() {
+
+async function updateCompletedOrdersCharts() {
+    const slices = [
+        { type: 'takeaway', index: 0, label: 'Takeaway' },
+        { type: 'delivery', index: 1, label: 'Delivery' },
+        { type: 'dinein', index: 2, label: 'Dine-in' }
+    ];
+
+    const results = await Promise.all(
+        slices.map(async s => {
+            try {
+                const data = await fetchJson(`${CONFIG.api.orderChart}?type=${s.type}`);
+                return { ...s, ...data, success: true };
+            } catch {
+                return { ...s, count: 0, total: 0, success: false };
+            }
+        })
+    );
+
+    results.filter(r => r.success).forEach(r => {
+        charts.completedCount.data.datasets[0].data[r.index] = r.count;
+        charts.completedCount.data.labels[r.index] = `${r.label} (${r.count})`;
+
+        charts.completedTotal.data.datasets[0].data[r.index] = r.total;
+        charts.completedTotal.data.labels[r.index] = `${r.label} (${r.total.toFixed(2)})`;
+    });
+
+    charts.completedCount.update();
+    charts.completedTotal.update();
+}
+
+async function updateDriversChart() {
+    const drivers = await fetchJson(CONFIG.api.driverLive);
+    if (!Array.isArray(drivers)) return;
+
     const statusCounts = {
-        ready: 0,
-        offline: 0,
-        accepted: 0,
-        delivering: 0,
-        completed: 0,
-        arrivedAtBranch: 0,
-        arrived: 0,
+        ready: 0, offline: 0, accepted: 0,
+        delivering: 0, completed: 0,
+        arrivedAtBranch: 0, arrived: 0
     };
-    fetch(`/Driver/LiveLocation`)
-        .then(response => response.json())
-        .then(data => {
-            if (!Array.isArray(data) || data == null) return;
-            const activeCount = data.filter(driver => !driver.isDisabled).length;
-            const readyCount = data.filter(driver => driver.status === 'ready').length;
-            $("#totalDrivers").text(activeCount);
-            $("#readyDrivers").text(readyCount);
-            // Count orders by status
-            data.forEach(driver => {
-                if (statusCounts.hasOwnProperty(driver.status)) {
-                    statusCounts[driver.status]++;
-                }
-            });
+    drivers.forEach(d => {
+        if (statusCounts.hasOwnProperty(d.status)) {
+            statusCounts[d.status]++;
+        }
+    });
 
-            // Update chart data
-            driverChart.data.datasets[0].data = [
-                statusCounts.ready,
-                statusCounts.offline,
-                statusCounts.accepted,
-                statusCounts.delivering,
-                statusCounts.completed,
-                statusCounts.arrivedAtBranch,
-                statusCounts.arrived,
-            ];
+    charts.drivers.data.datasets[0].data = Object.values(statusCounts);
+    charts.drivers.update();
 
-            driverChart.update();
-        });
+    $("#totalDrivers").text(drivers.filter(d => !d.isDisabled).length);
+    $("#readyDrivers").text(statusCounts.ready);
 }
+
 async function fetchKotStatus() {
-    try {
-        const response = await fetch('/getDeviceControl');
-        const kotStatus = await response.json();
-        if (!Array.isArray(kotStatus)) return;
-        $("#kotStatus").text(kotStatus.length);
-    }
-    catch (error) {
-        console.error("Error fetching alerts:", error);
-    }
+    const data = await fetchJson(CONFIG.api.kotStatus);
+    $("#kotStatus").text(Array.isArray(data) ? data.length : 0);
 }
+
 async function fetchSupervisors() {
-    try {
-        const response = await fetch('/getAvailableSupervisors');
-        let supervisors = await response.json();
-        if (!Array.isArray(supervisors)) return;
-        $("#totalSupervisors").text(supervisors.length);
-        $("#loggedinSupervisors").text(supervisors.filter(s => s.loggedInStatus).length);
-    }
-    catch (error) {
-        console.error("Error fetching alerts:", error);
-    }
+    const data = await fetchJson(CONFIG.api.supervisors);
+    if (!Array.isArray(data)) return;
+
+    $("#totalSupervisors").text(data.length);
+    $("#loggedinSupervisors").text(data.filter(s => s.loggedInStatus).length);
 }
+
+/* =========================================================
+   DASHBOARD BOOTSTRAP
+========================================================= */
+
 $(function () {
-    fetchAndUpdateChart();
-    setInterval(fetchAndUpdateChart, 60000);
-    fetchKotStatus();
+    updateCompletedOrdersCharts();
     updateDriversChart();
-    setInterval(updateOrdersChart, 10000);
-    setInterval(updateDriversChart, 30000);
-    setInterval(fetchKotStatus, 60000);
-    setInterval(fetchSupervisors, 60000);
+    fetchKotStatus();
+    fetchSupervisors();
+
+
+    setInterval(updateCompletedOrdersCharts, CONFIG.refresh.charts);
+    setInterval(updateDriversChart, CONFIG.refresh.drivers);
+    setInterval(updateOrdersChart, CONFIG.refresh.orders);
+    setInterval(fetchKotStatus, CONFIG.refresh.charts);
+    setInterval(fetchSupervisors, CONFIG.refresh.charts);
 });

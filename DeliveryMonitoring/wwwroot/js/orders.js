@@ -22,7 +22,7 @@ js(() => {
         pageLength: 50,
         lengthMenu: [[10, 15, 25, 50, 100], [10, 15, 25, 50, 100]],
         columnDefs: [
-            { orderable: false, targets: [0, 4, 7, 8, 9, 10, 11, 13] }
+            { orderable: false, targets: [0, 4, 7, 8, 9, 10, 11, 14] }
         ],
         language: {
             emptyTable: "No orders to display at the moment."
@@ -213,6 +213,7 @@ function updateOrders() {
                     </td>
                     <td class="text-center">${assign}</td>
                     <td class="text-center">${order.grandTotal?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? 'N/A'}</td>
+                    <td class="text-center">${order.paymentMethod}</td>
                     <td style="text-align: center; vertical-align: middle;">
                         <div style="display: inline-block;">
                             <a href="/order/${order.voucherCode}">Details</a>

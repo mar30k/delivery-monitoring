@@ -5,9 +5,13 @@
         public double DineInAmount { get; set; }
         public double TakeawayAmount { get; set; }
         public double DeliveryAmount { get; set; }
+        public double ScheduledDeliveryAmount { get; set; }
+        public double ScheduledTakeawayAmount { get; set; }
         public int TotalDineInOrders { get; set; }
         public int TotalTakeAwayOrders { get; set; }
         public int TotalDeliveryOrders { get; set; }
+        public int TotalScheduledDeliveryOrders { get; set; }
+        public int TotalScheduledTakeawayOrders { get; set; }
         public double GrandTotal { get; set; }
     }
 

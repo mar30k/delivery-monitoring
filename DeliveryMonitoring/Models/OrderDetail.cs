@@ -56,6 +56,7 @@ namespace DeliveryMonitoring.Models
 
         public long RequestCreatedAt { get; set; }
         public string? CreatedAtString { get; set; }
+        public string? PaymentMethod { get; set; }
         public DateTime? RequestCreatedAtIso { get; set; }
         public DateTime? DriverAssignedTime { get; set; }
         public DateTime? DeliveryDateTime { get; set; }

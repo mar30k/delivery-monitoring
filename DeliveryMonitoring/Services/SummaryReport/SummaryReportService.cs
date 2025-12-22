@@ -3,50 +3,48 @@ using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services.Api;
+using DeliveryMonitoring.Services.Orders;
 
 namespace DeliveryMonitoring.Services.SummaryReport
 {
     public class SummaryReportService : ISummaryReportService
     {
         private readonly IApiRequestService _api;
-        private readonly AuthenticationManager _auth;
-
-        private string CompanyTin =>
-            _auth.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
-
+        private readonly ICompletedOrdersService _ordersService;
+        
         public SummaryReportService(
             IApiRequestService api,
-            AuthenticationManager auth)
+            ICompletedOrdersService ordersService)
         {
             _api = api;
-            _auth = auth;
+            _ordersService = ordersService;
         }
 
         public async Task<IEnumerable<MerchantSummary>> MerchantSummary(OrderQueryParams p)
         {
-            var orders = await OrderQueryHelper.GetAllOrdersAsync(_api, CompanyTin, p);
+            var orders = await _ordersService.GetAllOrdersAsync(p);
             return SummaryBuilders.BuildMerchantSummary(orders);
         }
 
         public async Task<IEnumerable<ConsigneeSummary>> ConsigneeSummary(OrderQueryParams p)
         {
-            var orders = await OrderQueryHelper.GetAllOrdersAsync(_api, CompanyTin, p);
+            var orders = await _ordersService.GetAllOrdersAsync(p);
             return SummaryBuilders.BuildConsigneeSummary(orders);
         }
 
         public async Task<IEnumerable<DriverSummary>> DriverSummary(OrderQueryParams p)
         {
-            var orders = await OrderQueryHelper.GetCompletedOrdersAsync(_api, CompanyTin, p);
+            var orders = await _ordersService.GetCompletedOrdersAsync(p);
             var drivers = await _api.GetAvailableDriversAsync(
                 OrderHelpers.IsTodayIncluded(p) || p.IsClear);
 
-            return SummaryBuilders.BuildDriverSummary(orders, drivers);
+            return SummaryBuilders.BuildDriverSummary(orders.Data ?? new List<CompletedOrders>(), drivers);
         }
 
         public async Task<IEnumerable<SupervisorSummary>> SupervisorSummary(OrderQueryParams p)
         {
-            var orders = await OrderQueryHelper.GetCompletedOrdersAsync(_api, CompanyTin, p);
-            return SummaryBuilders.BuildSupervisorSummary(orders);
+            var orders = await _ordersService.GetCompletedOrdersAsync(p);
+            return SummaryBuilders.BuildSupervisorSummary(orders.Data ?? new List<CompletedOrders>());
         }
     }
 }

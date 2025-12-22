@@ -26,4 +26,40 @@
         Consignee
     }
 
+    /// <summary>
+    /// Represents the different types of orders that can be used to generate reports in the system.
+    /// </summary>
+    public enum ReportByOrderType
+    {
+        /// <summary>
+        /// Standard delivery orders.
+        /// </summary>
+        Delivery,
+
+        /// <summary>
+        /// Delivery orders that are scheduled in advance for a specific location.
+        /// </summary>
+        ScheduledDeliveryToLocation,
+
+        /// <summary>
+        /// Orders scheduled for pickup at the restaurant or branch.
+        /// </summary>
+        ScheduledPickUp,
+
+        /// <summary>
+        /// Orders placed to be consumed on-site at the restaurant.
+        /// </summary>
+        Dinein,
+
+        /// <summary>
+        /// Orders prepared for immediate customer pickup (not scheduled).
+        /// </summary>
+        Takeaway,
+
+        /// <summary>
+        /// Represents all order types, used for generating reports without filtering by a specific type.
+        /// </summary>
+        All
+    }
+
 }

@@ -15,7 +15,7 @@ namespace DeliveryMonitoring.Services.Orders
         private const string TakeAwayTableId = AppConstants.TableIds.TakeAway;
         private const string DeliveryTableId = AppConstants.TableIds.Delivery;
         private const string ScheduledDeliveryTableId = AppConstants.TableIds.ScheduledDelivery;
-        private const string ScheduledPickUpTableId = AppConstants.TableIds.ScheduledPickUp;
+        private const string ScheduledTakeawayTableId = AppConstants.TableIds.ScheduledPickUp;
         private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         private readonly IApiRequestService _apiRequestService;
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
@@ -36,7 +36,7 @@ namespace DeliveryMonitoring.Services.Orders
                 return new HulubejeResponse<List<CompletedOrders>> { Data = new List<CompletedOrders>(), IsSuccessful = false };
 
             var filtered = OrderHelpers.FilterOrders(result.Data, @params, CompanyTin, AdminCompanyTin);
-            filtered.ForEach(OrderHelpers.PrepareOrderDisplayValues);
+            filtered.ForEach(OrderHelpers.PrepareDisplayValues);
 
             return new HulubejeResponse<List<CompletedOrders>>
             {
@@ -54,14 +54,14 @@ namespace DeliveryMonitoring.Services.Orders
 
             foreach (var order in orders)
             {
-                OrderHelpers.PrepareOrderDisplayValues(order);
+                OrderHelpers.PrepareDisplayValues(order);
                 order.TableId = ((DeliveryOrderTypes)@params.Type) switch
                 {
                     DeliveryOrderTypes.PickUpAtBranch => TakeAwayTableId,
                     DeliveryOrderTypes.InHouseDining => DineInTableId,
                     DeliveryOrderTypes.DeliveryToLocation => DeliveryTableId,
                     DeliveryOrderTypes.ScheduledDeliveryToLocation => ScheduledDeliveryTableId,
-                    DeliveryOrderTypes.ScheduledPickUp => ScheduledPickUpTableId,
+                    DeliveryOrderTypes.ScheduledPickUp => ScheduledTakeawayTableId,
                     _ => DeliveryTableId // fallback
                 };
             }
@@ -91,7 +91,7 @@ namespace DeliveryMonitoring.Services.Orders
 
             foreach (var item in deliveryOrders.Data ?? new List<CompletedOrders>())
             {
-                OrderHelpers.PrepareOrderDisplayValues(item);
+                OrderHelpers.PrepareDisplayValues(item);
                 item.TableId = DeliveryTableId;
             }
 

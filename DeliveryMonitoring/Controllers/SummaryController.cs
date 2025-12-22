@@ -19,7 +19,7 @@ namespace DeliveryMonitoring.Controllers
             _summaryReportService = summaryReportService;
         }
         [HttpGet("/summary/{type?}")]
-        public IActionResult Index(SummaryReportType type = SummaryReportType.Consignee )
+        public IActionResult Index(SummaryType type = SummaryType.Consignee )
         {
             var config = TableConfigFactory.CreateSummary(type); // encapsulate config in one place
             return View(config);

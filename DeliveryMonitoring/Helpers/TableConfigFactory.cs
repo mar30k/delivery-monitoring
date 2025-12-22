@@ -6,10 +6,10 @@ namespace DeliveryMonitoring.Helpers
     public static class TableConfigFactory
     {
         // --- Summary table configs ---
-        public static TableConfig CreateSummary(SummaryReportType type) =>
+        public static TableConfig CreateSummary(SummaryType type) =>
             (type) switch
             {
-                SummaryReportType.Merchant => new TableConfig
+                SummaryType.Merchant => new TableConfig
                 {
                     Type = "merchant",
                     Title = "Merchant Summary",
@@ -17,7 +17,7 @@ namespace DeliveryMonitoring.Helpers
                     AjaxUrl = $"/summary/data?stype={type}",
                     SheetName = "Merchant Summary"
                 },
-                SummaryReportType.Driver => new TableConfig
+                SummaryType.Driver => new TableConfig
                 {
                     Type = "driver",
                     Title = "Driver Summary",
@@ -25,7 +25,7 @@ namespace DeliveryMonitoring.Helpers
                     AjaxUrl = $"/summary/data?stype={type}",
                     SheetName = "Driver Summary"
                 },
-                SummaryReportType.Supervisor=> new TableConfig
+                SummaryType.Supervisor=> new TableConfig
                 {
                     Type = "supervisor",
                     Title = "Supervisor Summary",
@@ -33,7 +33,7 @@ namespace DeliveryMonitoring.Helpers
                     AjaxUrl = $"/summary/data?stype={type}",
                     SheetName = "Supervisor Summary"
                 },
-                SummaryReportType.Consignee or _ => new TableConfig
+                SummaryType.Consignee or _ => new TableConfig
                 {
                     Type = "consignee",
                     Title = "Consignee Summary",

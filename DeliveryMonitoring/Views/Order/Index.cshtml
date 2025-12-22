@@ -85,6 +85,9 @@
                         <th class="text-center">
                             Total
                         </th>
+                        <th class="text-center">
+                            Payment Method
+                        </th>
                         <th style="text-align: center;">Actions</th>
                     </tr>
                 </thead>
@@ -200,6 +203,9 @@
                                 <td class="text-center">
                                     @order?.GrandTotal?.ToString("N2")
                                 </td>
+                                <td class="text-center">
+                                    @order?.PaymentMethod
+                                </td>
 
 
                                 <td style="text-align: center; vertical-align: middle;">
@@ -241,6 +247,7 @@
                     <tr>
                         <th colspan="12" class="text-end">Page Total:</th>
                         <th class="text-center"></th>
+                        <th></th>
                         <th></th>
                     </tr>
                 </tfoot>

@@ -18,10 +18,14 @@ export const SummaryTable = (function () {
             DINEIN_AMOUNT: 4,
             TOTAL_TAKEAWAY_ORDERS: 5,
             TAKEAWAY_AMOUNT: 6,
-            TOTAL_DELIVERY_ORDERS: 7,
-            DELIVERY_AMOUNT: 8,
-            GRAND_TOTAL: 9,
-            TOTAL_CONSIGNEE_COUNT: 10
+            TOTAL_SCHEDULED_TAKEAWAY_ORDERS: 7,
+            SCHEDULED_TAKEAWAY_AMOUNT: 8,
+            TOTAL_DELIVERY_ORDERS: 9,
+            DELIVERY_AMOUNT: 10,
+            TOTAL_SCHEDULED_DELIVERY_ORDERS: 11,
+            SCHEDULED_DELIVERY_AMOUNT: 12,
+            GRAND_TOTAL: 13,
+            TOTAL_CONSIGNEE_COUNT: 14
         },
         CONSIGNEE: {
             PHONE: 0,
@@ -30,8 +34,12 @@ export const SummaryTable = (function () {
             DINEIN_AMOUNT: 3,
             TOTAL_TAKEAWAY_ORDERS: 4,
             TAKEAWAY_AMOUNT: 5,
-            TOTAL_DELIVERY_ORDERS: 6,
-            DELIVERY_AMOUNT: 7,
+            TOTAL_SCHEDULED_TAKEAWAY_ORDERS: 6,
+            SCHEDULED_TAKEAWAY_AMOUNT: 7,
+            TOTAL_DELIVERY_ORDERS: 8,
+            DELIVERY_AMOUNT: 9,
+            TOTAL_SCHEDULED_DELIVERY_ORDERS: 10,
+            SCHEDULED_DELIVERY_AMOUNT: 11,
             GRAND_TOTAL: 8,
             TOTAL_MERCHANT_COUNT: 9
         },
@@ -82,8 +90,12 @@ export const SummaryTable = (function () {
                     center({ data: "dineInAmount", render: Renderers.amount }),
                     center({ data: "totalTakeAwayOrders" }),
                     center({ data: "takeawayAmount", render: Renderers.amount }),
+                    center({ data: "totalScheduledTakeawayOrders" }),
+                    center({ data: "scheduledTakeawayAmount", render: Renderers.amount }),
                     center({ data: "totalDeliveryOrders" }),
                     center({ data: "deliveryAmount", render: Renderers.amount }),
+                    center({ data: "totalScheduledDeliveryOrders" }),
+                    center({ data: "scheduledDeliveryAmount", render: Renderers.amount }),
                     center({ data: "grandTotal", render: Renderers.amount }),
                     center({ data: "totalConsigneeCount" })
                 ],
@@ -91,12 +103,16 @@ export const SummaryTable = (function () {
                     COL_INDEX.MERCHANT.TOTAL_DINEIN_ORDERS,
                     COL_INDEX.MERCHANT.TOTAL_TAKEAWAY_ORDERS,
                     COL_INDEX.MERCHANT.TOTAL_DELIVERY_ORDERS,
+                    COL_INDEX.MERCHANT.TOTAL_SCHEDULED_DELIVERY_ORDERS,
+                    COL_INDEX.MERCHANT.TOTAL_SCHEDULED_TAKEAWAY_ORDERS,
                     COL_INDEX.MERCHANT.TOTAL_CONSIGNEE_COUNT
                 ],
                 floatCols: [
                     COL_INDEX.MERCHANT.DINEIN_AMOUNT,
                     COL_INDEX.MERCHANT.TAKEAWAY_AMOUNT,
                     COL_INDEX.MERCHANT.DELIVERY_AMOUNT,
+                    COL_INDEX.MERCHANT.SCHEDULED_DELIVERY_AMOUNT,
+                    COL_INDEX.MERCHANT.SCHEDULED_TAKEAWAY_AMOUNT,
                     COL_INDEX.MERCHANT.GRAND_TOTAL
                 ],
                 headerFilterColumns: [
@@ -112,8 +128,12 @@ export const SummaryTable = (function () {
                     center({ data: "dineInAmount", render: Renderers.amount }),
                     center({ data: "totalTakeAwayOrders" }),
                     center({ data: "takeawayAmount", render: Renderers.amount }),
+                    center({ data: "totalScheduledTakeawayOrders" }),
+                    center({ data: "scheduledTakeawayAmount", render: Renderers.amount }),
                     center({ data: "totalDeliveryOrders" }),
                     center({ data: "deliveryAmount", render: Renderers.amount }),
+                    center({ data: "totalScheduledDeliveryOrders" }),
+                    center({ data: "scheduledDeliveryAmount", render: Renderers.amount }),
                     center({ data: "grandTotal", render: Renderers.amount }),
                     center({ data: "totalMerchantCount" })
                 ],
@@ -121,12 +141,16 @@ export const SummaryTable = (function () {
                     COL_INDEX.CONSIGNEE.TOTAL_DINEIN_ORDERS,
                     COL_INDEX.CONSIGNEE.TOTAL_TAKEAWAY_ORDERS,
                     COL_INDEX.CONSIGNEE.TOTAL_DELIVERY_ORDERS,
+                    COL_INDEX.CONSIGNEE.SCHEDULED_DELIVERY_AMOUNT,
+                    COL_INDEX.CONSIGNEE.SCHEDULED_TAKEAWAY_AMOUNT,
                     COL_INDEX.CONSIGNEE.TOTAL_MERCHANT_COUNT
                 ],
                 floatCols: [
                     COL_INDEX.CONSIGNEE.DINEIN_AMOUNT,
                     COL_INDEX.CONSIGNEE.TAKEAWAY_AMOUNT,
                     COL_INDEX.CONSIGNEE.DELIVERY_AMOUNT,
+                    COL_INDEX.CONSIGNEE.SCHEDULED_DELIVERY_AMOUNT,
+                    COL_INDEX.CONSIGNEE.SCHEDULED_TAKEAWAY_AMOUNT,
                     COL_INDEX.CONSIGNEE.GRAND_TOTAL
                 ],
                 headerFilterColumns: [

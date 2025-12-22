@@ -31,7 +31,7 @@ namespace DeliveryMonitoring.Controllers
         private const string TakeAwayTableId = AppConstants.TableIds.TakeAway;
         private const string DeliveryTableId = AppConstants.TableIds.Delivery;
         private const string ScheduledDeliveryTableId = AppConstants.TableIds.ScheduledDelivery; 
-        private const string ScheduledPickUpTableId = AppConstants.TableIds.ScheduledPickUp;
+        private const string ScheduledTakeawayTableId = AppConstants.TableIds.ScheduledPickUp;
         private const string AdminCompanyTin = AppConstants.Company.AdminTin;
         private string CompanyTin => _authenticationManager.GetSecureCookie(CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
         #endregion
@@ -91,7 +91,7 @@ namespace DeliveryMonitoring.Controllers
                 TakeAwayTableId => DeliveryOrderTypes.PickUpAtBranch,
                 DineInTableId => DeliveryOrderTypes.InHouseDining,
                 ScheduledDeliveryTableId => DeliveryOrderTypes.ScheduledDeliveryToLocation,
-                ScheduledPickUpTableId => DeliveryOrderTypes.ScheduledPickUp,
+                ScheduledTakeawayTableId => DeliveryOrderTypes.ScheduledPickUp,
                 _ => DeliveryOrderTypes.DeliveryToLocation
             };
 

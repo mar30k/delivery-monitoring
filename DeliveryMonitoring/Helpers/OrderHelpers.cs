@@ -7,7 +7,7 @@ namespace DeliveryMonitoring.Helpers
 {
     public static class OrderHelpers
     {
-        public static void PrepareOrderDisplayValues(CompletedOrders order)
+        public static void PrepareDisplayValues(CompletedOrders order)
         {
             order.RequestCreatedAtString = order.RequestCreatedAt.ToString("yyyy-MM-dd hh:mm tt");
             string supervisorName = order.SupervisorName ?? "N/A";

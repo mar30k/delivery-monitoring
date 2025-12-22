@@ -172,7 +172,7 @@
             <div class="col-md-4">
                 <div>
                     <span><strong>VoucherCode:</strong></span>
-                    <span>@Html.DisplayFor(model => model.VoucherCode)</span>
+                    <span>@Model?.VoucherCode</span>
                 </div>
                 <div>
                     <span><strong>Expected Time Of Arrival:</strong></span>
@@ -209,6 +209,10 @@
                 </div>
             </div>
             <div class="col-md-4">
+                <div>
+                    <span><strong>Payment Method:</strong></span>
+                    <span>@(Model?.PaymentMethod ?? "N/A")</span>
+                </div>
                 <div>
                     <span><strong>Customer Special Request:</strong></span>
                     <span>@(Model?.CustomerSpecialRequest ?? "N/A")</span>
