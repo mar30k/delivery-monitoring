@@ -1,8 +1,13 @@
-﻿$(function () {
+﻿import { DASHBOARD_CONFIG } from './dashboard-config.js';
+import { DashboardUtils } from './dashboard-utils.js';
+import { DashboardCharts } from './dashboard-charts.js';
+import { DashboardMap } from './dashboard-map.js';
+import { DashboardScroll } from './dashboard-scroll.js';
+import { DashboardAlerts } from './dashboard-alerts.js'; 
 
-    /* ==========================
-       CREATE CHARTS
-    ========================== */
+$(function () {
+
+    const { driverDataSet, orderDataSet } = window.initialChartData ?? {};
 
     const charts = {
         drivers: DashboardCharts.createDoughnut({
@@ -12,7 +17,7 @@
                 'Delivering', 'Completed',
                 'ArrivedAtBranch', 'Arrived'
             ],
-            data: window.initialChartData.driverDataSet,
+            data: driverDataSet,
             colors: DASHBOARD_CONFIG.colors.drivers,
             title: 'Drivers Status'
         }),
@@ -24,7 +29,7 @@
                 'On The Way', 'Declined', 'Driver Not Found',
                 'ArrivedAtBranch', 'Arrived', 'SOS'
             ],
-            data: window.initialChartData.orderDataSet,
+            data: orderDataSet,
             colors: DASHBOARD_CONFIG.colors.orderStatus,
             title: 'Orders Status'
         }),
@@ -227,14 +232,12 @@
         });
     }
 
-    /* ==========================
-   INITIAL LOAD
-========================== */
     if (window.isAnalyticsPage) {
         loadGoogleMapsAPI(DASHBOARD_CONFIG.googleMapsKey)
             .then(() => DashboardMap.initMap())
             .catch(() => console.error("Failed to load Google Maps"));
     }
+
     refreshDriversChart();
     refreshOrdersStatusChart();
     refreshCompletedOrdersCharts();
@@ -242,9 +245,8 @@
     if (window.isAnalyticsPage) {
         DashboardScroll.init();
     }
-    /* ==========================
-       INTERVALS
-    ========================== */
+
+
 
     setInterval(refreshDriversChart, DASHBOARD_CONFIG.refresh.drivers);
     setInterval(refreshOrdersStatusChart, DASHBOARD_CONFIG.refresh.orders);

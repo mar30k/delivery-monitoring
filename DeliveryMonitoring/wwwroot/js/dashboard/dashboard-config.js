@@ -1,8 +1,8 @@
-﻿window.DASHBOARD_CONFIG = {
+﻿export const DASHBOARD_CONFIG = {
     refresh: {
-        orders: 10000,
-        drivers: 30000,
-        charts: 60000
+        orders: 10_000,
+        drivers: 30_000,
+        charts: 60_000
     },
     api: {
         driverLive: '/driver/liveLocation',

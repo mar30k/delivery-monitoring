@@ -1,4 +1,4 @@
-﻿window.DashboardAlerts = (function () {
+﻿export const DashboardAlerts = (function () {
 
     const seen = new Set();
     let firstFetch = true;

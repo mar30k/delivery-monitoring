@@ -27,10 +27,6 @@ async function fetchAlerts() {
         // Only update 'data' if JSON parsing succeeded
         data = newData;
 
-        const orderCount = document.getElementById("orderCount");
-        if (orderCount) {
-            orderCount.textContent = data.length;
-        }
         const alertBox = document.getElementById("floating-alert");
         const alertList = document.getElementById("alert-list");
 

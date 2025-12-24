@@ -1,4 +1,4 @@
-﻿window.DashboardCharts = (function () {
+﻿export const DashboardCharts = (function () {
 
     function createDoughnut({ ctx, labels, data, colors, title }) {
         return new Chart(ctx, {

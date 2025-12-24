@@ -1,4 +1,4 @@
-﻿window.DashboardMap = (function () {
+﻿export const DashboardMap = (() => {
 
     let map;
     const markerMap = new Map();
