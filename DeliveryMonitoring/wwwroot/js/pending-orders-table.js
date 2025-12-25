@@ -1,5 +1,5 @@
 ﻿import { center, safeNumberRenderer, bindExportButton, getBaseTableConfig } from './table-utils.js';
-export const ReportTable = (function () {
+export const PendingOrdersTable = (function () {
 
     // Column indexes for clarity
     const COL_INDEX = {
@@ -15,32 +15,18 @@ export const ReportTable = (function () {
         DRIVER_PHONE: 9,
         SUPERVISOR: 10,
         TOTAL_AMOUNT: 11,
-        TIP: 12,
-        PURPOSE: 13,
-        NOTE: 14,
-        REVIEW: 15,
-        RATING: 16,
-        TYPE: 17 // only for allOrders
+        ACTIONS: 12,
     };
 
-    // Default report column widths
-    const BASE_COLUMN_WIDTHS = [
-        { wch: 20 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 15 }, { wch: 22 },
-        { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 12 },
-        { wch: 10 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, { wch: 10 }
-    ];
-
-    function getReportTableConfig(tableId) {
-        const isAllOrders = tableId === "allOrders";
-
+    function getPendingOrdersTable() {
         const baseConfig = {
             orderingColumn: [COL_INDEX.REQUEST_DATE, "desc"],
             headerFilterColumns: [],
             nonOrderableTargets: [COL_INDEX.VOUCHER],
             columns: [],
-            floatCols: [COL_INDEX.DISTANCE, COL_INDEX.TOTAL_AMOUNT, COL_INDEX.TIP],
+            floatCols: [COL_INDEX.DISTANCE, COL_INDEX.TOTAL_AMOUNT],
             intCols: [],
-            avgCols: [{ index: COL_INDEX.RATING, includeZeros: false }]
+            avgCols: []
         };
 
         const columns = [
@@ -69,19 +55,8 @@ export const ReportTable = (function () {
             center({ data: "driverPhoneNumber", render: Renderers.phone }),
             center({ data: "supervisorName", render: Renderers.orDefault }),
             center({ data: "totalAmount", render: Renderers.amount }),
-            center({
-                data: "tip",
-                render: (d, type) => d != null ? Renderers.number(d, type, 2, false) : "-"
-            }),
-            center({ data: "purpose", render: Renderers.orDefault }),
-            center({ data: "note", render: Renderers.expandableText }),
-            center({ data: "review", render: Renderers.expandableText }),
-            center({ data: "rating", render: Renderers.rating })
+            center({ data: "rating"})
         ];
-
-        if (isAllOrders) {
-            columns.push(center({ data: "tableId" }));
-        }
 
         const headerFilterColumns = [
             { index: COL_INDEX.COMPANY, name: 'Company' },
@@ -89,13 +64,9 @@ export const ReportTable = (function () {
             { index: COL_INDEX.SUPERVISOR, name: 'Supervisor' }
         ];
 
-        if (isAllOrders) {
-            headerFilterColumns.push({ index: COL_INDEX.TYPE, name: 'Type' });
-        }
-
         const nonOrderableTargets = [
-            COL_INDEX.VOUCHER, COL_INDEX.PHONE, COL_INDEX.DRIVER_PHONE,
-            COL_INDEX.PURPOSE, COL_INDEX.NOTE, COL_INDEX.REVIEW
+            COL_INDEX.VOUCHER, COL_INDEX.PHONE,
+            COL_INDEX.ACTIONS, COL_INDEX.DRIVER_PHONE
         ];
 
         return Object.assign({}, baseConfig, {
@@ -107,7 +78,7 @@ export const ReportTable = (function () {
 
     function init({ tableId, ajaxUrl, userType, sheetName }) {
         const tableSelector = `#${tableId}`;
-        const config = getReportTableConfig(tableId);
+        const config = getPendingOrdersTable(tableId);
 
         DateRange.init("#dateRange");
 
@@ -119,16 +90,10 @@ export const ReportTable = (function () {
             reloadOn: "#dateRange"
         });
 
-        const columnWidths = [...BASE_COLUMN_WIDTHS];
-        if (tableId === "allOrders") {
-            columnWidths.push({ wch: 15 }); // for tableId column
-        }
-
         bindExportButton(
             tableSelector,
             userType,
-            sheetName,
-            columnWidths
+            sheetName
         );
     }
 

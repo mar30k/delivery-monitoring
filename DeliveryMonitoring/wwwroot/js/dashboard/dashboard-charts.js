@@ -9,8 +9,21 @@
             },
             options: {
                 plugins: {
-                    legend: { position: 'bottom' },
-                    title: { display: true, text: title }
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: {
+                            size: 18
+                        }
+                    }
                 }
             }
         });

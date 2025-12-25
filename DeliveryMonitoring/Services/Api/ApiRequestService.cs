@@ -49,6 +49,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly string _authenicateUser;
         private readonly string _getUserByUserName;
         private readonly string _getCompletedOrders;
+        private readonly string _getPendingOrders;
         private readonly string _getCompletedOrdersByType;
         private readonly IDataProtector _protector;
         private readonly string _googleMapsKey;
@@ -95,6 +96,7 @@ namespace DeliveryMonitoring.Services.Api
             _authenicateUser = "SysInitialize/authenticate?";
             _getUserByUserName = "User/filter?";
             _getCompletedOrders = "voucher/getcompletedorders";
+            _getPendingOrders = "voucher/getpendingorders";
             _changeorderbranch = "voucher/changeorderbranch";
             _getCompletedOrdersByType = "voucher/getordersbytype?";
             _configuration = configuration;
@@ -313,6 +315,26 @@ namespace DeliveryMonitoring.Services.Api
         #endregion
 
         #region Completed Orders
+        public async Task<HulubejeResponse<List<CompletedOrders>>> GetPendingOrdersAsync(bool skipCache = true)
+        {
+            string cacheKey = "pending_order";
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _client.GetAsync(_getPendingOrders);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(data)
+                               ?? new HulubejeResponse<List<CompletedOrders>>();
+                    }
+                    return new HulubejeResponse<List<CompletedOrders>>();
+                },
+                skipCache,
+                10 // cache for 10 minutes
+            );
+        }
         public async Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(bool skipCache = true)
         {
             string cacheKey = "completed_orders";

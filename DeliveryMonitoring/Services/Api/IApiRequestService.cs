@@ -129,6 +129,13 @@ namespace DeliveryMonitoring.Services.Api
         #region Completed Orders
 
         /// <summary>
+        /// Retrieves all pending orders that are not yet in the completed orders list.
+        /// </summary>
+        /// <param name="skipCache">
+        /// If set to <c>true</c>, bypasses the cache and fetches the latest data.
+        /// </param>
+        Task<HulubejeResponse<List<CompletedOrders>>> GetPendingOrdersAsync(bool skipCache = true);
+        /// <summary>
         /// Retrieves all completed orders associated with the logged-in company.
         /// </summary>
         /// <param name="skipCache">

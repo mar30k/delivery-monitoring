@@ -212,11 +212,14 @@ export const SummaryTable = (function () {
     function init({ tableId, ajaxUrl, userType, sheetName }) {
         const tableSelector = `#${tableId}`;
         const config = getSummaryTableConfig(userType);
-
-        initTable(Object.assign({}, config, {
+        DateRange.init("#dateRange");
+        initTable({
+            ...config,
             tableSelector,
-            ajaxUrl
-        }));
+            ajaxUrl,
+            ajaxDataHook: DateRange.applyToAjax,
+            reloadOn: "#dateRange"
+        });
 
         bindExportButton(
             tableSelector,

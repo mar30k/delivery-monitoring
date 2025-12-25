@@ -77,6 +77,21 @@ namespace DeliveryMonitoring.Controllers
             return View(viewModel);
         }
 
+        [Route("/pendingOrders")]
+        public IActionResult PendingOrders()
+        {
+            var viewModel = new TableConfig
+            {
+                TableId = "pendingOrders",
+                Title = "Pending Orders",
+                AjaxUrl = "/getPendingOrders",
+                SheetName = "Pending Orders",
+                Type = "pendingOrders"
+            };
+            return View(viewModel);
+        }
+
+
         /// <summary>
         /// Displays the details for a completed order by voucher.
         /// </summary>
@@ -140,9 +155,18 @@ namespace DeliveryMonitoring.Controllers
         /// Fetches completed orders filtered by company and optionally by date range.
         /// </summary>
         [HttpGet("/getCompletedOrders")]
-        public async Task<IActionResult> GetCompletedOrdersApi([FromQuery] OrderQueryParams query)
+        public async Task<IActionResult> GetCompletedOrders([FromQuery] OrderQueryParams query)
         {
             var result = await _ordersService.GetCompletedOrdersAsync(query);
+            return Ok(result);
+        }
+        /// <summary>
+        /// Fetches completed orders filtered by company and optionally by date range.
+        /// </summary>
+        [HttpGet("/getPendingOrders")]
+        public async Task<IActionResult> GetPendingOrders([FromQuery] OrderQueryParams query)
+        {
+            var result = await _ordersService.GetPendingOrdersAsync(query);
             return Ok(result);
         }
 
@@ -154,7 +178,7 @@ namespace DeliveryMonitoring.Controllers
             [FromQuery] OrderQueryParams query)
         {
             var orders = await _ordersService.GetOrdersByTypeAsync(query);
-            return Ok(new HulubejeResponse<List<CompletedOrders>> { Data = orders, IsSuccessful = orders?.Any() ?? false });
+            return Ok(orders);
         }
 
         [HttpGet("/getAllOrders")]
@@ -162,7 +186,7 @@ namespace DeliveryMonitoring.Controllers
         {
 
             var orders = await _ordersService.GetAllOrdersAsync(query);
-            return Ok(new HulubejeResponse<List<CompletedOrders>> { Data = orders, IsSuccessful = orders?.Any() ?? false });
+            return Ok(orders);
         }
         /// <summary>
         /// Saves a review or note for a completed order.

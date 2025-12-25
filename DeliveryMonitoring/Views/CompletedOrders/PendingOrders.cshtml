@@ -62,26 +62,8 @@
                             Total
                         </th>
                         <th class="text-center">
-                            Tip
+                            Actions
                         </th>
-                        <th class="text-center">
-                            Purpose
-                        </th>
-                        <th class="text-center">
-                            Note
-                        </th>
-                        <th class="text-center">
-                            Review
-                        </th>
-                        <th class="text-center">
-                            Rating
-                        </th>
-                        @if(isAllOrders)
-                        {
-                            <th class="text-center">
-                                Type
-                            </th>
-                        }
                     </tr>
                 </thead>
                 <tfoot>
@@ -94,14 +76,6 @@
                         <th></th>
                         <th></th>
                         <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        @if(isAllOrders)
-                        {
-                            <th></th>
-                        }
                     </tr>
                 </tfoot>
             </table>
@@ -119,11 +93,11 @@
     <script src="~/js/datatable-renderers.js" asp-append-version="true"></script>
     <script src="~/js/datatable-init.js" asp-append-version="true"></script>
     <script src="~/js/table-utils.js" type="module" asp-append-version="true"></script>
-    <script src="~/js/report-table.js" type="module" asp-append-version="true"></script>
+    <script src="~/js/pending-orders-table.js" type="module" asp-append-version="true"></script>
     <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
     <script type="module">
-        import { ReportTable } from '/js/report-table.js?v=@DateTime.Now.Ticks';
-        ReportTable.init({
+        import { PendingOrdersTable } from '/js/pending-orders-table.js?v=@DateTime.Now.Ticks';
+        PendingOrdersTable.init({
             tableId: "@Model?.TableId",
             ajaxUrl: "@Model?.AjaxUrl",
             userType: "@Model?.Type" + "_report",

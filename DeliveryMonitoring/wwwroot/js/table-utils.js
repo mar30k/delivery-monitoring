@@ -8,16 +8,18 @@ export function safeNumberRenderer(d, type, decimals = 2, allowZero = true) {
     return Renderers.number(d, type, decimals, allowZero);
 }
 
-function getDateRange() {
-    return {
-        startDate: startDate,
-        endDate: endDate
-    };
-}
+
 export function bindExportButton(tableSelector, typePrefix, sheetName, columnWidths = []) {
     $("#exportToExcelBtn").on("click", () => {
-        const { startDate, endDate } = getDateRange();
-        exportTableToExcel({ tableSelector, typePrefix, sheetName, startDate, endDate, columnWidths });
+        const { start, end } = DateRange.getRange();
+        exportTableToExcel({
+            tableSelector,
+            typePrefix,
+            sheetName,
+            startDate: start,
+            endDate: end,
+            columnWidths
+        });
     });
 }
 

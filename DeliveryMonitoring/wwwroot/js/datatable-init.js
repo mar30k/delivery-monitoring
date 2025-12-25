@@ -12,20 +12,7 @@
  * @param {Array<number>} [options.nonOrderableTargets=[]] - Column indexes that should be non-orderable
  * @returns {DataTable} - Initialized DataTable instance
  */
-var startDate = moment().startOf('day');
-var endDate = moment().endOf('day');
 var js = jQuery.noConflict(true);
-js(() => {
-    js("#dateRange").daterangepicker({
-        startDate: startDate,
-        endDate: endDate,
-        maxDate: moment(),
-        autoUpdateInput: true,
-        locale: { cancelLabel: 'Clear', format: 'YYYY-MM-DD' }
-    });
-    js("#dateRange").val(startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
-});
-var isClear = false;
 function initTable({
     tableSelector,
     orderingColumn = [1, "asc"],
@@ -35,7 +22,9 @@ function initTable({
     avgCols = [],
     columns = [],
     headerFilterColumns = [],
-    nonOrderableTargets = []
+    nonOrderableTargets = [],
+    ajaxDataHook = null,
+    reloadOn = null
 }) {
     // Apply numeric render only if no custom render is already defined
     columns.forEach((col, idx) => {
@@ -60,14 +49,8 @@ function initTable({
             url: ajaxUrl,
             type: 'GET',
             data: function (d) {
-                if (!isClear && startDate && endDate) {
-                    d.startDate = startDate.format("YYYY-MM-DD");
-                    d.endDate = endDate.format("YYYY-MM-DD");
-                    d.isClear = false;
-                } else if (isClear) {
-                    d.startDate = null;
-                    d.endDate = null;
-                    d.isClear = true;
+                if (typeof ajaxDataHook === 'function') {
+                    ajaxDataHook(d);
                 }
             }            
         },
@@ -76,7 +59,6 @@ function initTable({
             {
                 targets: headerFilterColumns.map(col => col.index),
                 orderable: true,
-                render: function (data, type, row) { return data; }
             },
             {
                 orderSequence: ['asc', 'desc'],
@@ -91,12 +73,16 @@ function initTable({
 
         footerCallback: function (row, data, start, end, display) {
             var api = this.api();
-            const parseVal = i => typeof i === 'string' ? i.replace(/[\$,]/g, '') * 1 : typeof i === 'number' ? i : 0;
+            const parseVal = i =>
+                typeof i === 'string' ? i.replace(/[\$,]/g, '') * 1 :
+                typeof i === 'number' ? i : 0;
 
             // Floats
             floatCols.forEach(col => {
-                let total = api.column(col, { page: 'current' }).data().reduce((a, b) => parseVal(a) + parseVal(b), 0);
-                js(api.column(col).footer()).html(total.toLocaleString('en-US', {
+                let total = api.column(col, { page: 'current' }).data()
+                    .reduce((a, b) => parseVal(a) + parseVal(b), 0);
+                js(api.column(col).footer()).html(
+                    total.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 }));
@@ -104,71 +90,48 @@ function initTable({
 
             // Ints
             intCols.forEach(col => {
-                let total = api.column(col, { page: 'current' }).data().reduce((a, b) => parseVal(a) + parseVal(b), 0);
+                let total = api.column(col, { page: 'current' }).data()
+                    .reduce((a, b) => parseVal(a) + parseVal(b), 0);
                 js(api.column(col).footer()).html(total);
             });
 
             //Averages
-            if (avgCols && avgCols.length > 0) {
-                avgCols.forEach(colConfig => {
-                    let colIndex = colConfig.index;
-                    let includeZeros = colConfig.includeZeros;
+            avgCols.forEach(cfg => {
+                let values = api.column(cfg.index, { page: 'current' })
+                    .data()
+                    .map(parseVal);
 
-                    let values = api.column(colIndex, { page: 'current' }).data().map(parseVal);
+                if (!cfg.includeZeros) {
+                    values = values.filter(v => v !== 0);
+                }
 
-                    if (!includeZeros) {
-                        values = values.filter(v => v !== 0);
-                    }
+                let avg = values.length > 0
+                    ? values.reduce((a, b) => a + b, 0) / values.length
+                    : 0;
 
-                    let avg = values.length > 0
-                        ? values.reduce((a, b) => a + b, 0) / values.length
-                        : 0;
-
-                    js(api.column(colIndex).footer()).html(avg.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-                });
-            }
-
+                js(api.column(cfg.index).footer()).html(
+                    avg.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })
+                );
+            });
         },
         initComplete: function () {
             const dt = this;
-            headerFilterColumns.forEach(function (col) {
+            headerFilterColumns.forEach(col => {
                 initHeaderFilterDropdown(dt, col.index, col.name);
             });
         }
     });
 
-    // Reload table on date range change
-    js("#dateRange").on('apply.daterangepicker', function (ev, picker) {
-        startDate = picker.startDate.startOf('day');
-        endDate = picker.endDate.endOf('day');
-        js(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
-        isClear = false;
-        table.ajax.reload();
-    });
+    if (reloadOn) {
+        js(reloadOn).on('daterange:changed', function () {
+            table.ajax.reload();
+        });
+    }
 
-    js("#dateRange").on('cancel.daterangepicker', function (ev, picker) {
 
-        // Clear internal dates
-        picker.setStartDate(moment().startOf('day'));
-        picker.setEndDate(moment().startOf('day'));
-
-        // Clear the input field
-        js(this).val('');
-
-        // Reset your variables
-        startDate = null;
-        endDate = null;
-        isClear = true;
-
-        table.ajax.reload();
-    });
-
-    const tableEntry = {
-        table: table,
-        get range() {
-            return { start: startDate, end: endDate, isClear: isClear };
-        }
-    };
 
     // GLOBAL AJAX ERROR HANDLER
     js(tableSelector).on("xhr.dt", function (e, settings, json, xhr) {
@@ -198,6 +161,12 @@ function initTable({
         }
     });
 
+    const tableEntry = {
+        table: table,
+        get range() {
+            return { start: startDate, end: endDate, isClear: isClear };
+        }
+    };
     startTableAutoRefresh([tableEntry], 60000);
 
     return table;

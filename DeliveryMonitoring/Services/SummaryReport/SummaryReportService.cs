@@ -23,13 +23,13 @@ namespace DeliveryMonitoring.Services.SummaryReport
         public async Task<IEnumerable<MerchantSummary>> MerchantSummary(OrderQueryParams p)
         {
             var orders = await _ordersService.GetAllOrdersAsync(p);
-            return SummaryBuilders.BuildMerchantSummary(orders);
+            return SummaryBuilders.BuildMerchantSummary(orders.Data ?? new List<CompletedOrders>());
         }
 
         public async Task<IEnumerable<ConsigneeSummary>> ConsigneeSummary(OrderQueryParams p)
         {
             var orders = await _ordersService.GetAllOrdersAsync(p);
-            return SummaryBuilders.BuildConsigneeSummary(orders);
+            return SummaryBuilders.BuildConsigneeSummary(orders.Data ?? new List<CompletedOrders>());
         }
 
         public async Task<IEnumerable<DriverSummary>> DriverSummary(OrderQueryParams p)
