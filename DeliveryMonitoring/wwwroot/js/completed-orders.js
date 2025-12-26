@@ -3,23 +3,6 @@ const tableDateRanges = {};
 const tables = {};
 
 var TableConfigs = window.AppData?.tableConfigs || [];
-// Mapping for headerFilterColumns
-const headerFilterColumnsMapping = {
-    "_DeliveryOrders": [
-        { index: 1, name: 'Company' },
-        { index: 2, name: 'Branch' },
-        { index: 3, name: 'Customer' },
-        { index: 11, name: 'Supervisor' }
-    ],
-    "_NonDeliveryOrders": [
-        { index: 1, name: 'Company' },
-        { index: 2, name: 'Branch' },
-        { index: 3, name: 'Customer' },
-        { index: 6, name: 'Supervisor' }
-    ]
-};
-// Table type configurations
-
 
 // Build initial date ranges and table mappings
 (TableConfigs || []).forEach(cfg => {
@@ -82,13 +65,23 @@ const TableTypeConfigs = {
         columns: deliveryColumns,
         totalColumnIndex: [12, 13],
         nonOrderableTargets: [0, 4, 10, 11, 14, 15, 16],
-        headerFilterColumns: headerFilterColumnsMapping["_DeliveryOrders"]
+        headerFilterColumns:  [
+            { index: 1, name: 'Company' },
+            { index: 2, name: 'Branch' },
+            { index: 3, name: 'Customer' },
+            { index: 11, name: 'Supervisor' }
+        ]
     },
     "_NonDeliveryOrders": {
         columns: dineInAndTakeawayColumns,
         totalColumnIndex: [7],
         nonOrderableTargets: [0, 4, 8, 9],
-        headerFilterColumns: headerFilterColumnsMapping["_NonDeliveryOrders"]
+        headerFilterColumns: [
+            { index: 1, name: 'Company' },
+            { index: 2, name: 'Branch' },
+            { index: 3, name: 'Customer' },
+            { index: 6, name: 'Supervisor' }
+        ]
     }
 };
 
@@ -570,12 +563,6 @@ function showActivityAlert(message, type = 'danger') {
         </div>
     `;
 }
-
-//setInterval(() => {
-//    if (dineInTable) dineInTable.ajax.reload(null, false); // false = don't reset paging
-//    if (takeAwayTable) takeAwayTable.ajax.reload(null, false);
-//    if (deliveryTable) deliveryTable.ajax.reload(null, false);
-//}, 60000)
 
 setTimeout(() => {
     startTableAutoRefresh(

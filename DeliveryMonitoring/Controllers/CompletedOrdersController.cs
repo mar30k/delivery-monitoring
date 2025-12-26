@@ -77,7 +77,7 @@ namespace DeliveryMonitoring.Controllers
             return View(viewModel);
         }
 
-        [Route("/pendingOrders")]
+        [Route("/pending")]
         public IActionResult PendingOrders()
         {
             var viewModel = new TableConfig
@@ -206,11 +206,24 @@ namespace DeliveryMonitoring.Controllers
                 return BadRequest("Purpose is required.");
             try
             {
-                request.Note = await OrderHelpers.BuildSupervisorNoteAsync(
+                var response = await OrderHelpers.BuildSupervisorNoteAsync(
                     request,
                     _authenticationManager,
                     _apiRequestService
                 );
+                
+                if(response.IsSuccessful)
+                {
+                    request.Note = response.Data ?? "";
+                }
+                else
+                {
+                    return BadRequest(
+                        response.ErrorMessages != null && response.ErrorMessages.Any()
+                            ? string.Join(", ", response.ErrorMessages)
+                            : "Failed to save note."
+                    );
+                }
 
                 var result = await _apiRequestService.SaveDeliveryNote(
                     request.VoucherCode,
@@ -223,6 +236,57 @@ namespace DeliveryMonitoring.Controllers
                         result.ErrorMessages != null && result.ErrorMessages.Any()
                             ? string.Join(", ", result.ErrorMessages)
                             : "Failed to save delivery note."
+                    );
+
+                return Ok(result.IsSuccessful);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return BadRequest("An unexpected error occurred.");
+            }
+        }
+        /// <summary>
+        /// Saves a review or note for a completed order.
+        /// </summary>
+        [HttpPost("/completePendingOrder")]
+        public async Task<IActionResult> CompletePendingOrderAsync([FromBody] CompletedOrders request)
+        {
+            if (request == null)
+                return BadRequest("Request cannot be null.");
+            if (string.IsNullOrWhiteSpace(request.VoucherCode))
+                return BadRequest("VoucherCode is required.");
+            if (string.IsNullOrWhiteSpace(request.DriverPhoneNumber))
+                return BadRequest("Driver Phone is required.");
+            if (request?.Eta == null)
+                return BadRequest("ETA is required.");
+            if (request?.Duration ==  null)
+                return BadRequest("Duration is required.");
+            try
+            {
+                var supervisorResponse =  await OrderHelpers.GetAuthenticatedSupervisorAsync(
+                    _authenticationManager,
+                    _apiRequestService
+                );
+
+                if (!supervisorResponse.IsSuccessful || supervisorResponse.Data == null)
+                {
+                    return BadRequest(supervisorResponse.ErrorMessages != null && supervisorResponse.ErrorMessages.Any()
+                            ? string.Join(", ", supervisorResponse.ErrorMessages)
+                            : "Faile To Complete Pending Order.");
+                }
+
+                var result = await _apiRequestService.CompletePendingOrdersAsync(request);
+                
+
+                if (!result.IsSuccessful)
+                    return BadRequest(
+                        result.ErrorMessages != null && result.ErrorMessages.Any()
+                            ? string.Join(", ", result.ErrorMessages)
+                            : "Failed to Complete Pending Order."
                     );
 
                 return Ok(result.IsSuccessful);

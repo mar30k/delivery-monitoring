@@ -136,6 +136,18 @@ namespace DeliveryMonitoring.Services.Api
         /// </param>
         Task<HulubejeResponse<List<CompletedOrders>>> GetPendingOrdersAsync(bool skipCache = true);
         /// <summary>
+        /// Completes a pending order by submitting the required delivery and assignment details.
+        /// </summary>
+        /// <param name="request">
+        /// The pending order object containing completion information such as
+        /// driver assignment, distance, duration, and ETA.
+        /// </param>
+        /// <returns>
+        /// A <see cref="HulubejeResponse{Boolean}"/> indicating whether the operation
+        /// completed successfully, along with any validation or processing errors.
+        /// </returns>
+        Task<HulubejeResponse<bool>> CompletePendingOrdersAsync(CompletedOrders request);
+        /// <summary>
         /// Retrieves all completed orders associated with the logged-in company.
         /// </summary>
         /// <param name="skipCache">

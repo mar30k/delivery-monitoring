@@ -82,12 +82,75 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="completePendingOrderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+
+            <form id="completePendingOrderForm">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">
+                        Complete Order
+                        <span id="completeOrderVoucher" class="text-muted"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden" id="completeVoucherCode" name="voucherCode">
+
+                    <!-- Driver -->
+                    <div class="mb-3">
+                        <label class="form-label">Driver</label>
+                        <select class="form-select" id="driverPhone" name="driverPhone" required>
+                            <option value="">Loading drivers...</option>
+                        </select>
+                    </div>
+
+                    <!-- Distance -->
+                    <div class="mb-3">
+                        <label class="form-label">Distance (km)</label>
+                        <input type="number" step="0.01" class="form-control"
+                               id="distance" name="distance" placeholder="enter the distance in km">
+                    </div>
+
+                    <!-- Duration -->
+                    <div class="mb-3">
+                        <label class="form-label">Duration (minutes)</label>
+                        <input type="number" step="0.01" class="form-control"
+                               id="duration" name="duration" placeholder="enter the duration in minutes" required>
+                    </div>
+
+                    <!-- ETA -->
+                    <div class="mb-3">
+                        <label class="form-label">ETA (minutes)</label>
+                        <input type="number" step="0.01" class="form-control"
+                               id="eta" name="eta" placeholder="enter the eta in minutes" required>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success" id="completeOrderSubmitBtn">
+                        Complete Order
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" href="~/css/header-filters.css" asp-append-version="true">
-    <script src="~/js/tableAutoRefresher.js" asp-append-version="true"></script>
+    <script src="~/js/table-auto-refresher.js" asp-append-version="true"></script>
+    <script src="~/js/complete-pending-order.js" asp-append-version="true"></script>
     <script src="~/js/date-range.js" asp-append-version="true"></script>
     <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script>
     <script src="~/js/datatable-renderers.js" asp-append-version="true"></script>

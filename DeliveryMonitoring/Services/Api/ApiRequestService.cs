@@ -4,6 +4,7 @@ using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services.Cache;
+using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Newtonsoft.Json;
 using System;
@@ -50,6 +51,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly string _getUserByUserName;
         private readonly string _getCompletedOrders;
         private readonly string _getPendingOrders;
+        private readonly string _completePendingOrder;
         private readonly string _getCompletedOrdersByType;
         private readonly IDataProtector _protector;
         private readonly string _googleMapsKey;
@@ -96,6 +98,7 @@ namespace DeliveryMonitoring.Services.Api
             _authenicateUser = "SysInitialize/authenticate?";
             _getUserByUserName = "User/filter?";
             _getCompletedOrders = "voucher/getcompletedorders";
+            _completePendingOrder = "voucher/complet";
             _getPendingOrders = "voucher/getpendingorders";
             _changeorderbranch = "voucher/changeorderbranch";
             _getCompletedOrdersByType = "voucher/getordersbytype?";
@@ -315,6 +318,8 @@ namespace DeliveryMonitoring.Services.Api
         #endregion
 
         #region Completed Orders
+        public Task<HulubejeResponse<bool>> CompletePendingOrdersAsync(CompletedOrders request)
+            => SendAsync<bool>(_client, _completePendingOrder, request);
         public async Task<HulubejeResponse<List<CompletedOrders>>> GetPendingOrdersAsync(bool skipCache = true)
         {
             string cacheKey = "pending_order";

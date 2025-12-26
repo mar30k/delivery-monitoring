@@ -153,7 +153,17 @@ const Renderers = {
         }
 
         return `<a class="btn btn-outline-info activityBtn btn-sm text-decoration-none" target="_blank" href="${href}">Details</a>`;
-    }
+    },
+    completePendingOrder: (row) =>
+        `<button class="btn btn-outline-success activityBtn btn-sm"
+            data-voucher="${row.voucherCode}"
+            data-duration="${row.duration}"
+            data-distance="${row.distance}"
+            data-eta="${row.eta}"
+            data-driver-phone="${row.driverPhoneNumber}"
+            onclick="openCompletePendingOrderModal(this)">
+            Complete
+        </button>`
 };
 
 //#endregion

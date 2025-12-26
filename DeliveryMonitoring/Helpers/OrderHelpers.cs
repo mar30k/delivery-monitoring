@@ -57,22 +57,77 @@ namespace DeliveryMonitoring.Helpers
             return false;
         }
 
-        public static async Task<string> BuildSupervisorNoteAsync(
-            CompletedOrders order,
+        /// <summary>
+        /// Gets the authenticated supervisor based on the current user.
+        /// </summary>
+        public static async Task<HulubejeResponse<SupervisorsDTO>> GetAuthenticatedSupervisorAsync(
             AuthenticationManager authManager,
             IApiRequestService apiService)
         {
-            
+            var response = new HulubejeResponse<SupervisorsDTO>();
 
-            var user = authManager.GetUserFromCookie() ?? throw new InvalidOperationException("User not authenticated.");
+            var user = authManager.GetUserFromCookie();
+            if (user == null)
+            {
+                response.IsSuccessful = false;
+                response.ErrorMessages = new List<string> { "User not authenticated." };
+                return response;
+            }
+
             var supervisors = await apiService.GetSupervisorsAsync();
-            var supervisor = supervisors.FirstOrDefault(s => s.UserName == user.UserName) 
-                ?? throw new InvalidOperationException("Unable to find the supervisor. Please try again!");
+            var supervisor = supervisors.FirstOrDefault(s => s.UserName == user.UserName);
+
+            if (supervisor == null)
+            {
+                response.IsSuccessful = false;
+                response.ErrorMessages = new List<string> { "Unable to find the supervisor. Please try again!" };
+                return response;
+            }
+
+            response.IsSuccessful = true;
+            response.Data = supervisor;
+            return response;
+        }
+
+
+        /// <summary>
+        /// Builds the supervisor note for a completed order.
+        /// </summary>
+        public static string BuildNote(CompletedOrders order, SupervisorsDTO supervisor)
+        {
+            if (order == null) throw new ArgumentNullException(nameof(order));
+            if (supervisor == null) throw new ArgumentNullException(nameof(supervisor));
 
             if (order.IsDelivery)
                 return order.Note ?? "";
 
-            return $"{{{supervisor.FirstName} {supervisor.SecondName}}} {order.Note ?? ""}";
+            return $"{supervisor.FirstName} {order.Note ?? ""}";
+        }
+
+        /// <summary>
+        /// Convenience method: gets authenticated supervisor and builds the note.
+        /// </summary>
+        public static async Task<HulubejeResponse<string>> BuildSupervisorNoteAsync(
+            CompletedOrders order,
+            AuthenticationManager authManager,
+            IApiRequestService apiService)
+        {
+            var supervisorResponse = await GetAuthenticatedSupervisorAsync(authManager, apiService);
+            if (!supervisorResponse.IsSuccessful || supervisorResponse.Data == null)
+            {
+                return new HulubejeResponse<string>
+                {
+                    IsSuccessful = false,
+                    Data = order.Note ?? "",
+                    ErrorMessages = supervisorResponse.ErrorMessages
+                };
+            }
+
+            return new HulubejeResponse<string>
+            {
+                IsSuccessful = true,
+                Data = BuildNote(order, supervisorResponse.Data)
+            };
         }
     }
 }

@@ -55,7 +55,7 @@ export const PendingOrdersTable = (function () {
             center({ data: "driverPhoneNumber", render: Renderers.phone }),
             center({ data: "supervisorName", render: Renderers.orDefault }),
             center({ data: "totalAmount", render: Renderers.amount }),
-            center({ data: "rating"})
+            center({ data: null, render: (d, t, r) => Renderers.completePendingOrder(r) })
         ];
 
         const headerFilterColumns = [

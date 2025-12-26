@@ -193,7 +193,7 @@ namespace DeliveryMonitoring.Services.Orders
                 }
 
                 var filtered = OrderHelpers.FilterOrders(orders, @params, CompanyTin, AdminCompanyTin);
-
+                filtered.ForEach(OrderHelpers.PrepareDisplayValues);
                 return new HulubejeResponse<List<CompletedOrders>>
                 {
                     Data = filtered,
