@@ -34,6 +34,9 @@
                             Branch
                         </th>
                         <th class="text-center">
+                            Status
+                        </th>
+                        <th class="text-center">
                             Customer
                         </th>
                         <th class="text-center">
@@ -76,6 +79,7 @@
                         <th></th>
                         <th></th>
                         <th></th>
+                        <th></th>
                     </tr>
                 </tfoot>
             </table>
@@ -110,22 +114,22 @@
                     <!-- Distance -->
                     <div class="mb-3">
                         <label class="form-label">Distance (km)</label>
-                        <input type="number" step="0.01" class="form-control"
-                               id="distance" name="distance" placeholder="enter the distance in km">
+                        <input type="number" step="0.1" class="form-control"
+                               id="distance" name="distance" placeholder="e.g., 12.5">
                     </div>
 
                     <!-- Duration -->
                     <div class="mb-3">
                         <label class="form-label">Duration (minutes)</label>
-                        <input type="number" step="0.01" class="form-control"
-                               id="duration" name="duration" placeholder="enter the duration in minutes" required>
+                        <input type="number" step="0.1" class="form-control"
+                               id="duration" name="duration" placeholder="e.g., 45" required>
                     </div>
 
                     <!-- ETA -->
                     <div class="mb-3">
                         <label class="form-label">ETA (minutes)</label>
-                        <input type="number" step="0.01" class="form-control"
-                               id="eta" name="eta" placeholder="enter the eta in minutes" required>
+                        <input type="number" step="0.1" class="form-control"
+                               id="eta" name="eta" placeholder="e.g., 50" required>
                     </div>
 
                 </div>

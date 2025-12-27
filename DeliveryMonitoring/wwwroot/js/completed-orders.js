@@ -465,14 +465,15 @@ document.getElementById('reviewForm').addEventListener('submit', async function 
             },
             body: JSON.stringify({ voucherCode, purpose, note, isDelivery })
         });
-
-        if (response.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
-            alert("Submitted successfully.");
-            location.reload();
+        const responseText = await response.text();
+        if (!response.ok) {
+            showToast("Submission failed: " + responseText, "error");
+            return;
+            
         } else {
-            const error = await response.text();
-            alert("Submission failed: " + error);
+            bootstrap.Modal.getInstance(document.getElementById('reviewModal'))?.hide();
+            showToast("Note saved successfully!", "success");
+            location.reload();
         }
     } catch (err) {
         console.error(err);

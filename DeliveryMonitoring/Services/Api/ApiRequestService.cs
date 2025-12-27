@@ -318,7 +318,7 @@ namespace DeliveryMonitoring.Services.Api
         #endregion
 
         #region Completed Orders
-        public Task<HulubejeResponse<bool>> CompletePendingOrdersAsync(CompletedOrders request)
+        public Task<HulubejeResponse<bool>> CompletePendingOrderAsync(OrderCompletionRequest request)
             => SendAsync<bool>(_client, _completePendingOrder, request);
         public async Task<HulubejeResponse<List<CompletedOrders>>> GetPendingOrdersAsync(bool skipCache = true)
         {

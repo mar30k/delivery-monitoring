@@ -9,65 +9,74 @@ export const SummaryTable = (function () {
     };
 
     // Column indexes per user type
-    const COL_INDEX = {
-        MERCHANT: {
-            TIN: 0,
-            COMPANY: 1,
-            BRANCH: 2,
-            TOTAL_DINEIN_ORDERS: 3,
-            DINEIN_AMOUNT: 4,
-            TOTAL_TAKEAWAY_ORDERS: 5,
-            TAKEAWAY_AMOUNT: 6,
-            TOTAL_SCHEDULED_TAKEAWAY_ORDERS: 7,
-            SCHEDULED_TAKEAWAY_AMOUNT: 8,
-            TOTAL_DELIVERY_ORDERS: 9,
-            DELIVERY_AMOUNT: 10,
-            TOTAL_SCHEDULED_DELIVERY_ORDERS: 11,
-            SCHEDULED_DELIVERY_AMOUNT: 12,
-            GRAND_TOTAL: 13,
-            TOTAL_CONSIGNEE_COUNT: 14
-        },
-        CONSIGNEE: {
-            PHONE: 0,
-            NAME: 1,
-            TOTAL_DINEIN_ORDERS: 2,
-            DINEIN_AMOUNT: 3,
-            TOTAL_TAKEAWAY_ORDERS: 4,
-            TAKEAWAY_AMOUNT: 5,
-            TOTAL_SCHEDULED_TAKEAWAY_ORDERS: 6,
-            SCHEDULED_TAKEAWAY_AMOUNT: 7,
-            TOTAL_DELIVERY_ORDERS: 8,
-            DELIVERY_AMOUNT: 9,
-            TOTAL_SCHEDULED_DELIVERY_ORDERS: 10,
-            SCHEDULED_DELIVERY_AMOUNT: 11,
-            GRAND_TOTAL: 8,
-            TOTAL_MERCHANT_COUNT: 9
-        },
-        DRIVER: {
-            PHONE: 0,
-            NAME: 1,
-            TOTAL_DELIVERY_ORDERS: 2,
-            DELIVERY_AMOUNT: 3,
-            TOTAL_DISTANCE: 4,
-            TOTAL_ETA_DIFFERENCE: 5,
-            TIMELY_DELIVERIES: 6,
-            LATE_DELIVERIES: 7,
-            AVERAGE_RATING: 8,
-            TIP: 9,
-            TOTAL_CONSIGNEE_COUNT: 10,
-            TOTAL_MERCHANT_COUNT: 11
-        },
-        SUPERVISOR: {
-            PHONE: 0,
-            NAME: 1,
-            TOTAL_DELIVERY_ORDERS: 2,
-            DELIVERY_AMOUNT: 3,
-            PURPOSE_SUMMARY: 4,
-            TOTAL_CONSIGNEE_COUNT: 5,
-            TOTAL_MERCHANT_COUNT: 6
-        }
+    const COLUMNS = {
+        MERCHANT: [
+            'TIN',
+            'COMPANY',
+            'BRANCH',
+            'TOTAL_DINEIN_ORDERS',
+            'DINEIN_AMOUNT',
+            'TOTAL_TAKEAWAY_ORDERS',
+            'TAKEAWAY_AMOUNT',
+            'TOTAL_SCHEDULED_TAKEAWAY_ORDERS',
+            'SCHEDULED_TAKEAWAY_AMOUNT',
+            'TOTAL_DELIVERY_ORDERS',
+            'DELIVERY_AMOUNT',
+            'TOTAL_SCHEDULED_DELIVERY_ORDERS',
+            'SCHEDULED_DELIVERY_AMOUNT',
+            'GRAND_TOTAL',
+            'TOTAL_CONSIGNEE_COUNT',
+        ],
+
+        CONSIGNEE: [
+            'PHONE',
+            'NAME',
+            'TOTAL_DINEIN_ORDERS',
+            'DINEIN_AMOUNT',
+            'TOTAL_TAKEAWAY_ORDERS',
+            'TAKEAWAY_AMOUNT',
+            'TOTAL_SCHEDULED_TAKEAWAY_ORDERS',
+            'SCHEDULED_TAKEAWAY_AMOUNT',
+            'TOTAL_DELIVERY_ORDERS',
+            'DELIVERY_AMOUNT',
+            'TOTAL_SCHEDULED_DELIVERY_ORDERS',
+            'SCHEDULED_DELIVERY_AMOUNT',
+            'GRAND_TOTAL',
+            'TOTAL_MERCHANT_COUNT',
+        ],
+
+        DRIVER: [
+            'PHONE',
+            'NAME',
+            'TOTAL_DELIVERY_ORDERS',
+            'DELIVERY_AMOUNT',
+            'TOTAL_DISTANCE',
+            'TOTAL_ETA_DIFFERENCE',
+            'TIMELY_DELIVERIES',
+            'LATE_DELIVERIES',
+            'AVERAGE_RATING',
+            'TIP',
+            'TOTAL_CONSIGNEE_COUNT',
+            'TOTAL_MERCHANT_COUNT',
+        ],
+
+        SUPERVISOR: [
+            'PHONE',
+            'NAME',
+            'TOTAL_DELIVERY_ORDERS',
+            'DELIVERY_AMOUNT',
+            'PURPOSE_SUMMARY',
+            'TOTAL_CONSIGNEE_COUNT',
+            'TOTAL_MERCHANT_COUNT',
+        ],
     };
 
+    const COL_INDEX = Object.fromEntries(
+        Object.entries(COLUMNS).map(([group, cols]) => [
+            group,
+            Object.fromEntries(cols.map((name, index) => [name, index]))
+        ])
+    );
     function getSummaryTableConfig(userType) {
         const baseConfig = {
             orderingColumn: [1, "asc"],

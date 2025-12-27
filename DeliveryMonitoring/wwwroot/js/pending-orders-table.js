@@ -1,23 +1,25 @@
 ﻿import { center, safeNumberRenderer, bindExportButton, getBaseTableConfig } from './table-utils.js';
 export const PendingOrdersTable = (function () {
 
-    // Column indexes for clarity
-    const COL_INDEX = {
-        VOUCHER: 0,
-        COMPANY: 1,
-        BRANCH: 2,
-        FIRST_NAME: 3,
-        PHONE: 4,
-        REQUEST_DATE: 5,
-        DISTANCE: 6,
-        DURATION: 7,
-        ETA: 8,
-        DRIVER_PHONE: 9,
-        SUPERVISOR: 10,
-        TOTAL_AMOUNT: 11,
-        ACTIONS: 12,
-    };
-
+    const COLUMNS = [
+        'VOUCHER',
+        'COMPANY',
+        'BRANCH',
+        'STATUS',
+        'FIRST_NAME',
+        'PHONE',
+        'REQUEST_DATE',
+        'DISTANCE',
+        'DURATION',
+        'ETA',
+        'DRIVER_PHONE',
+        'SUPERVISOR',
+        'TOTAL_AMOUNT',
+        'ACTIONS',
+    ];
+    const COL_INDEX = Object.fromEntries(
+        COLUMNS.map((name, index) => [name, index])
+    );
     function getPendingOrdersTable() {
         const baseConfig = {
             orderingColumn: [COL_INDEX.REQUEST_DATE, "desc"],
@@ -33,6 +35,7 @@ export const PendingOrdersTable = (function () {
             center({ data: "voucherCode", render: Renderers.voucherCode }),
             center({ data: "companyName" }),
             center({ data: "branchName" }),
+            center({ data: "status" }),
             center({ data: "firstName" }),
             center({ data: "phoneNumber", render: Renderers.phone }),
             center({

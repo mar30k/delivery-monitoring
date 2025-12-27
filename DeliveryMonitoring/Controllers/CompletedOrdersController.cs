@@ -253,18 +253,18 @@ namespace DeliveryMonitoring.Controllers
         /// Saves a review or note for a completed order.
         /// </summary>
         [HttpPost("/completePendingOrder")]
-        public async Task<IActionResult> CompletePendingOrderAsync([FromBody] CompletedOrders request)
+        public async Task<IActionResult> CompletePendingOrderAsync([FromBody] OrderCompletionRequest request)
         {
-            if (request == null)
-                return BadRequest("Request cannot be null.");
-            if (string.IsNullOrWhiteSpace(request.VoucherCode))
-                return BadRequest("VoucherCode is required.");
-            if (string.IsNullOrWhiteSpace(request.DriverPhoneNumber))
-                return BadRequest("Driver Phone is required.");
-            if (request?.Eta == null)
-                return BadRequest("ETA is required.");
-            if (request?.Duration ==  null)
-                return BadRequest("Duration is required.");
+            if (!ModelState.IsValid)
+            {
+                // Collect all error messages into one string
+                var errors = ModelState.Values
+                                       .SelectMany(v => v.Errors)
+                                       .Select(e => e.ErrorMessage)
+                                       .ToList();
+
+                return BadRequest(string.Join(" | ", errors));
+            }
             try
             {
                 var supervisorResponse =  await OrderHelpers.GetAuthenticatedSupervisorAsync(
@@ -279,7 +279,13 @@ namespace DeliveryMonitoring.Controllers
                             : "Faile To Complete Pending Order.");
                 }
 
-                var result = await _apiRequestService.CompletePendingOrdersAsync(request);
+                var activeDeliveryOrders = await _apiRequestService.GetOrderRequestsAsync();
+                if (activeDeliveryOrders.Any(c => c.VoucherCode == request.VoucherCode))
+                {
+                    return BadRequest("Order is still in delivery.");
+                }
+
+                var result = await _apiRequestService.CompletePendingOrderAsync(request);
                 
 
                 if (!result.IsSuccessful)

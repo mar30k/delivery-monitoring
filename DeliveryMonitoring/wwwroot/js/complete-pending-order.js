@@ -125,21 +125,23 @@ document
                 body: JSON.stringify(payload)
             });
 
+            const responseText = await response.text();
+
             if (!response.ok) {
-                const errorMessage = await response.text();
-                throw new Error(errorMessage || 'Request failed');
+                showToast(`Failed to complete order: ${responseText}`, "error");
+                return;
             }
 
-            // Close modal
-            bootstrap.Modal.getInstance(modalEl)?.hide();
-
-            // Success feedback
-            alert('Order completed successfully.');
-            location.reload();
+            if (responseText === "true") {
+                bootstrap.Modal.getInstance(modalEl)?.hide();
+                showToast('Order completed successfully.', "success");
+                location.reload();
+            } else {
+                showToast(`Unexpected response: ${responseText}`, "error");
+            }
 
         } catch (error) {
-            console.error('Complete order error:', error);
-            alert(`Failed to complete order: ${error.message}`);
+            showToast(`Failed to complete order: ${error.message}`, "error");
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Complete Order';

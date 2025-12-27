@@ -1,27 +1,30 @@
 ﻿import { center, safeNumberRenderer, bindExportButton, getBaseTableConfig } from './table-utils.js';
 export const ReportTable = (function () {
 
-    // Column indexes for clarity
-    const COL_INDEX = {
-        VOUCHER: 0,
-        COMPANY: 1,
-        BRANCH: 2,
-        FIRST_NAME: 3,
-        PHONE: 4,
-        REQUEST_DATE: 5,
-        DISTANCE: 6,
-        DURATION: 7,
-        ETA: 8,
-        DRIVER_PHONE: 9,
-        SUPERVISOR: 10,
-        TOTAL_AMOUNT: 11,
-        TIP: 12,
-        PURPOSE: 13,
-        NOTE: 14,
-        REVIEW: 15,
-        RATING: 16,
-        TYPE: 17 // only for allOrders
-    };
+    const columns = [
+        'VOUCHER',
+        'COMPANY',
+        'BRANCH',
+        'FIRST_NAME',
+        'PHONE',
+        'REQUEST_DATE',
+        'DISTANCE',
+        'DURATION',
+        'ETA',
+        'DRIVER_PHONE',
+        'SUPERVISOR',
+        'TOTAL_AMOUNT',
+        'TIP',
+        'PURPOSE',
+        'NOTE',
+        'REVIEW',
+        'RATING',
+        'TYPE',
+    ];
+
+    const COL_INDEX = Object.fromEntries(
+        columns.map((name, index) => [name, index])
+    );
 
     // Default report column widths
     const BASE_COLUMN_WIDTHS = [

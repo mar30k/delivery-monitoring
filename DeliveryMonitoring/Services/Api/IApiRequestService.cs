@@ -146,7 +146,7 @@ namespace DeliveryMonitoring.Services.Api
         /// A <see cref="HulubejeResponse{Boolean}"/> indicating whether the operation
         /// completed successfully, along with any validation or processing errors.
         /// </returns>
-        Task<HulubejeResponse<bool>> CompletePendingOrdersAsync(CompletedOrders request);
+        Task<HulubejeResponse<bool>> CompletePendingOrderAsync(OrderCompletionRequest request);
         /// <summary>
         /// Retrieves all completed orders associated with the logged-in company.
         /// </summary>

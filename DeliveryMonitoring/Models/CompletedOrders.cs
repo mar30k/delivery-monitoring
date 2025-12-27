@@ -32,6 +32,25 @@ namespace DeliveryMonitoring.Models
         public string? RequestCreatedAtString { get; set; }
     }
 
+    public class OrderCompletionRequest
+    {
+        [Required(ErrorMessage = "Driver Phone is required.")]
+        public string DriverPhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "VoucherCode is required.")]
+        public string VoucherCode { get; set; }
+
+        [Required(ErrorMessage = "Distance is required.")]
+        public double? Distance { get; set; } // nullable to trigger Required
+
+        [Required(ErrorMessage = "ETA is required.")]
+        public double? Eta { get; set; }
+
+        [Required(ErrorMessage = "Duration is required.")]
+        public double? Duration { get; set; }
+    }
+
+
     public class CompletedOrdersViewModel
     {
         public HulubejeResponse<List<CompletedOrders>>? CompletedOrders { get; set; }
