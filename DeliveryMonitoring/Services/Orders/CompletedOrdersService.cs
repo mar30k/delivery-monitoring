@@ -192,6 +192,22 @@ namespace DeliveryMonitoring.Services.Orders
                     };
                 }
 
+                var activeOrders = await _apiRequestService.GetOrderRequestsAsync();
+
+                var activeOrdersByVoucher =
+                    activeOrders
+                        .Where(a => !string.IsNullOrEmpty(a.VoucherCode))
+                        .ToDictionary(a => a.VoucherCode!);
+
+                foreach (var pendingOrder in orders)
+                {
+                    if (!string.IsNullOrEmpty(pendingOrder.VoucherCode) &&
+                        activeOrdersByVoucher.TryGetValue(pendingOrder.VoucherCode, out var activeOrder))
+                    {
+                        pendingOrder.Status = activeOrder.Status;
+                    }
+                }
+
                 var filtered = OrderHelpers.FilterOrders(orders, @params, CompanyTin, AdminCompanyTin);
                 filtered.ForEach(OrderHelpers.PrepareDisplayValues);
                 return new HulubejeResponse<List<CompletedOrders>>

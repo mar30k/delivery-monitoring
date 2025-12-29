@@ -263,6 +263,7 @@ async function showDetailsModal(button) {
     const customerPhone = button.getAttribute('data-customer-phone');
     const customerReview = button.getAttribute('data-customer-review');
     const customerRating = button.getAttribute('data-customer-rating');
+    const supervisorPhone = button.getAttribute('data-supervisor-phone');
     const purposeKey = button.getAttribute('data-purpose-key');
     const isDelivery = button.getAttribute('data-is-delivery');
 
@@ -278,6 +279,7 @@ async function showDetailsModal(button) {
     editBtn.setAttribute('data-purpose-key', purposeKey);
     editBtn.setAttribute('data-note', note);
     editBtn.setAttribute('data-is-delivery', isDelivery);
+    editBtn.setAttribute('data-supervisor-phone', supervisorPhone);
     // Show the modal immediately
     const modal = new bootstrap.Modal(document.getElementById('reviewDetailsModal'));
     modal.show();
@@ -301,6 +303,7 @@ async function showReviewModal(button) {
     const customerRating = button.getAttribute('data-customer-rating');
     const purposeKey = button.getAttribute('data-purpose-key');
     const isDelivery = button.getAttribute('data-is-delivery');
+    const supervisorPhone = button.getAttribute('data-supervisor-phone');
 
     // Close any open modal before opening this one
     document.querySelectorAll('.modal.show').forEach(modalEl => {
@@ -309,6 +312,7 @@ async function showReviewModal(button) {
 
     // Populate modal inputs
     document.getElementById('reviewOrderId').value = voucherCode;
+    document.getElementById('supervisorPhone').value = supervisorPhone;
     document.getElementById('isDelivery').value = isDelivery;
     document.getElementById('reviewPurpose').value = purposeKey || '';
     document.getElementById('reviewNote').value = note || '';
@@ -457,13 +461,14 @@ document.getElementById('reviewForm').addEventListener('submit', async function 
     const purpose = document.getElementById('reviewPurpose').value;
     const note = document.getElementById('reviewNote').value || '';
     const isDelivery = document.getElementById('isDelivery').value == "true";
+    const supervisorPhoneNumber = document.getElementById('supervisorPhone').value || '';
     try {
         const response = await fetch('/savenote', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ voucherCode, purpose, note, isDelivery })
+            body: JSON.stringify({ voucherCode, purpose, note, isDelivery, supervisorPhoneNumber })
         });
         const responseText = await response.text();
         if (!response.ok) {

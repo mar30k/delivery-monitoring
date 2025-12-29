@@ -112,6 +112,7 @@ const Renderers = {
                 data-purpose-key="${purposeKey}"
                 data-voucher-code="${row.voucherCode}"
                 data-customer-phone="${row.phoneNumber || ''}"
+                data-supervisor-phone="${row.supervisorPhoneNumber || ''}"
                 data-customer-review="${row.review || ''}"
                 data-customer-rating="${row.rating || 0}"
                 data-phone-number="${row.driverPhoneNumber || ''}"
@@ -124,6 +125,7 @@ const Renderers = {
             <button class="btn btn-outline-danger btn-sm"
                 data-voucher-code="${row.voucherCode}"
                 data-phone-number="${row.driverPhoneNumber || ''}"
+                data-supervisor-phone="${row.supervisorPhoneNumber || ''}"
                 data-customer-phone="${row.phoneNumber || ''}"
                 data-customer-review="${row.review || ''}"
                 data-customer-rating="${row.rating || 0}"
@@ -160,7 +162,8 @@ const Renderers = {
             data-duration="${row.duration}"
             data-distance="${row.distance}"
             data-eta="${row.eta}"
-            data-driver-phone="${row.driverPhoneNumber}"
+            data-driverphone="${row.driverPhoneNumber}"
+            data-supervisorphone="${row.supervisorPhoneNumber}"
             onclick="openCompletePendingOrderModal(this)">
             Complete
         </button>`

@@ -40,6 +40,8 @@ namespace DeliveryMonitoring.Models
         [Required(ErrorMessage = "VoucherCode is required.")]
         public string VoucherCode { get; set; }
 
+        public string? SupervisorPhone { get; set; }
+
         [Required(ErrorMessage = "Distance is required.")]
         public double? Distance { get; set; } // nullable to trigger Required
 
@@ -48,6 +50,21 @@ namespace DeliveryMonitoring.Models
 
         [Required(ErrorMessage = "Duration is required.")]
         public double? Duration { get; set; }
+    }
+    public class SaveNoteRequest
+    {
+        [Required(ErrorMessage = "Purpose is required.")]
+        public string Purpose { get; set; }
+
+        [Required(ErrorMessage = "VoucherCode is required.")]
+        public string VoucherCode { get; set; }
+
+        [Required(ErrorMessage = "Note is required.")]
+        public string Note { get; set; }
+
+        public bool IsDelivery { get; set; }
+
+        public string? SupervisorPhoneNumber { get; set; }
     }
 
 

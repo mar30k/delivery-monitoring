@@ -98,7 +98,7 @@ namespace DeliveryMonitoring.Services.Api
             _authenicateUser = "SysInitialize/authenticate?";
             _getUserByUserName = "User/filter?";
             _getCompletedOrders = "voucher/getcompletedorders";
-            _completePendingOrder = "voucher/complet";
+            _completePendingOrder = "voucher/completeorder";
             _getPendingOrders = "voucher/getpendingorders";
             _changeorderbranch = "voucher/changeorderbranch";
             _getCompletedOrdersByType = "voucher/getordersbytype?";

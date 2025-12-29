@@ -6,7 +6,8 @@
     const duration = el.dataset.duration;
     const distance = el.dataset.distance;
     const eta = el.dataset.eta;
-    const driverPhone = el.dataset.driverPhone;
+    const driverPhone = el.dataset.driverphone;
+    const supervisorphone = el.dataset.supervisorphone;
 
     const modalEl = document.getElementById('completePendingOrderModal');
     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -20,6 +21,7 @@
     document.getElementById('duration').value = duration ?? '';
     document.getElementById('distance').value = distance ?? '';
     document.getElementById('eta').value = eta ?? '';
+    document.getElementById('supervisorPhone').value = supervisorphone ?? '';
 
     // Prepare driver select UI (loading state)
     prepareDriverSelectLoading();
@@ -70,12 +72,17 @@ async function loadDrivers(selectedPhone) {
 
         select.appendChild(new Option('Select driver', ''));
 
-        drivers.forEach(driver => {
-            const option = new Option(
-                `${driver.firstName} (${driver.phoneNumber})`,
-                driver.phoneNumber,
-                driver.phoneNumber === selectedPhone,
-                driver.phoneNumber === selectedPhone
+        drivers
+            .slice()
+            .sort((a, b) =>
+                a.firstName.toLowerCase().localeCompare(b.firstName.toLowerCase())
+            )
+            .forEach(driver => {
+                const option = new Option(
+                    `${driver.firstName} (${driver.phoneNumber})`,
+                    driver.phoneNumber,
+                    driver.phoneNumber === selectedPhone,
+                    driver.phoneNumber === selectedPhone
             );
             select.add(option);
         });
@@ -115,6 +122,7 @@ document
             driverPhoneNumber: document.getElementById('driverPhone').value || null,
             distance: parseFloat(document.getElementById('distance').value) || null,
             duration: parseFloat(document.getElementById('duration').value) || null,
+            supervisorPhone: document.getElementById('supervisorPhone').value || null,
             eta: parseFloat(document.getElementById('eta').value) || null
         };
 

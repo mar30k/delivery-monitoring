@@ -163,9 +163,7 @@ function initTable({
 
     const tableEntry = {
         table: table,
-        get range() {
-            return { start: startDate, end: endDate, isClear: isClear };
-        }
+        range: () => DateRange.getRange()
     };
     startTableAutoRefresh([tableEntry], 60000);
 

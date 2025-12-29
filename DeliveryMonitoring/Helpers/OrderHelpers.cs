@@ -62,53 +62,90 @@ namespace DeliveryMonitoring.Helpers
         /// </summary>
         public static async Task<HulubejeResponse<SupervisorsDTO>> GetAuthenticatedSupervisorAsync(
             AuthenticationManager authManager,
-            IApiRequestService apiService)
+            IApiRequestService apiService,
+            string? assignedSupervisor = "")
         {
-            var response = new HulubejeResponse<SupervisorsDTO>();
-
             var user = authManager.GetUserFromCookie();
             if (user == null)
-            {
-                response.IsSuccessful = false;
-                response.ErrorMessages = new List<string> { "User not authenticated." };
-                return response;
-            }
+                return new HulubejeResponse<SupervisorsDTO>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new List<string> { "User not authenticated." }
+                };
 
-            var supervisors = await apiService.GetSupervisorsAsync();
-            var supervisor = supervisors.FirstOrDefault(s => s.UserName == user.UserName);
+            var supervisor = (await apiService.GetSupervisorsAsync())
+                             .FirstOrDefault(s => s.UserName == user.UserName);
 
             if (supervisor == null)
+                return new HulubejeResponse<SupervisorsDTO>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new List<string> { "Unable to find the supervisor. Please try again!" }
+                };
+
+            if (!string.IsNullOrWhiteSpace(assignedSupervisor) && assignedSupervisor != supervisor?.UserName)
             {
-                response.IsSuccessful = false;
-                response.ErrorMessages = new List<string> { "Unable to find the supervisor. Please try again!" };
-                return response;
+                return new HulubejeResponse<SupervisorsDTO>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new List<string> { "You are not the assigned supervisor for this delivery." }
+                };
             }
 
-            response.IsSuccessful = true;
-            response.Data = supervisor;
-            return response;
+            return new HulubejeResponse<SupervisorsDTO>
+            {
+                IsSuccessful = true,
+                Data = supervisor
+            };
         }
+
 
 
         /// <summary>
         /// Builds the supervisor note for a completed order.
         /// </summary>
-        public static string BuildNote(CompletedOrders order, SupervisorsDTO supervisor)
+        public static HulubejeResponse<string>BuildNote(SaveNoteRequest order, SupervisorsDTO supervisor)
         {
             if (order == null) throw new ArgumentNullException(nameof(order));
             if (supervisor == null) throw new ArgumentNullException(nameof(supervisor));
 
-            if (order.IsDelivery)
-                return order.Note ?? "";
+            if (order.IsDelivery && supervisor.UserName != order.SupervisorPhoneNumber)
+            {
+                return new HulubejeResponse<string>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new List<string> { "You are not the assigned supervisor for this order." }
+                };
+            }
 
-            return $"{supervisor.FirstName} {order.Note ?? ""}";
+            if (string.IsNullOrWhiteSpace(order.Note))
+            {
+                return new HulubejeResponse<string>
+                {
+                    IsSuccessful = false,
+                    ErrorMessages = new List<string>
+                    {
+                        "Supervisor note cannot be empty."
+                    }
+                };
+            }
+
+            var note = order.IsDelivery
+                ? order.Note.Trim()
+                : $"{supervisor.FirstName} {order.Note.Trim()}";
+
+            return new HulubejeResponse<string>
+            {
+                IsSuccessful = true,
+                Data = note
+            };
         }
 
         /// <summary>
         /// Convenience method: gets authenticated supervisor and builds the note.
         /// </summary>
         public static async Task<HulubejeResponse<string>> BuildSupervisorNoteAsync(
-            CompletedOrders order,
+            SaveNoteRequest order,
             AuthenticationManager authManager,
             IApiRequestService apiService)
         {
@@ -122,12 +159,56 @@ namespace DeliveryMonitoring.Helpers
                     ErrorMessages = supervisorResponse.ErrorMessages
                 };
             }
-
-            return new HulubejeResponse<string>
-            {
-                IsSuccessful = true,
-                Data = BuildNote(order, supervisorResponse.Data)
-            };
+            return BuildNote(order, supervisorResponse.Data);
         }
+
+        public static async Task<HulubejeResponse<bool>> ValidatePendingOrderCompletionAsync(
+            OrderCompletionRequest request,
+            AuthenticationManager authManager,
+            IApiRequestService apiService)
+        {
+            // Supervisor authentication & authorization
+            var supervisorResponse = await GetAuthenticatedSupervisorAsync(
+                authManager,
+                apiService,
+                assignedSupervisor: request.SupervisorPhone
+            );
+
+            if (!supervisorResponse.IsSuccessful)
+                return HulubejeResponse<bool>.Fail(supervisorResponse.ErrorMessages ?? new List<string>());
+
+            // Order must not be active in delivery
+            var activeOrders = await apiService.GetOrderRequestsAsync();
+            if (activeOrders.Any(o => o.VoucherCode == request.VoucherCode))
+            {
+                return HulubejeResponse<bool>.Fail(
+                    "Order is still in delivery."
+                );
+            }
+
+            return HulubejeResponse<bool>.Success(true);
+        }
+        public static async Task<HulubejeResponse<SaveNoteRequest>> ValidateAndBuildNoteAsync(
+            SaveNoteRequest request,
+            AuthenticationManager authManager,
+            IApiRequestService apiService)
+        {
+            var noteResponse = await BuildSupervisorNoteAsync(
+                request,
+                authManager,
+                apiService
+            );
+
+            if (!noteResponse.IsSuccessful)
+            {
+                return HulubejeResponse<SaveNoteRequest>.Fail(
+                    noteResponse.ErrorMessages ?? new List<string> { "Invalid note." }
+                );
+            }
+
+            request.Note = noteResponse.Data!;
+            return HulubejeResponse<SaveNoteRequest>.Success(request);
+        }
+
     }
 }
