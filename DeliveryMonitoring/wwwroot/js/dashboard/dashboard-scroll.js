@@ -5,7 +5,7 @@
     let isPaused = false;
     let resumeTimer;
 
-    const speed = 3;
+    const speed = 1;
     const pauseTime = 3000;
 
     let running = false;

@@ -1,4 +1,4 @@
-﻿import { center, safeNumberRenderer, bindExportButton, getBaseTableConfig } from './table-utils.js';
+﻿const { center, safeNumberRenderer, bindExportButton, getBaseTableConfig } = await import(`./table-utils.js?v=${Date.now()}`);
 export const PendingOrdersTable = (function () {
 
     const COLUMNS = [
@@ -83,20 +83,22 @@ export const PendingOrdersTable = (function () {
         const tableSelector = `#${tableId}`;
         const config = getPendingOrdersTable(tableId);
 
-        DateRange.init("#dateRange");
-
+        const dateRange = DateRange.create("#dateRange");
+        dateRange.init();
         initTable({
             ...config,
             tableSelector,
             ajaxUrl,
-            ajaxDataHook: DateRange.applyToAjax,
-            reloadOn: "#dateRange"
+            dateRange,
+            reloadOn: "#dateRange",
+            emptyTableMessage: "No Pending Orders Available."
         });
 
         bindExportButton(
             tableSelector,
             userType,
-            sheetName
+            sheetName,
+            dateRange
         );
     }
 

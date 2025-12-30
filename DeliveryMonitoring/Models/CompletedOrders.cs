@@ -42,8 +42,7 @@ namespace DeliveryMonitoring.Models
 
         public string? SupervisorPhone { get; set; }
 
-        [Required(ErrorMessage = "Distance is required.")]
-        public double? Distance { get; set; } // nullable to trigger Required
+        public double Distance { get; set; } = 0;
 
         [Required(ErrorMessage = "ETA is required.")]
         public double? Eta { get; set; }

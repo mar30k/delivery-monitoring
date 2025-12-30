@@ -9,9 +9,9 @@ export function safeNumberRenderer(d, type, decimals = 2, allowZero = true) {
 }
 
 
-export function bindExportButton(tableSelector, typePrefix, sheetName, columnWidths = []) {
+export function bindExportButton(tableSelector, typePrefix, sheetName, dateRange, columnWidths = []) {
     $("#exportToExcelBtn").on("click", () => {
-        const { start, end } = DateRange.getRange();
+        const { start, end } = dateRange.getRange();
         exportTableToExcel({
             tableSelector,
             typePrefix,

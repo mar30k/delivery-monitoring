@@ -1,4 +1,4 @@
-﻿import { center, safeNumberRenderer, bindExportButton, getBaseTableConfig } from './table-utils.js';
+﻿const { center, safeNumberRenderer, bindExportButton, getBaseTableConfig } = await import(`./table-utils.js?v=${Date.now()}`);
 export const SummaryTable = (function () {
 
     const USER_TYPE = {
@@ -221,19 +221,30 @@ export const SummaryTable = (function () {
     function init({ tableId, ajaxUrl, userType, sheetName }) {
         const tableSelector = `#${tableId}`;
         const config = getSummaryTableConfig(userType);
-        DateRange.init("#dateRange");
-        initTable({
+
+        const dateRange = DateRange.create("#dateRange");
+        dateRange.init();
+
+
+        const table = initTable({
             ...config,
             tableSelector,
             ajaxUrl,
-            ajaxDataHook: DateRange.applyToAjax,
+            dateRange,
             reloadOn: "#dateRange"
         });
 
+        const tableEntry = {
+            table: table,
+            range: () => dateRange.getRange()
+        };
+
+        startTableAutoRefresh([tableEntry], 60000);
         bindExportButton(
             tableSelector,
             `${userType}_Summary`,
             sheetName,
+            dateRange
         );
     }
 

@@ -23,10 +23,10 @@ function initTable({
     columns = [],
     headerFilterColumns = [],
     nonOrderableTargets = [],
-    ajaxDataHook = null,
-    reloadOn = null
+    dateRange = null,
+    reloadOn = null,
+    emptyTableMessage = "No Summary Available."
 }) {
-    // Apply numeric render only if no custom render is already defined
     columns.forEach((col, idx) => {
         if (!col.render) { // Preserve custom renderers
             if (floatCols.includes(idx)) {
@@ -49,8 +49,8 @@ function initTable({
             url: ajaxUrl,
             type: 'GET',
             data: function (d) {
-                if (typeof ajaxDataHook === 'function') {
-                    ajaxDataHook(d);
+                if (typeof dateRange.applyToAjax === 'function') {
+                    dateRange.applyToAjax(d);
                 }
             }            
         },
@@ -69,7 +69,7 @@ function initTable({
         lengthMenu: [[10, 15, 25, 50, 100, -1], [10, 15, 25, 50, 100, "All"]],
         pageLength: 50,
         columns: columns,
-        language: { emptyTable: "No Summary Available." },
+        language: { emptyTable: emptyTableMessage },
 
         footerCallback: function (row, data, start, end, display) {
             var api = this.api();
@@ -161,11 +161,6 @@ function initTable({
         }
     });
 
-    const tableEntry = {
-        table: table,
-        range: () => DateRange.getRange()
-    };
-    startTableAutoRefresh([tableEntry], 60000);
 
     return table;
 }

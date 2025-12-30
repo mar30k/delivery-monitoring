@@ -1,4 +1,4 @@
-﻿import { center, safeNumberRenderer, bindExportButton, getBaseTableConfig } from './table-utils.js';
+﻿const { center, safeNumberRenderer, bindExportButton, getBaseTableConfig } = await import(`./table-utils.js?v=${Date.now()}`);
 export const ReportTable = (function () {
 
     const columns = [
@@ -112,15 +112,24 @@ export const ReportTable = (function () {
         const tableSelector = `#${tableId}`;
         const config = getReportTableConfig(tableId);
 
-        DateRange.init("#dateRange");
+        const dateRange = DateRange.create("#dateRange");
+        dateRange.init();
 
-        initTable({
+        const table = initTable({
             ...config,
             tableSelector,
             ajaxUrl,
-            ajaxDataHook: DateRange.applyToAjax,
-            reloadOn: "#dateRange"
+            dateRange: dateRange,
+            reloadOn: "#dateRange",
+            emptyTableMessage: "No Report Available."
         });
+
+        const tableEntry = {
+            table: table,
+            range: () => dateRange.getRange()
+        };
+
+        startTableAutoRefresh([tableEntry], 60000);
 
         const columnWidths = [...BASE_COLUMN_WIDTHS];
         if (tableId === "allOrders") {
@@ -131,6 +140,7 @@ export const ReportTable = (function () {
             tableSelector,
             userType,
             sheetName,
+            dateRange,
             columnWidths
         );
     }

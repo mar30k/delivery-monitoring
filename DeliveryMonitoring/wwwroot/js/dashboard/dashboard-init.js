@@ -1,9 +1,9 @@
-﻿import { DASHBOARD_CONFIG } from './dashboard-config.js';
-import { DashboardUtils } from './dashboard-utils.js';
-import { DashboardCharts } from './dashboard-charts.js';
-import { DashboardMap } from './dashboard-map.js';
-import { DashboardScroll } from './dashboard-scroll.js';
-import { DashboardAlerts } from './dashboard-alerts.js'; 
+﻿const { DASHBOARD_CONFIG } = await import(`./dashboard-config.js?v=${Date.now()}`);
+const { DashboardUtils } = await import(`./dashboard-utils.js?v=${Date.now()}`);
+const { DashboardCharts } = await import(`./dashboard-charts.js?v=${Date.now()}`);
+const { DashboardMap } = await import(`./dashboard-map.js?v=${Date.now()}`);
+const { DashboardScroll } = await import(`./dashboard-scroll.js?v=${Date.now()}`);
+const { DashboardAlerts } = await import(`./dashboard-alerts.js?v=${Date.now()}`);
 
 $(function () {
 

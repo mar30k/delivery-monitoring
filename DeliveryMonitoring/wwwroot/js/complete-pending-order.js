@@ -120,7 +120,7 @@ document
         const payload = {
             voucherCode: document.getElementById('completeVoucherCode').value,
             driverPhoneNumber: document.getElementById('driverPhone').value || null,
-            distance: parseFloat(document.getElementById('distance').value) || null,
+            distance: parseFloat(document.getElementById('distance').value) || 0,
             duration: parseFloat(document.getElementById('duration').value) || null,
             supervisorPhone: document.getElementById('supervisorPhone').value || null,
             eta: parseFloat(document.getElementById('eta').value) || null
