@@ -1,4 +1,5 @@
-﻿/**
+﻿const { center, safeNumberRenderer, bindExportButton, getBaseTableConfig } = await import(`./table-utils.js?v=${Date.now()}`);
+/**
  * @typedef TableConfig
  * @type {object}
  * @property {string} Type
@@ -58,38 +59,72 @@ const DELIVERY_COL_INDEX = Object.freeze(
     )
 );
 
-// Column definitions
 const baseColumns = [
-    { data: "voucherCode", className: "text-center", render: Renderers.voucherCode },
-    { data: "companyName", className: "text-center" },
-    { data: "branchName", className: "text-center" },
-    { data: "firstName", className: "text-center" },
-    { data: "phoneNumber", className: "text-center", render: Renderers.phone },
-    { data: "requestCreatedAt", className: "text-center", render: Renderers.requestDate.render, createdCell: Renderers.requestDate.createdCell }
+    center({ data: "voucherCode", render: Renderers.voucherCode }),
+    center({ data: "companyName" }),
+    center({ data: "branchName" }),
+    center({ data: "firstName" }),
+    center({ data: "phoneNumber", render: Renderers.phone }),
+    center({
+        data: "requestCreatedAtString",
+        ...Renderers.dateRenderer("requestCreatedAtString", "requestCreatedAt")
+    })
 ];
 
 const dineInAndTakeawayColumns = [
     ...baseColumns,
-    { data: "supervisorName", className: "text-center" },
-    { data: "totalAmount", className: "text-center", render: Renderers.amount },
-    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.reviewOrShow(r, false) },
-    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.activityBtn(r) },
-    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.detailsLink(r) }
+    center({ data: "supervisorName" }),
+    center({ data: "totalAmount", render: Renderers.amount }),
+
+    center({
+        data: null,
+        orderable: false,
+        render: (d, t, r) => Renderers.reviewOrShow(r, false)
+    }),
+
+    center({
+        data: null,
+        orderable: false,
+        render: (d, t, r) => Renderers.activityBtn(r)
+    }),
+
+    center({
+        data: null,
+        orderable: false,
+        render: (d, t, r) => Renderers.detailsLink(r)
+    })
 ];
 
 const deliveryColumns = [
     ...baseColumns,
-    { data: "distance", className: "text-center", render: Renderers.distance },
-    { data: "duration", className: "text-center", render: Renderers.duration },
-    { data: "eta", className: "text-center", render: Renderers.duration },
-    { data: "etaDifference", className: "text-center", render: Renderers.timeDeviationRenderer },
-    { data: "driverPhoneNumber", className: "text-center", render: Renderers.phone },
-    { data: "supervisorName", className: "text-center", render: Renderers.orDefault },
-    { data: "totalAmount", className: "text-center", render: Renderers.amount },
-    { data: "tip", className: "text-center", render: Renderers.amount },
-    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.reviewOrShow(r, true) },
-    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.activityBtn(r) },
-    { data: null, className: "text-center", orderable: false, render: (d, t, r) => Renderers.detailsLink(r) }
+
+    center({ data: "distance", render: Renderers.distance }),
+    center({ data: "duration", render: Renderers.duration }),
+    center({ data: "eta", render: Renderers.duration }),
+    center({ data: "etaDifference", render: Renderers.timeDeviationRenderer }),
+
+    center({ data: "driverPhoneNumber", render: Renderers.phone }),
+    center({ data: "supervisorName", render: Renderers.orDefault }),
+    center({ data: "totalAmount", render: Renderers.amount }),
+    center({ data: "tip", render: Renderers.amount }),
+
+    center({
+        data: null,
+        orderable: false,
+        render: (d, t, r) => Renderers.reviewOrShow(r, true)
+    }),
+
+    center({
+        data: null,
+        orderable: false,
+        render: (d, t, r) => Renderers.activityBtn(r)
+    }),
+
+    center({
+        data: null,
+        orderable: false,
+        render: (d, t, r) => Renderers.detailsLink(r)
+    })
 ];
 
 const TableTypeConfigs = {

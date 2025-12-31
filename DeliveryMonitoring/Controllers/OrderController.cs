@@ -83,13 +83,20 @@ namespace DeliveryMonitoring.Controllers
                 if (string.IsNullOrWhiteSpace(CompanyTin)) { return new List<OrderDetail>(); }
 
                 var response = await _apiRequestService.GetOrderRequestsAsync();
+                var superVisors = await _apiRequestService.GetSupervisorsAsync();
                 if (response.Count > 0)
                 {
                     response?.ForEach(x => {
                         var createdAt = x.CreatedAt ?? DateTime.MinValue;
+                        var eta = x.Eta ?? DateTime.MinValue;
+                        var supervisor = superVisors.FirstOrDefault(sup => sup.UserName == x.SupervisedBy);
                         x.CreatedAtString = new DateTimeOffset(DateTime.SpecifyKind(createdAt, DateTimeKind.Utc))
                                         .ToOffset(TimeSpan.FromHours(3))
-                                        .ToString("yyyy-MM-dd HH:mm:ss");
+                                        .ToString("yyyy-MM-dd hh:mm:ss tt");
+                        x.EtaString = new DateTimeOffset(DateTime.SpecifyKind(eta, DateTimeKind.Utc))
+                                        .ToOffset(TimeSpan.FromHours(3))
+                                        .ToString("yyyy-MM-dd hh:mm:ss tt");
+                        x.SupervisorName = supervisor != null ? $"{supervisor.FirstName} {supervisor.SecondName}" : null;
                     });
 
                 }

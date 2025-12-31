@@ -39,21 +39,27 @@ const Renderers = {
         const formatted = value === 0 ? "0" : value.toFixed(2);
         return `<span style="color:${color}; font-weight:600;">${formatted} min</span>`;
     },
-    requestDate: {
-        render: function (data, type, row) {
-            if (type === 'sort' || type === 'type') return row.requestCreatedAt || '';
-            return row.requestCreatedAtString || row.requestCreatedAt || 'N/A';
+    dateRenderer: (dataKey, rawKey) => ({
+        render: (data, type, row) => {
+            // For sorting / type detection, use raw value
+            if (type === 'sort' || type === 'type') return row[rawKey] || '';
+
+            // Display formatted string if exists, else fallback to raw
+            return row[dataKey] || row[rawKey] || 'N/A';
         },
-        createdCell: function (td, cellData, rowData, row, col) {
-            if (rowData.requestCreatedAt) {
-                const parsed = moment(rowData.requestCreatedAt, "YYYY-MM-DD hh:mm:ss");
-                td.setAttribute("data-order", parsed.format("YYYY-MM-DDTHH:mm:ss"));
-                td.innerText = rowData.requestCreatedAtString || rowData.requestCreatedAt;
-            } else {
-                td.innerText = "N/A";
-            }
+
+        createdCell: (td, cellData, rowData) => {
+            // Set data-order and data-iso attributes
+            const orderValue = rowData[rawKey] || '';
+            const displayValue = rowData[dataKey] || rowData[rawKey] || 'N/A';
+
+            td.setAttribute('data-order', orderValue);
+            td.setAttribute('data-iso', displayValue);
+
+            td.innerText = displayValue;
+            td.classList.add('text-center');
         }
-    },
+    }),
     amount: (d, type) => Renderers.number(d, type, 2, false),
     rating: (d, type) => {
         if (type === 'sort' || type === 'type') return parseFloat(d) || 0;
@@ -166,7 +172,110 @@ const Renderers = {
             data-supervisorphone="${row.supervisorPhoneNumber}"
             onclick="openCompletePendingOrderModal(this)">
             Complete
-        </button>`
+        </button>`,
+
+    textOrNA: (data, type) => {
+        if (type === 'sort' || type === 'type') return data || '';
+        return data !== null && data !== undefined && String(data).trim() !== ''
+            ? data
+            : 'N/A';
+    },
+
+    address: (geo, specific, type) => {
+        if (type === 'sort' || type === 'type') {
+            return [geo, specific].filter(Boolean).join(' ');
+        }
+        if (!geo && !specific) return 'N/A';
+        return [geo, specific].filter(Boolean).join(' - ');
+    },
+
+    booleanYesNo: (data, type) => {
+        if (type === 'sort' || type === 'type') return data ? 1 : 0;
+        return `
+            <span class = ${data ? 'text-success' : 'text-danger'}>
+                    ${data ? 'Yes' : 'No'}
+            </span>
+        `; 
+    },
+    branch: (branchName, type, row) => {
+        // For sorting / type detection
+        if (type === 'sort' || type === 'type') return branchName || '';
+
+        // If no branch name, return fallback
+        if (!branchName) return 'N/A';
+
+        // Include the same data-* attributes as in your old <td>
+        return `
+            <span
+                data-tin="${row.companyTin || ''}"
+                data-company="${row.companyName || ''}"
+                data-branch="${branchName}"
+                data-voucher="${row.voucherCode || ''}">
+                ${branchName}
+                <a onclick="openChangeBranchModal(this)">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+            </span>
+        `;
+    },
+    status: (status, type, row) => {
+        if (type === 'sort' || type === 'type') return status || '';
+        if (!status) return 'N/A';
+
+        const tooltip = status.toLowerCase() === 'sos'
+            ? (row?.sosReason || '')
+            : '';
+        const backgroundColor = statusColors[status.toLowerCase()];
+        return `
+            <span class="p-1 text-white d-flex justify-content-center align-items-center p-1 rounded rounded-2 my-1"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="top"
+                  title="${tooltip}" style="background-color: ${backgroundColor}">
+                ${status}
+            </span>`;
+    },
+    statusReport: (data, type) => {
+        if (type === 'sort' || type === 'type') return data || '';
+        return data ? clean(data) : '-';
+    },
+    assign: (row) => {
+        if (!row.supervisedBy) {
+            return `
+                <a class="btn btn-outline-dark btn-sm"
+                   onclick="openAssignSupervisorModal('${row.voucherCode}')">
+                    Assign
+                </a>`;
+        }
+
+        return `
+            <a href="tel:${row.supervisedBy}">${row.supervisorName ?? row.supervisedBy}</a>
+            <a onclick="openAssignSupervisorModal('${row.voucherCode}')">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </a>`;
+    },
+    detailsActions: (row) => {
+        if (!row?.voucherCode) return 'N/A';
+
+        // Compute redispatch dynamically
+        const status = row.status?.toLowerCase() || '';
+        const orderJson = JSON.stringify(row).replace(/"/g, '&quot;');
+
+        const redispatch = (
+            status === "drivernotfound" ||
+            status === "declined" ||
+            status === "requested" ||
+            status === "sos" ||
+            status === "assigned"
+        ) ? `<a href="#" data-order="${orderJson}" onclick="openRedispatchModal(this)">Redispatch</a>` : '';
+
+        return `
+            <div style="display:inline-block;">
+                <a href="/order/${row.voucherCode}">Details</a>
+                ${redispatch}
+            </div>
+        `;
+    }
+
 };
 
 //#endregion
@@ -196,3 +305,17 @@ function toggleExpandableText(link) {
 }
 
 //#endregion
+const clean = (s) => new DOMParser().parseFromString(s, 'text/html').body.textContent || '-';
+
+const statusColors = {
+    requested: "deepskyblue",
+    arrivedatbranch: "coral",
+    assigned: "lawngreen",
+    declined: "red",
+    accepted: "seagreen",
+    arrived: "#F7BEA2",
+    ontheway: "darkorange",
+    drivernotfound: "red",
+    sos: "darkred",
+    default: "yellow"
+};

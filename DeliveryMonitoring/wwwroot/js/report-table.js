@@ -53,9 +53,8 @@ export const ReportTable = (function () {
             center({ data: "firstName" }),
             center({ data: "phoneNumber", render: Renderers.phone }),
             center({
-                data: "requestCreatedAt",
-                render: Renderers.requestDate.render,
-                createdCell: Renderers.requestDate.createdCell
+                data: "requestCreatedAtString",
+                ...Renderers.dateRenderer("requestCreatedAtString", "requestCreatedAt")
             }),
             center({
                 data: "distance",
