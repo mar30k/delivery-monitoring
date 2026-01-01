@@ -40,10 +40,23 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Index(string tin)
         {
             var status = StatusInfo.StatusMap;
-            List<Driver> drivers =await _apiRequestService.GetAvailableDriversAsync();
+            var drivers =await _apiRequestService.GetAvailableDriversAsync();
+            var orders =await _apiRequestService.GetOrderRequestsAsync();
             drivers = drivers
                 .OrderBy(d => status.GetValueOrDefault(d.Status?.ToLower() ?? "", status["default"]).Priority)
                 .ToList();
+            drivers = drivers
+                    .OrderBy(d => status.GetValueOrDefault(d.Status?.ToLower() ?? "", status["default"]).Priority)
+                    .ToList();
+
+            drivers.ForEach(d =>
+                d.AssignedOrders = orders
+                    .Where(o => o.AssignedDriverPhoneNumber == d.PhoneNumber)
+                    .Select(o => o.VoucherCode)
+                    .Where(v => v != null)
+                    .Cast<string>()
+                    .ToList()
+            );
             return View(tin != null ? drivers.Where(c=> c.CompanyTin == tin) : drivers);
         }
         //Driver Index Page - ends here
@@ -53,6 +66,7 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> LiveLocation()
         {
             var data = await _apiRequestService.GetAvailableDriversAsync();
+            var order = await _apiRequestService.GetOrderRequestsAsync();
             foreach (var item in data ?? new List<Driver>())
             {
                 if (item?.UpdatedAt != null)

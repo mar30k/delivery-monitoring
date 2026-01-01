@@ -38,37 +38,20 @@ namespace DeliveryMonitoring.Controllers
         [Route("/orders")]
         public async Task<IActionResult> Index()
         {
-            List<OrderDetail>? orders = new();
-            List<SupervisorsDTO>? superVisors = new();
             try
             {            
                 if (string.IsNullOrWhiteSpace(CompanyTin))
                 {
                     return RedirectToAction("Logout", "Login");
                 }
+                var superVisors = await _apiRequestService.GetSupervisorsAsync();
 
-                orders = await _apiRequestService.GetOrderRequestsAsync();
-                if (CompanyTin != AdminCompanyTin)
-                {
-                    orders = orders?.Where(o => o.DeliveryTin == CompanyTin).ToList();
-                }
-                superVisors = await _apiRequestService.GetSupervisorsAsync();
-
-                //if (orders != null && orders.Count == 0 && _env.IsDevelopment())
-                //{
-                //    return View(new OrderViewModel
-                //    {
-                //        OrderDetail = new List<OrderDetail> { GetSampleOrder.CreateSampleOrder() },
-                //        Supervisors = superVisors
-                //    });
-                //}
                 return View(new OrderViewModel
                 {
-                    OrderDetail = orders,
                     Supervisors = superVisors
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return View(null);
             }
@@ -86,24 +69,57 @@ namespace DeliveryMonitoring.Controllers
                 var superVisors = await _apiRequestService.GetSupervisorsAsync();
                 if (response.Count > 0)
                 {
-                    response?.ForEach(x => {
-                        var createdAt = x.CreatedAt ?? DateTime.MinValue;
-                        var eta = x.Eta ?? DateTime.MinValue;
-                        var supervisor = superVisors.FirstOrDefault(sup => sup.UserName == x.SupervisedBy);
-                        x.CreatedAtString = new DateTimeOffset(DateTime.SpecifyKind(createdAt, DateTimeKind.Utc))
-                                        .ToOffset(TimeSpan.FromHours(3))
-                                        .ToString("yyyy-MM-dd hh:mm:ss tt");
-                        x.EtaString = new DateTimeOffset(DateTime.SpecifyKind(eta, DateTimeKind.Utc))
-                                        .ToOffset(TimeSpan.FromHours(3))
-                                        .ToString("yyyy-MM-dd hh:mm:ss tt");
-                        x.SupervisorName = supervisor != null ? $"{supervisor.FirstName} {supervisor.SecondName}" : null;
-                    });
+                    if (!string.IsNullOrWhiteSpace(CompanyTin) && CompanyTin != AdminCompanyTin)
+                    {
+                        response = response.Where(order => order.DeliveryTin == CompanyTin).ToList();
+                    }
+                    response?.ForEach(x =>
+                    {
+                        // Validate CreatedAt
+                        if (x.CreatedAt is DateTime createdAt &&
+                            createdAt != DateTime.MinValue)
+                        {
+                            var createdAtOffset = new DateTimeOffset(
+                                    DateTime.SpecifyKind(createdAt, DateTimeKind.Utc))
+                                .ToOffset(TimeSpan.FromHours(3));
 
+                            x.CreatedAtString = createdAtOffset.ToString("yyyy-MM-dd hh:mm:ss tt");
+
+                            // Validate ETA
+                            if (x.Eta is DateTime eta && eta >= createdAt)
+                            {
+                                var etaOffset = new DateTimeOffset(
+                                        DateTime.SpecifyKind(eta, DateTimeKind.Utc))
+                                    .ToOffset(TimeSpan.FromHours(3));
+
+                                x.EtaString = etaOffset.ToString("yyyy-MM-dd hh:mm:ss tt");
+                            }
+                            else
+                            {
+                                x.EtaString = null;
+                                x.Eta = null;
+                            }
+                        }
+                        else
+                        {
+                            x.CreatedAtString = null;
+                            x.EtaString = null;
+                            x.Eta = null;
+                            x.CreatedAt = null;
+                        }
+
+                        // Supervisor
+                        var supervisor = superVisors
+                            .FirstOrDefault(sup => sup.UserName == x.SupervisedBy);
+
+                        x.SupervisorName = supervisor != null
+                            ? $"{supervisor.FirstName} {supervisor.SecondName}"
+                            : null;
+
+                        x.CurrentTime = DateTime.UtcNow;
+                    });
                 }
-                if (!string.IsNullOrWhiteSpace(CompanyTin) && CompanyTin != AdminCompanyTin && response != null)
-                {
-                    response = response.Where(order => order.DeliveryTin == CompanyTin).ToList();
-                }
+
                 //if (response != null && response.Count == 0 && _env.IsDevelopment())
                 //{
                 //    return new List<OrderDetail> { GetSampleOrder.CreateSampleOrder() };

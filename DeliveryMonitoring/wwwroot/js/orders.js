@@ -162,24 +162,6 @@ function showAlert(message, type = "info", modal) {
         }
     }, 5000);
 }
-//show assign alert
-function showAssignAlert(message, type = "info") {
-    const alertHTML = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    `;
-
-    $('#alertContainer').html(alertHTML);
-
-    setTimeout(() => {
-        $('.alert').alert('close');
-        if (type === "success") {
-            location.reload();
-        }
-    }, 3000);
-}
 
 //assign supervisor request
 async function assignSupervisor(voucherCode, phoneNumber = "all") {

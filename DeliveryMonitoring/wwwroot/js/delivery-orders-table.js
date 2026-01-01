@@ -11,6 +11,7 @@ export const OrdersTable = (function () {
         'ADDRESS',
         'REQUEST_DATE',
         'ETA',
+        'ETA_DIFF',
         'STATUS',
         'STATUS_REPORT',
         'PRINTED',
@@ -34,7 +35,8 @@ export const OrdersTable = (function () {
                 COL_INDEX.VOUCHER,
                 COL_INDEX.PHONE,
                 COL_INDEX.DRIVER_PHONE,
-                COL_INDEX.ACTIONS
+                COL_INDEX.ACTIONS,
+                COL_INDEX.ETA_DIFF
             ],
             floatCols: [COL_INDEX.TOTAL_AMOUNT],
             intCols: [],
@@ -76,6 +78,10 @@ export const OrdersTable = (function () {
             center({
                 data: "eta",
                 ...Renderers.dateRenderer("etaString", "eta")
+            }),
+            center({
+                data: "eta",
+                render: Renderers.etaDiffRenderer
             }),
             center({
                 data: "status",
@@ -147,7 +153,10 @@ export const OrdersTable = (function () {
             ajaxUrl,
             dateRange,
             reloadOn: "#dateRange",
-            emptyTableMessage: "No Orders Available."
+            emptyTableMessage: "No Orders Available.",
+            onDataLoaded: (json) => {
+                fetchAlerts(json);
+            }
         });
 
         startTableAutoRefresh(

@@ -1,4 +1,4 @@
-﻿//#region Renderers for DataTables    
+﻿const WARNING_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes in milliseconds
 const Renderers = {
     number: (d, type, decimals = 2, plainZero = true) => {
         const safeDecimals = Number.isInteger(decimals) && decimals >= 0 ? decimals : 2;
@@ -274,8 +274,37 @@ const Renderers = {
                 ${redispatch}
             </div>
         `;
-    }
+    },
+    etaDiffRenderer: (data, type, row) => {
+        if (!row.etaString || !row.currentTime) return "-";
 
+        // Calculate difference in milliseconds
+        const diffMs = new Date(row.etaString) - new Date(row.currentTime);
+
+        // For sorting, return numeric minutes
+        if (type === "sort" || type === "type") return Math.round(diffMs / 60000);
+
+        // Determine initial background based on thresholds
+        let bgClass;
+        if (diffMs > WARNING_THRESHOLD_MS) {
+            bgClass = "bg-success"; // plenty of time remaining
+        } else if (diffMs > 0 && diffMs <= WARNING_THRESHOLD_MS) {
+            bgClass = "bg-warning"; // approaching ETA
+        } else if (diffMs === 0) {
+            bgClass = "bg-warning"; // exactly due
+        } else {
+            bgClass = "bg-danger"; // late
+        }
+
+        return `
+            <span class="countdown-badge d-flex justify-content-center 
+                    align-items-center p-1 rounded rounded-2 my-1 text-white text-nowrap ${bgClass}"
+                  data-diff-ms="${diffMs}"
+                  data-eta="${row.etaString}">
+                ${formatDiff(diffMs)}
+            </span>
+        `;
+    }
 };
 
 //#endregion
@@ -319,3 +348,41 @@ const statusColors = {
     sos: "darkred",
     default: "yellow"
 };
+
+
+function formatDiff(diffMs) {
+    const sign = diffMs >= 0 ? "" : "-";
+    const totalSeconds = Math.abs(Math.floor(diffMs / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${sign}${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+setInterval(() => {
+    document.querySelectorAll(".countdown-badge").forEach(el => {
+        const eta = el.dataset.eta;
+        if (!eta) return;
+
+        const diffMs = new Date(eta) - new Date();
+
+        // Update countdown text
+        el.textContent = formatDiff(diffMs);
+
+        // Remove previous background classes
+        el.classList.remove("bg-success", "bg-warning", "bg-danger", "bg-yellow");
+
+        if (diffMs > WARNING_THRESHOLD_MS) {
+            // Plenty of time remaining
+            el.classList.add("bg-success");
+        } else if (diffMs > 0 && diffMs <= WARNING_THRESHOLD_MS) {
+            // Approaching ETA (warn)
+            el.classList.add("bg-warning"); // Yellow background
+        } else if (diffMs === 0) {
+            // Exactly due
+            el.classList.add("bg-warning");
+        } else {
+            // Late
+            el.classList.add("bg-danger");
+        }
+    });
+}, 1000);

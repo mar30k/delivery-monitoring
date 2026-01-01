@@ -63,6 +63,7 @@ namespace DeliveryMonitoring.Models
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? Eta { get; set; }
+        public DateTime? CurrentTime { get; set; }
         public string? EtaString { get; set; }
         public string? Status { get; set; }
         public int? PreparationTime { get; set; }

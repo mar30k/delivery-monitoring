@@ -25,14 +25,15 @@ function initTable({
     nonOrderableTargets = [],
     dateRange = null,
     reloadOn = null,
-    emptyTableMessage = "No Summary Available."
+    emptyTableMessage = "No Summary Available.",
+    onDataLoaded = null
 }) {
     columns.forEach((col, idx) => {
-        if (!col.render) { // Preserve custom renderers
+        if (!col.render) {
             if (floatCols.includes(idx)) {
-                col.render = Renderers.numericRender(true);   // ✅ isFloat = true
+                col.render = Renderers.numericRender(true);
             } else if (intCols.includes(idx)) {
-                col.render = Renderers.numericRender(false);  // ✅ isFloat = false
+                col.render = Renderers.numericRender(false);
             } else {
                 col.render = Renderers.stringRender;
             }
@@ -49,10 +50,16 @@ function initTable({
             url: ajaxUrl,
             type: 'GET',
             data: function (d) {
-                if (typeof dateRange.applyToAjax === 'function') {
+                if (dateRange && typeof dateRange.applyToAjax === 'function') {
                     dateRange.applyToAjax(d);
                 }
-            }            
+            },
+            dataSrc: function (json) {
+                if (typeof onDataLoaded === 'function') {
+                    onDataLoaded(json); // call the callback with the full JSON
+                }
+                return json.data ?? json;
+            }
         },
         columnDefs: [
             { orderable: false, targets: nonOrderableTargets },
@@ -70,32 +77,26 @@ function initTable({
         pageLength: 50,
         columns: columns,
         language: { emptyTable: emptyTableMessage },
-
         footerCallback: function (row, data, start, end, display) {
-            var api = this.api();
+            const api = this.api();
             const parseVal = i =>
                 typeof i === 'string' ? i.replace(/[\$,]/g, '') * 1 :
-                typeof i === 'number' ? i : 0;
+                    typeof i === 'number' ? i : 0;
 
-            // Floats
             floatCols.forEach(col => {
-                let total = api.column(col, { page: 'current' }).data()
+                const total = api.column(col, { page: 'current' }).data()
                     .reduce((a, b) => parseVal(a) + parseVal(b), 0);
                 js(api.column(col).footer()).html(
-                    total.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
+                    total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                );
             });
 
-            // Ints
             intCols.forEach(col => {
-                let total = api.column(col, { page: 'current' }).data()
+                const total = api.column(col, { page: 'current' }).data()
                     .reduce((a, b) => parseVal(a) + parseVal(b), 0);
                 js(api.column(col).footer()).html(total);
             });
 
-            //Averages
             avgCols.forEach(cfg => {
                 let values = api.column(cfg.index, { page: 'current' })
                     .data()
@@ -105,15 +106,10 @@ function initTable({
                     values = values.filter(v => v !== 0);
                 }
 
-                let avg = values.length > 0
-                    ? values.reduce((a, b) => a + b, 0) / values.length
-                    : 0;
+                const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
 
                 js(api.column(cfg.index).footer()).html(
-                    avg.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })
+                    avg.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                 );
             });
         },
@@ -131,36 +127,28 @@ function initTable({
         });
     }
 
-
-
-    // GLOBAL AJAX ERROR HANDLER
     js(tableSelector).on("xhr.dt", function (e, settings, json, xhr) {
-
         if (xhr.status !== 200) {
-
             console.log("❌ AJAX load failed:", xhr.status);
-
             const $table = js(tableSelector);
             const dt = $table.DataTable();
             const colCount = $table.find("thead th").length;
 
-            // ❗ Only insert error row if table is currently empty
-            const hasData = dt.data().any();  // true if table already has rows
-
-            if (!hasData) {
+            if (!dt.data().any()) {
                 $table.find("tbody").html(`
-                <tr class="text-center">
-                    <td colspan="${colCount}" class="text-danger">
-                        ⚠️ Failed to load data. Please check your connection or try again.
-                    </td>
-                </tr>
-            `);
+                    <tr class="text-center">
+                        <td colspan="${colCount}" class="text-danger">
+                            ⚠️ Failed to load data. Please check your connection or try again.
+                        </td>
+                    </tr>
+                `);
             }
 
             table.processing(false);
         }
     });
 
+    table.getLastAjaxResponse = () => lastAjaxResponse;
 
     return table;
 }

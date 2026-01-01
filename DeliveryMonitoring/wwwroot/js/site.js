@@ -4,71 +4,72 @@
     });
 
     closeAlert();
-    fetchAlerts();
+    if (!window.fetchAlertsFlag) {
+        fetchAlerts();
+    }
 });
 
 var data = {};
 
-async function fetchAlerts() {
+window.latestAlertData = null; // store latest JSON globally
+window.alertFetchTimer = null;
+
+async function fetchAlerts(jsonData = null) {
     try {
-        const response = await fetch('/getorders');
-        if (!response.ok) {
-            console.error("Server returned error:", response.status, response.statusText);
-            return;
-        }
-        let newData;
-        try {
-            newData = await response.json();
-        } catch (jsonError) {
-            console.error("Failed to parse JSON:", jsonError);
-            return;
+        let data;
+        if (jsonData) {
+            // Use JSON from table or elsewhere
+            data = jsonData;
+            window.latestAlertData = data; // store globally
+        } else if (window.latestAlertData) {
+            // If we already have data from a table, reuse it
+            data = window.latestAlertData;
+        } else {
+            // Otherwise fetch from server
+            const response = await fetch('/getorders');
+            if (!response.ok) {
+                console.error("Server returned error:", response.status, response.statusText);
+                return;
+            }
+            data = await response.json();
+            window.latestAlertData = data;
         }
 
-        // Only update 'data' if JSON parsing succeeded
-        data = newData;
-
+        // Process alerts
         const alertBox = document.getElementById("floating-alert");
         const alertList = document.getElementById("alert-list");
+        const storedAlerts = JSON.parse(sessionStorage.getItem("displayedAlerts")) || {};
 
-        // Retrieve previously displayed alerts from sessionStorage
-        let storedAlerts = JSON.parse(sessionStorage.getItem("displayedAlerts")) || {};
-
-        // Filter orders that have non-empty alerts
         const filteredOrders = data.filter(order => order.alert && order.alert.trim() !== "");
-
-        // Track alerts that need to be displayed in this refresh
-        let newAlerts = {};
+        const newAlerts = {};
         let hasNewAlerts = false;
+
         filteredOrders.forEach(order => {
             const { voucherCode, alert } = order;
-            // Only add if it's a completely new alert or the alert message has changed
             if (!storedAlerts[voucherCode] || storedAlerts[voucherCode] !== alert) {
                 hasNewAlerts = true;
                 newAlerts[voucherCode] = alert;
             }
         });
 
-        // If there are new alerts, update the UI
         if (hasNewAlerts) {
-            alertList.innerHTML = ""; // Clear alert container
-
+            alertList.innerHTML = ""; // clear old alerts
             for (const voucherCode in newAlerts) {
                 const listItem = document.createElement("li");
                 listItem.innerHTML = `<a class="alerts" style="text-decoration: none;" target="_blank" href="/order/${voucherCode}">Order ${voucherCode}: ${newAlerts[voucherCode]}</a>`;
                 alertList.appendChild(listItem);
             }
-
-            // Show the floating alert box only if there are new alerts
             alertBox.style.display = "block";
-
-            // Update sessionStorage to track displayed alerts
             sessionStorage.setItem("displayedAlerts", JSON.stringify({ ...storedAlerts, ...newAlerts }));
         }
 
     } catch (error) {
-        console.error("Error fetching alerts:", error);
+        console.error("Error processing alerts:", error);
     } finally {
-        setTimeout(fetchAlerts, 10000); // schedule next only after current finishes
+        // Only schedule the next fetch if we're fetching from the server
+        if (!jsonData && !window.alertFetchTimer) {
+            window.alertFetchTimer = setInterval(() => fetchAlerts(), 10000); // 10s refresh
+        }
     }
 }
 

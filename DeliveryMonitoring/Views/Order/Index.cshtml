@@ -71,6 +71,9 @@
                             Eta
                         </th>
                         <th class="text-center">
+                            Eta Diff
+                        </th>
+                        <th class="text-center">
                             Status
                         </th>                                                                 
                         <th class="text-center">
@@ -98,6 +101,7 @@
                     <tr>
                         <th colspan="13" class="text-end">Page Total:</th>
                         <th class="text-center"></th>
+                        <th></th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -237,6 +241,9 @@
     </div>
 </div>
 @section Scripts {
+    <script>
+        window.fetchAlertsFlag = true;
+    </script>
     <link rel="stylesheet" href="~/css/header-filters.css" asp-append-version="true">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
