@@ -148,7 +148,6 @@ function initTable({
         }
     });
 
-    table.getLastAjaxResponse = () => lastAjaxResponse;
 
     return table;
 }

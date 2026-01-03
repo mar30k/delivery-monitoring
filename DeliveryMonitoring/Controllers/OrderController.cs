@@ -36,25 +36,13 @@ namespace DeliveryMonitoring.Controllers
         //List of Orders Page -- Starts Here
         [HttpGet]
         [Route("/orders")]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            try
-            {            
-                if (string.IsNullOrWhiteSpace(CompanyTin))
-                {
-                    return RedirectToAction("Logout", "Login");
-                }
-                var superVisors = await _apiRequestService.GetSupervisorsAsync();
-
-                return View(new OrderViewModel
-                {
-                    Supervisors = superVisors
-                });
-            }
-            catch (Exception)
+            if (string.IsNullOrWhiteSpace(CompanyTin))
             {
-                return View(null);
+                return RedirectToAction("Logout", "Login");
             }
+            return View();
         }
 
         [Route("/GetOrders")]

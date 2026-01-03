@@ -11,20 +11,13 @@
 
 var data = {};
 
-window.latestAlertData = null; // store latest JSON globally
-window.alertFetchTimer = null;
-
 async function fetchAlerts(jsonData = null) {
     try {
         let data;
         if (jsonData) {
-            // Use JSON from table or elsewhere
             data = jsonData;
-            window.latestAlertData = data; // store globally
-        } else if (window.latestAlertData) {
-            // If we already have data from a table, reuse it
-            data = window.latestAlertData;
-        } else {
+        }
+        else {
             // Otherwise fetch from server
             const response = await fetch('/getorders');
             if (!response.ok) {
@@ -32,7 +25,6 @@ async function fetchAlerts(jsonData = null) {
                 return;
             }
             data = await response.json();
-            window.latestAlertData = data;
         }
 
         // Process alerts
@@ -67,8 +59,8 @@ async function fetchAlerts(jsonData = null) {
         console.error("Error processing alerts:", error);
     } finally {
         // Only schedule the next fetch if we're fetching from the server
-        if (!jsonData && !window.alertFetchTimer) {
-            window.alertFetchTimer = setInterval(() => fetchAlerts(), 10000); // 10s refresh
+        if (!jsonData) {
+            setTimeout(fetchAlerts, 10000);
         }
     }
 }

@@ -189,11 +189,11 @@ const Renderers = {
         return [geo, specific].filter(Boolean).join(' - ');
     },
 
-    booleanYesNo: (data, type) => {
-        if (type === 'sort' || type === 'type') return data ? 1 : 0;
+    booleanYesNo: (type, row) => {
+        if (type === 'sort' || type === 'type') return row.orderPrinted ? 1 : 0;
         return `
-            <span class = ${data ? 'text-success' : 'text-danger'}>
-                    ${data ? 'Yes' : 'No'}
+            <span class = ${row.orderPrinted ? 'text-success' : 'text-danger'}>
+                    ${row.orderPrinted ? 'Yes' : 'No'}
             </span>
         `; 
     },
@@ -236,22 +236,27 @@ const Renderers = {
     },
     statusReport: (data, type) => {
         if (type === 'sort' || type === 'type') return data || '';
-        return data ? clean(data) : '-';
+        return data ? clean(data) : 'N/A';
     },
-    assign: (row) => {
+    assign: (row, type) => {
+        const value = row.supervisorName ?? row.supervisedBy ?? 'Unassigned';
+        if (type === 'filter' || type === 'sort' || type === 'search') {
+            return value;
+        }
         if (!row.supervisedBy) {
             return `
-                <a class="btn btn-outline-dark btn-sm"
-                   onclick="openAssignSupervisorModal('${row.voucherCode}')">
-                    Assign
-                </a>`;
+            <a class="btn btn-outline-dark btn-sm"
+               onclick="openAssignSupervisorModal('${row.voucherCode}')">
+                Assign
+            </a>
+        `;
         }
-
         return `
-            <a href="tel:${row.supervisedBy}">${row.supervisorName ?? row.supervisedBy}</a>
-            <a onclick="openAssignSupervisorModal('${row.voucherCode}')">
-                <i class="fa-solid fa-pen-to-square"></i>
-            </a>`;
+        <a href="tel:${row.supervisedBy}">${value}</a>
+        <a onclick="openAssignSupervisorModal('${row.voucherCode}')">
+            <i class="fa-solid fa-pen-to-square"></i>
+        </a>
+    `;
     },
     detailsActions: (row) => {
         if (!row?.voucherCode) return 'N/A';

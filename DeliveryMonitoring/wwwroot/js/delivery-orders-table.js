@@ -36,6 +36,7 @@ export const OrdersTable = (function () {
                 COL_INDEX.PHONE,
                 COL_INDEX.DRIVER_PHONE,
                 COL_INDEX.ACTIONS,
+                COL_INDEX.PAYMENT_METHOD,
                 COL_INDEX.ETA_DIFF
             ],
             floatCols: [COL_INDEX.TOTAL_AMOUNT],
@@ -55,7 +56,7 @@ export const OrdersTable = (function () {
 
             center({
                 data: "customerFirstName",
-                render: Renderers.customerName
+                render: Renderers.orDefault
             }),
 
             center({
@@ -94,8 +95,10 @@ export const OrdersTable = (function () {
             }),
 
             center({
-                data: "orderPrinted",
-                render: Renderers.booleanYesNo
+                data: function (row) {
+                    return row.orderPrinted ? "Yes" : "No"
+                },
+                render: (data, type, row) => Renderers.booleanYesNo(type, row)
             }),
 
             center({
@@ -104,9 +107,10 @@ export const OrdersTable = (function () {
             }),
 
             center({
-                data: null,
-                render: (_, __, row) =>
-                    Renderers.assign(row, row.supervisor)
+                data: function (row) {
+                    return row.supervisorName ?? row.supervisedBy ?? 'Unassigned';
+                },
+                render: (data, type, row) => Renderers.assign(row, type)
             }),
 
             center({
@@ -116,7 +120,7 @@ export const OrdersTable = (function () {
 
             center({
                 data: "paymentMethod",
-                render: Renderers.paymentMethod
+                render: Renderers.orDefault
             }),
 
             center({
@@ -129,8 +133,11 @@ export const OrdersTable = (function () {
         const headerFilterColumns = [
             { index: COL_INDEX.COMPANY, name: "Company" },
             { index: COL_INDEX.BRANCH, name: "Branch" },
+            { index: COL_INDEX.CUSTOMER, name: "Customer" },
             { index: COL_INDEX.STATUS, name: "Status" },
-            { index: COL_INDEX.PRINTED, name: "Order Printed" }
+            { index: COL_INDEX.SUPERVISOR, name: "Supervisor" },
+            { index: COL_INDEX.PRINTED, name: "Order Printed" },
+            { index: COL_INDEX.PAYMENT_METHOD, name: "Payment Method" },
         ];
 
         return Object.assign({}, baseConfig, {
