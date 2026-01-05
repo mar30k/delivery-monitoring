@@ -40,8 +40,8 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> Index(string tin)
         {
             var status = StatusInfo.StatusMap;
-            var drivers =await _apiRequestService.GetAvailableDriversAsync();
-            var orders =await _apiRequestService.GetOrderRequestsAsync();
+            var drivers = await _apiRequestService.GetAvailableDriversAsync();
+            var orders = await _apiRequestService.GetOrderRequestsAsync() ?? new List<OrderDetail>();
             drivers = drivers
                 .OrderBy(d => status.GetValueOrDefault(d.Status?.ToLower() ?? "", status["default"]).Priority)
                 .ToList();
@@ -65,21 +65,38 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("/Driver/LiveLocation")]
         public async Task<IActionResult> LiveLocation()
         {
-            var data = await _apiRequestService.GetAvailableDriversAsync();
-            var order = await _apiRequestService.GetOrderRequestsAsync();
-            foreach (var item in data ?? new List<Driver>())
+            var drivers = await _apiRequestService.GetAvailableDriversAsync()
+                          ?? new List<Driver>();
+
+            var orders = await _apiRequestService.GetOrderRequestsAsync()
+                         ?? new List<OrderDetail>();
+
+            var offset = TimeSpan.FromHours(3);
+
+            foreach (var driver in drivers ?? new List<Driver>())
             {
-                if (item?.UpdatedAt != null)
+                if (driver?.UpdatedAt is not null)
                 {
-                    var utc = DateTime.SpecifyKind(item.UpdatedAt.Value, DateTimeKind.Utc);
-                    var etTime = new DateTimeOffset(utc).ToOffset(TimeSpan.FromHours(3));
-                    item.LastUpdatedAtIso = etTime.ToString("yyyy-MM-dd hh:mm:ss tt");
-                    //item.UpdatedAt = etTime.DateTime;
+                    var utcTime = DateTime.SpecifyKind(driver.UpdatedAt.Value, DateTimeKind.Utc);
+                    var localTime = new DateTimeOffset(utcTime).ToOffset(offset);
+
+                    driver.LastUpdatedAtIso = localTime.ToString("yyyy-MM-dd hh:mm:ss tt");
+                }
+
+                if ( driver is not null)
+                {
+                    driver.AssignedOrders = orders
+                    .Where(o => o.AssignedDriverPhoneNumber == driver.PhoneNumber)
+                    .Select(o => o.VoucherCode)
+                    .Where(v => v != null)
+                    .Cast<string>()
+                    .ToList();
                 }
             }
 
-            return Ok(data);
+            return Ok(drivers);
         }
+
 
         //Driver Details-- Starts Here
         [HttpGet("/driverdetail/{phoneNumber}")]

@@ -28,17 +28,16 @@ namespace DeliveryMonitoring.Controllers
             if (string.IsNullOrWhiteSpace(companyTin))
                 return RedirectToAction("Logout", "Login");
 
-            var orders = await _apiRequestService.GetOrderRequestsAsync();
             var company = await _apiRequestService.GetCompaniesAsync();
             var superVisors = await _apiRequestService.GetSupervisorsAsync();
             var viewModel = new HomeViewModel
             {
                 Drivers = new List<Driver>(),
-                Orders = orders,
+                Orders = new List<OrderDetail>(),
                 Comps = company,
                 CompanyTin = companyTin,
                 DeviceControl = new List<DeviceControl>(),
-                Supervisors = superVisors
+                Supervisors = new List<SupervisorsDTO>()
             };
             return View(viewModel);
         }

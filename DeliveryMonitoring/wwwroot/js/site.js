@@ -9,22 +9,19 @@
     }
 });
 
-var data = {};
+window.data = window.data || {};
 
 async function fetchAlerts(jsonData = null) {
     try {
-        let data;
         if (jsonData) {
-            data = jsonData;
-        }
-        else {
-            // Otherwise fetch from server
+            window.data = jsonData;
+        } else {
             const response = await fetch('/getorders');
             if (!response.ok) {
                 console.error("Server returned error:", response.status, response.statusText);
                 return;
             }
-            data = await response.json();
+            window.data = await response.json();
         }
 
         // Process alerts

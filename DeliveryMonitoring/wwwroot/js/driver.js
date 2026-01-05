@@ -114,6 +114,14 @@ function fetchDataAndUpdateMarkers() {
                 if (rowIndex.length) {
 
                     // =====================
+                    // Update Order Cell
+                    // =====================
+                    const orderDetailUrl = (driver.assignedOrders || [])
+                        .map(code => `<a target="_blank" href="/order/${code}">${code}</a>`)
+                        .join('<br>');
+
+                    tablelist.cell(rowIndex, 7).data(orderDetailUrl);
+                    // =====================
                     // Update STATUS cell
                     // =====================
                     tablelist.cell(rowIndex, 4).data(driver.status);

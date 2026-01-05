@@ -172,24 +172,10 @@
     </div>
 </div>
 
-@{
-    //counts related to orders
-    int completedOrdersCount = Model.Orders.Count(d => d.Status == "completed");
-    int requestedOrdersCount = Model.Orders.Count(d => d.Status == "requested");
-    int assignedOrdersCount = Model.Orders.Count(d => d.Status == "assigned");
-    int acceptedOrdersCount = Model.Orders.Count(d => d.Status == "accepted");
-    int onTheWayOrdersCount = Model.Orders.Count(d => d.Status?.ToLower() == "ontheway");
-    int declinedOrdersCount = Model.Orders.Count(d => d.Status == "declined");
-    int driverNotFoundOrdersCount = Model.Orders.Count(d => d.Status == "driverNotFound");
-    int arrivedOrdersCount = Model.Orders.Count(d => d.Status == "arrived");
-    int arrivedAtBranchOrdersCount = Model.Orders.Count(d => d.Status == "arrivedAtBranch");
-    int sosOrdersCount = Model.Orders.Count(d => d.Status == "sos");
-}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     window.initialChartData = {
         driverDataSet: new Array(7).fill(0),
-        orderDataSet: [@completedOrdersCount,@requestedOrdersCount,@assignedOrdersCount,@acceptedOrdersCount,@onTheWayOrdersCount,
-                       @declinedOrdersCount,@driverNotFoundOrdersCount,@arrivedAtBranchOrdersCount,@arrivedOrdersCount,@sosOrdersCount]
+        orderDataSet:  new Array(10).fill(0),
     };
 </script>

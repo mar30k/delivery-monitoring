@@ -237,7 +237,7 @@ $(function () {
             .then(() => DashboardMap.initMap())
             .catch(() => console.error("Failed to load Google Maps"));
     }
-
+    refreshSupervisors();
     refreshDriversChart();
     refreshOrdersStatusChart();
     refreshCompletedOrdersCharts();

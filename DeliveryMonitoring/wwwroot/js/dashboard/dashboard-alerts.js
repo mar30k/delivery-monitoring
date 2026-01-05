@@ -18,7 +18,7 @@
             <div class="toast align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body">
-                            New Order: ${order.voucherCode} <br> Customer: ${order.customerFirstName || 'Unknown'} <br> Company: ${order.companyName || 'Unknown'} <br>
+                            New Order: <a class="text-white" target="_blank" href="/order/${order.voucherCode}"> ${order.voucherCode} </a> <br> Customer: ${order.customerFirstName || 'Unknown'} <br> Company: ${order.companyName || 'Unknown'} <br>
                     </div>
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-dismiss="toast" aria-label="Close"></button>
                 </div>
