@@ -84,7 +84,7 @@ export const PendingOrdersTable = (function () {
 
         const dateRange = DateRange.create("#dateRange");
         dateRange.init();
-        initTable({
+        const table = initTable({
             ...config,
             tableSelector,
             ajaxUrl,
@@ -93,6 +93,11 @@ export const PendingOrdersTable = (function () {
             emptyTableMessage: "No Pending Orders Available."
         });
 
+        const tableEntry = {
+            table: table,
+            range: () => dateRange.getRange()
+        }
+        startTableAutoRefresh([tableEntry], 60000);
         bindExportButton(
             tableSelector,
             userType,

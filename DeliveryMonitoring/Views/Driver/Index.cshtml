@@ -109,10 +109,19 @@
                                 </td>
                                 <td class="text-center">
                                     @{
-                                        foreach(var order in driver?.AssignedOrders ?? new List<string>())
+                                        if (driver?.AssignedOrders?.Any() ?? false)
+                                        {
+                                            foreach (var order in driver?.AssignedOrders ?? new List<string>())
+                                            {
+                                                <div>
+                                                    <a target="_blank" href="/order/@order">@order</a>
+                                                </div>
+                                            }
+                                        }
+                                        else
                                         {
                                             <div>
-                                                <a target="_blank" href="/order/@order">@order</a>
+                                                N/A
                                             </div>
                                         }
                                     }

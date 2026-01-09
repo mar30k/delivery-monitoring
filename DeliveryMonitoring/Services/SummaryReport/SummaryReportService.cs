@@ -34,17 +34,21 @@ namespace DeliveryMonitoring.Services.SummaryReport
 
         public async Task<IEnumerable<DriverSummary>> DriverSummary(OrderQueryParams p)
         {
-            var orders = await _ordersService.GetCompletedOrdersAsync(p);
-            var drivers = await _api.GetAvailableDriversAsync(
+            var deliveryordersTask = _ordersService.GetDeliveryOrdersAsync(p);
+            var driversTask = _api.GetAvailableDriversAsync(
                 OrderHelpers.IsTodayIncluded(p) || p.IsClear);
 
-            return SummaryBuilders.BuildDriverSummary(orders.Data ?? new List<CompletedOrders>(), drivers);
+            await Task.WhenAll(deliveryordersTask, driversTask);
+            var deliveryorders = await deliveryordersTask;
+            var drivers = await driversTask;
+
+            return SummaryBuilders.BuildDriverSummary(deliveryorders.Data ?? new List<CompletedOrders>(), drivers);
         }
 
         public async Task<IEnumerable<SupervisorSummary>> SupervisorSummary(OrderQueryParams p)
         {
-            var orders = await _ordersService.GetCompletedOrdersAsync(p);
-            return SummaryBuilders.BuildSupervisorSummary(orders.Data ?? new List<CompletedOrders>());
+            var deliveryOrders = await _ordersService.GetDeliveryOrdersAsync(p);
+            return SummaryBuilders.BuildSupervisorSummary(deliveryOrders.Data ?? new List<CompletedOrders>());
         }
     }
 }

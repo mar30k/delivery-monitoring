@@ -116,10 +116,12 @@ function fetchDataAndUpdateMarkers() {
                     // =====================
                     // Update Order Cell
                     // =====================
-                    const orderDetailUrl = (driver.assignedOrders || [])
+                    let orderDetailUrl = (driver.assignedOrders || [])
                         .map(code => `<a target="_blank" href="/order/${code}">${code}</a>`)
                         .join('<br>');
-
+                    if (!driver.assignedOrders.length) {
+                        orderDetailUrl = `<div>N/A</div>`
+                    }
                     tablelist.cell(rowIndex, 7).data(orderDetailUrl);
                     // =====================
                     // Update STATUS cell

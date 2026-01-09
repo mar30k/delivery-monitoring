@@ -28,6 +28,11 @@ namespace DeliveryMonitoring.Services.Orders
         /// prepares display values, and applies filtering based on query parameters.
         /// </summary>
         Task<HulubejeResponse<List<CompletedOrders>>> GetAllOrdersAsync(OrderQueryParams @params);
+        /// <summary>
+        /// Retrieves all order types in parallel, aggregates them into a single list,
+        /// prepares display values, and applies filtering based on query parameters.
+        /// </summary>
+        Task<HulubejeResponse<List<CompletedOrders>>> GetDeliveryOrdersAsync(OrderQueryParams @params);
     }
 
 }

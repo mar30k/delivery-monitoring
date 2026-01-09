@@ -5,6 +5,7 @@ using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services.Api;
 using DeliveryMonitoring.Services.Cache;
 using System.Linq;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace DeliveryMonitoring.Services.Orders
 {
@@ -37,31 +38,18 @@ namespace DeliveryMonitoring.Services.Orders
 
                 if (!orders.Any())
                 {
-                    return new HulubejeResponse<List<CompletedOrders>>
-                    {
-                        Data = orders,
-                        IsSuccessful = false,
-                        ErrorMessages = new List<string> { "No completed orders found." }
-                    };
+                    return HulubejeResponse<List<CompletedOrders>>.Fail(new List<string> { "No completed orders found." });
                 }
 
                 var filtered = OrderHelpers.FilterOrders(orders, @params, CompanyTin, AdminCompanyTin);
                 filtered.ForEach(OrderHelpers.PrepareDisplayValues);
 
-                return new HulubejeResponse<List<CompletedOrders>>
-                {
-                    Data = filtered,
-                    IsSuccessful = true
-                };
+                return HulubejeResponse<List<CompletedOrders>>.Success(filtered);
+
             }
             catch (Exception ex)
             {
-                return new HulubejeResponse<List<CompletedOrders>>
-                {
-                    Data = new List<CompletedOrders>(),
-                    IsSuccessful = false,
-                    ErrorMessages = new List<string> { $"Failed to fetch completed orders: {ex.Message}" }
-                };
+                return HulubejeResponse<List<CompletedOrders>>.Fail(new List<string> { $"Failed to fetch completed orders: {ex.Message}" });
             }
         }
 
@@ -76,12 +64,7 @@ namespace DeliveryMonitoring.Services.Orders
 
                 if (ordersData == null || !ordersData.IsSuccessful)
                 {
-                    return new HulubejeResponse<List<CompletedOrders>>
-                    {
-                        Data = new List<CompletedOrders>(),
-                        IsSuccessful = false,
-                        ErrorMessages = ordersData?.ErrorMessages ?? new List<string> { "Failed to retrieve orders." }
-                    };
+                    return HulubejeResponse<List<CompletedOrders>>.Fail(new List<string> { "Failed to fetch orders by type." });
                 }
 
                 var orders = ordersData.Data ?? new List<CompletedOrders>();
@@ -96,26 +79,17 @@ namespace DeliveryMonitoring.Services.Orders
                         DeliveryOrderTypes.DeliveryToLocation => DeliveryTableId,
                         DeliveryOrderTypes.ScheduledDeliveryToLocation => ScheduledDeliveryTableId,
                         DeliveryOrderTypes.ScheduledPickUp => ScheduledTakeawayTableId,
-                        _ => DeliveryTableId
+                        _ => "N/A"
                     };
                 }
 
                 var filteredOrders = OrderHelpers.FilterOrders(orders, @params, CompanyTin, AdminCompanyTin);
 
-                return new HulubejeResponse<List<CompletedOrders>>
-                {
-                    Data = filteredOrders,
-                    IsSuccessful = true
-                };
+                return HulubejeResponse<List<CompletedOrders>>.Success(filteredOrders);
             }
             catch (Exception ex)
             {
-                return new HulubejeResponse<List<CompletedOrders>>
-                {
-                    Data = new List<CompletedOrders>(),
-                    IsSuccessful = false,
-                    ErrorMessages = new List<string> { $"Error retrieving orders by type: {ex.Message}" }
-                };
+                return HulubejeResponse<List<CompletedOrders>>.Fail(new List<string> { $"Failed to fetch orders by type: {ex.Message}" });
             }
         }
 
@@ -125,24 +99,16 @@ namespace DeliveryMonitoring.Services.Orders
             {
                 bool skipCache = OrderHelpers.IsTodayIncluded(@params) || @params.IsClear;
 
-                OrderQueryParams WithType(int type) => new()
-                {
-                    Type = type,
-                    SType = @params.SType,
-                    StartDate = @params.StartDate,
-                    EndDate = @params.EndDate,
-                    IsClear = @params.IsClear
-                };
 
-                var dineInTask = GetOrdersByTypeAsync(WithType((int)DeliveryOrderTypes.InHouseDining));
-                var takeAwayTask = GetOrdersByTypeAsync(WithType((int)DeliveryOrderTypes.PickUpAtBranch));
-                var scheduledDeliveryTask = GetOrdersByTypeAsync(WithType((int)DeliveryOrderTypes.ScheduledDeliveryToLocation));
-                var scheduledPickUpTask = GetOrdersByTypeAsync(WithType((int)DeliveryOrderTypes.ScheduledPickUp));
+                var dineInTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderTypes.InHouseDining));
+                var takeAwayTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderTypes.PickUpAtBranch));
+                var scheduledDeliveryTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderTypes.ScheduledDeliveryToLocation));
+                var scheduledPickUpTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderTypes.ScheduledPickUp));
                 var deliveryTask = _apiRequestService.GetCompletedOrdersAsync(skipCache);
 
                 await Task.WhenAll(dineInTask, takeAwayTask, scheduledDeliveryTask, scheduledPickUpTask, deliveryTask);
 
-                var deliveryOrders = deliveryTask.Result?.Data ?? new List<CompletedOrders>();
+                var deliveryOrders = (await deliveryTask).Data ?? new List<CompletedOrders>();
                 foreach (var item in deliveryOrders ?? new List<CompletedOrders>())
                 {
                     OrderHelpers.PrepareDisplayValues(item);
@@ -151,26 +117,18 @@ namespace DeliveryMonitoring.Services.Orders
 
 
                 var allOrders = (deliveryOrders ?? new List<CompletedOrders>())
-                                .Concat(dineInTask.Result.Data ?? new List<CompletedOrders>())
-                                .Concat(takeAwayTask.Result.Data ?? new List<CompletedOrders>())
-                                .Concat(scheduledDeliveryTask.Result.Data ?? new List<CompletedOrders>())
-                                .Concat(scheduledPickUpTask.Result.Data ?? new List<CompletedOrders>())
+                                .Concat((await dineInTask).Data ?? new List<CompletedOrders>())
+                                .Concat((await takeAwayTask).Data ?? new List<CompletedOrders>())
+                                .Concat((await scheduledDeliveryTask).Data ?? new List<CompletedOrders>())
+                                .Concat((await scheduledPickUpTask).Data ?? new List<CompletedOrders>())
                                 .ToList();
 
-                return new HulubejeResponse<List<CompletedOrders>>
-                {
-                    Data = OrderHelpers.FilterOrders(allOrders, @params, CompanyTin, AdminCompanyTin),
-                    IsSuccessful = true
-                };
+                var filteredOrders = OrderHelpers.FilterOrders(allOrders, @params, CompanyTin, AdminCompanyTin);
+                return HulubejeResponse<List<CompletedOrders>>.Success(filteredOrders);
             }
             catch (Exception ex)
             {
-                return new HulubejeResponse<List<CompletedOrders>>
-                {
-                    Data = new List<CompletedOrders>(),
-                    IsSuccessful = false,
-                    ErrorMessages = new List<string> { $"Error retrieving all orders: {ex.Message}" }
-                };
+                return HulubejeResponse<List<CompletedOrders>>.Fail(new List<string> { $"Failed to fetch all orders: {ex.Message}" });
             }
         }
 
@@ -184,20 +142,14 @@ namespace DeliveryMonitoring.Services.Orders
 
                 if (!orders.Any())
                 {
-                    return new HulubejeResponse<List<CompletedOrders>>
-                    {
-                        Data = orders,
-                        IsSuccessful = false,
-                        ErrorMessages = new List<string> { "No pending orders found." }
-                    };
+                    return HulubejeResponse<List<CompletedOrders>>.Fail(orders, "No pending orders found.");
                 }
 
                 var activeOrders = await _apiRequestService.GetOrderRequestsAsync();
 
-                var activeOrdersByVoucher =
-                    activeOrders
-                        .Where(a => !string.IsNullOrEmpty(a.VoucherCode))
-                        .ToDictionary(a => a.VoucherCode!);
+                var activeOrdersByVoucher = activeOrders
+                    .Where(a => !string.IsNullOrEmpty(a.VoucherCode))
+                    .ToDictionary(a => a.VoucherCode!);
 
                 foreach (var pendingOrder in orders)
                 {
@@ -210,21 +162,41 @@ namespace DeliveryMonitoring.Services.Orders
 
                 var filtered = OrderHelpers.FilterOrders(orders, @params, CompanyTin, AdminCompanyTin);
                 filtered.ForEach(OrderHelpers.PrepareDisplayValues);
-                return new HulubejeResponse<List<CompletedOrders>>
-                {
-                    Data = filtered,
-                    IsSuccessful = true
-                };
+                return HulubejeResponse<List<CompletedOrders>>.Success(filtered);
             }
             catch (Exception ex)
             {
-                return new HulubejeResponse<List<CompletedOrders>>
-                {
-                    Data = new List<CompletedOrders>(),
-                    IsSuccessful = false,
-                    ErrorMessages = new List<string> { $"Failed to fetch pending orders: {ex.Message}" }
-                };
+                return HulubejeResponse<List<CompletedOrders>>.Fail(new List<string> { $"Failed to fetch pending orders: {ex.Message}" });
+                
             }
         }
+
+        public async Task<HulubejeResponse<List<CompletedOrders>>> GetDeliveryOrdersAsync(OrderQueryParams @params)
+        {
+
+            var deliveryTask = GetCompletedOrdersAsync(@params);
+            var scheduledTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderTypes.ScheduledDeliveryToLocation));
+
+            await Task.WhenAll(deliveryTask, scheduledTask);
+
+            var delivery =await deliveryTask;
+            var scheduled = await scheduledTask;
+
+            var combined = (delivery.Data ?? Enumerable.Empty<CompletedOrders>())
+                .Concat(scheduled.Data ?? Enumerable.Empty<CompletedOrders>())
+                .ToList();
+
+            return HulubejeResponse<List<CompletedOrders>>.Success(combined);
+
+        }
+        private static OrderQueryParams CopyWithType(OrderQueryParams source, int type) => new()
+        {
+            Type = type,
+            SType = source.SType,
+            StartDate = source.StartDate,
+            EndDate = source.EndDate,
+            IsClear = source.IsClear
+        };
+
     }
 }

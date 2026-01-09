@@ -1,6 +1,7 @@
 ﻿using DeliveryMonitoring.Constants;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services.Api;
+using DeliveryMonitoring.Services.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -16,17 +17,20 @@ namespace DeliveryMonitoring.Controllers
         private IHttpContextAccessor _httpContextAccessor;
         private readonly IApiRequestService _apiRequestService;
         private readonly AuthenticationManager _authenticationManager;
+        private readonly ICompletedOrdersService _orderService;
         private string CompanyTin =>_authenticationManager.GetSecureCookie(
                 CNET_WebConstantes.IdentificationCookie) ?? string.Empty;
         private const string AdminComanyTin = AppConstants.Company.AdminTin;
         public HomeController(
             IHttpContextAccessor httpContextAccessor,
             IApiRequestService apiRequestService,
-            AuthenticationManager authenticationManager)
+            AuthenticationManager authenticationManager,
+            ICompletedOrdersService orderService)
         {
             _httpContextAccessor = httpContextAccessor;
             _apiRequestService = apiRequestService;
             _authenticationManager = authenticationManager;
+            _orderService = orderService;
         }
         [Route("/")]
         public async Task<IActionResult> Index()
@@ -40,9 +44,7 @@ namespace DeliveryMonitoring.Controllers
                 var viewModel = new HomeViewModel
                 {
                     Drivers = new List<Driver>(),
-                    Orders = await _apiRequestService.GetOrderRequestsAsync(),
                     Comps = await _apiRequestService.GetCompaniesAsync(),
-                    Supervisors = await _apiRequestService.GetSupervisorsAsync(),
                     CompanyTin = CompanyTin
                 };
 
@@ -55,31 +57,42 @@ namespace DeliveryMonitoring.Controllers
         }
 
         [HttpGet("/GetChartData")]
-        public async Task<IActionResult> GetChartData([FromQuery] ReportByOrderType type)
+        public async Task<IActionResult> GetChartData()
         {
-            var response = type == ReportByOrderType.Delivery
-                ? await _apiRequestService.GetCompletedOrdersAsync()
-                : await _apiRequestService.GetOrdersByTypeAsync(
-                    type == ReportByOrderType.Takeaway
-                        ? (int)DeliveryOrderTypes.PickUpAtBranch
-                        : (int)DeliveryOrderTypes.InHouseDining
-                );
-
-            if (response?.Data == null || !response.Data.Any())
-                return Ok(new { count = 0, total = 0m });
-
-            var filteredData = (CompanyTin == AdminComanyTin)
-                ? response.Data
-                : response.Data.Where(r => r.Tin == CompanyTin);
-
-            var todayOrders = filteredData.Where(x => x.RequestCreatedAt.Date == DateTime.Today).ToList();
-
-            return Ok(new
+            var queryParams = new OrderQueryParams
             {
-                count = todayOrders.Count,
-                total = todayOrders.Sum(x => x.TotalAmount)
-            });
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today
+            };
+
+            var response = await _orderService.GetAllOrdersAsync(queryParams);
+            var orders = response.Data ?? new List<CompletedOrders>();
+
+            var allTypes = new[]
+            {
+                new { TableId = AppConstants.TableIds.TakeAway, Label = "Takeaway" },
+                new { TableId = AppConstants.TableIds.Delivery, Label = "Delivery" },
+                new { TableId = AppConstants.TableIds.DineIn, Label = "Dine-in" },
+                new { TableId = AppConstants.TableIds.ScheduledDelivery, Label = "Scheduled Delivery" },
+                new { TableId = AppConstants.TableIds.ScheduledPickUp, Label = "Scheduled Takeaway" }
+            };
+
+            var chartData = allTypes.Select((type, index) =>
+            {
+                var typeOrders = orders.Where(o => o.TableId == type.TableId);
+                return new
+                {
+                    tableId = type.TableId,        // camelCase
+                    label = type.Label,
+                    count = typeOrders.Count(),    // camelCase
+                    total = typeOrders.Sum(o => o.TotalAmount), // camelCase
+                    index
+                };
+            }).ToList();
+
+            return Ok(chartData);
         }
     }
 
 }
+ 

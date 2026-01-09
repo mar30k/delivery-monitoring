@@ -8,7 +8,13 @@ const { DashboardAlerts } = await import(`./dashboard-alerts.js?v=${Date.now()}`
 $(function () {
 
     const { driverDataSet, orderDataSet } = window.initialChartData ?? {};
-
+    const orderTypes = [
+        { tableId: 'takeAway', index: 0, label: 'Takeaway' },
+        { tableId: 'delivery', index: 1, label: 'Delivery' },
+        { tableId: 'dineIn', index: 2, label: 'Dine-in' },
+        { tableId: 'scheduledDelivery', index: 3, label: 'Scheduled Delivery' },
+        { tableId: 'scheduledPickUp', index: 4, label: 'Scheduled Takeaway' }
+    ];
     const charts = {
         drivers: DashboardCharts.createDoughnut({
             ctx: document.getElementById('driversChart'),
@@ -36,31 +42,19 @@ $(function () {
 
         completedCount: DashboardCharts.createDoughnut({
             ctx: document.getElementById('completedChart'),
-            labels: [
-                'Takeaway (0)',
-                'Delivery (0)',
-                'Dine-in (0)',
-                'Scheduled Delivery (0)',
-                'Scheduled Takeaway (0)'
-            ],
-            data: [0, 0, 0, 0, 0],
+            labels: orderTypes.map(o => `${o.label} (0)`),
+            data: Array(orderTypes.length).fill(0),
             colors: DASHBOARD_CONFIG.colors.orderTypes,
             title: `Completed Orders ${DashboardUtils.today()}`
         }),
 
         completedTotal: DashboardCharts.createDoughnut({
             ctx: document.getElementById('completedTotalChart'),
-            labels: [
-                'Takeaway (0)',
-                'Delivery (0)',
-                'Dine-in (0)',
-                'Scheduled Delivery (0)',
-                'Scheduled Takeaway (0)'
-            ],
-            data: [0, 0, 0, 0, 0],
+            labels: orderTypes.map(o => `${o.label} (0)`),
+            data: Array(orderTypes.length).fill(0),
             colors: DASHBOARD_CONFIG.colors.orderTypes,
             title: `Completed Orders Total ${DashboardUtils.today()}`
-        })
+        }),
     };
     async function refreshDriversChart() {
         const drivers = await DashboardUtils.fetchJson(
@@ -146,38 +140,23 @@ $(function () {
     }
     async function refreshCompletedOrdersCharts() {
 
-        const slices = [
-            { type: 'takeaway', index: 0, label: 'Takeaway' },
-            { type: 'delivery', index: 1, label: 'Delivery' },
-            { type: 'dinein', index: 2, label: 'Dine-in' },
-            { type: 'scheduledDeliveryToLocation', index: 3, label: 'Scheduled Delivery' },
-            { type: 'scheduledPickUp', index: 4, label: 'Scheduled Takeaway' }
-        ];
+        try {
+            const data = await DashboardUtils.fetchJson(DASHBOARD_CONFIG.api.orderChart);
+            orderTypes.forEach(({ tableId, index, label }) => {
+                const orderData = data.find(o => o.tableId === tableId) || { count: 0, total: 0 };
 
-        const results = await Promise.all(
-            slices.map(async s => {
-                try {
-                    const data = await DashboardUtils.fetchJson(
-                        `${DASHBOARD_CONFIG.api.orderChart}?type=${s.type}`
-                    );
-                    return { ...s, ...data };
-                } catch {
-                    return { ...s, count: 0, total: 0 };
-                }
-            })
-        );
+                charts.completedCount.data.datasets[0].data[index] = orderData.count;
+                charts.completedCount.data.labels[index] = `${label} (${orderData.count})`;
 
-        results.forEach(r => {
-            charts.completedCount.data.datasets[0].data[r.index] = r.count;
-            charts.completedCount.data.labels[r.index] = `${r.label} (${r.count})`;
+                charts.completedTotal.data.datasets[0].data[index] = orderData.total;
+                charts.completedTotal.data.labels[index] = `${label} (${orderData.total.toFixed(2)})`;
+            });
 
-            charts.completedTotal.data.datasets[0].data[r.index] = r.total;
-            charts.completedTotal.data.labels[r.index] =
-                `${r.label} (${r.total.toFixed(2)})`;
-        });
-
-        charts.completedCount.update();
-        charts.completedTotal.update();
+            charts.completedCount.update();
+            charts.completedTotal.update();
+        } catch (err) {
+            console.error('Failed to refresh completed orders charts', err);
+        }
     }
 
     async function refreshSupervisors() {
