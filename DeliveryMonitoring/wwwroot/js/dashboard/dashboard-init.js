@@ -5,231 +5,177 @@ const { DashboardMap } = await import(`./dashboard-map.js?v=${Date.now()}`);
 const { DashboardScroll } = await import(`./dashboard-scroll.js?v=${Date.now()}`);
 const { DashboardAlerts } = await import(`./dashboard-alerts.js?v=${Date.now()}`);
 
-$(function () {
-
-    const { driverDataSet, orderDataSet } = window.initialChartData ?? {};
-    const orderTypes = [
+/**
+ * Main Dashboard Controller
+ */
+const Dashboard = {
+    charts: {},
+    orderTypes: [
         { tableId: 'takeAway', index: 0, label: 'Takeaway' },
         { tableId: 'delivery', index: 1, label: 'Delivery' },
         { tableId: 'dineIn', index: 2, label: 'Dine-in' },
         { tableId: 'scheduledDelivery', index: 3, label: 'Scheduled Delivery' },
         { tableId: 'scheduledPickUp', index: 4, label: 'Scheduled Takeaway' }
-    ];
-    const charts = {
-        drivers: DashboardCharts.createDoughnut({
+    ],
+
+    async init() {
+        this.initCharts();
+        this.setupMap();
+
+        // Initial load
+        await this.refreshAll();
+
+        // Start polling
+        this.startIntervals();
+
+        if (window.isAnalyticsPage) DashboardScroll.init();
+    },
+
+    initCharts() {
+        const { driverDataSet, orderDataSet } = window.initialChartData ?? {};
+
+        this.charts.drivers = DashboardCharts.createDoughnut({
             ctx: document.getElementById('driversChart'),
-            labels: [
-                'Ready', 'Offline', 'Accepted',
-                'Delivering', 'Completed',
-                'ArrivedAtBranch', 'Arrived'
-            ],
+            labels: ['Ready', 'Offline', 'Accepted', 'Delivering', 'Completed', 'ArrivedAtBranch', 'Arrived'],
             data: driverDataSet,
             colors: DASHBOARD_CONFIG.colors.drivers,
             title: 'Drivers Status'
-        }),
+        });
 
-        ordersStatus: DashboardCharts.createDoughnut({
+        this.charts.ordersStatus = DashboardCharts.createDoughnut({
             ctx: document.getElementById('ordersChart'),
-            labels: [
-                'Completed', 'Requested', 'Assigned', 'Accepted',
-                'On The Way', 'Declined', 'Driver Not Found',
-                'ArrivedAtBranch', 'Arrived', 'SOS'
-            ],
+            labels: ['Completed', 'Requested', 'Assigned', 'Accepted', 'On The Way', 'Declined', 'Driver Not Found', 'ArrivedAtBranch', 'Arrived', 'SOS'],
             data: orderDataSet,
             colors: DASHBOARD_CONFIG.colors.orderStatus,
             title: 'Orders Status'
-        }),
-
-        completedCount: DashboardCharts.createDoughnut({
-            ctx: document.getElementById('completedChart'),
-            labels: orderTypes.map(o => `${o.label} (0)`),
-            data: Array(orderTypes.length).fill(0),
-            colors: DASHBOARD_CONFIG.colors.orderTypes,
-            title: `Completed Orders ${DashboardUtils.today()}`
-        }),
-
-        completedTotal: DashboardCharts.createDoughnut({
-            ctx: document.getElementById('completedTotalChart'),
-            labels: orderTypes.map(o => `${o.label} (0)`),
-            data: Array(orderTypes.length).fill(0),
-            colors: DASHBOARD_CONFIG.colors.orderTypes,
-            title: `Completed Orders Total ${DashboardUtils.today()}`
-        }),
-    };
-    async function refreshDriversChart() {
-        const drivers = await DashboardUtils.fetchJson(
-            DASHBOARD_CONFIG.api.driverLive
-        );
-        if (!Array.isArray(drivers)) return;
-
-        const counts = {
-            ready: 0,
-            offline: 0,
-            accepted: 0,
-            delivering: 0,
-            completed: 0,
-            arrivedAtBranch: 0,
-            arrived: 0
-        };
-
-        drivers.forEach(d => {
-            if (counts[d.status] !== undefined) {
-                counts[d.status]++;
-            }
         });
 
-        DashboardCharts.updateDataset(
-            charts.drivers,
-            Object.values(counts)
-        );
+        // Use helper for repeated chart creation logic
+        this.charts.completedCount = this._createCompletedChart('completedChart', `Completed Orders ${DashboardUtils.today()}`);
+        this.charts.completedTotal = this._createCompletedChart('completedTotalChart', `Completed Orders Total ${DashboardUtils.today()}`);
+    },
 
-        $("#totalDrivers").text(drivers.filter(d => !d.isDisabled).length);
-        $("#readyDrivers").text(counts.ready);
+    async refreshDrivers() {
+        try {
+            const drivers = await DashboardUtils.fetchJson(DASHBOARD_CONFIG.api.driverLive);
+            if (!Array.isArray(drivers)) return;
 
-        if (window.isAnalyticsPage) {
-            DashboardMap.refresh(drivers);
-        }
-    }
-    async function refreshOrdersStatusChart() {
-        let orders;
-        if (window.isAnalyticsPage) {
-            orders = await DashboardUtils.fetchJson(
-                DASHBOARD_CONFIG.api.orders
-            );
-        }
-        else {
-            orders = window.data; // global orders already available
-        }
-        if (!Array.isArray(orders)) return;
-        const counts = {
-            completed: 0,
-            requested: 0,
-            assigned: 0,
-            accepted: 0,
-            ontheway: 0,
-            declined: 0,
-            driverNotFound: 0,
-            arrivedAtBranch: 0,
-            arrived: 0,
-            sos: 0
-        };
+            const counts = this._tally(drivers, ['ready', 'offline', 'accepted', 'delivering', 'completed', 'arrivedAtBranch', 'arrived']);
 
-        orders.forEach(o => {
-            if (counts[o.status] !== undefined) {
-                counts[o.status]++;
-            }
-        });
+            DashboardCharts.updateDataset(this.charts.drivers, Object.values(counts));
+            $("#totalDrivers").text(drivers.filter(d => !d.isDisabled).length);
+            $("#readyDrivers").text(counts.ready);
 
-        DashboardCharts.updateDataset(charts.ordersStatus, [
-            counts.completed,
-            counts.requested,
-            counts.assigned,
-            counts.accepted,
-            counts.ontheway,
-            counts.declined,
-            counts.driverNotFound,
-            counts.arrivedAtBranch,
-            counts.arrived,
-            counts.sos
-        ]);
+            if (window.isAnalyticsPage) DashboardMap.refresh(drivers);
+        } catch (err) { console.error("Drivers update failed", err); }
+    },
 
-        $("#orderCount").text(orders.length);
-        if (window.isAnalyticsPage) {
-            DashboardAlerts.processOrders(orders);
-        }
-    }
-    async function refreshCompletedOrdersCharts() {
+    async refreshOrders() {
+        try {
+            const orders = window.isAnalyticsPage
+                ? await DashboardUtils.fetchJson(DASHBOARD_CONFIG.api.orders)
+                : window.data;
 
+            if (!Array.isArray(orders)) return;
+
+            const statusKeys = ['completed', 'requested', 'assigned', 'accepted', 'ontheway', 'declined', 'driverNotFound', 'arrivedAtBranch', 'arrived', 'sos'];
+            const counts = this._tally(orders, statusKeys);
+
+            DashboardCharts.updateDataset(this.charts.ordersStatus, statusKeys.map(k => counts[k]));
+            $("#orderCount").text(orders.length);
+
+            if (window.isAnalyticsPage) DashboardAlerts.processOrders(orders);
+        } catch (err) { console.error("Orders update failed", err); }
+    },
+
+    async refreshAnalytics() {
         try {
             const data = await DashboardUtils.fetchJson(DASHBOARD_CONFIG.api.orderChart);
-            orderTypes.forEach(({ tableId, index, label }) => {
-                const orderData = data.find(o => o.tableId === tableId) || { count: 0, total: 0 };
+            this.orderTypes.forEach(({ tableId, index, label }) => {
+                const entry = data.find(o => o.tableId === tableId) || { count: 0, total: 0 };
 
-                charts.completedCount.data.datasets[0].data[index] = orderData.count;
-                charts.completedCount.data.labels[index] = `${label} (${orderData.count})`;
-
-                charts.completedTotal.data.datasets[0].data[index] = orderData.total;
-                charts.completedTotal.data.labels[index] = `${label} (${orderData.total.toFixed(2)})`;
+                this._updateChartSlice(this.charts.completedCount, index, label, entry.count);
+                this._updateChartSlice(this.charts.completedTotal, index, label, entry.total.toFixed(2));
             });
+            this.charts.completedCount.update();
+            this.charts.completedTotal.update();
+        } catch (err) { console.error("Analytics update failed", err); }
+    },
 
-            charts.completedCount.update();
-            charts.completedTotal.update();
-        } catch (err) {
-            console.error('Failed to refresh completed orders charts', err);
-        }
-    }
-
-    async function refreshSupervisors() {
+    async refreshStats() {
         try {
-            const supervisors = await DashboardUtils.fetchJson(
-                DASHBOARD_CONFIG.api.supervisors
-            );
+            const [supervisors, kot] = await Promise.all([
+                DashboardUtils.fetchJson(DASHBOARD_CONFIG.api.supervisors),
+                DashboardUtils.fetchJson(DASHBOARD_CONFIG.api.kotStatus)
+            ]);
 
-            if (!Array.isArray(supervisors)) return;
-
-            const total = supervisors.length;
-            const loggedIn = supervisors.filter(s => s.loggedInStatus).length;
-
-            $("#totalSupervisors").text(total);
-            $("#loggedinSupervisors").text(loggedIn);
-
-        } catch (err) {
-            console.error("Failed to refresh supervisors", err);
-        }
-    }
-
-    async function refreshKotStatus() {
-        try {
-            const kot = await DashboardUtils.fetchJson(
-                DASHBOARD_CONFIG.api.kotStatus
-            );
-
-            const count = Array.isArray(kot) ? kot.length : 0;
-            $("#kotStatus").text(count);
-
-        } catch (err) {
-            console.error("Failed to refresh KOT status", err);
-        }
-    }
-
-    function loadGoogleMapsAPI(apiKey) {
-        return new Promise((resolve, reject) => {
-            if (window.google?.maps) {
-                resolve();
-                return;
+            if (Array.isArray(supervisors)) {
+                $("#totalSupervisors").text(supervisors.length);
+                $("#loggedinSupervisors").text(supervisors.filter(s => s.loggedInStatus).length);
             }
+            $("#kotStatus").text(Array.isArray(kot) ? kot.length : 0);
+        } catch (err) { console.error("Stats update failed", err); }
+    },
 
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
-            script.async = true;
-            script.defer = true;
+    async refreshAll() {
+        return Promise.allSettled([
+            this.refreshDrivers(),
+            this.refreshOrders(),
+            this.refreshAnalytics(),
+            this.refreshStats()
+        ]);
+    },
 
-            script.onload = resolve;
-            script.onerror = reject;
+    startIntervals() {
+        setInterval(() => this.refreshDrivers(), DASHBOARD_CONFIG.refresh.drivers);
+        setInterval(() => this.refreshOrders(), DASHBOARD_CONFIG.refresh.orders);
+        setInterval(() => {
+            this.refreshAnalytics();
+            this.refreshStats();
+        }, DASHBOARD_CONFIG.refresh.charts);
+    },
 
-            document.head.appendChild(script);
+    /** Helpers **/
+    _tally(list, keys) {
+        const counts = {};
+        keys.forEach(k => counts[k] = 0);
+        list.forEach(item => { if (counts[item.status] !== undefined) counts[item.status]++; });
+        return counts;
+    },
+
+    _createCompletedChart(id, title) {
+        return DashboardCharts.createDoughnut({
+            ctx: document.getElementById(id),
+            labels: this.orderTypes.map(o => `${o.label} (0)`),
+            data: Array(this.orderTypes.length).fill(0),
+            colors: DASHBOARD_CONFIG.colors.orderTypes,
+            title: title
+        });
+    },
+
+    _updateChartSlice(chart, index, label, value) {
+        chart.data.datasets[0].data[index] = value;
+        chart.data.labels[index] = `${label} (${value})`;
+    },
+
+    async setupMap() {
+        if (!window.isAnalyticsPage) return;
+        try {
+            await this._loadGoogleMaps(DASHBOARD_CONFIG.googleMapsKey);
+            DashboardMap.initMap();
+        } catch (e) { console.error("Maps failed", e); }
+    },
+
+    _loadGoogleMaps(key) {
+        return new Promise((res, rej) => {
+            if (window.google?.maps) return res();
+            const s = document.createElement('script');
+            s.src = `https://maps.googleapis.com/maps/api/js?key=${key}`;
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
         });
     }
+};
 
-    if (window.isAnalyticsPage) {
-        loadGoogleMapsAPI(DASHBOARD_CONFIG.googleMapsKey)
-            .then(() => DashboardMap.initMap())
-            .catch(() => console.error("Failed to load Google Maps"));
-    }
-    refreshSupervisors();
-    refreshDriversChart();
-    refreshOrdersStatusChart();
-    refreshCompletedOrdersCharts();
-    refreshKotStatus();
-    if (window.isAnalyticsPage) {
-        DashboardScroll.init();
-    }
-
-
-
-    setInterval(refreshDriversChart, DASHBOARD_CONFIG.refresh.drivers);
-    setInterval(refreshOrdersStatusChart, DASHBOARD_CONFIG.refresh.orders);
-    setInterval(refreshCompletedOrdersCharts, DASHBOARD_CONFIG.refresh.charts);
-    setInterval(refreshSupervisors, DASHBOARD_CONFIG.refresh.charts);
-    setInterval(refreshKotStatus, DASHBOARD_CONFIG.refresh.charts);
-});
+// Start the Dashboard
+$(() => Dashboard.init());

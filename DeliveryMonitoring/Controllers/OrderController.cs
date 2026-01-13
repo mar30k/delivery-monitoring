@@ -5,6 +5,7 @@ using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Linq;
 using System.Text;
 using static NuGet.Packaging.PackagingConstants;
 namespace DeliveryMonitoring.Controllers
@@ -53,6 +54,7 @@ namespace DeliveryMonitoring.Controllers
 
                 if (string.IsNullOrWhiteSpace(CompanyTin)) { return new List<OrderDetail>(); }
 
+                //var response = new List<OrderDetail> { GetSampleOrder.CreateSampleOrder() };
                 var response = await _apiRequestService.GetOrderRequestsAsync();
                 var superVisors = await _apiRequestService.GetSupervisorsAsync();
                 if (response.Count > 0)
@@ -162,101 +164,113 @@ namespace DeliveryMonitoring.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("/dispatch")]
         public async Task<IActionResult> Dispatch([FromBody] OrderDetail order)
         {
+            if (order == null || string.IsNullOrWhiteSpace(order.VoucherCode))
+                return BadRequest(new { message = "Invalid order data." });
+
             try
             {
-                order.Customer = new CustomerDetail
+                // 1️ Load current order state
+                var existingOrder = await _apiRequestService
+                    .GetOrderDetailByVoucher(order.VoucherCode);
+
+                if (existingOrder == null)
+                    return NotFound(new { message = "Order not found." });
+
+                // 2️ Eligibility check
+                var redispatchableStatuses = new[]
                 {
-                    FirstName = order.CustomerFirstName,
-                    GeocodeAddress = order.CustomerGeocodeAddress,
-                    SpecificAddress = order.CustomerSpecificAddress,
-                    PhoneNumber = order.CustomerPhoneNumber,
-                    DeviceID = order.CustomerDeviceID,
-                    LatLng = new Location
+                    "drivernotfound",
+                    "declined",
+                    "requested",
+                    "sos",
+                    "assigned"
+                };
+
+                if (!redispatchableStatuses.Contains(
+                        existingOrder.Status,
+                        StringComparer.OrdinalIgnoreCase))
+                {
+                    return Conflict(new
                     {
-                        lat = order.CustomerLat,
-                        lng = order.CustomerLng
-                    }
-                };
-                order.TargetBranchLocation = new Location
-                {
-                    lat = order.TargetBranchLat,
-                    lng = order.TargetBranchLng
-                };
-                long unixMilliseconds = order.CreatedAt.HasValue
-                    ? new DateTimeOffset(DateTime.SpecifyKind(order.CreatedAt.Value, DateTimeKind.Utc))
-                        .ToUnixTimeMilliseconds()
-                    : 0;
-                order.RequestCreatedAtIso = order.CreatedAt;
-                order.RequestCreatedAt = unixMilliseconds;
+                        message = "Order is not eligible for redispatch."
+                    });
+                }
+
+                // 3️ Normalize only system-controlled fields
+                order.Status = "requested";
                 order.IsAssignedAck = false;
                 order.IsNoDriversAck = false;
                 order.OrderArrivedAckByCustomer = false;
                 order.OrderArrivedAckByDriver = false;
                 order.OrderReceiveNotification = null;
                 order.Alert = null;
-                order.Status = "requested";
                 order.DriverAssignedAt = 0;
                 order.ExceptDrivers = null;
-                if (order == null)
-                    return BadRequest("Invalid order data.");
 
-                var redispatchResult = await _apiRequestService.RedispatchDriversAsync(order);
-                if(!redispatchResult.IsSuccessful)
-                    return StatusCode(500, $"Unable to redispatch the order! {string.Join(", ", redispatchResult.ErrorMessages ?? new List<string>())}");
-                return Ok(redispatchResult);
+                // Ensure timestamps are consistent
+                order.RequestCreatedAtIso = existingOrder.CreatedAt;
+                order.RequestCreatedAt = existingOrder.CreatedAt.HasValue
+                    ? new DateTimeOffset(
+                        DateTime.SpecifyKind(existingOrder.CreatedAt.Value, DateTimeKind.Utc)
+                      ).ToUnixTimeMilliseconds()
+                    : 0;
+
+                // 4️ Redispatch
+                var result = await _apiRequestService.RedispatchDriversAsync(order);
+
+                if (!result.IsSuccessful)
+                {
+                    return StatusCode(500, new
+                    {
+                        message = "Unable to redispatch the order.",
+                        errors = result.ErrorMessages ?? new List<string>()
+                    });
+                }
+
+                return Ok(new
+                {
+                    message = "Order redispatched successfully."
+                });
             }
-            catch (Exception ex)
+            catch
             {
-                return StatusCode(500, $"Exception: {ex.Message}");
-            }            
+                return StatusCode(500, new
+                {
+                    message = "An unexpected error occurred while dispatching the order."
+                });
+            }
         }
-        
-        [HttpPost]
+
+        [HttpPost("/checkRedispatchEligibility")]
         public async Task<IActionResult> CheckRedispatchEligibility([FromBody] OrderDetail order)
         {
-            if (order.VoucherCode == null)
-                return BadRequest("Invalid voucher code.");
+            if (string.IsNullOrWhiteSpace(order.VoucherCode))
+                return BadRequest(new { message = "Invalid voucher code." });
 
             try
             {
                 var orderDetail = await _apiRequestService.GetOrderDetailByVoucher(order.VoucherCode);
                 if (orderDetail == null)
-                {
-                    return StatusCode(500, $"Getting Order Detail Failed!:");
-                }
-                var isRedespatchAble = new[] { "drivernotfound", "declined", "requested" ,"sos", "assigned" }
+                    return NotFound(new { message = "Order not found." });
+
+                var isRedespatchable = new[] { "drivernotfound", "declined", "requested" ,"sos", "assigned" }
                     .Contains(orderDetail?.Status, StringComparer.OrdinalIgnoreCase);
-                
-                return isRedespatchAble ? Ok(isRedespatchAble) : StatusCode(500, $"Can't Redispatch");
+
+                if (!isRedespatchable)
+                    return Conflict(new { message = "Order is not eligible for redispatch." });
+
+                return Ok();
             }
-            catch (Exception ex)
+            catch
             {
-                return StatusCode(500, $"Exception: {ex.Message}");
+                return StatusCode(500, new { message = "An unexpected error occurred." });
             }
         }
 
-        [HttpGet("/getAvailableSupervisors")]
-        public async Task<IActionResult> GetAvailableSupervisors()
-        {
-            try
-            {
-                var supervisors = await _apiRequestService.GetSupervisorsAsync();
-                var completedOrders = await _apiRequestService.GetCompletedOrdersAsync();
-                foreach (var supervisor in supervisors ?? new List<SupervisorsDTO>())
-                {
-                    supervisor.TotalSupervisedOrders = completedOrders?.Data?.Count(x => x.SupervisorPhoneNumber == supervisor.UserName) ?? 0;
-                }
-                return Ok(supervisors ?? new List<SupervisorsDTO>());
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Exception: {ex.Message}");
-            }
-        }
-
+        
         [Route("/sendAlertMessage")]
         public async Task<IActionResult> SendAlertMessage([FromBody] AlertMessageDto messageDto)
         {
@@ -369,14 +383,14 @@ namespace DeliveryMonitoring.Controllers
                 return StatusCode(500, $"Server error: {ex.Message}");
             }
         }
-        [HttpPost]
+        [HttpPost("/assignSupervisor")]
         public async Task<IActionResult> AssignSupervisor([FromBody] AssignSuperVisorDTO assignSuperVisorDTO)
         {
             if (assignSuperVisorDTO.voucherCode == null)
-                return BadRequest("Invalid voucher data.");
+                return BadRequest(new { message = "Invalid voucher code." });
             var response = await _apiRequestService.AssignOrderSupervisorAsync(assignSuperVisorDTO);
             if (!response.IsSuccessful)
-                return StatusCode(500, $"failed: {response.ErrorMessages?.FirstOrDefault()}");
+                return StatusCode(500, new { message = $"failed: {string.Join(',' , response.ErrorMessages ?? new List<string>())}" });
             return Ok(response);
         }
         [HttpPost]

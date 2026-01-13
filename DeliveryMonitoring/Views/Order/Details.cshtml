@@ -336,9 +336,9 @@
                 <div>
                     <span id="letters">TIN:</span>
                     <span >
-                        @* <a asp-controller="Company" asp-action="Details" asp-route-id="@Model.companyTin">@Html.DisplayFor(model => model.companyTin)</a> *@
-                        <a>@Html.DisplayFor(model => model.CompanyTin)</a>
-                    </span>
+                        <a asp-controller="Company" asp-action="Details" asp-route-companyTin="@Model?.CompanyTin">@Html.DisplayFor(model => model.CompanyTin)</a>
+@*                         <a>@Html.DisplayFor(model => model.CompanyTin)</a>
+ *@                    </span>
                 </div>
             </div>
             <div class="col-md-3 mb-3">

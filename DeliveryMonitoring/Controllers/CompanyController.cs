@@ -129,10 +129,10 @@ namespace DeliveryMonitoring.Controllers
                     .Select(e => e.ErrorMessage)
                     .ToList();
 
-                return BadRequest(new HulubejeResponse<object>
+                return BadRequest(new
                 {
-                    IsSuccessful = false,
-                    ErrorMessages = errors
+                    message = "Invalid request data.",
+                    errors
                 });
             }
 
@@ -142,10 +142,9 @@ namespace DeliveryMonitoring.Controllers
 
             if (order == null)
             {
-                return NotFound(new HulubejeResponse<object>
+                return NotFound(new
                 {
-                    IsSuccessful = false,
-                    ErrorMessages = new List<string> { "Order not found." }
+                    message = "Order not found."
                 });
             }
 
@@ -153,10 +152,9 @@ namespace DeliveryMonitoring.Controllers
             var user = _authenticationManager.GetUserFromCookie();
             if (user == null)
             {
-                return Unauthorized(new HulubejeResponse<object>
+                return Unauthorized(new
                 {
-                    IsSuccessful = false,
-                    ErrorMessages = new List<string> { "User not authenticated." }
+                    message = "User not authenticated."
                 });
             }
 
@@ -166,20 +164,18 @@ namespace DeliveryMonitoring.Controllers
 
             if (supervisor == null)
             {
-                return NotFound(new HulubejeResponse<object>
+                return NotFound(new
                 {
-                    IsSuccessful = false,
-                    ErrorMessages = new List<string> { "Unable to find supervisor. Please try again." }
+                    message = "Unable to find supervisor. Please try again."
                 });
             }
 
             // ----- 5. Authorization -----
             if (order.SupervisedBy != supervisor.UserName)
             {
-                return StatusCode(403, new HulubejeResponse<object>
+                return StatusCode(403, new
                 {
-                    IsSuccessful = false,
-                    ErrorMessages = new List<string> { "You are not authorized to change the branch for this order." }
+                    message = "You are not authorized to change the branch for this order."
                 });
             }
 
@@ -190,22 +186,22 @@ namespace DeliveryMonitoring.Controllers
             var updateResult = await _apiRequestService.ChangeOrderBranchAsync(request);
             if (!updateResult.IsSuccessful)
             {
-                return BadRequest(new HulubejeResponse<object>
+                return BadRequest(new
                 {
-                    IsSuccessful = false,
-                    ErrorMessages = updateResult.ErrorMessages ??
-                                    new List<string> { "Failed to change branch. Please try again." }
+                    message = "Failed to change branch.",
+                    errors = updateResult.ErrorMessages ??
+                     new List<string> { "Please try again." }
                 });
             }
 
             // ----- 7. SUCCESS -----
-            return Ok(new HulubejeResponse<ChangeBranchDTO>
+            return Ok(new 
             {
-                IsSuccessful = true,
-                Data = new ChangeBranchDTO
+                message = "Branch changed successfully.",
+                data = new
                 {
-                    VoucherCode = request.VoucherCode,
-                    Remark = request.Remark
+                    request.VoucherCode,
+                    request.Remark
                 }
             });
         }

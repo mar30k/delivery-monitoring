@@ -5,15 +5,30 @@
         return res.json();
     },
 
-    async postJson(url, payload) {
+    async postJson(url, body) {
         const res = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(body)
         });
 
-        if (!res.ok) throw await res.json();
-        return res.json();
+        let payload = {};
+        try {
+            payload = await res.json();
+        } catch {
+            // non-json response
+        }
+
+        if (!res.ok) {
+            const error = new Error(
+                payload.message || "Request failed"
+            );
+            error.errors = payload.errors;
+            error.status = res.status;
+            throw error;
+        }
+
+        return payload;
     },
 
     today() {

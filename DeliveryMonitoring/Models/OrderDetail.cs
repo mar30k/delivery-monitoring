@@ -159,6 +159,7 @@ namespace DeliveryMonitoring.Models
     {
         [DisplayName("Article")]
         public int? Article { get; set; }
+        
 
         [DisplayName("Name")]
         public string? Name { get; set; }
@@ -173,6 +174,12 @@ namespace DeliveryMonitoring.Models
 
         [DisplayName("Taxable Amount")]
         public decimal? TaxableAmount { get; set; }
+        
+        //[DisplayName("Parent Id")]
+        //public int? ParentId { get; set; }
+
+        [DisplayName("Line Item Id")]
+        public int? LineItemId { get; set; }
     }
 
     public class ExtraData
@@ -195,6 +202,8 @@ namespace DeliveryMonitoring.Models
 
         [DisplayName("Current Time")]
         public DateTime? CurrentTime { get; set; }
+        [DisplayName("Supervisor Name")]
+        public string? SupervisorName { get; set; }
 
         [DisplayName("Expected Time Of Arrival")]
         public DateTime? Eta { get; set; }
@@ -236,6 +245,8 @@ namespace DeliveryMonitoring.Models
         [DisplayName("Time")]
         public DateTime? Time { get; set; }
         public string? TimeElapsed { get; set; }
+        public double? Longitude { get; set; }
+        public double? Latitude { get; set; }
     }
 
     public class AlertMessageDto

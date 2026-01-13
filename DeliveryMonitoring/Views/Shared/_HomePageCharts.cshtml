@@ -42,7 +42,9 @@
                 </div>
                 <div class="card-body col-7">
                     <a class="card-title fw-semibold  text-decoration-none" href="/orders">Total Orders</a>
-                    <h1 class="card-text" id="orderCount">@Model?.Orders?.Count</h1>
+                    <h1 class="card-text" id="orderCount">
+                        <span class="loading-dots"></span>
+                    </h1>
                 </div>
             </div>
         </div>

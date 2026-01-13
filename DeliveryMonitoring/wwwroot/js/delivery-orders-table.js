@@ -102,8 +102,10 @@ export const OrdersTable = (function () {
             }),
 
             center({
-                data: "assignedDriverPhoneNumber",
-                render: Renderers.phone
+                data: function (row) {
+                    return row.assignedDriverName ?? row.assignedDriverPhoneNumber ?? 'N/A';
+                },
+                render: (data, type, row) => Renderers.driver(type, row)
             }),
 
             center({

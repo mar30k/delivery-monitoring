@@ -57,5 +57,25 @@ namespace DeliveryMonitoring.Controllers
             };
             return View(orderViewModel);
         }
+
+        [HttpGet("/getAvailableSupervisors")]
+        public async Task<IActionResult> GetAvailableSupervisors()
+        {
+            try
+            {
+                var supervisors = await _apiRequestService.GetSupervisorsAsync();
+                var completedOrders = await _apiRequestService.GetCompletedOrdersAsync();
+                foreach (var supervisor in supervisors ?? new List<SupervisorsDTO>())
+                {
+                    supervisor.TotalSupervisedOrders = completedOrders?.Data?.Count(x => x.SupervisorPhoneNumber == supervisor.UserName) ?? 0;
+                }
+                return Ok(supervisors ?? new List<SupervisorsDTO>());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Exception: {ex.Message}");
+            }
+        }
+
     }
 }

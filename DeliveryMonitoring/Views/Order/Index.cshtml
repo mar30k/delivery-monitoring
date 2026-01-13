@@ -119,7 +119,7 @@
                     <div class="modal-body">
                         <p class="mb-3 text-muted">Choose how you want to re-dispatch the order:</p>
 
-                        <button class="btn btn-outline-primary w-100 mb-3" id="confirmRedispatchToAll" onclick="confirmRedispatchToAll()">
+                        <button class="btn btn-outline-primary w-100 mb-3" id="confirmRedispatchToAll" onclick="Dispatch.confirm(true)">
                             🔄 Re-dispatch to All Available Drivers
                         </button>
 
@@ -130,7 +130,7 @@
                             <option value="" selected disabled>Loading drivers...</option>
                         </select>
 
-                        <button class="btn btn-outline-success w-100 mt-2" onclick="confirmRedispatchToDriver()">
+                        <button class="btn btn-outline-success w-100 mt-2" onclick="Dispatch.confirm()">
                             ✅ Dispatch to Selected Driver
                         </button>
                         <div id="dispatchLoading" class="text-center mt-4 d-none">
@@ -154,9 +154,9 @@
                     </div>
 
                     <div class="modal-body">
-@*                         <p class="mb-3 text-muted">Choose how you want to assign supervisor to the order:</p>
+                        @* <p class="mb-3 text-muted">Choose how you want to assign supervisor to the order:</p>
 
-                        <button class="btn btn-outline-primary w-100 mb-3" id="confirmAssignToAll" onclick="confirmAssignToAll()">
+                        <button class="btn btn-outline-primary w-100 mb-3" id="confirmAssignToAll" onclick="SupervisorAssignment.assign(true)">
                             🔄 Assign to Available Supervisors Randomly
                         </button>
 
@@ -167,7 +167,7 @@
                             <option value="" selected disabled>Loading supervisors...</option>
                         </select>
 
-                        <button class="btn btn-outline-success w-100 mt-2" onclick="confirmAssignToSupervisor()">
+                        <button class="btn btn-outline-success w-100 mt-2" onclick="SupervisorAssignment.assign()">
                             ✅ Assign to Selected Supervisor
                         </button>
                         <div id="assignLoading" class="text-center mt-4 d-none">
@@ -214,7 +214,7 @@
                                   rows="3"
                                   placeholder="Add an optional remark..."></textarea>
 
-                        <button class="btn btn-outline-success w-100 mt-2" onclick="confirmBranchChange()">
+                        <button class="btn btn-outline-success w-100 mt-2" onclick="BranchChange.confirm()">
                             ✅ Change Branch
                         </button>
 
@@ -241,7 +241,11 @@
     <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script>
     <script src="~/js/datatable-renderers.js" asp-append-version="true"></script>
     <script src="~/js/datatable-init.js" asp-append-version="true"></script>
-    <script src="~/js/orders.js" asp-append-version="true"></script>
+    <script src="~/js/modules/branch-change.js" type="module" asp-append-version="true"></script>
+    <script src="~/js/modules/dashboard-api.js" type="module" asp-append-version="true"></script>
+    <script src="~/js/modules/dispatch.js" type="module" asp-append-version="true"></script>
+    <script src="~/js/modules/supervisor.js" type="module" asp-append-version="true"></script>
+    <script src="~/js/modules/ui.js" type="module" asp-append-version="true"></script>
     <script type="module">
         import { OrdersTable } from '/js/delivery-orders-table.js?v=@DateTime.Now.Ticks';
         OrdersTable.init({

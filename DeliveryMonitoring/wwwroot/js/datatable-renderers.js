@@ -212,7 +212,7 @@ const Renderers = {
                 data-branch="${branchName}"
                 data-voucher="${row.voucherCode || ''}">
                 ${branchName}
-                <a onclick="openChangeBranchModal(this)">
+                <a onclick="BranchChange.open(this)">
                     <i class="fa-solid fa-pen-to-square"></i>
                 </a>
             </span>
@@ -246,16 +246,47 @@ const Renderers = {
         if (!row.supervisedBy) {
             return `
             <a class="btn btn-outline-dark btn-sm"
-               onclick="openAssignSupervisorModal('${row.voucherCode}')">
+               onclick="SupervisorAssignment.open('${row.voucherCode}')">
                 Assign
             </a>
         `;
         }
         return `
         <a href="tel:${row.supervisedBy}">${value}</a>
-        <a onclick="openAssignSupervisorModal('${row.voucherCode}')">
+            <a onclick="SupervisorAssignment.open('${row.voucherCode}')">
             <i class="fa-solid fa-pen-to-square"></i>
         </a>
+    `;
+    },
+    driver: (type, row) => {
+        const phone = row.assignedDriverPhoneNumber;
+        const name = row.assignedDriverName;
+        const value = name || phone || 'N/A';
+
+        if (type !== 'display') {
+            return value;
+        }
+
+        if (!phone && !name) {
+            return 'N/A';
+        }
+
+        if (!phone) {
+            return value;
+        }
+
+        return `
+        <span class="d-inline-flex align-items-center gap-1">
+            <a href="tel:${phone}">${value}</a>
+            <a
+                href="javascript:void(0)"
+                onclick="copyToClipboard('${phone}')"
+                title="Copy to clipboard"
+                class="text-primary text-decoration-none"
+            >
+                <i class="bi bi-clipboard"></i>
+            </a>
+        </span>
     `;
     },
     detailsActions: (row) => {
@@ -271,7 +302,7 @@ const Renderers = {
             status === "requested" ||
             status === "sos" ||
             status === "assigned"
-        ) ? `<a href="#" data-order="${orderJson}" onclick="openRedispatchModal(this)">Redispatch</a>` : '';
+        ) ? `<a href="#" data-order="${orderJson}" onclick="Dispatch.openModal(this)">Redispatch</a>` : '';
 
         return `
             <div style="display:inline-block;">
