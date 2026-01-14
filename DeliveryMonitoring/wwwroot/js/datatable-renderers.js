@@ -222,17 +222,18 @@ const Renderers = {
         if (type === 'sort' || type === 'type') return status || '';
         if (!status) return 'N/A';
 
-        const tooltip = status.toLowerCase() === 'sos'
-            ? (row?.sosReason || '')
-            : '';
-        const backgroundColor = statusColors[status.toLowerCase()];
+        const tooltip = status.toLowerCase() === 'sos' ? (row?.sosReason || '') : '';
+        const backgroundColor = statusColors[status.toLowerCase()] || '#000';
+
         return `
-            <span class="p-1 text-white d-flex justify-content-center align-items-center p-1 rounded rounded-2 my-1"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="top"
-                  title="${tooltip}" style="background-color: ${backgroundColor}">
-                ${status}
-            </span>`;
+        <span class="d-flex justify-content-center align-items-center p-1 rounded my-1"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="${tooltip.replace(/"/g, '&quot;')}"
+              style="background-color: ${backgroundColor}; color: ${status !== 'assigned' ? 'white' : 'black'};">
+            ${status}
+        </span>
+    `;
     },
     statusReport: (data, type) => {
         if (type === 'sort' || type === 'type') return data || '';
@@ -258,36 +259,41 @@ const Renderers = {
         </a>
     `;
     },
-    driver: (type, row) => {
-        const phone = row.assignedDriverPhoneNumber;
-        const name = row.assignedDriverName;
-        const value = name || phone || 'N/A';
+    driver: (type, phone, name) => {
+        const displayValue = name || phone || 'N/A';
+        const canCopy = !!phone;
 
+        // For sorting, filtering, etc.
         if (type !== 'display') {
-            return value;
+            return displayValue;
         }
 
-        if (!phone && !name) {
+        // Nothing available
+        if (!name && !phone) {
             return 'N/A';
         }
 
-        if (!phone) {
-            return value;
+        // Phone exists → enable call + copy
+        if (canCopy) {
+            return `
+            <span class="d-inline-flex align-items-center gap-1">
+                <a href="tel:${phone}" class="text-decoration-none">
+                    ${displayValue}
+                </a>
+                <a
+                    href="javascript:void(0)"
+                    onclick="copyToClipboard('${phone}')"
+                    title="Copy phone number"
+                    class="text-primary text-decoration-none"
+                >
+                    <i class="bi bi-clipboard"></i>
+                </a>
+            </span>
+        `;
         }
 
-        return `
-        <span class="d-inline-flex align-items-center gap-1">
-            <a href="tel:${phone}">${value}</a>
-            <a
-                href="javascript:void(0)"
-                onclick="copyToClipboard('${phone}')"
-                title="Copy to clipboard"
-                class="text-primary text-decoration-none"
-            >
-                <i class="bi bi-clipboard"></i>
-            </a>
-        </span>
-    `;
+        // Name exists but no phone → just display name
+        return displayValue;
     },
     detailsActions: (row) => {
         if (!row?.voucherCode) return 'N/A';

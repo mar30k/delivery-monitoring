@@ -198,28 +198,45 @@ namespace DeliveryMonitoring.Controllers
                         message = "Order is not eligible for redispatch."
                     });
                 }
-
+                //order.Customer = new CustomerDetail
+                //{
+                //    DeviceID = order.CustomerDeviceID,
+                //    FirstName = order.CustomerFirstName,
+                //    PhoneNumber = order.CustomerPhoneNumber,
+                //    GeocodeAddress = order.CustomerGeocodeAddress,
+                //    SpecificAddress = order.CustomerSpecificAddress,
+                //    LatLng = new Location
+                //    {
+                //        lat = order.CustomerLat,
+                //        lng = order.CustomerLng
+                //    }
+                //};
+                //order.TargetBranchLocation = new Location
+                //{
+                //    lat = order.TargetBranchLat,
+                //    lng = order.TargetBranchLng
+                //};
                 // 3️ Normalize only system-controlled fields
-                order.Status = "requested";
-                order.IsAssignedAck = false;
-                order.IsNoDriversAck = false;
-                order.OrderArrivedAckByCustomer = false;
-                order.OrderArrivedAckByDriver = false;
-                order.OrderReceiveNotification = null;
-                order.Alert = null;
-                order.DriverAssignedAt = 0;
-                order.ExceptDrivers = null;
+                existingOrder.Status = "requested";
+                existingOrder.IsAssignedAck = false;
+                existingOrder.IsNoDriversAck = false;
+                existingOrder.OrderArrivedAckByCustomer = false;
+                existingOrder.OrderArrivedAckByDriver = false;
+                existingOrder.OrderReceiveNotification = null;
+                existingOrder.Alert = null;
+                existingOrder.DriverAssignedAt = 0;
+                existingOrder.ExceptDrivers = null;
 
                 // Ensure timestamps are consistent
-                order.RequestCreatedAtIso = existingOrder.CreatedAt;
-                order.RequestCreatedAt = existingOrder.CreatedAt.HasValue
+                existingOrder.RequestCreatedAtIso = existingOrder.CreatedAt;
+                existingOrder.RequestCreatedAt = existingOrder.CreatedAt.HasValue
                     ? new DateTimeOffset(
                         DateTime.SpecifyKind(existingOrder.CreatedAt.Value, DateTimeKind.Utc)
                       ).ToUnixTimeMilliseconds()
                     : 0;
 
                 // 4️ Redispatch
-                var result = await _apiRequestService.RedispatchDriversAsync(order);
+                var result = await _apiRequestService.RedispatchDriversAsync(existingOrder);
 
                 if (!result.IsSuccessful)
                 {

@@ -7,6 +7,7 @@ namespace DeliveryMonitoring.Models
         public DateTime RequestCreatedAt { get; set; }
         public string? Status { get; set; }
         public string? DriverPhoneNumber { get; set; }
+        public string? AssignedDriverName { get; set; }
         public string? SupervisorPhoneNumber { get; set; }
         public string? SupervisorName { get; set; }
         public string? FirstName { get; set; }

@@ -1,45 +1,315 @@
-﻿@model Activities
+﻿@using Newtonsoft.Json
+@model Activities
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+<style>
+    /* --- MOBILE SCROLL & TEXT FIX --- */
+    .timeline-scroll-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 1rem;
+    }
+
+    .timeline-content-min-width {
+        min-width: 800px;
+        padding: 10px;
+    }
+
+    /* --- RESPONSIVE FONT SCALING --- */
+    .timeline-card {
+        display: flex;
+        background: #f9f9f9;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #4a90e2;
+        width: 100%;
+        align-items: center;
+        gap: 1rem;
+        transition: background 0.2s;
+    }
+
+    /* Medium Screens (Tablets) */
+    @@media (max-width: 1024px) {
+        .timeline-card {
+            font-size: 0.85rem;
+            padding: 0.6rem 0.8rem;
+        }
+    }
+
+    /* Small Screens (Phones) */
+    @@media (max-width: 767px) {
+        .timeline-card {
+            font-size: 0.75rem;
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .timeline-content-min-width {
+            min-width: 700px;
+        }
+    }
+
+    /* --- Original Timeline Styles --- */
+    .timeline-container {
+        position: relative;
+        margin: 2rem 0;
+    }
+
+    .timeline-line {
+        position: absolute;
+        left: 20px;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background: #4a90e2;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 60px;
+        margin-bottom: 1rem;
+    }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .timeline-dot {
+        position: absolute;
+        left: 12px;
+        top: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #4a90e2;
+        border: 2px solid white;
+        z-index: 2;
+    }
+
+    .timeline-item.no-gps .timeline-dot {
+        background: #ccc;
+    }
+
+    .timeline-item.no-gps .timeline-card {
+        border-left-color: #ccc;
+        opacity: 0.7;
+    }
+
+    .timeline-card:hover {
+        background: #eef6ff;
+        cursor: pointer;
+    }
+
+    .timeline-card > div {
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    .timeline-name {
+        font-weight: bold;
+        width: 40%;
+    }
+
+    .timeline-time {
+        width: 30%;
+        color: #555;
+    }
+
+    .timeline-elapsed, .timeline-diff {
+        width: 15%;
+        flex-shrink: 0; /* Prevents the boxes from squeezing too thin */
+    }
+
+    .timeline-diff {
+        text-align: right;
+        color: #ff6600;
+    }
+
+    #deliveryMap {
+        height: 400px;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+</style>
+@{
+    var gpsActivities = Model?.ActivityResponse?
+        .Where(a => a.Latitude.HasValue && a.Longitude.HasValue && a.Latitude != 0 && a.Longitude != 0 && a.Name != "Order Placed")
+        .Select((a, i) => new { index = i, name = a.Name, lat = a.Latitude.Value, lng = a.Longitude.Value, time = a.Time })
+        .ToList();
+
+    DateTime? previousTime = null;
+}
+
 <div class="uk-container uk-padding">
-    <div class="uk-timeline">
-        @foreach (var activity in Model?.ActivityResponse ?? new List<ActivityResponse>())
-        {
-            <div class="uk-timeline-item">
-                <div class="uk-timeline-icon">
-                    <span class="uk-badge"><span uk-icon="check"></span></span>
-                </div>
-                <div class="uk-timeline-content">
-                    <div class="uk-card uk-card-default uk-margin-medium-bottom uk-overflow-auto">
-                        <div class="uk-card-header">
-                            <div class="uk-grid-small uk-flex-middle" uk-grid>
 
-                                <!-- Column 1: Date and Time -->
-                                <div class="uk-width-1-1@s uk-width-1-3@m uk-text-center">
-                                    <p class="uk-card-title uk-margin-remove-bottom">
-                                        <time datetime="@activity?.Time?.ToString("yyyy-MM-ddTHH:mm:ss")">
-                                            @activity?.Time?.ToString("ddd MMM, dd yyyy hh:mm:ss tt")
-                                        </time>
-                                    </p>
-                                </div>
+    <div class="timeline-scroll-wrapper">
+        <div class="timeline-content-min-width">
 
-                                <!-- Column 2: Elapsed Time -->
-                                <div class="uk-width-1-1@s uk-width-1-3@m uk-text-center">
-                                    @if (!string.IsNullOrEmpty(activity?.TimeElapsed))
-                                    {
-                                        <span class="uk-label uk-label-warning">@activity.TimeElapsed</span>
-                                    }
-                                </div>
+            <div class="timeline-card d-flex fw-bold text-center bg-secondary text-white p-2 rounded mb-3">
+                <div style="width:40%;">Activity</div>
+                <div style="width:30%;">Time</div>
+                <div style="width:15%;">Elapsed Time</div>
+                <div style="width:15%;">Since Previous</div>
+            </div>
 
-                                <!-- Column 3: Activity Name -->
-                                <div class="uk-width-1-1@s uk-width-1-3@m uk-text-center">
-                                    <span class="uk-label uk-label-success" style="white-space: normal; word-break: break-word;">
-                                        @activity?.Name
-                                    </span>
-                                </div>
+            <div class="timeline-container">
+                <div class="timeline-line"></div>
+
+                @foreach (var activity in Model?.ActivityResponse ?? Enumerable.Empty<ActivityResponse>())
+                {
+                    bool hasGps = activity.Latitude.HasValue && activity.Longitude.HasValue &&
+                    activity.Latitude != 0 && activity.Longitude != 0 && activity.Name != "Order Placed";
+
+                    TimeSpan? diff = null;
+                    if (previousTime.HasValue && activity.Time.HasValue) diff = activity.Time - previousTime;
+                    previousTime = activity.Time;
+
+                    TimeSpan? elapsed = activity.Time.HasValue ? (activity.Time.Value - Model?.StartTime) : (TimeSpan?)null;
+
+                    <div class="timeline-item @(hasGps ? "has-gps" : "no-gps")"
+                         @(hasGps ? $"data-lat=\"{activity.Latitude}\" data-lng=\"{activity.Longitude}\"" : "")>
+
+                        <div class="timeline-dot"></div>
+
+                        <div class="timeline-card d-flex align-items-center rounded mb-2">
+                            <div class="timeline-name">@activity.Name</div>
+
+                            <div class="timeline-time text-center">
+                                @activity.Time?.ToString("ddd MMM, dd yyyy HH:mm:ss tt")
+                            </div>
+
+                            <div class="timeline-elapsed text-center bg-warning text-dark rounded px-1">
+                                @if (elapsed.HasValue)
+                                {
+                                    <span>@FormatDuration(elapsed.Value)</span>
+                                }
+                            </div>
+
+                            <div class="timeline-diff text-center bg-info text-white rounded px-1">
+                                @if (diff.HasValue)
+                                {
+                                    <span>@FormatDuration(diff.Value)</span>
+                                }
                             </div>
                         </div>
                     </div>
-                </div>
+                }
             </div>
-        }
+        </div>
     </div>
+
+    @if (gpsActivities != null && gpsActivities.Count > 0)
+    {
+        <div class="uk-card uk-card-default uk-margin-bottom">
+            <div class="uk-card-header"><h4 class="uk-margin-remove">Delivery Route</h4></div>
+            <div class="uk-card-body uk-padding-remove"><div id="deliveryMap"></div></div>
+        </div>
+    }
+    @functions {
+        string FormatDuration(TimeSpan ts)
+        {
+            int hours = (int)ts.TotalHours;
+            int minutes = ts.Minutes;
+            int seconds = ts.Seconds;
+
+            if (hours > 0)
+                return $"{hours}h {minutes}m {seconds}s";
+            if (minutes > 0)
+                return $"{minutes}m {seconds}s";
+            return $"{seconds}s";
+        }
+    }
 </div>
+
+<script>
+    const activities = @Html.Raw(JsonConvert.SerializeObject(gpsActivities));
+
+    function getColor(index, total) {
+        // We vary the Hue from 200 (Blue) to 360 (Red/Pink) or 0-360 for full rainbow
+        // Formula: (index / total) * 360
+        const hue = (index / total) * 280;
+        return `hsl(${hue}, 70%, 50%)`;
+    }
+    let map;
+
+        if (activities && activities.length > 0) {
+        const totalActivities = activities.length;
+
+        map = L.map('deliveryMap').setView([activities[0].lat, activities[0].lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        // 1. Draw Natural Gradient Routing Segments
+        for (let i = 0; i < activities.length - 1; i++) {
+            const start = activities[i];
+            const end = activities[i + 1];
+
+            // Generate a color that shifts as the journey progresses
+            const segmentColor = getColor(i, totalActivities);
+
+            L.Routing.control({
+                waypoints: [
+                    L.latLng(start.lat, start.lng),
+                    L.latLng(end.lat, end.lng)
+                ],
+                lineOptions: {
+                    styles: [
+                        { color: '#000', weight: 6, opacity: 0.1 }, // Shadow
+                        { color: segmentColor, weight: 5, opacity: 0.9 }
+                    ]
+                },
+                createMarker: () => null,
+                addWaypoints: false,
+                show: false,
+                fitSelectedRoutes: i === 0
+            }).addTo(map);
+        }
+
+        // 2. Draw Corresponding Markers
+        activities.forEach((a, i) => {
+            const markerColor = getColor(i, totalActivities);
+
+            const marker = L.circleMarker([a.lat, a.lng], {
+                radius: 8,
+                color: '#fff',
+                fillColor: markerColor,
+                fillOpacity: 1,
+                weight: 2
+            }).addTo(map);
+
+            marker.bindPopup(`<strong>${a.name}</strong><br>${new Date(a.time).toLocaleTimeString()}`);
+
+            // Adding a sequential number to the marker
+            marker.bindTooltip(`${i + 1}`, { permanent: true, direction: 'top', className: 'marker-label' });
+
+            const timelineItemsGps = document.querySelectorAll('.timeline-item.has-gps');
+            if (timelineItemsGps[i]) {
+                timelineItemsGps[i]._marker = marker;
+                // Optional: Update the timeline dot color to match the map naturally
+                const dot = timelineItemsGps[i].querySelector('.timeline-dot');
+                if (dot) dot.style.background = markerColor;
+            }
+        });
+    }
+
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    timelineItems.forEach(item => {
+        item.addEventListener('click', () => {
+            timelineItems.forEach(i => i.querySelector('.timeline-card').style.background = '#f9f9f9');
+            item.querySelector('.timeline-card').style.background = '#eef6ff';
+
+            if (item._marker && typeof map !== 'undefined') {
+                document.getElementById('deliveryMap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                map.setView(item._marker.getLatLng(), 16, { animate: true });
+                item._marker.openPopup();
+            }
+        });
+    });
+</script>

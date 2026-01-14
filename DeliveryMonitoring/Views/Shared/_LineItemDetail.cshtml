@@ -3,7 +3,6 @@
 @{
     var lineItems = Model?.LineItems ?? Enumerable.Empty<LineItem>();
     var extraCharges = Model?.ExtraCharge ?? new Dictionary<string, decimal>();
-    bool showNoteColumn = lineItems.Any(x => !string.IsNullOrWhiteSpace(x.Note));
 }
 
 <h4 class="ms-4 mb-2">Products</h4>
@@ -13,10 +12,7 @@
         <thead class="table-secondary">
             <tr>
                 <th class="text-start">Item Name</th>
-                @if (showNoteColumn)
-                {
-                    <th>Special Request</th>
-                }
+                <th>Special Request</th>
                 <th>Quantity</th>
                 <th>Unit Amount</th>
                 <th>Taxable Amount</th>
@@ -28,10 +24,7 @@
                 <tr>
                     <td class="text-start">@item.Name</td>
 
-                    @if (showNoteColumn)
-                    {
-                        <td>@(string.IsNullOrWhiteSpace(item.Note) ? "N/A" : item.Note)</td>
-                    }
+                    <td>@(string.IsNullOrWhiteSpace(item.Note) ? "N/A" : item.Note)</td>
 
                     <td>@($"{item.Quantity:F2}")</td>
                     <td>@($"{item.UnitAmount:F2} ETB")</td>
@@ -43,12 +36,7 @@
             {
                 <tr>
                     <td class="text-start">@charge.Key</td>
-
-                    @if (showNoteColumn)
-                    {
-                        <td></td>
-                    }
-
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td>@($"{charge.Value:F2} ETB")</td>
@@ -57,12 +45,7 @@
 
             <tr class="table-secondary fw-bold">
                 <td class="text-start">TOTAL</td>
-
-                @if (showNoteColumn)
-                {
-                    <td></td>
-                }
-
+                <td></td>
                 <td></td>
                 <td></td>
                 <td>@($"{Model?.GrandTotal ?? 0:F2} ETB")</td>

@@ -34,7 +34,6 @@ export const OrdersTable = (function () {
             nonOrderableTargets: [
                 COL_INDEX.VOUCHER,
                 COL_INDEX.PHONE,
-                COL_INDEX.DRIVER_PHONE,
                 COL_INDEX.ACTIONS,
                 COL_INDEX.PAYMENT_METHOD,
                 COL_INDEX.ETA_DIFF
@@ -105,7 +104,7 @@ export const OrdersTable = (function () {
                 data: function (row) {
                     return row.assignedDriverName ?? row.assignedDriverPhoneNumber ?? 'N/A';
                 },
-                render: (data, type, row) => Renderers.driver(type, row)
+                render: (data, type, row) => Renderers.driver(type, row.assignedDriverPhoneNumber , row.assignedDriverName)
             }),
 
             center({
@@ -140,6 +139,7 @@ export const OrdersTable = (function () {
             { index: COL_INDEX.SUPERVISOR, name: "Supervisor" },
             { index: COL_INDEX.PRINTED, name: "Order Printed" },
             { index: COL_INDEX.PAYMENT_METHOD, name: "Payment Method" },
+            { index: COL_INDEX.DRIVER_PHONE, name: "Driver" },
         ];
 
         return Object.assign({}, baseConfig, {

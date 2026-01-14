@@ -103,7 +103,12 @@ const deliveryColumns = [
     center({ data: "eta", render: Renderers.duration }),
     center({ data: "etaDifference", render: Renderers.timeDeviationRenderer }),
 
-    center({ data: "driverPhoneNumber", render: Renderers.phone }),
+    center({
+        data: function (row) {
+            return row.assignedDriverName ?? row.driverPhoneNumber ?? 'N/A';
+        },
+        render: (data, type, row) => Renderers.driver(type, row.driverPhoneNumber, row.assignedDriverName)
+    }),
     center({ data: "supervisorName", render: Renderers.orDefault }),
     center({ data: "totalAmount", render: Renderers.amount }),
     center({ data: "tip", render: Renderers.amount }),
@@ -150,7 +155,8 @@ const TableTypeConfigs = {
             { index: DELIVERY_COL_INDEX.COMPANY, name: 'Company' },
             { index: DELIVERY_COL_INDEX.BRANCH, name: 'Branch' },
             { index: DELIVERY_COL_INDEX.FIRST_NAME, name: 'Customer' },
-            { index: DELIVERY_COL_INDEX.SUPERVISOR, name: 'Supervisor' }
+            { index: DELIVERY_COL_INDEX.SUPERVISOR, name: 'Supervisor' },
+            { index: DELIVERY_COL_INDEX.DRIVER_PHONE, name: 'Driver' }
         ]
     },
 
