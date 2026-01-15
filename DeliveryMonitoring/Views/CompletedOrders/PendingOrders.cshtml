@@ -46,6 +46,9 @@
                             Order DateTime
                         </th>
                         <th class="text-center">
+                            Payment Method
+                        </th>
+                        <th class="text-center">
                             Distance
                         </th>
                         <th class="text-center">
@@ -71,7 +74,7 @@
                 </thead>
                 <tfoot>
                     <tr>
-                        <th colspan="7" class="text-end">Totals</th>
+                        <th colspan="8" class="text-end">Totals</th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -163,7 +166,7 @@
     <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
     <script type="module">
         import { PendingOrdersTable } from '/js/pending-orders-table.js?v=@DateTime.Now.Ticks';
-        PendingOrdersTable.init({
+        const { table, dateRange } = await PendingOrdersTable.init({
             tableId: "@Model?.TableId",
             ajaxUrl: "@Model?.AjaxUrl",
             userType: "@Model?.Type" + "_report",

@@ -248,7 +248,7 @@
     <script src="~/js/modules/ui.js" type="module" asp-append-version="true"></script>
     <script type="module">
         import { OrdersTable } from '/js/delivery-orders-table.js?v=@DateTime.Now.Ticks';
-        OrdersTable.init({
+        const { table, dateRange } = await OrdersTable.init({
             tableId: "deliveryOrders",
             ajaxUrl: "/getOrders",
         });

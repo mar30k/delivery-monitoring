@@ -92,6 +92,16 @@ namespace DeliveryMonitoring.Controllers
 
             return Ok(chartData);
         }
+
+        [HttpGet("/serverTime")]
+        public IActionResult GetServerTime()
+        {
+            return Ok(new
+            {
+                serverUtcNow = DateTime.UtcNow,
+                serverLocalNow = DateTime.Now
+            });
+        }
     }
 
 }

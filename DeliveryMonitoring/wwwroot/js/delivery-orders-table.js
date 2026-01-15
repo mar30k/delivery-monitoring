@@ -148,13 +148,13 @@ export const OrdersTable = (function () {
         });
     }
 
-    function init({ tableId, ajaxUrl, userType, sheetName }) {
+    async function init({ tableId, ajaxUrl, userType, sheetName }) {
 
         const tableSelector = `#${tableId}`;
         const config = getOrdersTableConfig();
 
         const dateRange = DateRange.create("#dateRange");
-        dateRange.init();
+        await dateRange.init();
 
         const table = initTable({
             ...config,
@@ -172,6 +172,11 @@ export const OrdersTable = (function () {
             [{ table, range: () => dateRange.getRange() }],
             10000
         );
+
+        return {
+            table,
+            dateRange
+        };
     }
 
     return { init };

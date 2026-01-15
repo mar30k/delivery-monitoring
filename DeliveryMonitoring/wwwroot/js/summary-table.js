@@ -218,12 +218,12 @@ export const SummaryTable = (function () {
         return Object.assign({}, baseConfig, configs[userType]);
     }
 
-    function init({ tableId, ajaxUrl, userType, sheetName }) {
+    async function init({ tableId, ajaxUrl, userType, sheetName }) {
         const tableSelector = `#${tableId}`;
         const config = getSummaryTableConfig(userType);
 
         const dateRange = DateRange.create("#dateRange");
-        dateRange.init();
+        await dateRange.init();
 
 
         const table = initTable({

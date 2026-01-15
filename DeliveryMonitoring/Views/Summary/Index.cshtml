@@ -333,7 +333,7 @@
     <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
     <script type="module">
         import { SummaryTable } from '/js/summary-table.js?v=@DateTime.Now.Ticks';
-        SummaryTable.init({
+        await SummaryTable.init({
             tableId: "@Model.TableId",
             ajaxUrl: "@Model.AjaxUrl",
             userType: "@Model.Type",

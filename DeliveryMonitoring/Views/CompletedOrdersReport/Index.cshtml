@@ -122,7 +122,7 @@
     <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
     <script type="module">
         import { ReportTable } from '/js/report-table.js?v=@DateTime.Now.Ticks';
-        ReportTable.init({
+        await ReportTable.init({
             tableId: "@Model?.TableId",
             ajaxUrl: "@Model?.AjaxUrl",
             userType: "@Model?.Type" + "_report",

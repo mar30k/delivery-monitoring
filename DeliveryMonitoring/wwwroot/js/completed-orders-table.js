@@ -19,7 +19,8 @@ const BASE_COLS = [
     'BRANCH',
     'FIRST_NAME',
     'PHONE',
-    'REQUEST_DATE'
+    'REQUEST_DATE',
+    'PAYMENT_METHOD'
 ];
 const NON_DELIVERY_COLS = [
     ...BASE_COLS,
@@ -68,6 +69,10 @@ const baseColumns = [
     center({
         data: "requestCreatedAtString",
         ...Renderers.dateRenderer("requestCreatedAtString", "requestCreatedAt")
+    }),
+    center({
+        data: "paymentMethod",
+        render: Renderers.orDefault
     })
 ];
 
@@ -156,6 +161,7 @@ const TableTypeConfigs = {
             { index: DELIVERY_COL_INDEX.BRANCH, name: 'Branch' },
             { index: DELIVERY_COL_INDEX.FIRST_NAME, name: 'Customer' },
             { index: DELIVERY_COL_INDEX.SUPERVISOR, name: 'Supervisor' },
+            { index: DELIVERY_COL_INDEX.PAYMENT_METHOD, name: 'Payment Method' },
             { index: DELIVERY_COL_INDEX.DRIVER_PHONE, name: 'Driver' }
         ]
     },
@@ -184,14 +190,13 @@ const TableTypeConfigs = {
     }
 };
 
-(TableConfigs || []).forEach(cfg => {
+for (const cfg of (TableConfigs || [])) {
     const selector = `#${cfg.TableId}`;
     const datePickerSelector = `#${cfg.TableId}DateRange`;
     const tableConfig = TableTypeConfigs[cfg.SheetName] || TableTypeConfigs["_NonDeliveryOrders"];
 
     // Create DateRange instance
     const range = DateRange.create(datePickerSelector);
-    range.init();
     tableRanges[cfg.TableId] = range;
 
     // Initialize table
@@ -217,6 +222,6 @@ const TableTypeConfigs = {
         table: table,
         range: () => range.getRange()
     });
-});
+}
 
 startTableAutoRefresh(tableEntries, 60000);

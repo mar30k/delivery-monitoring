@@ -31,6 +31,7 @@ namespace DeliveryMonitoring.Models
         public double Rating { get; set; }
         public double Tip { get; set; }
         public string? RequestCreatedAtString { get; set; }
+        public string? PaymentMethod { get; set; }
     }
 
     public class OrderCompletionRequest

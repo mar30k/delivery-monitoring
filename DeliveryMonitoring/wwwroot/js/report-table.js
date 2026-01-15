@@ -107,12 +107,12 @@ export const ReportTable = (function () {
         });
     }
 
-    function init({ tableId, ajaxUrl, userType, sheetName }) {
+    async function init({ tableId, ajaxUrl, userType, sheetName }) {
         const tableSelector = `#${tableId}`;
         const config = getReportTableConfig(tableId);
 
         const dateRange = DateRange.create("#dateRange");
-        dateRange.init();
+        await dateRange.init();
 
         const table = initTable({
             ...config,

@@ -26,10 +26,17 @@ export const Dispatch = {
         
         try {
             const drivers = await DashboardApi.getDrivers();
-            drivers.sort((a, b) => a.firstName.localeCompare(b.firstName));
+            drivers.sort((a, b) => {
+                const statusOrder = a.status === 'ready' ? 0 : 1;
+                const statusOrderB = b.status === 'ready' ? 0 : 1;
 
+                return (
+                    statusOrder - statusOrderB ||
+                    a.firstName.localeCompare(b.firstName)
+                );
+            });
             $select.empty().append(`<option disabled>Select a driver</option>`);
-            drivers.forEach(d =>
+            drivers.filter(d => !d.isDisabled).forEach(d =>
                 $select.append(
                     `<option value="${d.phoneNumber}">
                         ${d.firstName} (${d.phoneNumber}) (${d.status})

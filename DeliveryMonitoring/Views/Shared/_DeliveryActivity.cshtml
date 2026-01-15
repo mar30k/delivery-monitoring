@@ -144,6 +144,7 @@
         .ToList();
 
     DateTime? previousTime = null;
+    TimeSpan? lastGpsTime = null;
 }
 
 <div class="uk-container uk-padding">
@@ -161,45 +162,74 @@
             <div class="timeline-container">
                 <div class="timeline-line"></div>
 
-                @foreach (var activity in Model?.ActivityResponse ?? Enumerable.Empty<ActivityResponse>())
-                {
-                    bool hasGps = activity.Latitude.HasValue && activity.Longitude.HasValue &&
-                    activity.Latitude != 0 && activity.Longitude != 0 && activity.Name != "Order Placed";
+                <div class="timeline-container">
+                    <div class="timeline-line"></div>
 
-                    TimeSpan? diff = null;
-                    if (previousTime.HasValue && activity.Time.HasValue) diff = activity.Time - previousTime;
-                    previousTime = activity.Time;
+                    @{
+                        ActivityResponse? previousGpsActivity = null;
+                        var firstActivityTime = Model?.ActivityResponse?.FirstOrDefault()?.Time;
+                    }
 
-                    TimeSpan? elapsed = activity.Time.HasValue ? (activity.Time.Value - Model?.StartTime) : (TimeSpan?)null;
+                    @foreach (var activity in Model?.ActivityResponse ?? Enumerable.Empty<ActivityResponse>())
+                    {
+                        bool hasGps =
+                        activity.Latitude.HasValue &&
+                        activity.Longitude.HasValue &&
+                        activity.Latitude != 0 &&
+                        activity.Longitude != 0 &&
+                        activity.Name != "Order Placed";
 
-                    <div class="timeline-item @(hasGps ? "has-gps" : "no-gps")"
-                         @(hasGps ? $"data-lat=\"{activity.Latitude}\" data-lng=\"{activity.Longitude}\"" : "")>
+                        TimeSpan? diff = null;
 
-                        <div class="timeline-dot"></div>
+                        if (hasGps && activity.Time.HasValue)
+                        {
+                            // FIRST GPS ACTIVITY
+                            if (previousGpsActivity == null && firstActivityTime.HasValue)
+                            {
+                                diff = activity.Time.Value - firstActivityTime.Value;
+                            }
+                            // SUBSEQUENT GPS ACTIVITIES
+                            else if (previousGpsActivity?.Time.HasValue == true)
+                            {
+                                diff = activity.Time.Value - previousGpsActivity.Time.Value;
+                            }
 
-                        <div class="timeline-card d-flex align-items-center rounded mb-2">
-                            <div class="timeline-name">@activity.Name</div>
+                            previousGpsActivity = activity;
+                        }
 
-                            <div class="timeline-time text-center">
-                                @activity.Time?.ToString("ddd MMM, dd yyyy HH:mm:ss tt")
-                            </div>
+                        TimeSpan? elapsed = activity.Time.HasValue
+                        ? activity.Time.Value - Model?.StartTime
+                        : (TimeSpan?)null;
 
-                            <div class="timeline-elapsed text-center bg-warning text-dark rounded px-1">
-                                @if (elapsed.HasValue)
-                                {
-                                    <span>@FormatDuration(elapsed.Value)</span>
-                                }
-                            </div>
+                        <div class="timeline-item @(hasGps ? "has-gps" : "no-gps")"
+                             @(hasGps ? $"data-lat=\"{activity.Latitude}\" data-lng=\"{activity.Longitude}\"" : "")>
 
-                            <div class="timeline-diff text-center bg-info text-white rounded px-1">
-                                @if (diff.HasValue)
-                                {
-                                    <span>@FormatDuration(diff.Value)</span>
-                                }
+                            <div class="timeline-dot"></div>
+
+                            <div class="timeline-card d-flex align-items-center rounded mb-2">
+                                <div class="timeline-name">@activity.Name</div>
+
+                                <div class="timeline-time text-center">
+                                    @activity.Time?.ToString("ddd MMM, dd yyyy hh:mm:ss tt")
+                                </div>
+
+                                <div class="timeline-elapsed text-center bg-warning text-dark rounded px-1">
+                                    @if (elapsed.HasValue)
+                                    {
+                                        <span>@FormatDuration(elapsed.Value)</span>
+                                    }
+                                </div>
+
+                                <div class="timeline-diff text-center bg-info text-white rounded px-1">
+                                    @if (hasGps)
+                                    {
+                                        <span>@(diff.HasValue? FormatDuration(diff.Value) : "—")</span>
+                                    }
+                                </div>
                             </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
             </div>
         </div>
     </div>

@@ -9,6 +9,7 @@ export const PendingOrdersTable = (function () {
         'FIRST_NAME',
         'PHONE',
         'REQUEST_DATE',
+        'PAYMENT_METHOD',
         'DISTANCE',
         'DURATION',
         'ETA',
@@ -43,6 +44,10 @@ export const PendingOrdersTable = (function () {
                 ...Renderers.dateRenderer("requestCreatedAtString", "requestCreatedAt")
             }),
             center({
+                data: "paymentMethod",
+                render: Renderers.orDefault
+            }),
+            center({
                 data: "distance",
                 render: (d, type) => d != null ? `${Renderers.number(d, type, 2)} km` : "-"
             }),
@@ -63,7 +68,8 @@ export const PendingOrdersTable = (function () {
         const headerFilterColumns = [
             { index: COL_INDEX.COMPANY, name: 'Company' },
             { index: COL_INDEX.BRANCH, name: 'Branch' },
-            { index: COL_INDEX.SUPERVISOR, name: 'Supervisor' }
+            { index: COL_INDEX.SUPERVISOR, name: 'Supervisor' },
+            { index: COL_INDEX.PAYMENT_METHOD, name: 'Payment Method' }
         ];
 
         const nonOrderableTargets = [
@@ -78,12 +84,12 @@ export const PendingOrdersTable = (function () {
         });
     }
 
-    function init({ tableId, ajaxUrl, userType, sheetName }) {
+    async function init({ tableId, ajaxUrl, userType, sheetName }) {
         const tableSelector = `#${tableId}`;
         const config = getPendingOrdersTable(tableId);
 
         const dateRange = DateRange.create("#dateRange");
-        dateRange.init();
+        await dateRange.init();
         const table = initTable({
             ...config,
             tableSelector,
@@ -104,6 +110,11 @@ export const PendingOrdersTable = (function () {
             sheetName,
             dateRange
         );
+
+        return {
+            table,
+            dateRange
+        };
     }
 
     return { init };
