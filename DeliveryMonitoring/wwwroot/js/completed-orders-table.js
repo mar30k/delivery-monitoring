@@ -198,6 +198,7 @@ for (const cfg of (TableConfigs || [])) {
     // Create DateRange instance
     const range = DateRange.create(datePickerSelector);
     tableRanges[cfg.TableId] = range;
+    await range.init();
 
     // Initialize table
     const table = initTable({

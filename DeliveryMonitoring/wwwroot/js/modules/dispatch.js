@@ -13,6 +13,31 @@ export const Dispatch = {
             $("#driverSelect").prop("selectedIndex", 0);
             $("#voucherCodeLabel").text(`- ${this.selectedOrder.voucherCode}`);
 
+            const toAllBtn = document.getElementById("confirmRedispatchToAll");
+            const wrapper = document.getElementById("redispatchToAllWrapper");
+
+            // Dispose old tooltip if any
+            bootstrap.Tooltip.getInstance(wrapper)?.dispose();
+
+            if (this.selectedOrder.status === "accepted") {
+                toAllBtn.disabled = true;
+                toAllBtn.classList.add("disabled");
+
+                wrapper.setAttribute("data-bs-toggle", "tooltip");
+                wrapper.setAttribute("data-bs-placement", "top");
+                wrapper.setAttribute(
+                    "data-bs-title",
+                    "Only assignment to a specific driver is allowed at accepted status."
+                );
+                new bootstrap.Tooltip(wrapper);
+            } else {
+                toAllBtn.disabled = false;
+                toAllBtn.classList.remove("disabled");
+
+                wrapper.removeAttribute("data-bs-toggle");
+                wrapper.removeAttribute("data-bs-title");
+            }
+
             new bootstrap.Modal("#reDispatchModal").show();
             this.loadDrivers();
         } catch (e) {

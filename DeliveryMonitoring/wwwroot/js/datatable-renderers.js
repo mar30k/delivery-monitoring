@@ -307,7 +307,8 @@ const Renderers = {
             status === "declined" ||
             status === "requested" ||
             status === "sos" ||
-            status === "assigned"
+            status === "assigned" ||
+            status === "accepted"
         ) ? `<a href="#" data-order="${orderJson}" onclick="Dispatch.openModal(this)">Redispatch</a>` : '';
 
         return `

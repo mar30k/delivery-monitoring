@@ -11,6 +11,7 @@ export const ReportTable = (function () {
         'DISTANCE',
         'DURATION',
         'ETA',
+        'ETA_DIFFERENCE',
         'DRIVER_PHONE',
         'SUPERVISOR',
         'TOTAL_AMOUNT',
@@ -68,6 +69,7 @@ export const ReportTable = (function () {
                 data: "eta",
                 render: (d, type) => d != null ? `${Renderers.number(d, type, 2)} min` : "-"
             }),
+            center({ data: "etaDifference", render: Renderers.timeDeviationRenderer }),
             center({ data: "driverPhoneNumber", render: Renderers.phone }),
             center({ data: "supervisorName", render: Renderers.orDefault }),
             center({ data: "totalAmount", render: Renderers.amount }),

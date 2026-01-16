@@ -54,7 +54,7 @@ namespace DeliveryMonitoring.Controllers
 
                 if (string.IsNullOrWhiteSpace(CompanyTin)) { return new List<OrderDetail>(); }
 
-                //var response = new List<OrderDetail> { GetSampleOrder.CreateSampleOrder() };
+                //var response = GetSampleOrder.CreateSampleOrder();
                 var response = await _apiRequestService.GetOrderRequestsAsync();
                 var superVisors = await _apiRequestService.GetSupervisorsAsync();
                 if (response.Count > 0)
@@ -134,7 +134,7 @@ namespace DeliveryMonitoring.Controllers
                 if (order == null)
                 {
                     if (_env.IsDevelopment())
-                        return View(GetSampleOrder.CreateSampleOrder());
+                        return View(GetSampleOrder.CreateSampleOrder().First());
 
                     TempData["Message"] = $"Order {voucherCode}: Not found or failed to load.";
                     return RedirectToAction("Index");
@@ -186,7 +186,8 @@ namespace DeliveryMonitoring.Controllers
                     "declined",
                     "requested",
                     "sos",
-                    "assigned"
+                    "assigned",
+                    "accepted"
                 };
 
                 if (!redispatchableStatuses.Contains(
@@ -197,6 +198,11 @@ namespace DeliveryMonitoring.Controllers
                     {
                         message = "Order is not eligible for redispatch."
                     });
+                }
+
+                if(string.IsNullOrEmpty(order.AssignedDriverPhoneNumber) && order.Status == "accepted")
+                {
+                    return BadRequest(new { message = "Assignment is restricted to a specific driver." });
                 }
                 //order.Customer = new CustomerDetail
                 //{

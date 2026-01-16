@@ -1,4 +1,5 @@
-﻿@model LineItemsDetail
+﻿@using System.Globalization
+@model LineItemsDetail
 
 @{
     var lineItems = Model?.LineItems ?? Enumerable.Empty<LineItem>();
@@ -23,15 +24,13 @@
             {
                 <tr>
                     <td class="text-start">@item.Name</td>
-
                     <td>@(string.IsNullOrWhiteSpace(item.Note) ? "N/A" : item.Note)</td>
 
-                    <td>@($"{item.Quantity:F2}")</td>
-                    <td>@($"{item.UnitAmount:F2} ETB")</td>
-                    <td>@($"{item.TaxableAmount:F2} ETB")</td>
+                    <td>@item.Quantity?.ToString("N2")</td>
+                    <td>@item.UnitAmount?.ToString("N2") ETB</td>
+                    <td>@item.TaxableAmount?.ToString("N2") ETB</td>
                 </tr>
             }
-
             @foreach (var charge in extraCharges)
             {
                 <tr>
@@ -39,7 +38,7 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>@($"{charge.Value:F2} ETB")</td>
+                    <td>@charge.Value.ToString("N2") ETB</td>
                 </tr>
             }
 
@@ -48,7 +47,7 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td>@($"{Model?.GrandTotal ?? 0:F2} ETB")</td>
+                <td>@Model?.GrandTotal?.ToString("N2") ETB</td>
             </tr>
         </tbody>
     </table>
