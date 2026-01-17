@@ -204,24 +204,24 @@ namespace DeliveryMonitoring.Controllers
                 {
                     return BadRequest(new { message = "Assignment is restricted to a specific driver." });
                 }
-                //order.Customer = new CustomerDetail
-                //{
-                //    DeviceID = order.CustomerDeviceID,
-                //    FirstName = order.CustomerFirstName,
-                //    PhoneNumber = order.CustomerPhoneNumber,
-                //    GeocodeAddress = order.CustomerGeocodeAddress,
-                //    SpecificAddress = order.CustomerSpecificAddress,
-                //    LatLng = new Location
-                //    {
-                //        lat = order.CustomerLat,
-                //        lng = order.CustomerLng
-                //    }
-                //};
-                //order.TargetBranchLocation = new Location
-                //{
-                //    lat = order.TargetBranchLat,
-                //    lng = order.TargetBranchLng
-                //};
+                existingOrder.Customer = new CustomerDetail
+                {
+                    DeviceID = order.CustomerDeviceID,
+                    FirstName = order.CustomerFirstName,
+                    PhoneNumber = order.CustomerPhoneNumber,
+                    GeocodeAddress = order.CustomerGeocodeAddress,
+                    SpecificAddress = order.CustomerSpecificAddress,
+                    LatLng = new Location
+                    {
+                        lat = order.CustomerLat,
+                        lng = order.CustomerLng
+                    }
+                };
+                existingOrder.TargetBranchLocation = new Location
+                {
+                    lat = order.TargetBranchLat,
+                    lng = order.TargetBranchLng
+                };
                 // 3️ Normalize only system-controlled fields
                 existingOrder.Status = "requested";
                 existingOrder.IsAssignedAck = false;
@@ -240,6 +240,7 @@ namespace DeliveryMonitoring.Controllers
                         DateTime.SpecifyKind(existingOrder.CreatedAt.Value, DateTimeKind.Utc)
                       ).ToUnixTimeMilliseconds()
                     : 0;
+                existingOrder.AssignedDriverPhoneNumber = order.AssignedDriverPhoneNumber;
 
                 // 4️ Redispatch
                 var result = await _apiRequestService.RedispatchDriversAsync(existingOrder);
