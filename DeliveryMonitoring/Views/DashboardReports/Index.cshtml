@@ -1,0 +1,169 @@
+﻿@{
+    ViewBag.Title = "Operations Dashboard";
+}
+
+<style>
+    :root {
+        --primary-blue: #2e59d9;
+        --success-green: #1cc88a;
+        --info-cyan: #36b9cc;
+        --danger-red: #e74a3b;
+        --gray-text: #858796;
+        --bg-light: #f8f9fc;
+    }
+
+    .dashboard-bg {
+        background-color: var(--bg-light);
+        min-height: 100vh;
+    }
+
+    .card {
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: none;
+        background: #fff;
+        height: 100%; /* Ensures cards in the same row are equal height */
+    }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important;
+        }
+
+    /* KPI Styling */
+    .stat-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: var(--gray-text);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #3a3b45;
+        line-height: 1.2;
+    }
+
+    /* Chart Layouts */
+    .chart-container {
+        position: relative;
+        height: 280px; /* Slightly taller for better readability */
+        width: 100%;
+    }
+
+    .border-left-primary {
+        border-left: 4px solid var(--primary-blue) !important;
+    }
+
+    .border-left-success {
+        border-left: 4px solid var(--success-green) !important;
+    }
+
+    .border-left-danger {
+        border-left: 4px solid var(--danger-red) !important;
+    }
+
+    .border-left-info {
+        border-left: 4px solid var(--info-cyan) !important;
+    }
+</style>
+
+<div class="dashboard-bg container-fluid p-2 p-lg-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+        <div>
+            <h2 class="fw-bold text-gray-800 mb-0"></h2>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm p-3 border-left-primary">
+                <div class="stat-label text-primary">Total Order Value</div>
+                <div id="stat-revenue" class="stat-value">ETB 0.00</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm p-3 border-left-success">
+                <div class="stat-label text-success">Total Deliveries</div>
+                <div id="stat-count" class="stat-value">0</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm p-3 border-left-danger">
+                <div class="stat-label text-danger">Avg. Delivery Time</div>
+                <div id="stat-duration" class="stat-value">0 min</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm p-3 border-left-info">
+                <div class="stat-label text-info">Avg. Distance</div>
+                <div id="stat-distance" class="stat-value">0.0 km</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold m-0 text-primary">1. Today's Traffic Pattern</h6>
+                        <span class="badge bg-light text-primary border">Real-Time</span>
+                    </div>
+                    <div class="chart-container"><canvas id="hourlyTraficPtterToday"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-4 text-primary text-uppercase small">2. Payment Methods</h6>
+                    <div class="chart-container"><canvas id="paymentMethodChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3 text-primary text-uppercase small">3. Daily Volume (30 Days)</h6>
+                    <div class="chart-container"><canvas id="dailyOrdersChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3 text-primary text-uppercase small">4. Monthly Historical Growth</h6>
+                    <div class="chart-container"><canvas id="monthlyTrendChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3 text-primary text-uppercase small">5. Company's Revenue Performance</h6>
+                    <div class="chart-container"><canvas id="companyRevenueChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3 text-primary text-uppercase small">6. System Peak Hours (Aggregate)</h6>
+                    <div class="chart-container"><canvas id="peakHourChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="~/js/dashboard/dashboard-reports.js" asp-append-version="true"></script>
