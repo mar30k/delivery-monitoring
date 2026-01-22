@@ -50,6 +50,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly string _authenicateUser;
         private readonly string _getUserByUserName;
         private readonly string _getCompletedOrders;
+        private readonly string _getCompletedOrdersWithTimeline;
         private readonly string _getPendingOrders;
         private readonly string _completePendingOrder;
         private readonly string _getCompletedOrdersByType;
@@ -98,6 +99,7 @@ namespace DeliveryMonitoring.Services.Api
             _authenicateUser = "SysInitialize/authenticate?";
             _getUserByUserName = "User/filter?";
             _getCompletedOrders = "voucher/getcompletedorders";
+            _getCompletedOrdersWithTimeline = "voucher/getcompletedorderswithtimeline?";
             _completePendingOrder = "voucher/completeorder";
             _getPendingOrders = "voucher/getpendingorders";
             _changeorderbranch = "voucher/changeorderbranch";
@@ -328,6 +330,27 @@ namespace DeliveryMonitoring.Services.Api
                 async () =>
                 {
                     var response = await _client.GetAsync(_getPendingOrders);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<HulubejeResponse<List<CompletedOrders>>>(data)
+                               ?? new HulubejeResponse<List<CompletedOrders>>();
+                    }
+                    return new HulubejeResponse<List<CompletedOrders>>();
+                },
+                skipCache,
+                10 // cache for 10 minutes
+            );
+        }
+
+        public async Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedordersWithTimeineAsync(string startDate, string endDate, bool skipCache = true)
+        {
+            string cacheKey = $"completed_orders_with_timeline{startDate}{endDate}";
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _client.GetAsync($"{_getCompletedOrdersWithTimeline}startDate={startDate}&endDate={endDate}");
                     if (response.IsSuccessStatusCode)
                     {
                         var data = await response.Content.ReadAsStringAsync();

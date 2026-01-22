@@ -1,3 +1,8 @@
+#main.shifted {
+    margin-left: 260px; /* matches sidebar width */
+    transition: margin-left 0.3s ease;
+}
+
 /*Sidebar Styling Starts here*/
 .sidebar {
     position: fixed;
@@ -36,21 +41,83 @@ ul {
 .sidebar ul a i {
     margin-right: 16px;
 }
-/*Sidebar Styling Ends here*/
+/* Sidebar */
+#mySidebar {
+    position: fixed;
+    top: 0;
+    left: -260px; /* hidden by default */
+    bottom: 0;
+    width: 260px;
+    background: #042331;
+    overflow-y: auto;
+    transition: left 0.3s ease;
+    z-index: 1100;
+}
 
-/*to make Sidebar icons invisibile for smaller screen size*/
-@media (max-width: 767px) {
-
-    #mySidebar ul li a {
-        display: grid flex;
-        align-items: center;
+    #mySidebar.open {
+        left: 0;
     }
 
-        #mySidebar ul li a span {
-            display: none;
-        }
+/* Main content */
+#main {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+    position: relative;
+    z-index: 1;
 }
-/*to make Sidebar icons invisibile for smaller screen size ends here*/
+
+    #main.shifted {
+        margin-left: 260px; /* only on desktop */
+    }
+
+/* Overlay (only for mobile) */
+#sidebarOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    display: none;
+    z-index: 1090;
+}
+
+    #sidebarOverlay.show {
+        display: block;
+    }
+
+/* Toggle button */
+#sidebarToggle {
+    position: relative; /* stays in main content */
+    cursor: pointer;
+    z-index: 1200;
+}
+
+/* ===== Mobile behavior ===== */
+@media (max-width: 767px) {
+    #mySidebar {
+        left: -85%; /* hidden offscreen */
+        width: 85%;
+        max-width: 300px;
+    }
+
+        #mySidebar.open {
+            left: 0; /* slides over content */
+        }
+
+    #main.shifted {
+        margin-left: 0 !important; /* do not push on mobile */
+    }
+
+    /* Overlay only applies on mobile */
+    #sidebarOverlay.show {
+        display: block;
+    }
+}
+
+/* ===== Desktop behavior ===== */
+@media (min-width: 768px) {
+    #sidebarOverlay {
+        display: none !important; /* no dimmer on desktop */
+    }
+}
 
 #main {
     margin-left: 0px;
@@ -371,30 +438,6 @@ div[id$="_processing"].dt-processing {
 }
 
 
-#mySidebar {
-    width: 15%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    overflow-x: hidden;
-    transition: transform 0.3s ease;
-    transform: translateX(0); /* visible */
-    z-index: 1000;
-}
-
-    #mySidebar.closed {
-        transform: translateX(-100%); /* hidden */
-    }
-
-#main {
-    margin-left: 15%;
-    transition: margin-left 0.3s ease;
-}
-
-    #main.full {
-        margin-left: 0%;
-    }
 
 .floating-alert {
     position: fixed;

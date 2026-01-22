@@ -235,6 +235,8 @@ namespace DeliveryMonitoring.Models
 
         [DisplayName("Activity Response")]
         public List<ActivityResponse>? ActivityResponse { get; set; }
+        [JsonProperty("activities")]
+        public List<ActivityResponse>? Activity { get; set; }
     }
 
     public class ActivityResponse

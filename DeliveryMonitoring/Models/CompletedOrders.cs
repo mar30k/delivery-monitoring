@@ -1,16 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace DeliveryMonitoring.Models
 {
     public class CompletedOrders
     {
         public DateTime RequestCreatedAt { get; set; }
+        public DateTime OrderDate { get; set; }
         public string? Status { get; set; }
         public string? DriverPhoneNumber { get; set; }
         public string? AssignedDriverName { get; set; }
         public string? SupervisorPhoneNumber { get; set; }
         public string? SupervisorName { get; set; }
         public string? FirstName { get; set; }
+        public string? CustomerName { get; set; }
+        public string? CustomerPhoneNumber { get; set; }
         public string? PhoneNumber { get; set; }
         public string? VoucherCode { get; set; }
         public double Distance { get; set; }
@@ -32,6 +36,9 @@ namespace DeliveryMonitoring.Models
         public double Tip { get; set; }
         public string? RequestCreatedAtString { get; set; }
         public string? PaymentMethod { get; set; }
+
+        [JsonProperty("activityResponse")]
+        public Activities? Activities { get; set; }
     }
 
     public class OrderCompletionRequest

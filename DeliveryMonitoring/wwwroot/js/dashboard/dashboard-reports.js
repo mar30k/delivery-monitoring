@@ -63,7 +63,7 @@ const Processors = {
             acc[o.companyName] = (acc[o.companyName] || 0) + (o.totalAmount || 0);
             return acc;
         }, {});
-        const sorted = Object.entries(rev).sort((a, b) => b[1] - a[1]).slice(0, 15);
+        const sorted = Object.entries(rev).sort((a, b) => b[1] - a[1]).slice(0, 20);
         return { labels: sorted.map(x => x[0]), values: sorted.map(x => x[1]) };
     },
 
@@ -95,21 +95,38 @@ function renderChart(id, type, labels, data, label, color, isDoughnut = false) {
                 tension: 0.4
             }]
         },
-        options: { maintainAspectRatio: false, plugins: { legend: { display: isDoughnut, position: 'bottom' } }, scales: isDoughnut ? {} : { y: { beginAtZero: true } } }
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: isDoughnut,
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 20,
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            },
+            scales: isDoughnut ? {} : { y: { beginAtZero: true } }
+        }
     });
 }
 
 function updateStats(data) {
     const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 3);
     const window = data.filter(o => new Date(o.requestCreatedAt) >= cutoff);
-    const totalRev = window.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    const totalRev = data.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
     const validDur = window.filter(d => parseFloat(d.duration) > 0.1);
     const avgDur = validDur.length ? (validDur.reduce((s, o) => s + parseFloat(o.duration), 0) / validDur.length) : 0;
     const validDist = window.filter(d => parseFloat(d.distance) > 0);
     const avgDist = validDist.length ? (validDist.reduce((s, o) => s + parseFloat(o.distance), 0) / validDist.length) : 0;
 
     document.getElementById('stat-revenue').innerText = `ETB ${totalRev.toLocaleString()}`;
-    document.getElementById('stat-count').innerText = window.length;
+    document.getElementById('stat-count').innerText = data.length;
     document.getElementById('stat-duration').innerText = `${avgDur.toFixed(1)} min`;
     document.getElementById('stat-distance').innerText = `${avgDist.toFixed(2)} km`;
 }

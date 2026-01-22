@@ -12,6 +12,9 @@
                     legend: {
                         position: 'bottom',
                         labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 20,
                             font: {
                                 size: 12
                             }

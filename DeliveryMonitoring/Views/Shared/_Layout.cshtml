@@ -22,8 +22,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
 </head>
-
     <body>
+        <div id="sidebarOverlay"></div>
         @await Html.PartialAsync("_CopyToClipBoardAlert")
 
 
@@ -35,8 +35,7 @@
                 <ul id="alert-list"></ul>
             </div>
         </div>
-
-        <!--sidebar starts here-->
+        <!-- Sidebar -->
         <div class="sidebar" id="mySidebar">
             <ul>
                 <li><a href="/"><!--<img src="/images/cnetlogo.png" alt="CNET logo" width="40" height="40">--><span>&nbsp;Delivery Monitoring</span></a></li>
@@ -56,11 +55,11 @@
                         <span><i class="bi bi-file-earmark-text"></i> Reports</span>
                         <i class="bi bi-chevron-down"></i>
                     </a>
-                <ul class="collapse list-unstyled ps-3" id="reportSubmenu">
+                    <ul class="collapse list-unstyled ps-3" id="reportSubmenu">
                         <li><a href="/report"><i class="bi bi-grid"></i> All</a></li>
                         <li><a href="/report/delivery"><i class="bi bi-cart2"></i> Delivery</a></li>
-                        <li><a href="/report/dinein"  ><i class="bi bi-shop"></i> Dine-in</a></li>
-                        <li><a href="/report/takeaway"  ><i class="bi bi-person-walking"></i> Takeaway</a></li>
+                        <li><a href="/report/dinein"><i class="bi bi-shop"></i> Dine-in</a></li>
+                        <li><a href="/report/takeaway"><i class="bi bi-person-walking"></i> Takeaway</a></li>
                     </ul>
                 </li>
                 <li id="summaryMenu">
@@ -75,13 +74,13 @@
                     </a>
                     <ul class="collapse list-unstyled ps-3" id="summarySubmenu">
                         <li>
-                            <a href="/summary/consignee" >
+                            <a href="/summary/consignee">
                                 <i class="bi bi-person-badge"></i> Consignee
                             </a>
                         </li>
                         <li>
-                            <a href="/summary/driver" >
-                            <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Driver
+                            <a href="/summary/driver">
+                                <i class="fa-sharp-duotone fa-solid fa-motorcycle"></i> Driver
                             </a>
                         </li>
                         @if (companyTin == adminCompanyTin)
@@ -93,7 +92,7 @@
                             </li>
                         }
                         <li>
-                        <a href="/summary/merchant">
+                            <a href="/summary/merchant">
                                 <i class="bi bi-shop"></i> Merchant
                             </a>
                         </li>
@@ -101,16 +100,19 @@
                     </ul>
                 </li>
             </ul>
+
         </div>
+
+        <!-- Main content -->
         <div id="main">
             <header>
                 <nav class="navbar navbar-expand navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
                     <div class="container-fluid">
-                    
-                        <a class="w3-bar-item w3-button w3-large m-3" onclick="toggleSidebar()">
+
+                        <a class="w3-bar-item w3-button w3-large m-3" id="sidebarToggle">
                             <i class="bi bi-list"></i>
                         </a>
-                                       
+
                         <div class="navbar-collapse collapse d-flex justify-content-between">
                             <ul class="navbar-nav">
                                 <li class="nav-item">
@@ -124,17 +126,16 @@
                                     </a>
                                 </li>
                             </ul>
-                        </div>                                        
+                        </div>
                     </div>
                 </nav>
             </header>
-            <!--navbar ends here-->
-            <!-- Logout Confirmation Modal -->
+
             <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header bg-light">
-                            <h5 class="modal-title" id="logoutModalLabel"><i class="bi bi-box-arrow-left"></i>&nbsp;Logout</h5>                       
+                            <h5 class="modal-title" id="logoutModalLabel"><i class="bi bi-box-arrow-left"></i>&nbsp;Logout</h5>
                         </div>
                         <div class="modal-body">
                             Are you sure you want to Logout?
@@ -151,9 +152,8 @@
                     @RenderBody()
                 </main>
             </div>
-            <!--main body ends here-->
-        </div> 
-        <!--Main container ends here all components without the sidebar-->
+        </div>
+    
     
         <script src="~/lib/jquery/dist/jquery.min.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -165,26 +165,55 @@
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
         @await RenderSectionAsync("Scripts", required: false)
-    
+
         <script>
-            const screenSize = screen.width;
-            const main = document.getElementById("main");
             const sidebar = document.getElementById("mySidebar");
+            const main = document.getElementById("main");
+            const overlay = document.getElementById("sidebarOverlay");
+            const toggleBtn = document.getElementById("sidebarToggle");
 
-            if (screenSize > 767) {
-                sidebar.classList.remove("closed");
-                main.classList.remove("full");
-            } else {
-                sidebar.classList.add("closed");
-                main.classList.add("full");
+            function openSidebar() {
+                sidebar.classList.add("open");
+
+                if (window.innerWidth >= 768) {
+                    main.classList.add("shifted"); // push content
+                } else {
+                    overlay.classList.add("show"); // show overlay only on mobile
+                }
             }
 
-            function toggleSidebar() {
-                sidebar.classList.toggle("closed");
-                main.classList.toggle("full");
+            function closeSidebar() {
+                sidebar.classList.remove("open");
+                main.classList.remove("shifted");
+                overlay.classList.remove("show");
             }
-        </script>    
-    
 
+            // Toggle sidebar on button click
+            toggleBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (sidebar.classList.contains("open")) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            });
+
+            // Click outside main content closes sidebar (only effective for mobile overlay)
+            main.addEventListener("click", () => {
+                if (window.innerWidth < 768 && sidebar.classList.contains("open")) {
+                    closeSidebar();
+                }
+            });
+
+            // Overlay click closes sidebar
+            overlay.addEventListener("click", closeSidebar);
+
+            // Reset overlay on resize
+            window.addEventListener("resize", () => {
+                if (window.innerWidth >= 768) {
+                    overlay.classList.remove("show"); // remove dimmer on desktop
+                }
+            });
+        </script>
     </body>
 </html>

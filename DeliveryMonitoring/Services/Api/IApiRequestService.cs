@@ -154,6 +154,13 @@ namespace DeliveryMonitoring.Services.Api
         /// If set to <c>true</c>, bypasses the cache and fetches the latest data.
         /// </param>
         Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedOrdersAsync(bool skipCache = true);
+        /// <summary>
+        /// Retrieves all completed orders and their associated activities.
+        /// </summary>
+        /// <param name="skipCache">
+        /// If set to <c>true</c>, bypasses the cache and fetches the latest data.
+        /// </param>
+        Task<HulubejeResponse<List<CompletedOrders>>> GetCompletedordersWithTimeineAsync(string startDate, string endDate, bool skipCache = true);
 
         /// <summary>
         /// Retrieves completed orders filtered by the specified order type.
