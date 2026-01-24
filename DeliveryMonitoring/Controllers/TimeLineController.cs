@@ -19,9 +19,12 @@ namespace DeliveryMonitoring.Controllers
         {
             _apiRequestService = apiRequestService;
         }
-
-
-        public async Task<IActionResult> Index([FromQuery] OrderQueryParams @params)
+        public IActionResult Index()
+        {
+            return View();
+        }
+        [HttpGet("/gettimeLineOrder")]
+        public async Task<IActionResult> GetCompletedOrdersWithTimeline([FromQuery] OrderQueryParams @params)
         {
             var today = DateTime.Today;
 
@@ -41,18 +44,12 @@ namespace DeliveryMonitoring.Controllers
 
             var orders = response.Data?.ToList() ?? new List<CompletedOrders>();
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            {
-
-                var hashInput = JsonSerializer.Serialize(orders.Select(o => new { o.VoucherCode, o.Activities?.Activity?.Count }));
-                using var sha256 = SHA256.Create();
-                var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(hashInput));
-                var currentHash = Convert.ToBase64String(hashBytes);
-                Response.Headers.Add("X-Data-Hash", currentHash);
-                return PartialView("_OrderTimelinePartial", orders);
-            }
-
-            return View(orders);
+            var hashInput = JsonSerializer.Serialize(orders.Select(o => new { o.VoucherCode, o.Activities?.Activity?.Count }));
+            using var sha256 = SHA256.Create();
+            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(hashInput));
+            var currentHash = Convert.ToBase64String(hashBytes);
+            Response.Headers.Add("X-Data-Hash", currentHash);
+            return PartialView("_OrderTimelinePartial", orders);
         }
     }
 }

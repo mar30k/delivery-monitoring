@@ -6,18 +6,18 @@
 <link rel="stylesheet" href="~/css/timeline.css" asp-append-version="true" />
 
 <div class="container-fluid p-lg-4 p-2">
-    <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+    <div class="d-flex align-items-center justify-content-between pb-3 border-bottom">
         <div>
             <h5 class="fw-bold mb-0 text-dark">Order Timeline</h5>
         </div>
 
         <div class="d-flex align-items-center gap-3">
+            <div id="loader" class="spinner-border spinner-border-sm text-primary d-none" role="status"></div>
             <div class="position-relative">
                 <i class="bi bi-calendar3 position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                 <input type="text" id="dateRange" class="form-control elegant-filter"
                        readonly style="width: 260px; padding-left: 2.5rem;" />
             </div>
-            <div id="loader" class="spinner-border spinner-border-sm text-primary d-none" role="status"></div>
         </div>
     </div>
 
@@ -35,59 +35,83 @@
     </script>
     <script src="~/js/date-range.js" asp-append-version="true"></script>
     <script type="text/javascript">
-        $(document).ready(function() {
-
-            // 1️⃣ Create a date range instance
-            var timelineDateRange = DateRange.create('#dateRange');
-
-            // 2️⃣ Initialize it
-            timelineDateRange.init();
-
-            // 3️⃣ Listen for changes to trigger AJAX refresh
-            js('#dateRange').on('daterange:changed', function() {
-                var data = {};
-                timelineDateRange.applyToAjax(data);
-
-                refreshTimeline(data.startDate, data.endDate);
-            });
-
-            // 4️⃣ Optionally auto-refresh every 2 minutes using current range
-            setInterval(function() {
-                var range = timelineDateRange.getRange();
-                if (!range.isClear) {
-                    refreshTimeline(range.start.format('YYYY-MM-DD'), range.end.format('YYYY-MM-DD'));
-                }
-            }, 0.2 * 60 * 1000);
+        $(document).ready(function () {
 
             var lastDataHash = "";
-            // AJAX Function to update the timeline container
+            (async function () {
+
+                // 1️⃣ Create date range instance
+                var timelineDateRange = DateRange.create('#dateRange');
+
+                // 2️⃣ Initialize (async-safe)
+                await timelineDateRange.init();
+
+                // 3️⃣ Initial load immediately after init
+                var initialRange = timelineDateRange.getRange();
+                if (!initialRange.isClear) {
+                    refreshTimeline(
+                        initialRange.start.format('YYYY-MM-DD'),
+                        initialRange.end.format('YYYY-MM-DD')
+                    );
+                }
+
+                // 4️⃣ Listen for date range changes
+                js('#dateRange').on('daterange:changed', function () {
+                    var data = {};
+                    timelineDateRange.applyToAjax(data);
+
+                    refreshTimeline(data.startDate, data.endDate);
+                });
+
+                // 5️⃣ Auto-refresh every 12 seconds (0.2 min)
+                setInterval(function () {
+                    var range = timelineDateRange.getRange();
+                    if (!range.isClear) {
+                        refreshTimeline(
+                            range.start.format('YYYY-MM-DD'),
+                            range.end.format('YYYY-MM-DD')
+                        );
+                    }
+                }, 3 * 60 * 1000);
+
+            })();
+
+            // 🔁 AJAX refresh logic
             function refreshTimeline(startStr, endStr) {
                 $('#loader').removeClass('d-none');
 
                 $.ajax({
-                    url: '@Url.Action("Index", "TimeLine")',
+                    url: '/gettimeLineOrder',
                     method: 'GET',
                     data: { startDate: startStr, endDate: endStr },
                     headers: { "X-Requested-With": "XMLHttpRequest" },
+
                     success: function (result, status, xhr) {
                         $('#loader').addClass('d-none');
+
                         var newHash = xhr.getResponseHeader("X-Data-Hash");
-                        // 2. Compare. If they match, do nothing!
-                        if (newHash === lastDataHash) {
+
+                        if (newHash && newHash === lastDataHash) {
                             console.log("Content unchanged. Skipping DOM update.");
                             return;
                         }
+
                         lastDataHash = newHash;
-                        var container = $('#timeline-container');
-                        container.empty().hide().append(result).fadeIn(200);
-                        console.log("Timeline updated with new content.");
+
+                        $('#timeline-container')
+                            .empty()
+                            .hide()
+                            .append(result)
+                            .fadeIn(200);
                     },
-                    error: function (err) {
-                        console.error("Timeline update failed", err);
+
+                    error: function () {
+                        console.error("Timeline update failed");
                         $('#loader').addClass('d-none');
                     }
                 });
             }
+
         });
     </script>
 }

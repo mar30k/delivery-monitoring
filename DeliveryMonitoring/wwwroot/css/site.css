@@ -63,7 +63,6 @@ ul {
     margin-left: 0;
     transition: margin-left 0.3s ease;
     position: relative;
-    z-index: 1;
 }
 
     #main.shifted {
@@ -519,8 +518,8 @@ div[id$="_processing"].dt-processing {
     box-shadow: none !important;
 }
 
-@@media (max-width: 767px) {
+@media (max-width: 767px) {
     .sidebar ul {
-        padding-left: 0px !important; /* Reduced padding */
+        padding-left: 10px !important; /* Reduced padding */
     }
 }

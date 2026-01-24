@@ -1,21 +1,26 @@
 ﻿@model List<CompletedOrders>
-@{
-    Layout = null;
-    var palette = new[] { "#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b", "#5a5c69", "#6610f2", "#fd7e14" };
-    string GetDynamicColor(string name)
+
+@functions {
+    string GetActivityColor(string name)
     {
-        if (string.IsNullOrEmpty(name)) return "#6e707e";
-        int hash = 0;
-        foreach (char c in name)
-        {
-            hash = c + ((hash << 5) - hash);
-        }
-        int index = Math.Abs(hash) % palette.Length;
-        return palette[index];
+        if (string.IsNullOrEmpty(name)) return "#94a3b8";
+        var hash = name.GetHashCode();
+        var h = Math.Abs(hash % 360);
+        return $"hsl({h}, 45%, 35%)";
+    }
+
+    string FormatDuration(double totalSeconds)
+    {
+        if (totalSeconds <= 0) return "0s";
+        if (totalSeconds < 60) return $"{(int)totalSeconds}s";
+        TimeSpan t = TimeSpan.FromSeconds(totalSeconds);
+        return t.TotalHours >= 1
+            ? $"{(int)t.TotalHours}h {t.Minutes}m {t.Seconds}s"
+            : $"{t.Minutes}m {t.Seconds}s";
     }
 }
 
-<div class="comparison-wrapper" id="order-list">
+<div class="precision-monitor">
     @if (Model == null || !Model.Any())
     {
         <div class="text-center py-5">
@@ -25,112 +30,52 @@
     }
     else
     {
-        @for (int index = 0; index < Model.Count; index++)
+        @foreach (var order in Model ?? new List<CompletedOrders>())
         {
-            var order = Model[index];
-            var activities = order.Activities?.Activity?.OrderBy(a => a.Time).ToList() ?? new List<ActivityResponse>();
+            var acts = order.Activities?.Activity?.OrderBy(a => a.Time).ToList() ?? new List<ActivityResponse>();
 
-            @* Hide rows beyond the first 10 initially *@
-            var hiddenClass = index >= 10 ? "d-none paged-out" : "";
-
-            <div class="order-row timeline-row @hiddenClass">
-                <div class="order-sidebar">
-                    <span class="voucher-badge">
-                        <i class="bi bi-hash"></i> <a href="/orderdetail?voucher=@order.VoucherCode">@order.VoucherCode</a>
-                    </span>
-
-                    <div class="data-grid">
-                        <div class="data-item">
-                            <span class="data-label">Customer</span>
-                            <span class="data-value">@order.CustomerName</span>
-                        </div>
-                        <div class="data-item">
-                            <span class="data-label">Branch</span>
-                            <span class="data-value">@order.BranchName</span>
-                        </div>
-                        <div class="data-item">
-                            <span class="data-label">Phone</span>
-                            <span class="data-value">@order.CustomerPhoneNumber</span>
-                        </div>
-                        <div class="data-item">
-                            <span class="data-label">Company</span>
-                            <span class="data-value">@order.CompanyName</span>
-                        </div>
-                        <div class="data-item">
-                            <span class="data-label">Date</span>
-                            <span class="data-value text-primary">@order.OrderDate.ToString("MMM dd hh:mm tt")</span>
-                        </div>
+            <div class="order-strip">
+                <div class="strip-header">
+                    <div class="header-data-scroll">
+                        <a class="voucher-anchor text-decoration-none" href="/orderDetail?voucher=@order.VoucherCode" target="_blank">#@order.VoucherCode</a>
+                        <div class="meta-item">@order.CustomerName</div>
+                        <div class="meta-item">@order.BranchName</div>
+                        <div class="meta-item">@order.CompanyName</div>
+                        <div class="meta-item">@order.CustomerPhoneNumber</div>
+                        <div class="meta-item">@order.OrderDate.ToString("MMM dd hh:mm:ss tt")</div>
                     </div>
                 </div>
 
-                <div class="timeline-scroll-container">
-                    <div class="timeline-flow">
-                        @for (int i = 0; i < activities.Count; i++)
+                <div class="strip-timeline">
+                    <div class="timeline-track">
+                        @for (int i = 0; i < acts.Count; i++)
                         {
-                            var act = activities[i];
-                            var bgColor = GetDynamicColor(act.Name ?? string.Empty);
+                            var a = acts[i];
+                            var color = GetActivityColor(a.Name ?? string.Empty);
 
-                            <div class="node-item">
-                                @if (i > 0)
-                                {
-                                    var diff = (act.Time ?? DateTime.Now) - (activities[i - 1].Time ?? DateTime.Now);
-                                    <div class="time-gap">
-                                        @if (diff.TotalSeconds < 60)
-                                        {
-                                            <span>@((int)diff.TotalSeconds)s</span>
-                                        }
-                                        else if (diff.TotalHours < 1)
-                                        {
+                            double durationSec = 0;
+                            if (i > 0 && a.Time.HasValue && acts[i - 1].Time.HasValue)
+                            {
+                                durationSec = (a.Time!.Value - acts[i - 1].Time!.Value).TotalSeconds;
+                            }
 
-                                            <span>@((int)diff.TotalMinutes)m</span>
-                                        }
-                                        else
-                                        {
+                            // Natural Log provides the best balance for a 5s to 40m range
+                            double widthPx = 70 + (Math.Log(durationSec + 1) * 40);
+                            widthPx = Math.Clamp(widthPx, 90, 420);
 
-                                            <span>@((int)diff.TotalHours)h @(diff.Minutes)m</span>
-                                        }
+                            <div class="activity-block" style="flex: 0 0 @(widthPx)px; width: @(widthPx)px; --accent: @color">
+                                <div class="block-top">
+                                    <span class="block-name" title="@a.Name">@a.Name</span>
+                                    <div class="block-meta">
+                                        <span class="block-clock">@a.Time?.ToString("HH:mm:ss")</span>
+                                        <span class="block-duration">@(i == 0 ? "(0s)" : FormatDuration(durationSec))</span>
                                     </div>
-                                }
-
-                                <div class="node-icon" style="background-color: @bgColor">
-                                    @(i + 1)
                                 </div>
-                                <div class="node-text" title="@act.Name">@act.Name</div>
-                                <div class="node-subtext">@act.Time?.ToString("hh:mm tt")</div>
                             </div>
                         }
                     </div>
                 </div>
             </div>
         }
-
-        @if (Model.Count > 10)
-        {
-            <div class="text-center py-4" id="pagination-trigger">
-                <button id="btnShowMore" class="btn btn-outline-primary rounded-pill px-5 shadow-sm">
-                    Show More Orders (<span id="remaining-count">@(Model.Count - 10)</span> remaining)
-                </button>
-            </div>
-        }
     }
 </div>
-<script>
-    $(document).ready(function() {
-        // We use $(document).on because the button is replaced during AJAX updates
-        $(document).on('click', '#btnShowMore', function() {
-            // 1. Reveal next 10 hidden rows
-            var nextBatch = $('.timeline-row.paged-out').slice(0, 10);
-            nextBatch.removeClass('d-none paged-out').hide().fadeIn(400);
-
-            // 2. Update the remaining count on the button
-            var remaining = $('.timeline-row.paged-out').length;
-            if (remaining > 0) {
-                $('#remaining-count').text(remaining);
-            } else {
-                // 3. If everything is shown, hide the button
-                $('#pagination-trigger').fadeOut();
-            }
-        });
-    });
-</script>
-                        
