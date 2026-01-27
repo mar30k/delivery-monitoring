@@ -243,6 +243,7 @@ namespace DeliveryMonitoring.Models
     {
         [DisplayName("Name")]
         public string? Name { get; set; }
+        public string? ActivityName { get; set; }
 
         [DisplayName("Time")]
         public DateTime? Time { get; set; }

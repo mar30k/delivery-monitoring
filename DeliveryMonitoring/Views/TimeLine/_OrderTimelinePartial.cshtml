@@ -3,10 +3,27 @@
 @functions {
     string GetActivityColor(string name)
     {
-        if (string.IsNullOrEmpty(name)) return "#94a3b8";
-        var hash = name.GetHashCode();
-        var h = Math.Abs(hash % 360);
-        return $"hsl({h}, 45%, 35%)";
+        if (string.IsNullOrWhiteSpace(name)) return "#64748b";
+
+        // 1. FNV-1a Hash for high distribution
+        uint hash = 2166136261;
+        foreach (char c in name)
+        {
+            hash = (hash ^ c) * 16777619;
+        }
+
+        // 2. Golden Ratio for even spacing on the color wheel
+        double goldenRatioConjugate = 0.618033988749895;
+        double hue = (hash * goldenRatioConjugate) % 1.0;
+        int h = (int)(hue * 360);
+
+        // 3. Brighter "Normal" Palette
+        // Saturation: 65% (Lively but controlled)
+        // Lightness: 68% (Bright enough to feel clean, not dim)
+        int s = 80;
+        int l = 60;
+
+        return $"hsl({h}, {s}%, {l}%)";
     }
 
     string FormatDuration(double totalSeconds)
@@ -20,7 +37,7 @@
     }
 }
 
-<div class="precision-monitor">
+<div class="precision-monitor p-1 p-lg-3">
     @if (Model == null || !Model.Any())
     {
         <div class="text-center py-5">
@@ -30,11 +47,16 @@
     }
     else
     {
+        <div class="global-activity-filter d-flex end-0" style="padding:10px 14px; font-size:0.9rem;">
+            Show Activities:
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="driver">Driver Only</button>
+        </div>
         @foreach (var order in Model ?? new List<CompletedOrders>())
         {
             var acts = order.Activities?.Activity?.OrderBy(a => a.Time).ToList() ?? new List<ActivityResponse>();
 
-            <div class="order-strip">
+            <div class="order-strip paged-order">
                 <div class="strip-header">
                     <div class="header-data-scroll">
                         <a class="voucher-anchor text-decoration-none" href="/orderDetail?voucher=@order.VoucherCode" target="_blank">#@order.VoucherCode</a>
@@ -45,37 +67,139 @@
                         <div class="meta-item">@order.OrderDate.ToString("MMM dd hh:mm:ss tt")</div>
                     </div>
                 </div>
+                <div class="activity-timeline-container">
+                    @for (int i = 0; i < acts.Count; i++)
+                    {
+                        var a = acts[i];
+                        var color = GetActivityColor(a.ActivityName ?? string.Empty);
 
-                <div class="strip-timeline">
-                    <div class="timeline-track">
-                        @for (int i = 0; i < acts.Count; i++)
+                        double durationSec = 0;
+
+                        if (i < acts.Count - 1 && a.Time.HasValue && acts[i + 1].Time.HasValue)
                         {
-                            var a = acts[i];
-                            var color = GetActivityColor(a.Name ?? string.Empty);
-
-                            double durationSec = 0;
-                            if (i > 0 && a.Time.HasValue && acts[i - 1].Time.HasValue)
-                            {
-                                durationSec = (a.Time!.Value - acts[i - 1].Time!.Value).TotalSeconds;
-                            }
-
-                            // Natural Log provides the best balance for a 5s to 40m range
-                            double widthPx = 70 + (Math.Log(durationSec + 1) * 40);
-                            widthPx = Math.Clamp(widthPx, 90, 420);
-
-                            <div class="activity-block" style="flex: 0 0 @(widthPx)px; width: @(widthPx)px; --accent: @color">
-                                <div class="block-top">
-                                    <span class="block-name" title="@a.Name">@a.Name</span>
-                                    <div class="block-meta">
-                                        <span class="block-clock">@a.Time?.ToString("HH:mm:ss")</span>
-                                        <span class="block-duration">@(i == 0 ? "(0s)" : FormatDuration(durationSec))</span>
-                                    </div>
-                                </div>
-                            </div>
+                            // Duration until next activity
+                            durationSec = (acts[i + 1].Time!.Value - a.Time.Value).TotalSeconds;
                         }
-                    </div>
+                        else if (i == acts.Count - 1)
+                        {
+                            // Last activity, give a small base width
+                            durationSec = 5;
+                        }
+
+                        // Log scaling for width
+                        double widthPx = 20 + (Math.Log(durationSec + 1) * 40);
+                        widthPx = Math.Clamp(widthPx, 90, 420);
+
+                        // Duration label: "End" for the last activity
+                        string durationLabel = durationSec > 0
+                        ? FormatDuration(durationSec)
+                        : (i == acts.Count - 1 ? "End" : "Start");
+
+                        <div class="activity-timeline-item"
+                             data-lat="@a.Latitude" data-lng="@a.Longitude"
+                             style="width:@(widthPx)px; background-color:@color; flex-shrink:0">
+
+                            <div class="activity-title" title="@a.Name">
+                                @a.ActivityName
+                            </div>
+
+                            <div class="activity-meta">
+                                <span class="activity-time">@a.Time?.ToString("hh:mm tt")</span>
+                                <span class="activity-separator">•</span>
+                                <span class="activity-duration">@durationLabel</span>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         }
     }
 </div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="modern-pagination-wrapper">
+        <div class="pagination-info" id="paginationInfo">
+            Showing <b>0</b> - <b>0</b> of <b>0</b> orders
+        </div>
+        <div class="pagination-controls" id="paginationList">
+        </div>
+    </div>
+}
+
+<script>
+    (function () {
+        const filterButtons = document.querySelectorAll('.global-activity-filter .filter-btn');
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.dataset.filter;
+
+                document.querySelectorAll('.activity-timeline-item').forEach(item => {
+                    const lat = parseFloat(item.dataset.lat);
+                    const lng = parseFloat(item.dataset.lng);
+
+                    if (filter === 'all') {
+                        item.style.display = '';
+                    } else {
+                        // Show only driver-related activities
+                        if (!isNaN(lat) && !isNaN(lng) && lat > 0 && lng > 0) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+
+
+        const pageSize = 15;
+        const orders = Array.from(document.querySelectorAll('.paged-order'));
+        const totalItems = orders.length;
+        const totalPages = Math.ceil(totalItems / pageSize);
+        let currentPage = 1;
+
+        const container = document.getElementById('paginationList');
+        const info = document.getElementById('paginationInfo');
+
+        function render() {
+            // 1. Update Visibility
+            const startIdx = (currentPage - 1) * pageSize;
+            const endIdx = startIdx + pageSize;
+
+            orders.forEach((order, index) => {
+                order.style.display = (index >= startIdx && index < endIdx) ? '' : 'none';
+            });
+
+            // 2. Update Info Text
+            info.innerHTML = `Showing <b>${startIdx + 1}</b> - <b>${Math.min(endIdx, totalItems)}</b> of <b>${totalItems}</b> orders`;
+
+            // 3. Build Pagination Buttons
+            let html = `<button class="pg-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="window.setPage(${currentPage - 1})">Prev</button>`;
+
+            for (let i = 1; i <= totalPages; i++) {
+                // Logic: Show first page, last page, and 1 page around current
+                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" onclick="window.setPage(${i})">${i}</button>`;
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    html += `<span class="pg-dots">...</span>`;
+                }
+            }
+
+            html += `<button class="pg-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="window.setPage(${currentPage + 1})">Next</button>`;
+
+            container.innerHTML = html;
+        }
+
+        window.setPage = function(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            render();
+        };
+
+        if(totalItems > 0) render();
+    })();
+</script>

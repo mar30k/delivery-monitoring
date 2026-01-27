@@ -6,11 +6,10 @@ const chartInstances = {};
 
 const Processors = {
     // Chart 1: Today's Traffic Only
-    todayHourly: (data) => {
-        const todayStr = new Date().toDateString();
+    todayHourly: (data, referenceDate) => {
         const hours = data.reduce((acc, o) => {
             const orderDate = new Date(o.requestCreatedAt);
-            if (orderDate.toDateString() === todayStr) {
+            if (orderDate.toDateString() === referenceDate) {
                 const hr = orderDate.getHours();
                 acc[hr] = (acc[hr] || 0) + 1;
             }
@@ -75,7 +74,28 @@ const Processors = {
             return acc;
         }, {});
         return { labels: Array.from({ length: 24 }, (_, i) => `${i}:00`), values: Array.from({ length: 24 }, (_, i) => hours[i] || 0) };
-    }
+    },
+
+    // Chart 7: Daily Volume (7 Days)
+    weekly: (data, referenceDate) => {
+        const days = Array.from({ length: 7 }, (_, i) =>
+            new Intl.DateTimeFormat(undefined, { weekday: 'long' })
+                .format(new Date(1970, 0, 4 + i))
+        );
+        const last7 = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(referenceDate);
+            d.setDate(d.getDate() - i);
+            last7.push({ dateStr: d.toDateString(), dayName: days[d.getDay()], count: 0 });
+        }
+        data.forEach(o => {
+            const dStr = new Date(o.requestCreatedAt).toDateString();
+
+            const match = last7.find(x => x.dateStr === dStr);
+            if (match) match.count++;
+        });
+        return { labels: last7.map(x => x.dayName), values: last7.map(x => x.count) };
+    },
 };
 
 function renderChart(id, type, labels, data, label, color, isDoughnut = false) {
@@ -116,37 +136,124 @@ function renderChart(id, type, labels, data, label, color, isDoughnut = false) {
     });
 }
 
-function updateStats(data) {
-    const cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - 3);
-    const window = data.filter(o => new Date(o.requestCreatedAt) >= cutoff);
-    const totalRev = data.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-    const validDur = window.filter(d => parseFloat(d.duration) > 0.1);
-    const avgDur = validDur.length ? (validDur.reduce((s, o) => s + parseFloat(o.duration), 0) / validDur.length) : 0;
-    const validDist = window.filter(d => parseFloat(d.distance) > 0);
-    const avgDist = validDist.length ? (validDist.reduce((s, o) => s + parseFloat(o.distance), 0) / validDist.length) : 0;
+function updateStats(data, refDate) {
+    // 1. Ensure we have a proper string for comparison and a Date object for math
+    const referenceDate = new Date(refDate);
+    const todayStr = referenceDate.toDateString();
 
-    document.getElementById('stat-revenue').innerText = `ETB ${totalRev.toLocaleString()}`;
-    document.getElementById('stat-count').innerText = data.length;
-    document.getElementById('stat-duration').innerText = `${avgDur.toFixed(1)} min`;
-    document.getElementById('stat-distance').innerText = `${avgDist.toFixed(2)} km`;
+    // 2. Setup Cutoffs
+    const threeMonthsAgo = new Date(referenceDate);
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    // 3. Filter Data
+    const todayData = data.filter(o => new Date(o.requestCreatedAt).toDateString() === todayStr);
+    const threeMonthData = data.filter(o => new Date(o.requestCreatedAt) >= threeMonthsAgo);
+
+    // 4. Helper Functions
+    const getStatus = (arr) => {
+        let onTime = 0, delayed = 0;
+        arr.forEach(o => {
+            const eta = parseFloat(o.eta) || 0;
+            const duration = parseFloat(o.duration) || 0;
+            if (eta > 0 && duration > 0) {
+                (duration <= eta) ? onTime++ : delayed++;
+            }
+        });
+        return { onTime, delayed };
+    };
+
+    const calcAvg = (arr, key) => {
+        const valid = arr.filter(i => parseFloat(i[key]) > 0.1);
+        return valid.length ? (valid.reduce((s, o) => s + parseFloat(o[key]), 0) / valid.length) : 0;
+    };
+
+    // 5. Run Calculations
+    const globalPerf = getStatus(data);
+    const todayPerf = getStatus(todayData);
+
+    const totalRev = data.reduce((s, o) => s + (parseFloat(o.totalAmount) || 0), 0);
+    const todayRev = todayData.reduce((s, o) => s + (parseFloat(o.totalAmount) || 0), 0);
+
+    // Helper to update text safely
+    const updateText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
+    };
+
+    // 6. Update UI
+    // Revenue & Counts
+    updateText('stat-revenue', `ETB ${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+    updateText('stat-revenue-today', `ETB ${todayRev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+
+    updateText('stat-count', data.length.toLocaleString());
+    updateText('stat-count-today', todayData.length.toLocaleString());
+
+    // Performance (Split Card)
+    updateText('stat-ontime', globalPerf.onTime.toLocaleString());
+    updateText('stat-ontime-today', todayPerf.onTime.toLocaleString());
+
+    updateText('stat-delayed', globalPerf.delayed.toLocaleString());
+    updateText('stat-delayed-today', todayPerf.delayed.toLocaleString());
+
+    // Averages (3-Month vs Today)
+    updateText('stat-duration', `${calcAvg(threeMonthData, 'duration').toFixed(0)}m`);
+    updateText('stat-duration-today', `${calcAvg(todayData, 'duration').toFixed(0)}m`);
+
+    updateText('stat-distance', `${calcAvg(threeMonthData, 'distance').toFixed(1)}km`);
+    updateText('stat-distance-today', `${calcAvg(todayData, 'distance').toFixed(1)}km`);
+
+    return todayStr;
+}
+async function loadDashboard() {
+    // Parallel fetch for server time and orders to save time
+    const [timeResult, orderResult] = await Promise.all([
+        fetchData("/serverTime"),
+        fetchData("/getCompletedOrders")
+    ]);
+
+    if (!orderResult.isSuccessful) return;
+
+    const data = orderResult.data;
+
+    // Process the reference date from the helper result
+    const refDate = timeResult.serverLocalNow
+        ? new Date(timeResult.serverLocalNow)
+        : new Date();
+    const refDateStr = refDate.toDateString();
+
+    // 1. Update Text KPIs
+    updateStats(data, refDate);
+
+    // 2. Prepare Datasets (Consistent Mapping)
+    const ds = {
+        weekly: Processors.weekly(data, refDate),
+        today: Processors.todayHourly(data, refDateStr),
+        daily30: Processors.daily30(data),
+        payment: Processors.payments(data),
+        monthly: Processors.monthly(data),
+        partner: Processors.partners(data),
+        peaks: Processors.globalPeaks(data)
+    };
+
+    // 3. Render Charts
+    renderChart("weeklyPerformanceChart", "line", ds.weekly.labels, ds.weekly.values, "Weekly Orders", COLORS.primary);
+    renderChart("hourlyTraficPtterToday", "bar", ds.today.labels, ds.today.values, "Today's Orders", COLORS.info);
+    renderChart("dailyOrdersChart", "line", ds.daily30.labels, ds.daily30.values, "Daily Total", COLORS.primary);
+    renderChart("paymentMethodChart", "doughnut", ds.payment.labels, ds.payment.values, "Methods", null, true);
+    renderChart("monthlyTrendChart", "line", ds.monthly.labels, ds.monthly.values, "Monthly Total", COLORS.warning);
+    renderChart("companyRevenueChart", "bar", ds.partner.labels, ds.partner.values, "Revenue", COLORS.success);
+    renderChart("peakHourChart", "bar", ds.peaks.labels, ds.peaks.values, "Global Trend", COLORS.purple);
 }
 
-async function loadDashboard() {
+async function fetchData(url) {
     try {
-        const res = await fetch("/getCompletedOrders");
-        const result = await res.json();
-        if (!result.isSuccessful) return;
-        const data = result.data;
-
-        updateStats(data);
-        renderChart("hourlyTraficPtterToday", "bar", Processors.todayHourly(data).labels, Processors.todayHourly(data).values, "Today's Orders", COLORS.info);
-        renderChart("dailyOrdersChart", "line", Processors.daily30(data).labels, Processors.daily30(data).values, "Daily Total", COLORS.primary);
-        renderChart("paymentMethodChart", "doughnut", Processors.payments(data).labels, Processors.payments(data).values, "Methods", null, true);
-        renderChart("monthlyTrendChart", "line", Processors.monthly(data).labels, Processors.monthly(data).values, "Monthly Total", COLORS.warning);
-        renderChart("companyRevenueChart", "bar", Processors.partners(data).labels, Processors.partners(data).values, "Revenue", COLORS.success);
-        renderChart("peakHourChart", "bar", Processors.globalPeaks(data).labels, Processors.globalPeaks(data).values, "Global Trend", COLORS.purple);
-
-    } catch (e) { console.error(e); }
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return await res.json();
+    } catch (e) {
+        console.error(`Fetch failed for ${url}:`, e);
+        return { isSuccessful: false, data: null };
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => { loadDashboard(); setInterval(loadDashboard, 300000); });
