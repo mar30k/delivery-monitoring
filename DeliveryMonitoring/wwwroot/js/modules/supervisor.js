@@ -3,9 +3,11 @@ const { DashboardApi } = await import(`./dashboard-api.js?v=${Date.now()}`);
 
 export const SupervisorAssignment = {
     voucherCode: null,
+    currentSupervisorPhone: null,
 
-    open(voucherCode) {
+    open(voucherCode, currentSupervisorPhone) {
         this.voucherCode = voucherCode;
+        this.currentSupervisorPhone = currentSupervisorPhone;
         $("#assignVoucherCodeLabel").text(`- ${voucherCode}`);
         $("#modalSupervisorSelect").prop("selectedIndex", 0);
 
@@ -18,10 +20,15 @@ export const SupervisorAssignment = {
 
         try {
             const supervisors = await DashboardApi.getSupervisors();
-            const loggedIn = supervisors.filter(s => s.loggedInStatus);
+            console.log(this.currentSupervisorPhone, supervisors) 
+
+            const loggedIn = supervisors.filter(
+                s => s.loggedInStatus && s.userName !== this.currentSupervisorPhone
+            );
+
 
             if (!loggedIn.length) {
-                $select.html(`<option disabled>No supervisors online</option>`);
+                $select.html(`<option disabled>No other supervisors online</option>`);
                 return;
             }
 

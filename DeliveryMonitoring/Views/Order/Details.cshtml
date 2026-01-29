@@ -131,19 +131,19 @@
 
                             @{
                                 // Define which statuses to exclude
-                                var excludedStatuses = new HashSet<RequestStat>
+                                var excludedStatuses = new HashSet<DriverSatuses>
                                                         {
-                                                        RequestStat.sos,
-                                                        RequestStat.driverNotFound,
-                                                        RequestStat.declined,
-                                                        RequestStat.completed
+                                                            DriverSatuses.sos,
+                                                            DriverSatuses.driverNotFound,
+                                                            DriverSatuses.declined,
+                                                            DriverSatuses.completed,
                                                         };
                             }
                             <div class="form-group">
                                 <label for="statusSelect" class="form-label">Select Order Status</label>
                                 <select id="statusSelect" name="OrderStatus" class="form-select form-select-sm">
                                     <option value="" selected disabled>Select status</option>
-                                    @foreach (var status in Enum.GetValues(typeof(RequestStat)).Cast<RequestStat>())
+                                    @foreach (var status in Enum.GetValues(typeof(DriverSatuses)).Cast<DriverSatuses>())
                                     {
                                         if (!excludedStatuses.Contains(status))
                                         {

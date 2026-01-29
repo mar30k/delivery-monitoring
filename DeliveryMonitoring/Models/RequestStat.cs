@@ -1,6 +1,6 @@
 ﻿namespace DeliveryMonitoring.Models
 {
-    public enum RequestStat
+    public enum DriverSatuses
     {
         requested,
         assigned,

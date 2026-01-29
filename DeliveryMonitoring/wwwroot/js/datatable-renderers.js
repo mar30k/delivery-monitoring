@@ -247,14 +247,14 @@ const Renderers = {
         if (!row.supervisedBy) {
             return `
             <a class="btn btn-outline-dark btn-sm"
-               onclick="SupervisorAssignment.open('${row.voucherCode}')">
+               onclick="SupervisorAssignment.open('${row.voucherCode}', '')">
                 Assign
             </a>
         `;
         }
         return `
         <a href="tel:${row.supervisedBy}">${value}</a>
-            <a onclick="SupervisorAssignment.open('${row.voucherCode}')">
+            <a onclick="SupervisorAssignment.open('${row.voucherCode}' , '${row.supervisedBy}')">
             <i class="fa-solid fa-pen-to-square"></i>
         </a>
     `;
