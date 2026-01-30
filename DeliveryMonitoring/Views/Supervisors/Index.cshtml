@@ -4,7 +4,7 @@
 }
 <div class="p-4 mt-2">
     <h3 class="mb-4">Supervisors</h3>
-    @if (Model == null || !Model.Supervisors.Any())
+    @if (Model?.Supervisors == null || !Model.Supervisors.Any())
     {
         <div class="alert alert-info">
             No records found.
