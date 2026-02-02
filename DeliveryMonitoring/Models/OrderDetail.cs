@@ -232,6 +232,23 @@ namespace DeliveryMonitoring.Models
                 return null; // or "Not enough data"
             }
         }
+        [DisplayName("ETA Difference")]
+        public bool? IsOnTime
+        {
+            get
+            {
+                if (Eta.HasValue && ActualArrival.HasValue)
+                {
+                    var diff = ActualArrival.Value - Eta.Value;
+                    if (diff.TotalMinutes < 0)
+                        return true;
+                    if (diff.TotalMinutes >= 0)
+                        return false;
+                }
+
+                return null;
+            }
+        }
 
         [DisplayName("Activity Response")]
         public List<ActivityResponse>? ActivityResponse { get; set; }

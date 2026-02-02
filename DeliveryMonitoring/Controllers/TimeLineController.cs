@@ -44,19 +44,7 @@ namespace DeliveryMonitoring.Controllers
 
             var orders = response.Data?.ToList() ?? new List<CompletedOrders>();
 
-            foreach (var order in orders)
-            {
-                foreach (var activity in order.Activities?.Activity ?? new List<ActivityResponse>())
-                {
-                    // Try to find the key by value
-                    var matchingPair = DeliveryActivities.FirstOrDefault(kv => kv.Value == activity.Name);
 
-                    // If found, use the key; otherwise, fallback to original name
-                    activity.ActivityName = !string.IsNullOrEmpty(matchingPair.Key)
-                        ? matchingPair.Key
-                        : activity.Name;
-                }
-            }
             var hashInput = JsonSerializer.Serialize(orders.Select(o => new { o.VoucherCode, o.Activities?.Activity?.Count }));
             using var sha256 = SHA256.Create();
             var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(hashInput));
@@ -64,22 +52,5 @@ namespace DeliveryMonitoring.Controllers
             Response.Headers.Add("X-Data-Hash", currentHash);
             return PartialView("_OrderTimelinePartial", orders);
         }
-        public static Dictionary<string, string> DeliveryActivities = new()
-        {
-            {"sent", "Order Placed"},
-            {"prepared", "Your order Invoice is printed"},
-            {"received", "Order received and is being prepared"},
-            {"accepted", "Order Delivery accepted by the Driver"},
-            {"seen", "Order Delivery accepted by the Supervisor"},
-            {"declined", "Order Delivery declined by the Driver"},
-            {"assigned", "Order Delivery assigned to a Driver"},
-            {"drivernotfound", "No Driver found for your Delivery"},
-            {"completed", "Order Delivery completed"},
-            {"sos", "Delivery issue reported."},
-            {"ontheway", "Your order is picked up & driver is on the way"},
-            {"arrived", "Driver has arrived at the destination"},
-            {"arrivedatbranch", "Driver has arrived at the pickup location"},
-            {"done", "Kitchen has finished cooking your order"},
-        };
     }
 }

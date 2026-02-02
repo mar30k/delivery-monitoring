@@ -1,39 +1,67 @@
 ﻿@model List<CompletedOrders>
-
 @functions {
-    string GetActivityColor(string name)
+    private static readonly IReadOnlyDictionary<string, string> StatusColors =
+    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
-        if (string.IsNullOrWhiteSpace(name)) return "#64748b";
+        ["requested"] = "deepskyblue",
+        ["arrivedatbranch"] = "orange",
+        ["assigned"] = "lawngreen",
+        ["declined"] = "red",
+        ["accepted"] = "seagreen",
+        ["arrived"] = "#F7BEA2",
+        ["ontheway"] = "darkorange",
+        ["drivernotfound"] = "red",
+        ["sos"] = "darkred",
+        ["default"] = "yellow"
+    };
 
-        // 1. FNV-1a Hash for high distribution
-        uint hash = 2166136261;
-        foreach (char c in name)
+    private const string FallbackColor = "#64748b";
+
+    // HSL tuning
+    private const int Saturation = 80; // vibrant but controlled
+    private const int Lightness = 60; // bright and readable
+    private const double GoldenRatioConjugate = 0.618033988749895;
+
+    public static string GetActivityColor(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return FallbackColor;
+
+        // Known status → fixed color
+        if (StatusColors.TryGetValue(name, out var predefinedColor))
+            return predefinedColor;
+
+        // FNV-1a hash (fast + good distribution)
+        unchecked
         {
-            hash = (hash ^ c) * 16777619;
+            uint hash = 2166136261;
+            foreach (char c in name)
+            {
+                hash ^= c;
+                hash *= 16777619;
+            }
+
+            // Evenly distribute hue using golden ratio
+            double hue = (hash * GoldenRatioConjugate) % 1.0;
+            int h = (int)(hue * 360);
+
+            return $"hsl({h}, {Saturation}%, {Lightness}%)";
         }
-
-        // 2. Golden Ratio for even spacing on the color wheel
-        double goldenRatioConjugate = 0.618033988749895;
-        double hue = (hash * goldenRatioConjugate) % 1.0;
-        int h = (int)(hue * 360);
-
-        // 3. Brighter "Normal" Palette
-        // Saturation: 65% (Lively but controlled)
-        // Lightness: 68% (Bright enough to feel clean, not dim)
-        int s = 80;
-        int l = 60;
-
-        return $"hsl({h}, {s}%, {l}%)";
     }
-
     string FormatDuration(double totalSeconds)
     {
         if (totalSeconds <= 0) return "0s";
         if (totalSeconds < 60) return $"{(int)totalSeconds}s";
         TimeSpan t = TimeSpan.FromSeconds(totalSeconds);
-        return t.TotalHours >= 1
-            ? $"{(int)t.TotalHours}h {t.Minutes}m {t.Seconds}s"
-            : $"{t.Minutes}m {t.Seconds}s";
+        int hours = (int)t.TotalHours;
+        int minutes = t.Minutes;
+        int seconds = t.Seconds;
+
+        if (hours > 0)
+            return $"{hours}h {minutes}m {seconds}s";
+        if (minutes > 0)
+            return $"{minutes}m {seconds}s";
+        return $"{seconds}s";
     }
 }
 
@@ -53,10 +81,37 @@
         </div>
         @foreach (var order in Model ?? new List<CompletedOrders>())
         {
+            var activities = order.Activities;
+
+            bool? isOnTime = activities?.IsOnTime;
+
+
+            string deliveryBgColor = isOnTime switch
+            {
+                true => "#22c55e", // green
+                false => "#ef4444", // red
+                _ => "#64748b"  // unknown / pending
+            };
+
+            TimeSpan? duration =
+            order.Activities?.ActualArrival
+            - order.Activities?.StartTime;
+
+            var totalMinutes = duration?.TotalMinutes;
+            var totalSeconds = duration?.TotalSeconds;
+            var formatted = duration is TimeSpan ts
+            ? ts.TotalHours >= 1
+            ? $"{(int)ts.TotalHours}h {ts.Minutes}m {ts.Seconds}s"
+            : $"{ts.Minutes}m {ts.Seconds}s"
+            : "--";
+
+
+
+
             var acts = order.Activities?.Activity?.OrderBy(a => a.Time).ToList() ?? new List<ActivityResponse>();
 
             <div class="order-strip paged-order mt-2">
-                <div class="strip-header">
+                <div class="strip-header" >
                     <div class="header-data-scroll">
                         <a class="voucher-anchor text-decoration-none" href="/orderDetail?voucher=@order.VoucherCode" target="_blank">#@order.VoucherCode</a>
                         <div class="meta-item">@order.CustomerName</div>
@@ -64,11 +119,10 @@
                         <div class="meta-item">@order.CompanyName</div>
                         <div class="meta-item">@order.CustomerPhoneNumber</div>
                         <div class="meta-item">@order.OrderDate.ToString("MMM dd hh:mm:ss tt")</div>
+                        <div class="meta-item p-1 rounded rounded-2 badge" style="background-color:@deliveryBgColor;color:white">@formatted</div>
                     </div>
                 </div>
                 @{
-                    bool useNextActivityDuration = true;
-
                     double minWidth = 90;
                     double maxWidth = 420;
                     double logScaleFactor = 40;
@@ -79,24 +133,19 @@
                     @for (int i = 0; i < acts.Count; i++)
                     {
                         var a = acts[i];
-                        var color = GetActivityColor(a.ActivityName ?? string.Empty);
+                        var color = GetActivityColor(a.ActivityName?.ToLower() ?? string.Empty);
 
                         double durationSec = 0;
 
-                        if (useNextActivityDuration)
+                        if (i < acts.Count - 1 && a.Time.HasValue && acts[i + 1].Time.HasValue)
                         {
-                            if (i < acts.Count - 1 && a.Time.HasValue && acts[i + 1].Time.HasValue)
-                            {
-                                durationSec = (acts[i + 1].Time!.Value - a.Time.Value).TotalSeconds;
-                            }
+                            durationSec = (acts[i + 1].Time!.Value - a.Time.Value).TotalSeconds;
                         }
-                        else
+
+                        @* if (i > 0 && a.Time.HasValue && acts[i - 1].Time.HasValue)
                         {
-                            if (i > 0 && a.Time.HasValue && acts[i - 1].Time.HasValue)
-                            {
-                                durationSec = (a.Time.Value - acts[i - 1].Time!.Value).TotalSeconds;
-                            }
-                        }
+                            durationSec = (a.Time.Value - acts[i - 1].Time!.Value).TotalSeconds;
+                        } *@
 
                         double widthPx = baseWidth + (Math.Log(durationSec + 1) * logScaleFactor);
                         widthPx = Math.Clamp(widthPx, minWidth, maxWidth);
