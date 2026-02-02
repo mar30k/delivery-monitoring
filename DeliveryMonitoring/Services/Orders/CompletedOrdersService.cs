@@ -1,4 +1,5 @@
 ﻿using DeliveryMonitoring.Constants;
+using DeliveryMonitoring.Constants.Enums;
 using DeliveryMonitoring.Controllers;
 using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
@@ -72,13 +73,13 @@ namespace DeliveryMonitoring.Services.Orders
                 foreach (var order in orders)
                 {
                     OrderHelpers.PrepareDisplayValues(order);
-                    order.TableId = ((DeliveryOrderTypes)@params.Type) switch
+                    order.TableId = ((DeliveryOrderType)@params.Type) switch
                     {
-                        DeliveryOrderTypes.PickUpAtBranch => TakeAwayTableId,
-                        DeliveryOrderTypes.InHouseDining => DineInTableId,
-                        DeliveryOrderTypes.DeliveryToLocation => DeliveryTableId,
-                        DeliveryOrderTypes.ScheduledDeliveryToLocation => ScheduledDeliveryTableId,
-                        DeliveryOrderTypes.ScheduledPickUp => ScheduledTakeawayTableId,
+                        DeliveryOrderType.PickUpAtBranch => TakeAwayTableId,
+                        DeliveryOrderType.InHouseDining => DineInTableId,
+                        DeliveryOrderType.DeliveryToLocation => DeliveryTableId,
+                        DeliveryOrderType.ScheduledDeliveryToLocation => ScheduledDeliveryTableId,
+                        DeliveryOrderType.ScheduledPickUp => ScheduledTakeawayTableId,
                         _ => "N/A"
                     };
                 }
@@ -100,10 +101,10 @@ namespace DeliveryMonitoring.Services.Orders
                 bool skipCache = OrderHelpers.IsTodayIncluded(@params) || @params.IsClear;
 
 
-                var dineInTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderTypes.InHouseDining));
-                var takeAwayTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderTypes.PickUpAtBranch));
-                var scheduledDeliveryTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderTypes.ScheduledDeliveryToLocation));
-                var scheduledPickUpTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderTypes.ScheduledPickUp));
+                var dineInTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderType.InHouseDining));
+                var takeAwayTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderType.PickUpAtBranch));
+                var scheduledDeliveryTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderType.ScheduledDeliveryToLocation));
+                var scheduledPickUpTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderType.ScheduledPickUp));
                 var deliveryTask = _apiRequestService.GetCompletedOrdersAsync(skipCache);
 
                 await Task.WhenAll(dineInTask, takeAwayTask, scheduledDeliveryTask, scheduledPickUpTask, deliveryTask);
@@ -175,7 +176,7 @@ namespace DeliveryMonitoring.Services.Orders
         {
 
             var deliveryTask = GetCompletedOrdersAsync(@params);
-            var scheduledTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderTypes.ScheduledDeliveryToLocation));
+            var scheduledTask = GetOrdersByTypeAsync(CopyWithType(@params, (int)DeliveryOrderType.ScheduledDeliveryToLocation));
 
             await Task.WhenAll(deliveryTask, scheduledTask);
 

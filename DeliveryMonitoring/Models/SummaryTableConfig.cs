@@ -1,4 +1,4 @@
-﻿using DeliveryMonitoring.Constants;
+﻿using DeliveryMonitoring.Constants.Enums;
 
 namespace DeliveryMonitoring.Models
 {

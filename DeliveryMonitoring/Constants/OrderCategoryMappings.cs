@@ -50,5 +50,23 @@
             { "Robbery", "Very Critical" },
             { "Delayed Delivery", "Very Critical" }
         };
+
+        public static readonly Dictionary<string, string> DeliveryStatusMessages = new()
+        {
+            { "sent", "Order Placed" },
+            { "prepared", "Your order invoice is printed" },
+            { "received", "Order received and is being prepared" },
+            { "accepted", "Order delivery accepted by the driver" },
+            { "seen", "Order delivery accepted by the supervisor" },
+            { "declined", "Order delivery declined by the driver" },
+            { "assigned", "Order delivery assigned to a driver" },
+            { "drivernotfound", "No driver found for your delivery" },
+            { "completed", "Order delivery completed" },
+            { "sos", "Delivery issue reported" },
+            { "ontheway", "Your order is picked up and the driver is on the way" },
+            { "arrived", "Driver has arrived at the destination" },
+            { "arrivedatbranch", "Driver has arrived at the pickup location" },
+            { "done", "Kitchen has finished cooking your order" },
+        };
     }
 }

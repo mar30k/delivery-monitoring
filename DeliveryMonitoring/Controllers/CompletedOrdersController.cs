@@ -1,4 +1,5 @@
 ﻿using DeliveryMonitoring.Constants;
+using DeliveryMonitoring.Constants.Enums;
 using DeliveryMonitoring.Filters;
 using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
@@ -101,16 +102,16 @@ namespace DeliveryMonitoring.Controllers
         [Route("/orderdetail")]
         public async Task<IActionResult> CompletedOrderDetail(string voucher, string type = "")
         {
-            DeliveryOrderTypes orderType = type switch
+            DeliveryOrderType orderType = type switch
             {
-                TakeAwayTableId => DeliveryOrderTypes.PickUpAtBranch,
-                DineInTableId => DeliveryOrderTypes.InHouseDining,
-                ScheduledDeliveryTableId => DeliveryOrderTypes.ScheduledDeliveryToLocation,
-                ScheduledTakeawayTableId => DeliveryOrderTypes.ScheduledPickUp,
-                _ => DeliveryOrderTypes.DeliveryToLocation
+                TakeAwayTableId => DeliveryOrderType.PickUpAtBranch,
+                DineInTableId => DeliveryOrderType.InHouseDining,
+                ScheduledDeliveryTableId => DeliveryOrderType.ScheduledDeliveryToLocation,
+                ScheduledTakeawayTableId => DeliveryOrderType.ScheduledPickUp,
+                _ => DeliveryOrderType.DeliveryToLocation
             };
 
-            var result = orderType == DeliveryOrderTypes.DeliveryToLocation
+            var result = orderType == DeliveryOrderType.DeliveryToLocation
                 ? await _apiRequestService.GetCompletedOrdersAsync(skipCache: false)
                 : await _apiRequestService.GetOrdersByTypeAsync((int)orderType, skipCache:false);
 

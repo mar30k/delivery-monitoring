@@ -1,4 +1,4 @@
-﻿using DeliveryMonitoring.Constants;
+﻿using DeliveryMonitoring.Constants.Enums;
 using DeliveryMonitoring.Helpers;
 using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services.SummaryReport;

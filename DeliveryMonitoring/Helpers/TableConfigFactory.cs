@@ -1,4 +1,5 @@
 ﻿using DeliveryMonitoring.Constants;
+using DeliveryMonitoring.Constants.Enums;
 using DeliveryMonitoring.Models;
 
 namespace DeliveryMonitoring.Helpers
@@ -47,12 +48,12 @@ namespace DeliveryMonitoring.Helpers
         public static TableConfig CreateReport(ReportByOrderType type) =>
             type switch
             {
-                ReportByOrderType.Dinein => new TableConfig
+                ReportByOrderType.DineIn => new TableConfig
                 {
                     Type = "Dine-in",
                     Title = "Dine-in Report",
                     TableId = "dinein",
-                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.InHouseDining}",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderType.InHouseDining}",
                     SheetName = "Dine-in Report"
                 },
                 ReportByOrderType.ScheduledDeliveryToLocation => new TableConfig
@@ -60,7 +61,7 @@ namespace DeliveryMonitoring.Helpers
                     Type = "ScheduledDeliveryToLocation",
                     Title = "Scheduled Delivery To Location Report",
                     TableId = "sDelivery",
-                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.ScheduledDeliveryToLocation}",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderType.ScheduledDeliveryToLocation}",
                     SheetName = "Scheduled Delivery Report"
                 },
                 ReportByOrderType.ScheduledPickUp => new TableConfig
@@ -68,7 +69,7 @@ namespace DeliveryMonitoring.Helpers
                     Type = "ScheduledPickUp",
                     Title = "Scheduled Takeaway Report",
                     TableId = "sTakeaway",
-                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.ScheduledPickUp}",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderType.ScheduledPickUp}",
                     SheetName = "Scheduled Takeaway Report"
                 },
                 ReportByOrderType.Takeaway => new TableConfig
@@ -76,7 +77,7 @@ namespace DeliveryMonitoring.Helpers
                     Type = "Takeaway",
                     Title = "Takeaway Report",
                     TableId = "takeaway",
-                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.PickUpAtBranch}",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderType.PickUpAtBranch}",
                     SheetName = "Takeaway Report"
                 },
                 ReportByOrderType.All => new TableConfig
@@ -109,10 +110,10 @@ namespace DeliveryMonitoring.Helpers
                 },
                 new ()
                 {
-                    Type = DeliveryOrderTypes.ScheduledDeliveryToLocation.ToString(),
+                    Type = DeliveryOrderType.ScheduledDeliveryToLocation.ToString(),
                     Title = "Scheduled Delivery",
                     TableId = AppConstants.TableIds.ScheduledDelivery,
-                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.ScheduledDeliveryToLocation}",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderType.ScheduledDeliveryToLocation}",
                     SheetName = "_DeliveryOrders"
                 },
                 new ()
@@ -120,16 +121,16 @@ namespace DeliveryMonitoring.Helpers
                     Type = "Takeaway",
                     Title = "Takeaway",
                     TableId = AppConstants.TableIds.TakeAway,
-                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.PickUpAtBranch}",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderType.PickUpAtBranch}",
                     SheetName = "_NonDeliveryOrders"
                 },
                 
                 new ()
                 {
-                    Type = DeliveryOrderTypes.ScheduledPickUp.ToString(),
+                    Type = DeliveryOrderType.ScheduledPickUp.ToString(),
                     Title = "Scheduled Pick Up",
                     TableId = AppConstants.TableIds.ScheduledPickUp,
-                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.ScheduledPickUp}",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderType.ScheduledPickUp}",
                     SheetName = "_NonDeliveryOrders"
                 },
                 new()
@@ -137,7 +138,7 @@ namespace DeliveryMonitoring.Helpers
                     Type = "Dine-in",
                     Title = "Dine-in",
                     TableId = AppConstants.TableIds.DineIn,
-                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderTypes.InHouseDining}",
+                    AjaxUrl = $"/getordersbytype?type={(int)DeliveryOrderType.InHouseDining}",
                     SheetName = "_NonDeliveryOrders"
                 }
                 

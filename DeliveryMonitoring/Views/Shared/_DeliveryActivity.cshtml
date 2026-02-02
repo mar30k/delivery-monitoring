@@ -140,11 +140,8 @@
 @{
     var gpsActivities = Model?.ActivityResponse?
         .Where(a => a.Latitude.HasValue && a.Longitude.HasValue && a.Latitude != 0 && a.Longitude != 0 && a.Name != "Order Placed")
-        .Select((a, i) => new { index = i, name = a.Name, lat = a.Latitude.Value, lng = a.Longitude.Value, time = a.Time })
+        .Select((a, i) => new { index = i, name = a.Name, lat = a.Latitude, lng = a.Longitude, time = a.Time })
         .ToList();
-
-    DateTime? previousTime = null;
-    TimeSpan? lastGpsTime = null;
 }
 
 <div class="uk-container uk-padding">
