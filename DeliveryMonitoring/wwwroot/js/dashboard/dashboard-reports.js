@@ -1,42 +1,65 @@
 ﻿const { DashboardCharts } = await import(`/js/dashboard/dashboard-charts.js?v=${Date.now()}`);
 const { DashboardUtils } = await import(`/js/dashboard/dashboard-utils.js?v=${Date.now()}`);
+const { DashboardScroll } = await import(`/js/dashboard/dashboard-scroll.js?v=${Date.now()}`);
 
 const COLORS = DashboardCharts.COLORS;
 const renderChart = DashboardCharts.renderChart;
+
+// Global cache to allow targeted chart updates without re-fetching
+let cachedOrdersData = [];
+
 bootstrap();
+
 async function bootstrap() {
-    loadDashboard();
+    try {
+        // Initial load
+        await loadDashboard();
+    } catch (error) {
+        console.error("Dashboard failed to load", error);
+    } finally {
+        // Hide loader with a slight delay for a smoother transition
+        setTimeout(() => {
+            const loader = document.getElementById('dashboardLoader');
+            if (loader) loader.classList.add('loader-hidden');
+        }, 600);
+    }
+    if (window.isAnalyticsPage)
+        DashboardScroll.init();
+    // Background interval (don't show loader for these)
     setInterval(loadDashboard, 5 * 60 * 1000);
 }
 const Processors = {
-    // Chart 1: Today's Traffic Only
-    todayHourly: (data, referenceDate) => {
+    // 1. Traffic Pattern: Filtered by the Moment object from the date picker
+    todayHourly: (data, referenceMoment) => {
         const hours = data.reduce((acc, o) => {
-            const orderDate = new Date(o.requestCreatedAt);
-            if (orderDate.toDateString() === referenceDate) {
-                const hr = orderDate.getHours();
+            const orderDate = moment(o.requestCreatedAt);
+            if (orderDate.isSame(referenceMoment, 'day')) {
+                const hr = orderDate.hour();
                 acc[hr] = (acc[hr] || 0) + 1;
             }
             return acc;
         }, {});
-        return { labels: Array.from({ length: 24 }, (_, i) => `${i}:00`), values: Array.from({ length: 24 }, (_, i) => hours[i] || 0) };
+        return {
+            labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+            values: Array.from({ length: 24 }, (_, i) => hours[i] || 0)
+        };
     },
 
-    // Chart 2: Daily Volume (30 Days)
+    // 2. Daily Volume (30 Days)
     daily30: (data) => {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const filtered = data.filter(o => new Date(o.requestCreatedAt) >= thirtyDaysAgo);
-        const grouped = filtered.reduce((acc, o) => {
-            const date = new Date(o.requestCreatedAt).toISOString().split('T')[0];
-            acc[date] = (acc[date] || 0) + 1;
-            return acc;
-        }, {});
+        const thirtyDaysAgo = moment().subtract(30, 'days');
+        const grouped = data
+            .filter(o => moment(o.requestCreatedAt).isAfter(thirtyDaysAgo))
+            .reduce((acc, o) => {
+                const date = moment(o.requestCreatedAt).format('YYYY-MM-DD');
+                acc[date] = (acc[date] || 0) + 1;
+                return acc;
+            }, {});
         const sorted = Object.keys(grouped).sort();
         return { labels: sorted, values: sorted.map(k => grouped[k]) };
     },
 
-    // Chart 3: Payment Split
+    // 3. Payment Split
     payments: (data) => {
         const counts = data.reduce((acc, o) => {
             const m = o.paymentMethod || 'Unknown';
@@ -46,12 +69,12 @@ const Processors = {
         return { labels: Object.keys(counts), values: Object.values(counts) };
     },
 
-    // Chart 4: Monthly History
+    // 4. Monthly History
     monthly: (data) => {
         const grouped = data.reduce((acc, o) => {
-            const d = new Date(o.requestCreatedAt);
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            const label = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+            const m = moment(o.requestCreatedAt);
+            const key = m.format('YYYY-MM');
+            const label = m.format('MMM YYYY');
             if (!acc[key]) acc[key] = { label, val: 0 };
             acc[key].val += 1;
             return acc;
@@ -60,63 +83,71 @@ const Processors = {
         return { labels: sorted.map(k => grouped[k].label), values: sorted.map(k => grouped[k].val) };
     },
 
-    // Chart 5: Company Revenue
+    // 5. Company Revenue
     partners: (data) => {
         const rev = data.reduce((acc, o) => {
-            acc[o.companyName] = (acc[o.companyName] || 0) + (o.totalAmount || 0);
+            acc[o.companyName] = (acc[o.companyName] || 0) + (parseFloat(o.totalAmount) || 0);
             return acc;
         }, {});
         const sorted = Object.entries(rev).sort((a, b) => b[1] - a[1]).slice(0, 20);
         return { labels: sorted.map(x => x[0]), values: sorted.map(x => x[1]) };
     },
 
-    // Chart 6: Global Peak Hours (All Time)
+    // 6. Global Peak Hours
     globalPeaks: (data) => {
         const hours = data.reduce((acc, o) => {
-            const hr = new Date(o.requestCreatedAt).getHours();
+            const hr = moment(o.requestCreatedAt).hour();
             acc[hr] = (acc[hr] || 0) + 1;
             return acc;
         }, {});
         return { labels: Array.from({ length: 24 }, (_, i) => `${i}:00`), values: Array.from({ length: 24 }, (_, i) => hours[i] || 0) };
     },
 
-    // Chart 7: Daily Volume (7 Days)
-    weekly: (data, referenceDate) => {
-        const days = Array.from({ length: 7 }, (_, i) =>
-            new Intl.DateTimeFormat(undefined, { weekday: 'long' })
-                .format(new Date(1970, 0, 4 + i))
-        );
+    // 7. Daily Volume (7 Days)
+    weekly: (data, referenceMoment) => {
         const last7 = [];
         for (let i = 6; i >= 0; i--) {
-            const d = new Date(referenceDate);
-            d.setDate(d.getDate() - i);
-            last7.push({ dateStr: d.toDateString(), dayName: days[d.getDay()], count: 0 });
+            const d = moment(referenceMoment).subtract(i, 'days');
+            last7.push({
+                dateKey: d.format('YYYY-MM-DD'),
+                dayName: d.format('dddd'),
+                count: 0
+            });
         }
         data.forEach(o => {
-            const dStr = new Date(o.requestCreatedAt).toDateString();
-
-            const match = last7.find(x => x.dateStr === dStr);
+            const dStr = moment(o.requestCreatedAt).format('YYYY-MM-DD');
+            const match = last7.find(x => x.dateKey === dStr);
             if (match) match.count++;
         });
         return { labels: last7.map(x => x.dayName), values: last7.map(x => x.count) };
-    },
+    }
 };
 
+// EXPOSED FUNCTION: Targets only the traffic chart update
+window.updateTrafficChart = function () {
+    const datePicker = document.getElementById('trafficDateSelector');
+    if (!datePicker || !cachedOrdersData.length) return;
 
-function updateStats(data, refDate) {
-    // 1. Ensure we have a proper string for comparison and a Date object for math
-    const referenceDate = new Date(refDate);
-    const todayStr = referenceDate.toDateString();
+    const selectedMoment = moment(datePicker.value);
+    const trafficData = Processors.todayHourly(cachedOrdersData, selectedMoment);
 
-    // 2. Setup Cutoffs
-    const threeMonthsAgo = new Date(referenceDate);
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    renderChart(
+        "hourlyTraficPtterToday",
+        "bar",
+        trafficData.labels,
+        trafficData.values,
+        `Orders for ${selectedMoment.format('MMM DD, YYYY')}`,
+        COLORS.info
+    );
+};
 
-    // 3. Filter Data
-    const todayData = data.filter(o => new Date(o.requestCreatedAt).toDateString() === todayStr);
-    const threeMonthData = data.filter(o => new Date(o.requestCreatedAt) >= threeMonthsAgo);
+function updateStats(data, referenceMoment) {
+    const todayStr = referenceMoment.format('YYYY-MM-DD');
+    const threeMonthsAgo = moment(referenceMoment).subtract(3, 'months');
 
-    // 4. Helper Functions
+    const todayData = data.filter(o => moment(o.requestCreatedAt).isSame(referenceMoment, 'day'));
+    const threeMonthData = data.filter(o => moment(o.requestCreatedAt).isAfter(threeMonthsAgo));
+
     const getStatus = (arr) => {
         let onTime = 0, delayed = 0;
         arr.forEach(o => {
@@ -134,80 +165,70 @@ function updateStats(data, refDate) {
         return valid.length ? (valid.reduce((s, o) => s + parseFloat(o[key]), 0) / valid.length) : 0;
     };
 
-    // 5. Run Calculations
     const globalPerf = getStatus(data);
     const todayPerf = getStatus(todayData);
-
     const totalRev = data.reduce((s, o) => s + (parseFloat(o.totalAmount) || 0), 0);
     const todayRev = todayData.reduce((s, o) => s + (parseFloat(o.totalAmount) || 0), 0);
 
-    // Helper to update text safely
     const updateText = (id, val) => {
         const el = document.getElementById(id);
         if (el) el.innerText = val;
     };
 
-    // 6. Update UI
-    // Revenue & Counts
     updateText('stat-revenue', `ETB ${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
     updateText('stat-revenue-today', `ETB ${todayRev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-
     updateText('stat-count', data.length.toLocaleString());
     updateText('stat-count-today', todayData.length.toLocaleString());
-
-    // Performance (Split Card)
     updateText('stat-ontime', globalPerf.onTime.toLocaleString());
     updateText('stat-ontime-today', todayPerf.onTime.toLocaleString());
-
     updateText('stat-delayed', globalPerf.delayed.toLocaleString());
     updateText('stat-delayed-today', todayPerf.delayed.toLocaleString());
-
-    // Averages (3-Month vs Today)
     updateText('stat-duration', `${calcAvg(threeMonthData, 'duration').toFixed(0)}m`);
     updateText('stat-duration-today', `${calcAvg(todayData, 'duration').toFixed(0)}m`);
-
     updateText('stat-distance', `${calcAvg(threeMonthData, 'distance').toFixed(1)}km`);
     updateText('stat-distance-today', `${calcAvg(todayData, 'distance').toFixed(1)}km`);
-
-    return todayStr;
 }
+
 async function loadDashboard() {
-    // Parallel fetch for server time and orders to save time
     const [timeResult, orderResult] = await Promise.all([
         DashboardUtils.fetchJson("/serverTime"),
         DashboardUtils.fetchJson("/getCompletedOrders")
     ]);
 
     if (!orderResult.isSuccessful) return;
+    cachedOrdersData = orderResult.data;
 
-    const data = orderResult.data;
+    const refMoment = timeResult.serverLocalNow ? moment(timeResult.serverLocalNow) : moment();
+    const todayFormatted = refMoment.format('YYYY-MM-DD');
 
-    // Process the reference date from the helper result
-    const refDate = timeResult.serverLocalNow
-        ? new Date(timeResult.serverLocalNow)
-        : new Date();
-    const refDateStr = refDate.toDateString();
+    // Set default and max values for the date picker
+    const datePicker = document.getElementById('trafficDateSelector');
+    if (datePicker) {
+        if (!datePicker.value) datePicker.value = todayFormatted;
+        datePicker.max = todayFormatted; // Prevent selecting future dates
+    }
 
-    // 1. Update Text KPIs
-    updateStats(data, refDate);
+    // 1. Update text-based KPIs
+    updateStats(cachedOrdersData, refMoment);
 
-    // 2. Prepare Datasets (Consistent Mapping)
+    // 2. Prepare remaining datasets
     const ds = {
-        weekly: Processors.weekly(data, refDate),
-        today: Processors.todayHourly(data, refDateStr),
-        daily30: Processors.daily30(data),
-        payment: Processors.payments(data),
-        monthly: Processors.monthly(data),
-        partner: Processors.partners(data),
-        peaks: Processors.globalPeaks(data)
+        weekly: Processors.weekly(cachedOrdersData, refMoment),
+        daily30: Processors.daily30(cachedOrdersData),
+        payment: Processors.payments(cachedOrdersData),
+        monthly: Processors.monthly(cachedOrdersData),
+        partner: Processors.partners(cachedOrdersData),
+        peaks: Processors.globalPeaks(cachedOrdersData)
     };
 
-    // 3. Render Charts
+    // 3. Render all charts
     renderChart("weeklyPerformanceChart", "line", ds.weekly.labels, ds.weekly.values, "Weekly Orders", COLORS.primary);
-    renderChart("hourlyTraficPtterToday", "bar", ds.today.labels, ds.today.values, "Today's Orders", COLORS.info);
     renderChart("dailyOrdersChart", "line", ds.daily30.labels, ds.daily30.values, "Daily Total", COLORS.primary);
     renderChart("paymentMethodChart", "doughnut", ds.payment.labels, ds.payment.values, "Methods", null, true);
     renderChart("monthlyTrendChart", "line", ds.monthly.labels, ds.monthly.values, "Monthly Total", COLORS.warning);
     renderChart("companyRevenueChart", "bar", ds.partner.labels, ds.partner.values, "Revenue", COLORS.success);
     renderChart("peakHourChart", "bar", ds.peaks.labels, ds.peaks.values, "Global Trend", COLORS.purple);
+
+    // 4. Specifically trigger the Traffic Chart logic
+    window.updateTrafficChart();
 }

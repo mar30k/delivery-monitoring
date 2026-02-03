@@ -57,7 +57,7 @@ const Renderers = {
             td.setAttribute('data-iso', displayValue);
 
             td.innerText = displayValue;
-            td.classList.add('text-center');
+            td.classList.add('text-center', 'text-nowrap');
         }
     }),
     amount: (d, type) => Renderers.number(d, type, 2, false),
@@ -68,8 +68,18 @@ const Renderers = {
         const hue = ((value - 1) / 4) * 120;
         return `<span style="color:hsl(${hue},70%,40%); font-weight:600;">${value.toFixed(2)}</span>`;
     },
-    distance: (d, type) => Renderers.number(d, type, 2) + ' km',
-    duration: (d, type) => Renderers.number(d, type, 2) + ' min',
+    distance: (d, type) => {
+        const val = Renderers.number(d, type, 2);
+        return type === 'display'
+            ? `<span class="text-nowrap">${val} km</span>`
+            : val;
+    },
+    duration: (d, type) => {
+        const val = Renderers.number(d, type, 2);
+        return type === 'display'
+            ? `<span class="text-nowrap">${val} min</span>`
+            : val;
+    },
     orDefault: function (data, type) {
         // Keep sort and type operations intact
         if (type === 'sort' || type === 'type') return data || '';
@@ -88,10 +98,12 @@ const Renderers = {
             </a>
         </div>`,
     voucherCode: (data) => !data ? "N/A" : `
-            ${data}
-            <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-secondary text-decoration-none">
-                <i class="bi bi-clipboard"></i>
-            </a>`,
+            <div class="text-nowrap">
+                ${data}
+                <a onclick="copyToClipboard('${data}')" title="Copy to clipboard" class="text-secondary text-decoration-none">
+                    <i class="bi bi-clipboard"></i>
+                </a>
+            </div>`,
     purposeSummary: function (data, type, row) {
         if (!data || !Array.isArray(data) || data.length === 0) return "N/A";
 
