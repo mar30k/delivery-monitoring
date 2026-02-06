@@ -193,7 +193,7 @@ namespace DeliveryMonitoring.Services.Orders
         private static OrderQueryParams CopyWithType(OrderQueryParams source, int type) => new()
         {
             Type = type,
-            SType = source.SType,
+            SummaryType = source.SummaryType,
             StartDate = source.StartDate,
             EndDate = source.EndDate,
             IsClear = source.IsClear

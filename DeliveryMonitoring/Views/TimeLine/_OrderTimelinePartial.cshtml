@@ -16,56 +16,42 @@
     };
 
     private const string FallbackColor = "#64748b";
-
-    // HSL tuning
-    private const int Saturation = 80; // vibrant but controlled
-    private const int Lightness = 60; // bright and readable
+    private const int Saturation = 80;
+    private const int Lightness = 60;
     private const double GoldenRatioConjugate = 0.618033988749895;
 
     public static string GetActivityColor(string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            return FallbackColor;
+        if (string.IsNullOrWhiteSpace(name)) return FallbackColor;
+        if (StatusColors.TryGetValue(name, out var predefinedColor)) return predefinedColor;
 
-        // Known status → fixed color
-        if (StatusColors.TryGetValue(name, out var predefinedColor))
-            return predefinedColor;
-
-        // FNV-1a hash (fast + good distribution)
         unchecked
         {
             uint hash = 2166136261;
-            foreach (char c in name)
-            {
-                hash ^= c;
-                hash *= 16777619;
-            }
-
-            // Evenly distribute hue using golden ratio
+            foreach (char c in name) { hash ^= c; hash *= 16777619; }
             double hue = (hash * GoldenRatioConjugate) % 1.0;
-            int h = (int)(hue * 360);
-
-            return $"hsl({h}, {Saturation}%, {Lightness}%)";
+            return $"hsl({(int)(hue * 360)}, {Saturation}%, {Lightness}%)";
         }
     }
+
     string FormatDuration(double totalSeconds)
     {
         if (totalSeconds <= 0) return "0s";
         if (totalSeconds < 60) return $"{(int)totalSeconds}s";
         TimeSpan t = TimeSpan.FromSeconds(totalSeconds);
         int hours = (int)t.TotalHours;
-        int minutes = t.Minutes;
-        int seconds = t.Seconds;
-
-        if (hours > 0)
-            return $"{hours}h {minutes}m {seconds}s";
-        if (minutes > 0)
-            return $"{minutes}m {seconds}s";
-        return $"{seconds}s";
+        if (hours > 0) return $"{hours}h {t.Minutes}m {t.Seconds}s";
+        if (t.Minutes > 0) return $"{t.Minutes}m {t.Seconds}s";
+        return $"{t.Seconds}s";
     }
 }
 
-<div class="precision-monitor p-1 px-lg-3 py-lg-1">
+@{
+    // Retrieve the state passed back from the Controller
+    var activeFilter = ViewData["CurrentFilter"]?.ToString() ?? "all";
+}
+
+<div class="precision-monitor p-1 px-lg-3 py-lg-1" data-active-filter="@activeFilter">
     @if (Model == null || !Model.Any())
     {
         <div class="text-center py-5">
@@ -76,42 +62,32 @@
     else
     {
         <div class="global-activity-filter d-flex justify-content-end">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="driver">Driver Only</button>
+            @* We set the 'active' class based on what the server told us *@
+            <button class="filter-btn @(activeFilter == "all" ? "active" : "")" data-filter="all">All</button>
+            <button class="filter-btn @(activeFilter == "driver" ? "active" : "")" data-filter="driver">Driver Only</button>
         </div>
+
         @foreach (var order in Model ?? new List<CompletedOrders>())
         {
             var activities = order.Activities;
-
             bool? isOnTime = activities?.IsOnTime;
-
 
             string deliveryBgColor = isOnTime switch
             {
-                true => "#22c55e", // green
-                false => "#ef4444", // red
-                _ => "#64748b"  // unknown / pending
+                true => "#22c55e",
+                false => "#ef4444",
+                _ => "#64748b"
             };
 
-            TimeSpan? duration =
-            order.Activities?.ActualArrival
-            - order.Activities?.StartTime;
-
-            var totalMinutes = duration?.TotalMinutes;
-            var totalSeconds = duration?.TotalSeconds;
+            TimeSpan? duration = order.Activities?.ActualArrival - order.Activities?.StartTime;
             var formatted = duration is TimeSpan ts
-            ? ts.TotalHours >= 1
-            ? $"{(int)ts.TotalHours}h {ts.Minutes}m {ts.Seconds}s"
-            : $"{ts.Minutes}m {ts.Seconds}s"
+            ? ts.TotalHours >= 1 ? $"{(int)ts.TotalHours}h {ts.Minutes}m {ts.Seconds}s" : $"{ts.Minutes}m {ts.Seconds}s"
             : "--";
-
-
-
 
             var acts = order.Activities?.Activity?.OrderBy(a => a.Time).ToList() ?? new List<ActivityResponse>();
 
             <div class="order-strip paged-order mt-2">
-                <div class="strip-header" >
+                <div class="strip-header">
                     <div class="header-data-scroll">
                         <a class="voucher-anchor text-decoration-none" href="/orderDetail?voucher=@order.VoucherCode" target="_blank">#@order.VoucherCode</a>
                         <div class="meta-item">@order.CustomerName</div>
@@ -123,10 +99,7 @@
                     </div>
                 </div>
                 @{
-                    double minWidth = 90;
-                    double maxWidth = 420;
-                    double logScaleFactor = 40;
-                    double baseWidth = 20;
+                    double minWidth = 90; double maxWidth = 420; double logScaleFactor = 40; double baseWidth = 20;
                 }
 
                 <div class="activity-timeline-container">
@@ -134,7 +107,6 @@
                     {
                         var a = acts[i];
                         var color = GetActivityColor(a.ActivityName?.ToLower() ?? string.Empty);
-
                         double durationSec = 0;
 
                         if (i < acts.Count - 1 && a.Time.HasValue && acts[i + 1].Time.HasValue)
@@ -142,27 +114,16 @@
                             durationSec = (acts[i + 1].Time!.Value - a.Time.Value).TotalSeconds;
                         }
 
-                        @* if (i > 0 && a.Time.HasValue && acts[i - 1].Time.HasValue)
-                        {
-                            durationSec = (a.Time.Value - acts[i - 1].Time!.Value).TotalSeconds;
-                        } *@
-
                         double widthPx = baseWidth + (Math.Log(durationSec + 1) * logScaleFactor);
                         widthPx = Math.Clamp(widthPx, minWidth, maxWidth);
 
-                        string durationLabel = durationSec > 0
-                        ? FormatDuration(durationSec)
-                        : (i == acts.Count - 1 ? "End" : "Start");
+                        string durationLabel = durationSec > 0 ? FormatDuration(durationSec) : (i == acts.Count - 1 ? "End" : "Start");
 
                         <div class="activity-timeline-item"
                              data-lat="@a.Latitude"
                              data-lng="@a.Longitude"
                              style="width:@(widthPx)px; background-color:@color; flex-shrink:0">
-
-                            <div class="activity-title" title="@a.Name">
-                                @a.ActivityName
-                            </div>
-
+                            <div class="activity-title" title="@a.Name">@a.ActivityName</div>
                             <div class="activity-meta">
                                 <span class="activity-time">@a.Time?.ToString("hh:mm tt")</span>
                                 <span class="activity-separator">•</span>
@@ -171,7 +132,6 @@
                         </div>
                     }
                 </div>
-                            
             </div>
         }
     }
@@ -180,87 +140,8 @@
 @if (Model != null && Model.Any())
 {
     <div class="modern-pagination-wrapper">
-        <div class="pagination-info" id="paginationInfo">
-            Showing <b>0</b> - <b>0</b> of <b>0</b> orders
-        </div>
-        <div class="pagination-controls" id="paginationList">
-        </div>
+        <div class="pagination-info" id="paginationInfo">Showing <b>0</b> - <b>0</b> of <b>0</b> orders</div>
+        <div class="pagination-controls" id="paginationList"></div>
     </div>
 }
 
-<script>
-    (function () {
-        const filterButtons = document.querySelectorAll('.global-activity-filter .filter-btn');
-        filterButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                const filter = btn.dataset.filter;
-
-                document.querySelectorAll('.activity-timeline-item').forEach(item => {
-                    const lat = parseFloat(item.dataset.lat);
-                    const lng = parseFloat(item.dataset.lng);
-
-                    if (filter === 'all') {
-                        item.style.display = '';
-                    } else {
-                        // Show only driver-related activities
-                        if (!isNaN(lat) && !isNaN(lng) && lat > 0 && lng > 0) {
-                            item.style.display = '';
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    }
-                });
-            });
-        });
-
-
-        const pageSize = 15;
-        const orders = Array.from(document.querySelectorAll('.paged-order'));
-        const totalItems = orders.length;
-        const totalPages = Math.ceil(totalItems / pageSize);
-        let currentPage = 1;
-
-        const container = document.getElementById('paginationList');
-        const info = document.getElementById('paginationInfo');
-
-        function render() {
-            // 1. Update Visibility
-            const startIdx = (currentPage - 1) * pageSize;
-            const endIdx = startIdx + pageSize;
-
-            orders.forEach((order, index) => {
-                order.style.display = (index >= startIdx && index < endIdx) ? '' : 'none';
-            });
-
-            // 2. Update Info Text
-            info.innerHTML = `Showing <b>${startIdx + 1}</b> - <b>${Math.min(endIdx, totalItems)}</b> of <b>${totalItems}</b> orders`;
-
-            // 3. Build Pagination Buttons
-            let html = `<button class="pg-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="window.setPage(${currentPage - 1})">Prev</button>`;
-
-            for (let i = 1; i <= totalPages; i++) {
-                // Logic: Show first page, last page, and 1 page around current
-                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-                    html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" onclick="window.setPage(${i})">${i}</button>`;
-                } else if (i === currentPage - 2 || i === currentPage + 2) {
-                    html += `<span class="pg-dots">...</span>`;
-                }
-            }
-
-            html += `<button class="pg-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="window.setPage(${currentPage + 1})">Next</button>`;
-
-            container.innerHTML = html;
-        }
-
-        window.setPage = function(page) {
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            render();
-        };
-
-        if(totalItems > 0) render();
-    })();
-</script>

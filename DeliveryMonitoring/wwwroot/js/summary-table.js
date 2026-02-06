@@ -150,8 +150,8 @@ export const SummaryTable = (function () {
                     COL_INDEX.CONSIGNEE.TOTAL_DINEIN_ORDERS,
                     COL_INDEX.CONSIGNEE.TOTAL_TAKEAWAY_ORDERS,
                     COL_INDEX.CONSIGNEE.TOTAL_DELIVERY_ORDERS,
-                    COL_INDEX.CONSIGNEE.SCHEDULED_DELIVERY_AMOUNT,
-                    COL_INDEX.CONSIGNEE.SCHEDULED_TAKEAWAY_AMOUNT,
+                    COL_INDEX.CONSIGNEE.TOTAL_TAKEAWAY_ORDERS,
+                    COL_INDEX.CONSIGNEE.TOTAL_SCHEDULED_TAKEAWAY_ORDERS,
                     COL_INDEX.CONSIGNEE.TOTAL_MERCHANT_COUNT
                 ],
                 floatCols: [

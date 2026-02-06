@@ -30,7 +30,7 @@ namespace DeliveryMonitoring.Controllers
         {
             try
             {
-                var data = queryParams.SType switch
+                var data = queryParams.SummaryType switch
                 {
                     SummaryType.Merchant =>
                         (object) await _summaryReportService.MerchantSummary(queryParams),

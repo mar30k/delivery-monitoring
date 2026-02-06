@@ -21,10 +21,10 @@ namespace DeliveryMonitoring.Controllers
         }
         public IActionResult Index()
         {
-            return View();
+            return View(new List<CompletedOrders>());
         }
         [HttpGet("/gettimeLineOrder")]
-        public async Task<IActionResult> GetCompletedOrdersWithTimeline([FromQuery] OrderQueryParams @params)
+        public async Task<IActionResult> GetCompletedOrdersWithTimeline([FromQuery] OrderQueryParams @params, [FromQuery] string filter = "all")
         {
             var today = DateTime.Today;
 
@@ -50,6 +50,7 @@ namespace DeliveryMonitoring.Controllers
             var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(hashInput));
             var currentHash = Convert.ToBase64String(hashBytes);
             Response.Headers.Add("X-Data-Hash", currentHash);
+            ViewData["CurrentFilter"] = filter;
             return PartialView("_OrderTimelinePartial", orders);
         }
     }
