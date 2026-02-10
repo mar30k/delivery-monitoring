@@ -114,7 +114,7 @@ const deliveryColumns = [
         },
         render: (data, type, row) => Renderers.driver(type, row.driverPhoneNumber, row.assignedDriverName)
     }),
-    center({ data: "supervisorName", render: Renderers.orDefault }),
+    center({ data: "supervisorName", render: (d, t, r) => Renderers.supervisor( r, t) }),
     center({ data: "totalAmount", render: Renderers.amount }),
     center({ data: "tip", render: Renderers.amount }),
 

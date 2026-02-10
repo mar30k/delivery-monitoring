@@ -251,6 +251,21 @@ const Renderers = {
         if (type === 'sort' || type === 'type') return data || '';
         return data ? clean(data) : 'N/A';
     },
+    supervisor: (row, type) => {
+        const value = row.supervisorName ?? "N/A";
+        if (type === 'filter' || type === 'sort' || type === 'search') {
+            return value;
+        }
+        if (!row.supervisorName || row.supervisorName === 'N/A') {
+            return `
+            <a class="btn btn-outline-dark btn-sm text-decoration-none"
+               onclick="SupervisorAssignment.open('${row.voucherCode}', '', ${true})">
+                Assign
+            </a>
+        `;
+        }
+        return value;
+    },
     assign: (row, type) => {
         const value = row.supervisorName ?? row.supervisedBy ?? 'Unassigned';
         if (type === 'filter' || type === 'sort' || type === 'search') {
@@ -258,18 +273,18 @@ const Renderers = {
         }
         if (!row.supervisedBy) {
             return `
-            <a class="btn btn-outline-dark btn-sm"
+            <a class="btn btn-outline-dark text-decoration-none btn-sm"
                onclick="SupervisorAssignment.open('${row.voucherCode}', '')">
                 Assign
             </a>
         `;
         }
         return `
-        <a href="tel:${row.supervisedBy}">${value}</a>
-            <a onclick="SupervisorAssignment.open('${row.voucherCode}' , '${row.supervisedBy}')">
-            <i class="fa-solid fa-pen-to-square"></i>
-        </a>
-    `;
+            <a href="tel:${row.supervisedBy}">${value}</a>
+                <a onclick="SupervisorAssignment.open('${row.voucherCode}' , '${row.supervisedBy}')">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </a>
+        `;
     },
     driver: (type, phone, name) => {
         const displayValue = name || phone || 'N/A';

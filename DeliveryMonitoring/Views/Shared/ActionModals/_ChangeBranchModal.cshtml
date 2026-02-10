@@ -1,0 +1,47 @@
+﻿<!-- Change Branch Modal -->
+<div class="modal fade" id="changeBranchModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="changeBranchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title text-white" id="changeBranchModalLabel">
+                    Change Branch for <span id="companyNameLable" class="text-warning fw-normal"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Voucher Code (readonly) -->
+                <label for="voucherCodeInput" class="form-label fw-bold">Voucher Code:</label>
+                <input id="voucherCodeInput"
+                       type="text"
+                       class="form-control mb-3"
+                       placeholder="No voucher assigned"
+                       readonly />
+
+                <!-- Branch Select -->
+                <label for="branchSelectDropdown" class="form-label fw-bold">Select a branch:</label>
+                <select id="branchSelectDropdown" class="form-select mb-3">
+                    <option selected disabled>Loading branches...</option>
+                </select>
+
+                <!-- Remark Text Area -->
+                <label for="remarkInput" class="form-label fw-bold">Remark:</label>
+                <textarea id="remarkInput"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Add an optional remark..."></textarea>
+
+                <button class="btn btn-outline-success w-100 mt-2" onclick="BranchChange.confirm()">
+                    ✅ Change Branch
+                </button>
+
+                <div id="branchChangeLoading" class="text-center mt-4 d-none">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted mt-2">Processing branch change...</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</div>

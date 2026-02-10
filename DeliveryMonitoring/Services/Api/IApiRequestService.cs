@@ -32,6 +32,11 @@ namespace DeliveryMonitoring.Services.Api
         Task<HulubejeResponse<bool>> AssignOrderSupervisorAsync(AssignSuperVisorDTO assignSuperVisorDTO);
 
         /// <summary>
+        /// Assigns a supervisor to a completed order in history.
+        /// </summary>
+        Task<HulubejeResponse<bool>> AssignCompletedOrderSupervisorAsync(string voucherCode, int userId);
+
+        /// <summary>
         /// Changes the status of a specific order (e.g., pending, in transit, delivered).
         /// </summary>
         /// <param name="changeOrderStatusDto">Object containing order status change details.</param>

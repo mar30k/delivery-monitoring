@@ -23,6 +23,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly string _getDeviceControl;
         private readonly string _getRouteDetails;
         private readonly string _assignOrderSupervisor;
+        private readonly string _assignCompletedOrderSupervisor;
         private readonly string _changeorderbranch;
         private readonly string _updateOrderStatus;
         private readonly string _updateDriverDetails;
@@ -93,6 +94,7 @@ namespace DeliveryMonitoring.Services.Api
             _getDrivers = "drivers";
             _getDeviceControl = $"deviceControl";
             _assignOrderSupervisor = "orderRequests/assignOrderSupervisor";
+            _assignCompletedOrderSupervisor = "auth/manualassign";
             _updateOrderStatus = "orderRequests/updateOrderStatus";
             _getFilteredCustomers = "Consignee/filter?";
             _updateOnlineStatus = "auth/status?";
@@ -272,6 +274,35 @@ namespace DeliveryMonitoring.Services.Api
                 return JsonConvert.DeserializeObject<List<SupervisorsDTO>>(data) ?? new List<SupervisorsDTO>();
             }
             return new List<SupervisorsDTO>();
+        }
+
+        public async Task<HulubejeResponse<bool>> AssignCompletedOrderSupervisorAsync(string voucherCode, int userId)
+        {
+            try
+            {
+                var response =await _client.GetAsync($"{_assignCompletedOrderSupervisor}?voucherCode={Uri.EscapeDataString(voucherCode)}&userId={userId}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new HulubejeResponse<bool>
+                    {
+                        IsSuccessful = false,
+                        Data = false,
+                        ErrorMessages = new List<string> { $"Error {response.StatusCode}: {await response.Content.ReadAsStringAsync()}" }
+                    };
+                }
+                var responseBody = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<bool>(responseBody);
+                return new HulubejeResponse<bool> { IsSuccessful = true, Data = result };
+            }
+            catch (Exception ex)
+            {
+                return new HulubejeResponse<bool>
+                {
+                    IsSuccessful = false,
+                    Data = false,
+                    ErrorMessages = new List<string> { $"Exception: {ex.Message}" }
+                };
+            }
         }
         public Task<HulubejeResponse<bool>> AssignOrderSupervisorAsync(AssignSuperVisorDTO assignSupervisorDto)
             => SendAsync<bool>(_deliveryClient, _assignOrderSupervisor, assignSupervisorDto, HttpMethod.Patch);

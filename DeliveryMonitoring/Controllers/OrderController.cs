@@ -268,32 +268,6 @@ namespace DeliveryMonitoring.Controllers
             }
         }
 
-        [HttpPost("/checkRedispatchEligibility")]
-        public async Task<IActionResult> CheckRedispatchEligibility([FromBody] OrderDetail order)
-        {
-            if (string.IsNullOrWhiteSpace(order.VoucherCode))
-                return BadRequest(new { message = "Invalid voucher code." });
-
-            try
-            {
-                var orderDetail = await _apiRequestService.GetOrderDetailByVoucher(order.VoucherCode);
-                if (orderDetail == null)
-                    return NotFound(new { message = "Order not found." });
-
-                var isRedespatchable = new[] { "drivernotfound", "declined", "requested" ,"sos", "assigned" }
-                    .Contains(orderDetail?.Status, StringComparer.OrdinalIgnoreCase);
-
-                if (!isRedespatchable)
-                    return Conflict(new { message = "Order is not eligible for redispatch." });
-
-                return Ok();
-            }
-            catch
-            {
-                return StatusCode(500, new { message = "An unexpected error occurred." });
-            }
-        }
-
         
         [Route("/sendAlertMessage")]
         public async Task<IActionResult> SendAlertMessage([FromBody] AlertMessageDto messageDto)
@@ -408,14 +382,33 @@ namespace DeliveryMonitoring.Controllers
             }
         }
         [HttpPost("/assignSupervisor")]
-        public async Task<IActionResult> AssignSupervisor([FromBody] AssignSuperVisorDTO assignSuperVisorDTO)
+        [HttpPost]
+        public async Task<IActionResult> AssignSupervisor([FromBody] AssignSuperVisorDTO dto)
         {
-            if (assignSuperVisorDTO.voucherCode == null)
-                return BadRequest(new { message = "Invalid voucher code." });
-            var response = await _apiRequestService.AssignOrderSupervisorAsync(assignSuperVisorDTO);
-            if (!response.IsSuccessful)
-                return StatusCode(500, new { message = $"failed: {string.Join(',' , response.ErrorMessages ?? new List<string>())}" });
-            return Ok(response);
+            if (dto?.VoucherCode == null)
+                return BadRequest(new { message = "Invalid request or voucher code." });
+
+            HulubejeResponse<bool> result;
+            if (dto.IsCompletedOrder)
+            {
+                var supervisors = await _apiRequestService.GetSupervisorsAsync();
+                var supervisor = supervisors.FirstOrDefault(s => s.UserName == dto.PhoneNumber);
+
+                if (supervisor == null)
+                    return NotFound(new { message = "Supervisor not found." });
+
+                result = await _apiRequestService.AssignCompletedOrderSupervisorAsync(dto.VoucherCode, supervisor.Id);
+            }
+            else
+            {
+                result = await _apiRequestService.AssignOrderSupervisorAsync(dto);
+            }
+            if (!result.IsSuccessful)
+            {
+                var errors = string.Join(", ", result.ErrorMessages ?? new List<string>());
+                return StatusCode(500, new { message = $"Failed: {errors}" });
+            }
+            return Ok(result);
         }
         [HttpPost]
         [Route("/changeorderstatus")]

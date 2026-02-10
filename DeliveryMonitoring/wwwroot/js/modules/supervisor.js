@@ -4,10 +4,12 @@ const { DashboardApi } = await import(`./dashboard-api.js?v=${Date.now()}`);
 export const SupervisorAssignment = {
     voucherCode: null,
     currentSupervisorPhone: null,
+    isCompletedOrder: false,
 
-    open(voucherCode, currentSupervisorPhone) {
+    open(voucherCode, currentSupervisorPhone, isCompletedOrder) {
         this.voucherCode = voucherCode;
         this.currentSupervisorPhone = currentSupervisorPhone;
+        this.isCompletedOrder = isCompletedOrder;
         $("#assignVoucherCodeLabel").text(`- ${voucherCode}`);
         $("#modalSupervisorSelect").prop("selectedIndex", 0);
 
@@ -17,7 +19,8 @@ export const SupervisorAssignment = {
 
     async loadSupervisors() {
         const $select = $("#modalSupervisorSelect");
-
+        const $btn = $("#btnAssignSupervisor");
+        $btn.prop("disabled", true);
         try {
             const supervisors = await DashboardApi.getSupervisors();
             console.log(this.currentSupervisorPhone, supervisors) 
@@ -40,8 +43,10 @@ export const SupervisorAssignment = {
                     </option>`
                 )
             );
-        } catch {
+            $btn.prop("disabled", false);
+        } catch(err) {
             $select.html(`<option disabled>Error loading supervisors</option>`);
+            console.error("Load Error:", err);
         }
     },
 
@@ -59,11 +64,12 @@ export const SupervisorAssignment = {
             phoneNumber = "all"
         }
         UI.showLoading("assignLoading");
-
+        $("#btnAssignSupervisor").prop("disabled", true);
         try {
             const res = await DashboardApi.assignSupervisor({
                 voucherCode: this.voucherCode,
-                phoneNumber
+                phoneNumber,
+                isCompletedOrder: this.isCompletedOrder
             });
 
             $("#assignSupervisor").modal("hide");
@@ -74,6 +80,7 @@ export const SupervisorAssignment = {
                 err?.message || err.errors?.[0] || "Error assigning supervisor",
                 "red"
             );
+            $("#btnAssignSupervisor").prop("disabled", false);
         } finally {
             UI.hideLoading("assignLoading");
         }

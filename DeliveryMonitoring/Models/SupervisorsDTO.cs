@@ -1,4 +1,6 @@
-﻿namespace DeliveryMonitoring.Models
+﻿using Newtonsoft.Json;
+
+namespace DeliveryMonitoring.Models
 {
     public class SupervisorsDTO
     {
@@ -13,7 +15,10 @@
     }
     public class AssignSuperVisorDTO
     {
-        public string? voucherCode { get; set; }
-        public string? phoneNumber { get; set; }
+        [JsonProperty("voucherCode")]
+        public string? VoucherCode { get; set; }
+        [JsonProperty("phoneNumber")]
+        public string? PhoneNumber { get; set; }
+        public bool IsCompletedOrder { get; set; }
     }
 }

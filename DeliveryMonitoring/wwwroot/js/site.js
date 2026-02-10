@@ -25,6 +25,10 @@ async function fetchAlerts(jsonData = null) {
         }
 
         // Process alerts
+        const orderCount = document.getElementById("orderCount");
+        if (orderCount) {
+            orderCount.textContent = data.length;
+        }
         const alertBox = document.getElementById("floating-alert");
         const alertList = document.getElementById("alert-list");
         const storedAlerts = JSON.parse(sessionStorage.getItem("displayedAlerts")) || {};
@@ -51,7 +55,6 @@ async function fetchAlerts(jsonData = null) {
             alertBox.style.display = "block";
             sessionStorage.setItem("displayedAlerts", JSON.stringify({ ...storedAlerts, ...newAlerts }));
         }
-
     } catch (error) {
         console.error("Error processing alerts:", error);
     } finally {

@@ -1,0 +1,39 @@
+﻿<!-- Re-dispatch Modal -->
+<div class="modal fade" id="reDispatchModal"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="reDispatchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title text-white" id="reDispatchModalLabel">Re-dispatch Order <span id="voucherCodeLabel" class="text-warning fw-normal"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <p class="mb-3 text-muted">Choose how you want to re-dispatch the order:</p>
+
+
+                <span id="redispatchToAllWrapper">
+                    <button class="btn btn-outline-primary w-100 mb-3" id="confirmRedispatchToAll" onclick="Dispatch.confirm(true)">
+                        🔄 Re-dispatch to All Available Drivers
+                    </button>
+                </span>
+
+                <hr class="my-3">
+
+                <label for="driverSelect" class="form-label fw-bold">Or select a specific driver:</label>
+                <select id="driverSelect" class="form-select mb-3">
+                    <option value="" selected disabled>Loading drivers...</option>
+                </select>
+
+                <button class="btn btn-outline-success w-100 mt-2" onclick="Dispatch.confirm()">
+                    ✅ Dispatch to Selected Driver
+                </button>
+                <div id="dispatchLoading" class="text-center mt-4 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Dispatching...</span>
+                    </div>
+                    <p class="text-muted mt-2">Processing dispatch...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
