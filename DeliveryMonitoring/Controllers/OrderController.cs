@@ -382,7 +382,6 @@ namespace DeliveryMonitoring.Controllers
             }
         }
         [HttpPost("/assignSupervisor")]
-        [HttpPost]
         public async Task<IActionResult> AssignSupervisor([FromBody] AssignSuperVisorDTO dto)
         {
             if (dto?.VoucherCode == null)
