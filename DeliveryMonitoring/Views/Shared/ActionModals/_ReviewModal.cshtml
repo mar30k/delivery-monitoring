@@ -1,0 +1,45 @@
+﻿@model Dictionary<int, string>;
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Review Order <span id="voucherCodeReview"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="reviewForm">
+                <div class="modal-body">
+                    <input type="hidden" name="VoucherCode" id="reviewOrderId" />
+                    <input type="hidden" name="isDelivery" id="isDelivery" />
+                    <input type="hidden" name="supervisorPhone" id="supervisorPhone" />
+
+                    <div class="mb-3">
+                        <label for="reviewPurpose" class="form-label fw-bold">Purpose</label>
+                        <select class="form-select" id="reviewPurpose" name="Purpose" required>
+                            <option value="" selected disabled>-- Select Purpose --</option>
+                            @foreach (var purpose in Model?.OrderBy(c => c.Value) ?? Enumerable.Empty<KeyValuePair<int, string>>())
+                            {
+                                <option value="@purpose.Key">@purpose.Value</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reviewNote" class="form-label fw-bold">Note</label>
+                        <textarea class="form-control" id="reviewNote" name="Note" rows="3" placeholder="Enter note..." required></textarea>
+                    </div>
+
+                    <div id="reviewLoadingSpinner" class="text-center my-3">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2 mb-0">Loading customer review...</p>
+                    </div>
+                    <div id="customerReviewSection" class="border-top pt-3 mt-3">
+                        <!-- Will be dynamically filled -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="submitReviewBtn" class="btn btn-success">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

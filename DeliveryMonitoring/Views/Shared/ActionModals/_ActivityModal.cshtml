@@ -1,0 +1,41 @@
+﻿<!-- Modal -->
+<div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary">
+                <h5 class="modal-title text-white" id="activityModalLabel">Delivery Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Loader -->
+                <div id="activityLoader" class="text-center my-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Fetching delivery activity...</p>
+                </div>
+
+                <!-- Alert container -->
+                <div id="activityAlertContainer" class="mb-3"></div>
+
+                <!-- Summary Section -->
+                <div id="activitySummary" class="mb-3 d-none"></div>
+
+                <!-- Activity Timeline -->
+                <table class="table table-bordered table-hover d-none" id="activityTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Activity</th>
+                            <th>Time</th>
+                            <th>Elapsed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTimeline"></tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>

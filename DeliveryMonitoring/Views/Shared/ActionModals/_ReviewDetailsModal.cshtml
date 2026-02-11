@@ -1,0 +1,33 @@
+﻿<div class="modal fade" id="reviewDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Order Review <span id="voucherCodeDetail"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Purpose: </strong> <span id="modalPurpose">—</span></p>
+                <p>
+                    <strong>Note: </strong><span id="modalNote">—</span>
+                    <a id="editNote"
+                       href="#"
+                       data-voucher-code=""
+                       data-supervisor-phone=""
+                       data-phone-number=""
+                       data-customer-phone=""
+                       data-purpose-key=""
+                       data-note="">
+                        <i class="fa-solid fa-pen-to-square"></i> edit
+                    </a>
+                </p>
+
+                <div id="reviewDetailsLoadingSpinner" class="text-center my-3">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 mb-0">Loading customer review...</p>
+                </div>
+
+                <div id="customerReview" class="d-none"></div>
+            </div>
+        </div>
+    </div>
+</div>
