@@ -50,7 +50,18 @@ export const Dispatch = {
         const $select = $("#driverSelect").html(`<option value="" selected disabled>Loading...</option>`);
         
         try {
-            const drivers = await DashboardApi.getDrivers();
+            console.log(window.data)
+            const [drivers, orders] = await Promise.all([
+                DashboardApi.getDrivers(),
+                window.data ?? DashboardApi.getOrders()
+            ]);
+
+            const assignedDriverPhones = new Set(
+                orders
+                    .map(o => o.assignedDriverPhoneNumber)
+                    .filter(phone => typeof phone === "string" && phone.trim() !== "")
+            );
+
             drivers.sort((a, b) => {
                 const statusOrder = a.status === 'ready' ? 0 : 1;
                 const statusOrderB = b.status === 'ready' ? 0 : 1;
@@ -61,13 +72,19 @@ export const Dispatch = {
                 );
             });
             $select.empty().append(`<option disabled>Select a driver</option>`);
-            drivers.filter(d => !d.isDisabled).forEach(d =>
-                $select.append(
-                    `<option value="${d.phoneNumber}">
-                        ${d.firstName} (${d.phoneNumber}) (${d.status})
-                    </option>`
+
+            drivers
+                .filter(d =>
+                    !d.isDisabled &&
+                    !assignedDriverPhones.has(d.phoneNumber)
                 )
-            );
+                .forEach(d =>
+                    $select.append(
+                        `<option value="${d.phoneNumber}">
+                            ${d.firstName} (${d.phoneNumber}) (${d.status})
+                        </option>`
+                    )
+                );
         } catch {
             $select.html(`<option disabled>Error loading drivers</option>`);
         }
