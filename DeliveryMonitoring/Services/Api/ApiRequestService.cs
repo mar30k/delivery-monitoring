@@ -113,10 +113,10 @@ namespace DeliveryMonitoring.Services.Api
         #endregion
 
         #region Order Requests
-        public async Task<List<OrderDetail>> GetOrderRequestsAsync()
+        public async Task<List<OrderDetail>> GetOrderRequestsAsync(string? companyTin)
         {
             
-            var response = await _deliveryClient.GetAsync($"{_getOrderRequests}companyTin={CompanyTin}");
+            var response = await _deliveryClient.GetAsync($"{_getOrderRequests}companyTin={companyTin ?? CompanyTin}");
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadAsStringAsync();

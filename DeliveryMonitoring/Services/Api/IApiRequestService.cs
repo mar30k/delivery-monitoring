@@ -17,7 +17,7 @@ namespace DeliveryMonitoring.Services.Api
         /// <summary>
         /// Retrieves all active or pending order requests for the current company.
         /// </summary>
-        Task<List<OrderDetail>> GetOrderRequestsAsync();
+        Task<List<OrderDetail>> GetOrderRequestsAsync(string? tin = null);
 
         /// <summary>
         /// Retrieves detailed information about a specific order by its voucher number.

@@ -77,6 +77,14 @@ function initTable({
         pageLength: 50,
         columns: columns,
         language: { emptyTable: emptyTableMessage },
+        rowCallback: function (row, data) {
+            if (data.companyCode === 813804) {
+                js(row).css({
+                    'background-color': '#fff2cc', // light yellow
+                    'font-weight': 'bold'
+                });
+            }
+        },
         footerCallback: function (row, data, start, end, display) {
             const api = this.api();
             const parseVal = i =>

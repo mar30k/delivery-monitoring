@@ -18,6 +18,7 @@ namespace DeliveryMonitoring.Controllers
         }
 
         // Embedded / standalone dashboard (no layout, custom scrolling)
+        [AllowAnonymous]
         [HttpGet("embed")]
         public IActionResult Embed()
         {

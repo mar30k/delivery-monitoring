@@ -1,16 +1,26 @@
-﻿export const DASHBOARD_CONFIG = {
+﻿const isAnalytics = window.isAnalyticsPage;
+const BASE_API = {
+    driverLive: '/driver/liveLocation',
+    orderChart: '/getChartData',
+    kotStatus: '/getDeviceControl',
+    supervisors: '/getAvailableSupervisors',
+    orders: '/getorders'
+};
+
+const ANALYTICS_API = {
+    driverLive: '/analytics/driver',
+    orderChart: '/analytics/getChartData',
+    kotStatus: '/analytics/getDeviceControl',
+    supervisors: '/analytics/getAvailableSupervisors',
+    orders: '/analytics/getorders'
+};
+export const DASHBOARD_CONFIG = {
     refresh: {
         orders: 10_000,
         drivers: 30_000,
         charts: 60_000
     },
-    api: {
-        driverLive: '/driver/liveLocation',
-        orderChart: '/getChartData',
-        kotStatus: '/getDeviceControl',
-        supervisors: '/getAvailableSupervisors',
-        orders: '/getorders'
-    },
+    api: window.isAnalyticsPage ? ANALYTICS_API : BASE_API,
     colors: {
         drivers: [
             '#28a745', '#dc3545', 'seagreen', 'darkorange',

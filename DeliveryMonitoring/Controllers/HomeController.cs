@@ -92,7 +92,7 @@ namespace DeliveryMonitoring.Controllers
 
             return Ok(chartData);
         }
-
+        [AllowAnonymous]
         [HttpGet("/serverTime")]
         public IActionResult GetServerTime()
         {

@@ -192,7 +192,7 @@ function updateStats(data, referenceMoment) {
 async function loadDashboard() {
     const [timeResult, orderResult] = await Promise.all([
         DashboardUtils.fetchJson("/serverTime"),
-        DashboardUtils.fetchJson("/getCompletedOrders")
+        DashboardUtils.fetchJson("/getCompletedOrdersDashboard")
     ]);
 
     if (!orderResult.isSuccessful) return;

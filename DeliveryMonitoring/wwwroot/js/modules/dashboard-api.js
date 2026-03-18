@@ -1,9 +1,11 @@
 ﻿const { DashboardUtils } = await import(`../dashboard/dashboard-utils.js?v=${Date.now()}`);
 
 export const DashboardApi = {
+
     getOrders() {
         return DashboardUtils.fetchJson("/getOrders");
     },
+
     getDrivers() {
         return DashboardUtils.fetchJson("/driver/getDrivers");
     },

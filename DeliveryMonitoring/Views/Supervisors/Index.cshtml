@@ -68,6 +68,7 @@
                 .Select(s => s.UserName)
                 .ToHashSet() ?? new HashSet<string?>();
             var now = DateTime.Now;
+            var pas30days = now.AddDays(-30);
             int currentYear = now.Year;
             int currentMonth = now.Month;
             int currentDay = now.DayOfYear;
@@ -80,17 +81,21 @@
                 var supervisorName = s.FirstOrDefault()?.SupervisorName ?? "Unknown";
                 var orders = Model?.OrderDetail?.Where(o => o.SupervisedBy == supervisorPhone).ToList();
                 int pendingOrders = orders?.Count ?? 0;
-
+                var supervisedThisMonth = Model?.CompletedOrders?
+                    .Count(o => o.SupervisorPhoneNumber == supervisorPhone
+                        && o.RequestCreatedAt.Year == currentYear
+                        && o.RequestCreatedAt.Month == currentMonth) ?? 0;
+                var supervisedlast30days = Model?.CompletedOrders?.Count(o => o.SupervisorPhoneNumber == supervisorPhone 
+                        && o.RequestCreatedAt >= pas30days 
+                        && o.RequestCreatedAt <= now);
                 return new
                 {
                     SupervisorPhone = supervisorPhone,
                     SupervisorName = supervisorName,
                     CompletedOrders = s.Count(o => o.Status?.ToLower() == "completed"),
                     PendingOrders = pendingOrders,
-                    SupervisedThisMonth = Model?.CompletedOrders?
-                    .Count(o => o.SupervisorPhoneNumber == supervisorPhone
-                    && o.RequestCreatedAt.Year == currentYear
-                    && o.RequestCreatedAt.Month == currentMonth) ?? 0,
+                    SupervisedThisMonth = supervisedThisMonth,
+                    Last30Days = supervisedlast30days,
                     SupervisedToday = Model?.CompletedOrders?
                     .Count(o => o.SupervisorPhoneNumber == supervisorPhone
                     && o.RequestCreatedAt.Year == currentYear
