@@ -35,8 +35,7 @@ namespace DeliveryMonitoring.Services.SummaryReport
         public async Task<IEnumerable<DriverSummary>> DriverSummary(OrderQueryParams p)
         {
             var deliveryordersTask = _ordersService.GetDeliveryOrdersAsync(p);
-            var driversTask = _api.GetAvailableDriversAsync(
-                OrderHelpers.IsTodayIncluded(p) || p.IsClear);
+            var driversTask = _api.GetAvailableDriversAsync(OrderHelpers.IsTodayIncluded(p) || p.IsClear);    
 
             await Task.WhenAll(deliveryordersTask, driversTask);
             var deliveryorders = await deliveryordersTask;

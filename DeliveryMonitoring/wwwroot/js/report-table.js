@@ -70,7 +70,12 @@ export const ReportTable = (function () {
                 render: (d, type) => d != null ? `${Renderers.number(d, type, 2)} min` : "-"
             }),
             center({ data: "etaDifference", render: Renderers.timeDeviationRenderer }),
-            center({ data: "driverPhoneNumber", render: Renderers.phone }),
+            center({
+                data: function (row) {
+                    return row.assignedDriverName ?? row.driverPhoneNumber ?? 'N/A';
+                },
+                render: (data, type, row) => Renderers.driver(type, row.driverPhoneNumber, row.assignedDriverName)
+            }),
             center({ data: "supervisorName", render: Renderers.orDefault }),
             center({ data: "totalAmount", render: Renderers.amount }),
             center({
@@ -90,7 +95,8 @@ export const ReportTable = (function () {
         const headerFilterColumns = [
             { index: COL_INDEX.COMPANY, name: 'Company' },
             { index: COL_INDEX.BRANCH, name: 'Branch' },
-            { index: COL_INDEX.SUPERVISOR, name: 'Supervisor' }
+            { index: COL_INDEX.SUPERVISOR, name: 'Supervisor' },
+            { index: COL_INDEX.DRIVER_PHONE, name: 'Driver' }
         ];
 
         if (isAllOrders) {
@@ -98,7 +104,6 @@ export const ReportTable = (function () {
         }
 
         const nonOrderableTargets = [
-            COL_INDEX.VOUCHER, COL_INDEX.PHONE, COL_INDEX.DRIVER_PHONE,
             COL_INDEX.PURPOSE, COL_INDEX.NOTE, COL_INDEX.REVIEW
         ];
 

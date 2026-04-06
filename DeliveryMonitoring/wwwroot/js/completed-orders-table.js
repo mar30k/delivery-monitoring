@@ -17,6 +17,7 @@ const BASE_COLS = [
     'VOUCHER',
     'COMPANY',
     'BRANCH',
+    'BUSINESS_UNIT',
     'FIRST_NAME',
     'PHONE',
     'REQUEST_DATE',
@@ -64,6 +65,7 @@ const baseColumns = [
     center({ data: "voucherCode", render: Renderers.voucherCode }),
     center({ data: "companyName" }),
     center({ data: "branchName" }),
+    center({ data: "businessUnit" }),
     center({ data: "firstName" }),
     center({ data: "phoneNumber", render: Renderers.phone }),
     center({

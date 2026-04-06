@@ -4,6 +4,7 @@ using DeliveryMonitoring.Models;
 using DeliveryMonitoring.Services.Api;
 using Microsoft.AspNetCore.Mvc;
 using static DeliveryMonitoring.Constants.AppConstants;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace DeliveryMonitoring.Controllers
 {
@@ -85,6 +86,9 @@ namespace DeliveryMonitoring.Controllers
         [HttpGet("getChartData")]
         public async Task<IActionResult> GetChartData()
         {
+            var startDate = DateTime.Today;
+            var endDate = DateTime.Today;
+
             var dineInTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderType.InHouseDining);
             var takeAwayTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderType.PickUpAtBranch);
             var scheduledDeliveryTask = _apiRequestService.GetOrdersByTypeAsync((int)DeliveryOrderType.ScheduledDeliveryToLocation);
@@ -93,11 +97,17 @@ namespace DeliveryMonitoring.Controllers
 
             await Task.WhenAll(dineInTask, takeAwayTask, scheduledDeliveryTask, scheduledPickUpTask, deliveryTask);
 
-            var dineInOrders = (await dineInTask).Data ?? new List<CompletedOrders>();
-            var takeAwayOrders = (await takeAwayTask).Data ?? new List<CompletedOrders>();
-            var scheduledDeliveryOrders = (await scheduledDeliveryTask).Data ?? new List<CompletedOrders>();
-            var scheduledPickUpOrders = (await scheduledPickUpTask).Data ?? new List<CompletedOrders>();
-            var deliveryOrders = (await deliveryTask).Data ?? new List<CompletedOrders>();
+            List<CompletedOrders> Filter(List<CompletedOrders>? data) =>
+                (data ?? new List<CompletedOrders>())
+                    .Where(o => o.RequestCreatedAt.Date >= startDate && o.RequestCreatedAt.Date <= endDate)
+                    .ToList();
+
+            // Apply
+            var dineInOrders = Filter((await dineInTask).Data);
+            var takeAwayOrders = Filter((await takeAwayTask).Data);
+            var scheduledDeliveryOrders = Filter((await scheduledDeliveryTask).Data);
+            var scheduledPickUpOrders = Filter((await scheduledPickUpTask).Data);
+            var deliveryOrders = Filter((await deliveryTask).Data);
 
             var chartData = new[]
             {

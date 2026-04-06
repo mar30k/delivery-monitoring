@@ -72,6 +72,36 @@
             }
         });
     }
+    function renderMultiChart(id, type, labels, datasets) {
+        if (chartInstances[id]) chartInstances[id].destroy();
+        const ctx = document.getElementById(id).getContext('2d');
+
+        chartInstances[id] = new Chart(ctx, {
+            type: type,
+            data: {
+                labels: labels,
+                datasets: datasets.map(ds => ({
+                    label: ds.label,
+                    data: ds.data,
+                    borderColor: ds.color,
+                    backgroundColor: `${ds.color}33`,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }))
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    }
+                },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
     function updateDataset(chart, data, labels) {
         chart.data.datasets[0].data = data;
         if (labels) chart.data.labels = labels;
@@ -81,6 +111,7 @@
     return {
         createDoughnut,
         renderChart,
+        renderMultiChart,
         COLORS,
         updateDataset
     };

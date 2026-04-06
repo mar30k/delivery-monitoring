@@ -4,6 +4,7 @@ const { DashboardScroll } = await import(`/js/dashboard/dashboard-scroll.js?v=${
 
 const COLORS = DashboardCharts.COLORS;
 const renderChart = DashboardCharts.renderChart;
+const renderMultiChart = DashboardCharts.renderMultiChart;
 
 // Global cache to allow targeted chart updates without re-fetching
 let cachedOrdersData = [];
@@ -120,7 +121,64 @@ const Processors = {
             if (match) match.count++;
         });
         return { labels: last7.map(x => x.dayName), values: last7.map(x => x.count) };
-    }
+    },
+
+    //8. Delivery trend
+    deliveryTrend: (data) => {
+        const thirtyDaysAgo = moment().subtract(30, 'days');
+        const grouped = data
+            .filter(o => moment(o.requestCreatedAt).isAfter(thirtyDaysAgo))
+            .reduce((acc, o) => {
+                const date = moment(o.requestCreatedAt).format('YYYY-MM-DD');
+                if (!acc[date]) acc[date] = { onTime: 0, delayed: 0 };
+
+                const eta = parseFloat(o.eta) || 0;
+                const duration = parseFloat(o.duration) || 0;
+
+                if (eta > 0 && duration > 0) {
+                    (duration <= eta) ? acc[date].onTime++ : acc[date].delayed++;
+                }
+                return acc;
+            }, {});
+
+        const sortedDates = Object.keys(grouped).sort();
+        return {
+            labels: sortedDates,
+            onTimeValues: sortedDates.map(d => grouped[d].onTime),
+            delayedValues: sortedDates.map(d => grouped[d].delayed)
+        };
+    },
+    varianceTrend: (data) => {
+        const thirtyDaysAgo = moment().subtract(30, 'days');
+        const grouped = data
+            .filter(o => moment(o.requestCreatedAt).isAfter(thirtyDaysAgo))
+            .reduce((acc, o) => {
+                const date = moment(o.requestCreatedAt).format('YYYY-MM-DD');
+                if (!acc[date]) {
+                    acc[date] = { early: 0, onTime: 0, late5to15: 0, late15plus: 0 };
+                }
+
+                const eta = parseFloat(o.eta) || 0;
+                const duration = parseFloat(o.duration) || 0;
+                const diff = duration - eta;
+
+                if (diff <= -5) acc[date].early++;
+                else if (diff <= 5) acc[date].onTime++;
+                else if (diff <= 15) acc[date].late5to15++;
+                else acc[date].late15plus++;
+
+                return acc;
+            }, {});
+
+        const sortedDates = Object.keys(grouped).sort();
+        return {
+            labels: sortedDates,
+            early: sortedDates.map(d => grouped[d].early),
+            onTime: sortedDates.map(d => grouped[d].onTime),
+            late5: sortedDates.map(d => grouped[d].late5to15),
+            late15: sortedDates.map(d => grouped[d].late15plus)
+        };
+    },
 };
 
 // EXPOSED FUNCTION: Targets only the traffic chart update
@@ -218,7 +276,9 @@ async function loadDashboard() {
         payment: Processors.payments(cachedOrdersData),
         monthly: Processors.monthly(cachedOrdersData),
         partner: Processors.partners(cachedOrdersData),
-        peaks: Processors.globalPeaks(cachedOrdersData)
+        peaks: Processors.globalPeaks(cachedOrdersData),
+        trendData: Processors.deliveryTrend(cachedOrdersData),
+        vTrend: Processors.varianceTrend(cachedOrdersData)
     };
 
     // 3. Render all charts
@@ -228,6 +288,35 @@ async function loadDashboard() {
     renderChart("monthlyTrendChart", "line", ds.monthly.labels, ds.monthly.values, "Monthly Total", COLORS.warning);
     renderChart("companyRevenueChart", "bar", ds.partner.labels, ds.partner.values, "Revenue", COLORS.success);
     renderChart("peakHourChart", "bar", ds.peaks.labels, ds.peaks.values, "Global Trend", COLORS.purple);
+    renderMultiChart(
+        "deliveryTrendChart",
+        "line",
+        ds.trendData.labels,
+        [
+            {
+                label: "On-Time",
+                data: ds.trendData.onTimeValues,
+                color: COLORS.success // Green
+            },
+            {
+                label: "Delayed",
+                data: ds.trendData.delayedValues,
+                color: COLORS.danger // Red
+            }
+        ]
+    );
+
+    renderMultiChart(
+        "varianceTrendChart",
+        "line",
+        ds.vTrend.labels,
+        [
+            { label: "Early (>5m)", data: ds.vTrend.early, color: COLORS.info },
+            { label: "On Time (±5m)", data: ds.vTrend.onTime, color: COLORS.success },
+            { label: "5-15m Late", data: ds.vTrend.late5, color: COLORS.warning },
+            { label: "15m+ Late", data: ds.vTrend.late15, color: COLORS.danger }
+        ]
+    );
 
     // 4. Specifically trigger the Traffic Chart logic
     window.updateTrafficChart();
