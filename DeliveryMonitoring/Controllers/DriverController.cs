@@ -250,9 +250,9 @@ namespace DeliveryMonitoring.Controllers
             }
         }
         [HttpGet("getDrivers")]
-        public async Task<IActionResult> GetAvailableDrivers()
+        public async Task<IActionResult> GetAvailableDrivers(bool skipCache = true)
         {
-            var drivers = await _apiRequestService.GetAvailableDriversAsync();
+            var drivers = await _apiRequestService.GetAvailableDriversAsync(skipCache);
             return Ok(drivers);
         }
 

@@ -122,7 +122,7 @@ function fetchDataAndUpdateMarkers() {
                     if (!driver.assignedOrders.length) {
                         orderDetailUrl = `<div>N/A</div>`
                     }
-                    tablelist.cell(rowIndex, 7).data(orderDetailUrl);
+                    tablelist.cell(rowIndex, 8).data(orderDetailUrl);
                     // =====================
                     // Update STATUS cell
                     // =====================
@@ -151,7 +151,12 @@ function fetchDataAndUpdateMarkers() {
                     $(batteryCell).attr("data-order", batteryValue ?? -1);
 
                     const batteryHtml = renderBatteryCell(batteryValue);
-                    tablelist.cell(rowIndex, 6).data(batteryHtml);
+
+                    const isActive = driver.isDisabled ? "No" : "Yes";
+                    const isFreelance = driver.isFreelance ? "Yes" : "No";
+                    tablelist.cell(rowIndex, 5).data(isActive);
+                    tablelist.cell(rowIndex, 6).data(isFreelance);
+                    tablelist.cell(rowIndex, 7).data(batteryHtml);
 
                     // ===========================
                     // Refresh row

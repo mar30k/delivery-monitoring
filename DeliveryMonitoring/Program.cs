@@ -30,6 +30,7 @@ builder.Services.AddHttpClient("Delivery", httpClient =>
 {
     httpClient.BaseAddress = new Uri(deliveryUri);
     httpClient.DefaultRequestHeaders.Add("x-api-key", "c666e0e9-fnnm-5804-bbxo-144ad72ae730");
+    //httpClient.Timeout = TimeSpan.FromMinutes(5);
 });
 builder.Services.AddHttpClient("CnetApiBaseUrl", httpClient =>
 {

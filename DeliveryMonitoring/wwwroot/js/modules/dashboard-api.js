@@ -7,7 +7,7 @@ export const DashboardApi = {
     },
 
     getDrivers() {
-        return DashboardUtils.fetchJson("/driver/getDrivers");
+        return DashboardUtils.fetchJson("/driver/getDrivers?skipCache=true");
     },
 
     getSupervisors() {

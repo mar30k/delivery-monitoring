@@ -37,6 +37,9 @@
                                 Is Active
                             </th>
                             <th class="text-center">
+                                Is Freelance
+                            </th>
+                            <th class="text-center">
                                 Battery
                             </th>
                             <th class="text-center">
@@ -92,6 +95,9 @@
                                 </td>
                                 <td class="text-center">
                                     @((driver !=null && driver.IsDisabled) ? "no" : "yes")
+                                </td>
+                                <td class="text-center">
+                                    @((driver !=null && driver.IsFreelance) ? "Yes" : "No")
                                 </td>
                                 <td class="text-center" data-order="@driver?.BatteryStatus">
                                     @{
