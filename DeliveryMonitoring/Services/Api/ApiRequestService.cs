@@ -44,6 +44,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly string _getCompany;
         private readonly string _getOrderDetailByVoucher;
         private readonly string _getDriverActivityAsync;
+        private readonly string _getDriverActivity;
         private readonly string _getHistroyDetail;
         private readonly string _saveDeliveryNote;
         private readonly string _getFilteredCustomers;
@@ -79,6 +80,7 @@ namespace DeliveryMonitoring.Services.Api
             _getOrderRequests = $"orderRequests?";
             _getOrderDetailByVoucher = "orderRequests/";
             _getDriverActivityAsync = "driveractivity/get?";
+            _getDriverActivity = "orderRequests";
             _getHistroyDetail = "voucher/gethistorydetail?";
             _saveDeliveryNote = "delivery/savenote?";
             _getDriverDetails = "drivers/";
@@ -250,6 +252,26 @@ namespace DeliveryMonitoring.Services.Api
                 async () =>
                 {
                     var response = await _client.GetAsync($"{_getDriverActivityAsync}companyCode={companyCode}&voucherCode={voucherCode}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<HulubejeResponse<Activities>>(data) ?? new HulubejeResponse<Activities>();
+                    }
+                    return null;
+                },
+                skipCache,
+                30
+            );
+
+        }
+        public async Task<HulubejeResponse<Activities>?> GetDriverActivity(string voucherCode, bool skipCache = true)
+        {
+            var cacheKey = $"driver_activity{voucherCode}";
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _deliveryClient.GetAsync($"{_getDriverActivity}/{voucherCode}/activity");
                     if (response.IsSuccessStatusCode)
                     {
                         var data = await response.Content.ReadAsStringAsync();

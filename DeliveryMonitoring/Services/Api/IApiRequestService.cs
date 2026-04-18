@@ -95,6 +95,11 @@ namespace DeliveryMonitoring.Services.Api
         /// <param name="companyCode">company code.</param>
         /// <param name="voucherCode">order unique identification</param>
         Task<HulubejeResponse<Activities>?> GetDriverActivityAsync(string companyCode, string voucherCode,  bool skipCache = true);
+        /// <summary>
+        /// Retrieves activities and status updates for a specific driver.
+        /// </summary>
+        /// <param name="voucherCode">order unique identification</param>
+        Task<HulubejeResponse<Activities>?> GetDriverActivity(string voucherCode,  bool skipCache = true);
 
         #endregion
 

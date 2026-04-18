@@ -112,7 +112,7 @@ namespace DeliveryMonitoring.Controllers
 
                 //if (response != null && response.Count == 0 && _env.IsDevelopment())
                 //{
-                //    return new List<OrderDetail> { GetSampleOrder.CreateSampleOrder() };
+                //    return GetSampleOrder.CreateSampleOrder();
                 //}
                 return response ?? new List<OrderDetail>();
             }

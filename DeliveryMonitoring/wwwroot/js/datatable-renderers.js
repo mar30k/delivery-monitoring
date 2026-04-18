@@ -346,31 +346,26 @@ const Renderers = {
         `;
     },
     etaDiffRenderer: (data, type, row) => {
-        if (!row.etaString || !row.currentTime) return "-";
+        if (!row.eta || !row.currentTime) return "-";
 
-        // Calculate difference in milliseconds
-        const diffMs = new Date(row.etaString) - new Date(row.currentTime);
+        const etaDate = new Date(row.eta);           // ✅ SAFE
+        const currentDate = new Date(row.currentTime); // ✅ SAFE
 
-        // For sorting, return numeric minutes
-        if (type === "sort" || type === "type") return Math.round(diffMs / 60000);
+        if (isNaN(etaDate) || isNaN(currentDate)) return "-";
 
-        // Determine initial background based on thresholds
-        let bgClass;
-        if (diffMs > WARNING_THRESHOLD_MS) {
-            bgClass = "bg-success"; // plenty of time remaining
-        } else if (diffMs > 0 && diffMs <= WARNING_THRESHOLD_MS) {
-            bgClass = "bg-warning"; // approaching ETA
-        } else if (diffMs === 0) {
-            bgClass = "bg-warning"; // exactly due
-        } else {
-            bgClass = "bg-danger"; // late
+        const diffMs = etaDate - currentDate;
+
+        // Sorting
+        if (type === "sort" || type === "type") {
+            return Math.round(diffMs / 60000);
         }
+
+        const bgClass = getBgClass(diffMs);
 
         return `
             <span class="countdown-badge d-flex justify-content-center 
                     align-items-center p-1 rounded rounded-2 my-1 text-white text-nowrap ${bgClass}"
-                  data-diff-ms="${diffMs}"
-                  data-eta="${row.etaString}">
+                  data-eta="${row.eta}">
                 ${formatDiff(diffMs)}
             </span>
         `;
@@ -429,30 +424,36 @@ function formatDiff(diffMs) {
 }
 
 setInterval(() => {
+    const now = new Date();
+
     document.querySelectorAll(".countdown-badge").forEach(el => {
-        const eta = el.dataset.eta;
-        if (!eta) return;
+        const etaStr = el.dataset.eta;
+        if (!etaStr) return;
 
-        const diffMs = new Date(eta) - new Date();
+        const etaDate = new Date(etaStr); // already ISO now ✅
 
-        // Update countdown text
+        if (isNaN(etaDate.getTime())) return;
+
+        const diffMs = etaDate - now;
+
+        // Update text
         el.textContent = formatDiff(diffMs);
 
-        // Remove previous background classes
-        el.classList.remove("bg-success", "bg-warning", "bg-danger", "bg-yellow");
+        // Update background safely
+        el.classList.remove("bg-success", "bg-warning", "bg-danger");
 
-        if (diffMs > WARNING_THRESHOLD_MS) {
-            // Plenty of time remaining
-            el.classList.add("bg-success");
-        } else if (diffMs > 0 && diffMs <= WARNING_THRESHOLD_MS) {
-            // Approaching ETA (warn)
-            el.classList.add("bg-warning"); // Yellow background
-        } else if (diffMs === 0) {
-            // Exactly due
-            el.classList.add("bg-warning");
-        } else {
-            // Late
-            el.classList.add("bg-danger");
-        }
+        el.classList.add(getBgClass(diffMs));
     });
 }, 1000);
+
+function getBgClass(diffMs) {
+    if (diffMs > WARNING_THRESHOLD_MS) {
+        return "bg-success";
+    } else if (diffMs > 0) {
+        return "bg-warning";
+    } else if (diffMs > -1000) {
+        return "bg-warning"; // near zero buffer
+    } else {
+        return "bg-danger";
+    }
+}

@@ -36,6 +36,7 @@ namespace DeliveryMonitoring.Models
         public string? PhoneNumber { get; set; }
         public List<string>? AssignedOrders { get; set; }
         public bool IsDisabled { get; set; }
+        public bool IsFreelance { get; set; }
         public double? Lat { get; set; }
         public double? Lng { get; set; }
         public int NumberOfAcceptedOrders { get; set; }
