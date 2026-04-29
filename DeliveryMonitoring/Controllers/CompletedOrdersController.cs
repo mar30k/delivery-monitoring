@@ -77,6 +77,39 @@ namespace DeliveryMonitoring.Controllers
 
             return View(viewModel);
         }
+        [Route("/deliveryhistory")]
+        public async Task<IActionResult> Delivery()
+        {
+            var table = new List<TableConfig>
+            {
+                new ()
+                {
+                    Type = "Delivery",
+                    Title = "Delivery",
+                    TableId = AppConstants.TableIds.Delivery,
+                    AjaxUrl = "/getDeliveryOrders",
+                    SheetName = "_DeliveryOrders"
+                }
+            };
+            var viewModel = new CompletedOrdersViewModel
+            {
+                CompanyTin = CompanyTin,
+                OrderTables = table
+            };
+
+            try
+            {
+                var purposeResponse = await _apiRequestService.GetDeliveryPurposeAsync();
+                var purposeOptions = JsonConvert.DeserializeObject<Dictionary<int, string>>(purposeResponse);
+                viewModel.PurposeOptions = purposeOptions ?? new Dictionary<int, string>();
+            }
+            catch (Exception)
+            {
+                ViewBag.ErrorMessage = "Unable to connect to the service. Please try again later.";
+            }
+
+            return View("index", viewModel);
+        }
 
         [Route("/pending")]
         public IActionResult PendingOrders()
@@ -102,7 +135,7 @@ namespace DeliveryMonitoring.Controllers
         [Route("/orderdetail")]
         public async Task<IActionResult> CompletedOrderDetail(string voucher, string type = "")
         {
-            DeliveryOrderType orderType = type switch
+            var orderType = type switch
             {
                 TakeAwayTableId => DeliveryOrderType.PickUpAtBranch,
                 DineInTableId => DeliveryOrderType.InHouseDining,
@@ -113,34 +146,57 @@ namespace DeliveryMonitoring.Controllers
 
             var result = orderType == DeliveryOrderType.DeliveryToLocation
                 ? await _apiRequestService.GetCompletedOrdersAsync(skipCache: false)
-                : await _apiRequestService.GetOrdersByTypeAsync((int)orderType, skipCache:false);
+                : await _apiRequestService.GetOrdersByTypeAsync((int)orderType, skipCache: false);
 
-            if (result == null)
+            if (result?.Data == null)
             {
                 TempData["Message"] = $"Unable to fetch details of Order: {voucher}.";
                 return RedirectToAction("Index");
             }
 
-            var order = result.Data?.FirstOrDefault(o => o.VoucherCode == voucher);
-            if (CompanyTin != AdminCompanyTin && CompanyTin != order?.Tin)
+            var order = result.Data.FirstOrDefault(o => o.VoucherCode == voucher);
+
+            var orderDetail = order == null
+                ? await _apiRequestService.GetOrderDetailByVoucher(voucher)
+                : null;
+
+            var effectiveCompanyCode =
+                order?.CompanyCode.ToString()
+                ?? orderDetail?.CompanyCode.ToString()
+                ?? string.Empty;
+
+            var orderTin = order?.Tin ?? orderDetail?.CompanyTin;
+
+            if (CompanyTin != AdminCompanyTin && CompanyTin != orderTin)
             {
                 TempData["Message"] = $"You do not have the necessary permissions to view Order: {voucher}.";
                 return RedirectToAction("Index");
             }
 
-            var voucherDetail = await _apiRequestService.Gethistorydetail(voucher, order?.CompanyCode.ToString() ?? "", skipCache: false);
+            var voucherDetailTask = _apiRequestService.Gethistorydetail(
+                voucher,
+                effectiveCompanyCode,
+                skipCache: false);
 
-            var driver = await _apiRequestService.GetDriverDetailsByPhoneNumber<Driver>(phoneNumber: order?.DriverPhoneNumber ?? "", skipCache: false);
+            var driverTask = _apiRequestService.GetDriverDetailsByPhoneNumber<Driver>(
+                order?.DriverPhoneNumber ?? orderDetail?.AssignedDriverPhoneNumber ?? "",
+                skipCache: false);
 
-            var driverActivity = await _apiRequestService.GetDriverActivityAsync(order?.CompanyCode.ToString() ?? "", voucher, skipCache: false);
+            var activityTask = _apiRequestService.GetDriverActivity(voucher, skipCache: false);
+
+            await Task.WhenAll(voucherDetailTask, driverTask, activityTask);
+
+            var voucherDetail = await voucherDetailTask;
+            var driver = await driverTask;
+            var driverActivity = await activityTask;
 
             var viewModel = new OrderDetail
             {
-                CustomerFirstName = order?.FirstName,
-                BranchName = order?.BranchName,
-                SupervisedBy = order?.SupervisorPhoneNumber,
-                SupervisorName = order?.SupervisorName,
-                AssignedDriverPhoneNumber = order?.DriverPhoneNumber,
+                CustomerFirstName = order?.FirstName ?? orderDetail?.CustomerFirstName,
+                BranchName = order?.BranchName ?? orderDetail?.BranchName,
+                SupervisedBy = order?.SupervisorPhoneNumber ?? orderDetail?.SupervisedBy,
+                SupervisorName = order?.SupervisorName ?? orderDetail?.SupervisorName,
+                AssignedDriverPhoneNumber = order?.DriverPhoneNumber ?? orderDetail?.AssignedDriverPhoneNumber,
                 LineItemsDetail = voucherDetail?.Data,
                 Activities = driverActivity?.Data,
                 VoucherCode = voucher,
@@ -159,6 +215,12 @@ namespace DeliveryMonitoring.Controllers
         public async Task<IActionResult> GetCompletedOrders([FromQuery] OrderQueryParams query)
         {
             var result = await _ordersService.GetCompletedOrdersAsync(query);
+            return Ok(result);
+        }
+        [HttpGet("/getDeliveryOrders")]
+        public async Task<IActionResult> GetDeliveryOrders([FromQuery] OrderQueryParams query)
+        {
+            var result = await _ordersService.GetDeliveryOrders(query);
             return Ok(result);
         }
         /// <summary>
@@ -258,7 +320,7 @@ namespace DeliveryMonitoring.Controllers
         {
             try
             {
-                var response = await _apiRequestService.GetDriverActivityAsync(companyCode, voucherCode);
+                var response = await _apiRequestService.GetDriverActivity(voucherCode);
                 if (response == null)
                     return NotFound("Failed to retrieve delivery activity.");
 

@@ -31,6 +31,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly HttpClient _deliveryClient;
         private readonly HttpClient _deviceControlClient;
         private readonly HttpClient _deliveryLoginClient;
+        private readonly HttpClient _deliveryNew;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string _getOrderRequests;
         private readonly string _getDrivers;
@@ -45,6 +46,7 @@ namespace DeliveryMonitoring.Services.Api
         private readonly string _getOrderDetailByVoucher;
         private readonly string _getDriverActivityAsync;
         private readonly string _getDriverActivity;
+        private readonly string _getDeliveryOrders;
         private readonly string _getHistroyDetail;
         private readonly string _saveDeliveryNote;
         private readonly string _getFilteredCustomers;
@@ -75,12 +77,14 @@ namespace DeliveryMonitoring.Services.Api
             _deliveryClient = httpClientFactory.CreateClient("Delivery");
             _deviceControlClient = httpClientFactory.CreateClient("ApiBaseUrl");
             _deliveryLoginClient = httpClientFactory.CreateClient("DeliveryLogin");
+            _deliveryNew = httpClientFactory.CreateClient("DeliveryNew");
             _httpContextAccessor = httpContextAccessor;
             _httpClientFactory = httpClientFactory;
             _getOrderRequests = $"orderRequests?";
             _getOrderDetailByVoucher = "orderRequests/";
             _getDriverActivityAsync = "driveractivity/get?";
             _getDriverActivity = "orderRequests";
+            _getDeliveryOrders = "order_requests";
             _getHistroyDetail = "voucher/gethistorydetail?";
             _saveDeliveryNote = "delivery/savenote?";
             _getDriverDetails = "drivers/";
@@ -735,5 +739,25 @@ namespace DeliveryMonitoring.Services.Api
             return null;
         }
 
+        public async Task<List<OrderDto>> GetDeliveryOrdersAsync(bool skipCache = true)
+        {
+            string cacheKey = "delivery_orders";
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _deliveryNew.GetAsync(_getDeliveryOrders);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<List<OrderDto>>(data)
+                               ?? new List<OrderDto>();
+                    }
+                    return new List<OrderDto>();
+                },
+                skipCache,
+                10 // cache for 10 minutes
+            );
+        }
     }
 }

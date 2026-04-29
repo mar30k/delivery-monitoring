@@ -21,6 +21,7 @@ var configuration = new ConfigurationBuilder()
        .Build();
 var deliveryUri = configuration.GetValue<string>("Delivery");
 var deliveryLoginUri = configuration.GetValue<string>("DeliveryLogin");
+var deliveryNew = configuration.GetValue<string>("DeliveryNew");
 var CnetApiBaseUrl = configuration.GetValue<string>("CnetApiBaseUrl");
 var ApiBaseUrl = configuration.GetValue<string>("ApiBaseUrl");
 
@@ -36,6 +37,14 @@ builder.Services.AddHttpClient("CnetApiBaseUrl", httpClient =>
 {
     httpClient.BaseAddress = new Uri(CnetApiBaseUrl);
     httpClient.DefaultRequestHeaders.Add("x-api-key", "5D5EAFF4-D29A-485B-BDB9-785EF86FFFAE");
+});
+builder.Services.AddHttpClient("DeliveryNew", httpClient =>
+{
+    httpClient.BaseAddress = new Uri(deliveryNew);
+    httpClient.DefaultRequestHeaders.Add("apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NTA3MTI0MDAsImV4cCI6MTkwODQ3ODgwMH0.uMSGbAzf_fIv32Z6pml9XaSuv04RNRNqfRlw0k41db4");
+    httpClient.DefaultRequestHeaders.Authorization =
+        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NTA3MTI0MDAsImV4cCI6MTkwODQ3ODgwMH0.uMSGbAzf_fIv32Z6pml9XaSuv04RNRNqfRlw0k41db4");
 });
 builder.Services.AddHttpClient("DeliveryLogin", httpClient =>
 {

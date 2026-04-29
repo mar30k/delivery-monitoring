@@ -199,5 +199,28 @@ namespace DeliveryMonitoring.Services.Orders
             IsClear = source.IsClear
         };
 
+        public async Task<HulubejeResponse<List<OrderDto>>> GetDeliveryOrders(OrderQueryParams @params)
+        {
+            try
+            {
+                bool skipCache = OrderHelpers.IsTodayIncluded(@params) || @params.IsClear;
+
+                var orders = (await _apiRequestService.GetDeliveryOrdersAsync(skipCache)) ?? new List<OrderDto>();
+
+                if (!orders.Any())
+                {
+                    return HulubejeResponse<List<OrderDto>>.Fail(new List<string> { "No completed orders found." });
+                }
+
+                var filtered = OrderHelpers.FilterDeliveryOrders(orders, @params, CompanyTin, AdminCompanyTin, status: "completed");
+
+                return HulubejeResponse<List<OrderDto>>.Success(filtered);
+
+            }
+            catch (Exception ex)
+            {
+                return HulubejeResponse<List<OrderDto>>.Fail(new List<string> { $"Failed to fetch completed orders: {ex.Message}" });
+            }
+        }
     }
 }

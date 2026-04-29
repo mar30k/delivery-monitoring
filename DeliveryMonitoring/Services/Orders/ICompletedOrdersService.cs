@@ -9,6 +9,11 @@ namespace DeliveryMonitoring.Services.Orders
     public interface ICompletedOrdersService
     {
         /// <summary>
+        /// Retrieves delivery orders, applies filtering and display preparation,
+        /// and returns an error response if no completed orders are found.
+        /// </summary>
+        Task<HulubejeResponse<List<OrderDto>>> GetDeliveryOrders(OrderQueryParams @params);
+        /// <summary>
         /// Retrieves completed orders, applies filtering and display preparation,
         /// and returns an error response if no completed orders are found.
         /// </summary>

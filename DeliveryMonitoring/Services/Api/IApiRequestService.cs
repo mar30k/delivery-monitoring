@@ -144,6 +144,13 @@ namespace DeliveryMonitoring.Services.Api
         /// <param name="skipCache">
         /// If set to <c>true</c>, bypasses the cache and fetches the latest data.
         /// </param>
+        Task<List<OrderDto>> GetDeliveryOrdersAsync(bool skipCache = true);
+        /// <summary>
+        /// Retrieves all pending orders that are not yet in the completed orders list.
+        /// </summary>
+        /// <param name="skipCache">
+        /// If set to <c>true</c>, bypasses the cache and fetches the latest data.
+        /// </param>
         Task<HulubejeResponse<List<CompletedOrders>>> GetPendingOrdersAsync(bool skipCache = true);
         /// <summary>
         /// Completes a pending order by submitting the required delivery and assignment details.

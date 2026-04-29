@@ -37,6 +37,21 @@ namespace DeliveryMonitoring.Helpers
 
             return orders;
         }
+        public static List<OrderDto> FilterDeliveryOrders(List<OrderDto> orders, OrderQueryParams @params, string companyTin, string adminCompanyTin, string status)
+        {
+            orders = orders = orders.Where(o => string.Equals(o.Status, status, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (companyTin != adminCompanyTin)
+                orders = orders.Where(o => o.CompanyTin == companyTin).ToList();
+
+            if (@params.IsClear)
+                return orders;
+
+            if (@params.StartDate.HasValue && @params.EndDate.HasValue)
+                orders = orders.Where(o => o.RequestCreatedAt.Date >= @params.StartDate.Value.Date &&
+                                           o.RequestCreatedAt.Date <= @params.EndDate.Value.Date).ToList();
+
+            return orders;
+        }
 
         public static bool IsTodayIncluded(OrderQueryParams @params)
         {
