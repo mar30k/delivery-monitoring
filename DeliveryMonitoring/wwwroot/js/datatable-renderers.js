@@ -201,13 +201,14 @@ const Renderers = {
         return [geo, specific].filter(Boolean).join(' - ');
     },
 
-    booleanYesNo: (type, row) => {
-        if (type === 'sort' || type === 'type') return row.orderPrinted ? 1 : 0;
+    booleanYesNo: (type, data) => {
+        if (type === 'sort' || type === 'type') return data ? 1 : 0;
+
         return `
-            <span class = ${row.orderPrinted ? 'text-success' : 'text-danger'}>
-                    ${row.orderPrinted ? 'Yes' : 'No'}
+            <span class="${data ? 'text-success' : 'text-danger'}">
+                ${data ? 'Yes' : 'No'}
             </span>
-        `; 
+        `;
     },
     branch: (branchName, type, row) => {
         // For sorting / type detection

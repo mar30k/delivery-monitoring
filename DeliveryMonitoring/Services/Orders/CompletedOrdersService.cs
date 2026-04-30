@@ -204,12 +204,29 @@ namespace DeliveryMonitoring.Services.Orders
             try
             {
                 bool skipCache = OrderHelpers.IsTodayIncluded(@params) || @params.IsClear;
+                var driverTask = _apiRequestService.GetAvailableDriversAsync(skipCache);
+                var orderTask = _apiRequestService.GetDeliveryOrdersAsync(skipCache);
 
-                var orders = (await _apiRequestService.GetDeliveryOrdersAsync(skipCache)) ?? new List<OrderDto>();
+                await Task.WhenAll(driverTask, orderTask);
+
+                var drivers = (await driverTask) ?? new List<Driver>();
+                var orders = (await orderTask) ?? new List<OrderDto>();
 
                 if (!orders.Any())
                 {
                     return HulubejeResponse<List<OrderDto>>.Fail(new List<string> { "No completed orders found." });
+                }
+                else
+                {
+                    foreach(var order in orders)
+                    {
+                        var assignedDriver = drivers.FirstOrDefault(d => d.PhoneNumber == order.AssignedDriverPhoneNumber);
+                        if (assignedDriver != null)
+                        {
+                            order.AssignedDriverName = assignedDriver.FirstName;
+                            order.IsDriverFreelnace = assignedDriver.IsFreelance;
+                        }
+                    }
                 }
 
                 var filtered = OrderHelpers.FilterDeliveryOrders(orders, @params, CompanyTin, AdminCompanyTin, status: "completed");

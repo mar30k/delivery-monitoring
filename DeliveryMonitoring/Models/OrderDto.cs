@@ -10,6 +10,8 @@ namespace DeliveryMonitoring.Models
 
         [JsonProperty("assigned_driver_phone_number")]
         public string? AssignedDriverPhoneNumber { get; set; }
+        public string? AssignedDriverName { get; set; }
+        public bool IsDriverFreelnace { get; set; }
         public string? DriverPhoneNumber => AssignedDriverPhoneNumber;
 
         [JsonProperty("status")]

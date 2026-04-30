@@ -1,0 +1,136 @@
+﻿@using DeliveryMonitoring.Constants
+@using Microsoft.AspNetCore.Html
+@model CompletedOrdersViewModel
+@{
+    var adminCompanyTin = AppConstants.Company.AdminTin;
+    ViewData["Title"] = "Delivery Orders";
+    var model = Model;
+    var isRedCloud = Model?.CompanyTin == adminCompanyTin;
+
+}
+<div class="p-4">
+    <div class="row align-items-center justify-content-between p-2">
+        <div class="col-12 col-md-6 mb-2 mb-md-0">
+            <div class="d-flex align-items-baseline">
+                <h4 class="mb-0 me-2"> Delivery Orders</h4>
+                <button class="btn btn-success btn-sm mb-2" id="exportToExcelBtn">Export Table To Excel</button>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
+                <label for="dateRange" class="form-label mb-0 fw-semibold"></label>
+                <input type="text" id="dateRange" class="form-control" placeholder="@DateTime.Today.ToString("yyyy-MM-dd") to @DateTime.Today.ToString("yyyy-MM-dd")" style="max-width: 220px;" readonly />
+            </div>
+        </div>
+    </div>
+    <div class="row card">
+        <div class="table-responsive pt-3 pb-3">
+            <table class="table compact stripe hover pt-3" id="@Model.OrderTables.First().TableId" style="font-size: 13px;">
+                <thead class="">
+                    <tr>
+                        <th class="text-center">
+                            Order Number
+                        </th>
+                        <th class="text-center">
+                            Company
+                        </th>
+                        <th class="text-center">
+                            Branch
+                        </th>
+                        <th class="text-center">
+                            Customer
+                        </th>
+                        <th class="text-center">
+                            Phone
+                        </th>
+                        <th class="text-center">
+                            Order DateTime
+                        </th>
+                        <th class="text-center">
+                            Distance
+                        </th>
+                        <th class="text-center">
+                            Duration
+                        </th>
+                        <th class="text-center">
+                            Eta
+                        </th>
+                        <th class="text-center">
+                            Eta Difference
+                        </th>
+
+                        <th class="text-center">
+                            Driver
+                        </th>
+                        <th class="text-center">
+                            Driver Phone
+                        </th>
+                        <th class="text-center">
+                            Is Freelance
+                        </th>
+                        <th class="text-center">
+                            Supervisor
+                        </th>
+                        <th class="text-center">
+                            Total
+                        </th>
+                        <th class="text-center">
+                            Payment Method
+                        </th>
+                        <th class="text-center">
+                            Activity
+                        </th>
+                        <th class="text-center">
+                            Details
+                        </th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th colspan="6" class="text-end">Totals</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+<partial name="~/Views/Shared/ActionModals/_ActivityModal.cshtml" />
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" href="~/css/header-filters.css" asp-append-version="true">
+    <script src="~/js/table-auto-refresher.js" asp-append-version="true"></script>
+    <script src="~/js/date-range.js" asp-append-version="true"></script>
+    <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script>
+    <script src="~/js/datatable-renderers.js" asp-append-version="true"></script>
+    <script src="~/js/datatable-init.js" asp-append-version="true"></script>
+    <script src="~/js/delivery-orders-table-new.js" type="module" asp-append-version="true"></script>
+    <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
+    <script src="~/js/completed-orders.js" asp-append-version="true"></script>
+    <script>
+        const purposeOptions = @Html.Raw(Json.Serialize(Model?.PurposeOptions ?? new Dictionary<int, string>()));
+        var isRedCloud = @((isRedCloud) ? "true" : "false");
+    </script>
+    <script type="module">
+        import { DeliveryOrdersTable } from '/js/delivery-orders-table-new.js?v=@DateTime.Now.Ticks';
+        await DeliveryOrdersTable.init({
+            tableId: "@Model?.OrderTables.First().TableId",
+            ajaxUrl: "@Model?.OrderTables.First().AjaxUrl",
+            userType: "@Model?.Type" + "_report",
+            sheetName: "@Model?.OrderTables.First().SheetName"
+        });
+    </script>
+}

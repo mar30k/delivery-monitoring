@@ -108,7 +108,7 @@ namespace DeliveryMonitoring.Controllers
                 ViewBag.ErrorMessage = "Unable to connect to the service. Please try again later.";
             }
 
-            return View("index", viewModel);
+            return View(viewModel);
         }
 
         [Route("/pending")]

@@ -14,8 +14,11 @@ function exportTableToExcel({
     sheetName = "Sheet1",
     startDate = null,
     endDate = null,
-    columnWidths = []
+    columnWidths = [],
+    excludeColumns = []
 }) {
+
+    console.log(excludeColumns)
     var table = js(tableSelector);
     if (table.length === 0) {
         showToast(`Table not found: ${tableSelector}`, "warning");
@@ -31,7 +34,8 @@ function exportTableToExcel({
 
     // Extract headers in visible order
     var headers = [];
-    table.find('thead th').each(function () {
+    table.find('thead th').each(function (index) {
+        if (excludeColumns.includes(index)) return;
         var title = js(this).find('.dt-column-title').first().text().trim();
         headers.push(title || "");
     });
@@ -53,10 +57,12 @@ function exportTableToExcel({
     allRows.forEach((rowData) => {
         var rowArray = [];
 
-        columns.forEach((col) => {
+        columns.forEach((col, index) => {
             // Skip hidden columns if you only want visible ones
             if (col.bVisible === false) return;
 
+            // Skip excluded columns
+            if (excludeColumns.includes(index)) return;
             var cellValue;
 
             // Use DataTables renderer if defined

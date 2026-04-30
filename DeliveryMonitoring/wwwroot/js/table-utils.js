@@ -9,7 +9,7 @@ export function safeNumberRenderer(d, type, decimals = 2, allowZero = true) {
 }
 
 
-export function bindExportButton(tableSelector, typePrefix, sheetName, dateRange, columnWidths = []) {
+export function bindExportButton(tableSelector, typePrefix, sheetName, dateRange, columnWidths = [], excludeColumns) {
     $("#exportToExcelBtn").on("click", () => {
         const { start, end } = dateRange.getRange();
         exportTableToExcel({
@@ -18,7 +18,8 @@ export function bindExportButton(tableSelector, typePrefix, sheetName, dateRange
             sheetName,
             startDate: start,
             endDate: end,
-            columnWidths
+            columnWidths,
+            excludeColumns
         });
     });
 }

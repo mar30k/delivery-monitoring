@@ -94,10 +94,8 @@ export const OrdersTable = (function () {
             }),
 
             center({
-                data: function (row) {
-                    return row.orderPrinted ? "Yes" : "No"
-                },
-                render: (data, type, row) => Renderers.booleanYesNo(type, row)
+                data: "orderPrinted",
+                render: (data, type) => Renderers.booleanYesNo(type, data)
             }),
 
             center({
