@@ -167,16 +167,19 @@ function renderStars(rating) {
         '<i class="bi bi-star text-warning"></i>'.repeat(5 - rating);
 }
 
-document.getElementById('editNote').addEventListener('click', function (e) {
-    e.preventDefault();
+var editNoteButton = document.getElementById('editNote');
+if (editNoteButton) {
+    editNoteButton.addEventListener('click', function (e) {
+        e.preventDefault();
 
-    // Close the reviewDetailsModal
-    const reviewDetailsModalEl = document.getElementById('reviewDetailsModal');
-    const reviewDetailsModal = bootstrap.Modal.getInstance(reviewDetailsModalEl) || new bootstrap.Modal(reviewDetailsModalEl);
-    reviewDetailsModal.hide();
+        // Close the reviewDetailsModal
+        const reviewDetailsModalEl = document.getElementById('reviewDetailsModal');
+        const reviewDetailsModal = bootstrap.Modal.getInstance(reviewDetailsModalEl) || new bootstrap.Modal(reviewDetailsModalEl);
+        reviewDetailsModal.hide();
 
-    showReviewModal(this);
-});
+        showReviewModal(this);
+    });
+}
 
 async function fetchDriverReview(phoneNumber, voucherCode, customerPhone) {
     const page = 1;
@@ -192,45 +195,49 @@ async function fetchDriverReview(phoneNumber, voucherCode, customerPhone) {
         throw error;
     }
 }
-document.getElementById('reviewForm').addEventListener('submit', async function (e) {
-    e.preventDefault(); 
+var reviewFormButton = document.getElementById('reviewForm');
 
-    const submitBtn = document.getElementById('submitReviewBtn');
-    submitBtn.disabled = true;
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Submitting...';
+if (reviewFormButton) {
+    reviewFormButton.addEventListener('submit', async function (e) {
+        e.preventDefault();
 
-    const voucherCode = document.getElementById('reviewOrderId').value;
-    const purpose = document.getElementById('reviewPurpose').value;
-    const note = document.getElementById('reviewNote').value || '';
-    const isDelivery = document.getElementById('isDelivery').value == "true";
-    const supervisorPhoneNumber = document.getElementById('supervisorPhone').value || '';
-    try {
-        const response = await fetch('/savenote', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ voucherCode, purpose, note, isDelivery, supervisorPhoneNumber })
-        });
-        const responseText = await response.text();
-        if (!response.ok) {
-            showToast("Submission failed: " + responseText, "error");
-            return;
-            
-        } else {
-            bootstrap.Modal.getInstance(document.getElementById('reviewModal'))?.hide();
-            showToast("Note saved successfully!", "success");
-            location.reload();
+        const submitBtn = document.getElementById('submitReviewBtn');
+        submitBtn.disabled = true;
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Submitting...';
+
+        const voucherCode = document.getElementById('reviewOrderId').value;
+        const purpose = document.getElementById('reviewPurpose').value;
+        const note = document.getElementById('reviewNote').value || '';
+        const isDelivery = document.getElementById('isDelivery').value == "true";
+        const supervisorPhoneNumber = document.getElementById('supervisorPhone').value || '';
+        try {
+            const response = await fetch('/savenote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ voucherCode, purpose, note, isDelivery, supervisorPhoneNumber })
+            });
+            const responseText = await response.text();
+            if (!response.ok) {
+                showToast("Submission failed: " + responseText, "error");
+                return;
+
+            } else {
+                bootstrap.Modal.getInstance(document.getElementById('reviewModal'))?.hide();
+                showToast("Note saved successfully!", "success");
+                location.reload();
+            }
+        } catch (err) {
+            console.error(err);
+            alert("An error occurred while submitting.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
         }
-    } catch (err) {
-        console.error(err);
-        alert("An error occurred while submitting.");
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
-    }
-});
+    });
+}
 async function showActivity(button) {
     const voucherCode = button.getAttribute('data-voucher');
     const companyCode = button.getAttribute('data-company-code');

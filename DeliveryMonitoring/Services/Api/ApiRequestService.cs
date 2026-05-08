@@ -440,7 +440,26 @@ namespace DeliveryMonitoring.Services.Api
                 10 // cache for 10 minutes
             );
         }
-
+        public async Task<List<OrderDto>> GetDeliveryOrdersAsync(bool skipCache = true)
+        {
+            string cacheKey = "delivery_orders";
+            return await _cacheService.GetOrSetAsync(
+                cacheKey,
+                async () =>
+                {
+                    var response = await _deliveryNew.GetAsync(_getDeliveryOrders);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var data = await response.Content.ReadAsStringAsync();
+                        return JsonConvert.DeserializeObject<List<OrderDto>>(data)
+                               ?? new List<OrderDto>();
+                    }
+                    return new List<OrderDto>();
+                },
+                skipCache,
+                10 // cache for 10 minutes
+            );
+        }
         public async Task<HulubejeResponse<List<CompletedOrders>>> GetOrdersByTypeAsync(int type, bool skipCache = true)
         {
             string cacheKey = $"orders_by_type_{type}";
@@ -737,27 +756,6 @@ namespace DeliveryMonitoring.Services.Api
                 catch { return null; }
             }
             return null;
-        }
-
-        public async Task<List<OrderDto>> GetDeliveryOrdersAsync(bool skipCache = true)
-        {
-            string cacheKey = "delivery_orders";
-            return await _cacheService.GetOrSetAsync(
-                cacheKey,
-                async () =>
-                {
-                    var response = await _deliveryNew.GetAsync(_getDeliveryOrders);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var data = await response.Content.ReadAsStringAsync();
-                        return JsonConvert.DeserializeObject<List<OrderDto>>(data)
-                               ?? new List<OrderDto>();
-                    }
-                    return new List<OrderDto>();
-                },
-                skipCache,
-                10 // cache for 10 minutes
-            );
         }
     }
 }

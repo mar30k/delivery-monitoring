@@ -59,24 +59,24 @@ function exportTableToExcel({
 
         columns.forEach((col, index) => {
             // Skip hidden columns if you only want visible ones
-            if (col.bVisible === false) return;
-
-            // Skip excluded columns
-            if (excludeColumns.includes(index)) return;
+            if (col.bVisible === false || excludeColumns.includes(index)) return;
             var cellValue;
 
-            // Use DataTables renderer if defined
+            var rawDataValue = (rowData && col.data !== undefined && rowData[col.data] !== undefined)
+                ? rowData[col.data]
+                : rowData[index];
+
+            // Apply DataTables renderer if it exists
             if (typeof col.render === "function") {
                 try {
-                    cellValue = col.render(rowData[col.data], "display", rowData);
+                    // Pass the raw value, the type ('display'), and the full row
+                    cellValue = col.render(rawDataValue, "display", rowData);
                 } catch (e) {
-                    showToast(`Render error in column: ${col.data}`, "error");
-                    cellValue = rowData[col.data];
+                    cellValue = rawDataValue;
                 }
             } else {
-                cellValue = rowData[col.data];
+                cellValue = rawDataValue;
             }
-
             // Handle nulls
             if (cellValue == null) cellValue = "";
 

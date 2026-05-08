@@ -182,7 +182,8 @@ namespace DeliveryMonitoring.Controllers
                 order?.DriverPhoneNumber ?? orderDetail?.AssignedDriverPhoneNumber ?? "",
                 skipCache: false);
 
-            var activityTask = _apiRequestService.GetDriverActivity(voucher, skipCache: false);
+            var activityTask = orderType == DeliveryOrderType.DeliveryToLocation ? _apiRequestService.GetDriverActivity(voucher, skipCache: false) 
+                : _apiRequestService.GetDriverActivityAsync(effectiveCompanyCode, voucher, skipCache: false);
 
             await Task.WhenAll(voucherDetailTask, driverTask, activityTask);
 

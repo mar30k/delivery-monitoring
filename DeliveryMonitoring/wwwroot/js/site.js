@@ -32,8 +32,8 @@ async function fetchAlerts(jsonData = null) {
         const alertBox = document.getElementById("floating-alert");
         const alertList = document.getElementById("alert-list");
         const storedAlerts = JSON.parse(sessionStorage.getItem("displayedAlerts")) || {};
-
-        const filteredOrders = data.filter(order => order.alert && order.alert.trim() !== "");
+        const ordersArray = Array.isArray(data) ? data : [];
+        const filteredOrders = ordersArray.filter(order => order.alert && order.alert.trim() !== "");
         const newAlerts = {};
         let hasNewAlerts = false;
 

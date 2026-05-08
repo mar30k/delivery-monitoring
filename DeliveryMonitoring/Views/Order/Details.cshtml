@@ -176,7 +176,7 @@
                 </div>
                 <div>
                     <span><strong>Expected Time Of Arrival:</strong></span>
-                    <span>@(Model?.Activities?.Eta?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
+                    <span>@(Model?.Eta?.ToString("ddd, MMMM dd - hh:mm:ss tt") ?? "N/A")</span>
                 </div>
                 <div class="@(Model?.Activities?.ActualArrival == null ? "d-none" : "")">
                     <span><strong>Actual Arrival:</strong></span>
@@ -347,6 +347,12 @@
                     <span id="letters">Phone:</span>
                     <span id="driverPhoneNumber">
                         @(!string.IsNullOrEmpty(Model?.AssignedDriverPhoneNumber) ? Model.AssignedDriverPhoneNumber: "N/A")
+                    </span>
+                </div>
+                <div>
+                    <span id="letters">Name:</span>
+                    <span id="driverName">
+                        @(!string.IsNullOrEmpty(Model?.AssignedDriverName) ? Model.AssignedDriverName: "N/A")
                     </span>
                 </div>
             </div>

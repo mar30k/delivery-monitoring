@@ -11,6 +11,7 @@ function updateOrderStatuses() {
         $("#orderStatus").text(matchedOrder.status);
         $("#sosReason").text(matchedOrder.status === 'sos' && matchedOrder.sosReason ? matchedOrder.sosReason : '');
         $("#driverPhoneNumber").text(matchedOrder.assignedDriverPhoneNumber?.trim() || "N/A");
+        $("#driverName").text(matchedOrder.assignedDriverName?.trim() || "N/A");
         phoneNumber = matchedOrder.assignedDriverPhoneNumber;
         const isDriverPhoneInvalid = !phoneNumber || phoneNumber.length < 10;
         $("#driverPhoneWarning").toggleClass("d-none", !isDriverPhoneInvalid);

@@ -5,6 +5,7 @@
 }
 
 <div class="container-fluid g-0">
+    <button class="btn btn-success btn-sm mb-2 d-flex align-content-end align-items-end justify-content-end" id="exportToExcelBtn">Export Table To Excel</button>
 
 
     <div class="pb-3" id="map">
@@ -145,9 +146,23 @@
     </div>
 </div>
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="~/css/header-filters.css" asp-append-version="true">
     <script src="~/js/header-filter-dropdown.js" asp-append-version="true"></script>
     <script src="~/js/driver.js" asp-append-version="true"></script>
+    <script src="~/js/table-utils.js" type="module" asp-append-version="true"></script>
+    <script src="~/js/export-to-Excel.js" asp-append-version="true"></script>
+    <script type="module">
+        import { bindExportButton } from '/js/table-utils.js?v=@DateTime.Now.Ticks';
+        bindExportButton(
+            "#tablelist",
+            "",
+            "drivers",
+            null,
+            [],
+            [7,8,9]
+        );
+    </script>
 }
 @functions{
     string BatteryColor(int? battery)

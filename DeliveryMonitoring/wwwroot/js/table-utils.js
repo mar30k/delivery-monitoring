@@ -11,7 +11,9 @@ export function safeNumberRenderer(d, type, decimals = 2, allowZero = true) {
 
 export function bindExportButton(tableSelector, typePrefix, sheetName, dateRange, columnWidths = [], excludeColumns) {
     $("#exportToExcelBtn").on("click", () => {
-        const { start, end } = dateRange.getRange();
+        const range = dateRange?.getRange() || {};
+        const start = range.start ?? null;
+        const end = range.end ?? null;
         exportTableToExcel({
             tableSelector,
             typePrefix,
