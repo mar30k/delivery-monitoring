@@ -40,7 +40,7 @@ export const DeliveryOrdersTable = (function () {
                 COL_INDEX.ACTIVITY,
                 COL_INDEX.DETAILS,
             ],
-            floatCols: [COL_INDEX.TOTAL_AMOUNT],
+            floatCols: [COL_INDEX.TOTAL_AMOUNT, COL_INDEX.DISTANCE],
             intCols: [],
             avgCols: []
         };
@@ -71,8 +71,8 @@ export const DeliveryOrdersTable = (function () {
             center({ data: "assignedDriverName", render: Renderers.orDefault }),
             center({ data: "assignedDriverPhoneNumber", render: Renderers.phone }),
             center({
-                data: "isDriverFreelnace",
-                render: (data, type) => Renderers.booleanYesNo(type, data)
+                data: row => row.isDriverFreelnace ? 'Yes' : 'No',
+                render: (data) => Renderers.booleanYesNo(data)
             }),
             center({ data: "supervisorName", render: Renderers.orDefault }),
             center({ data: "totalAmount", render: Renderers.amount }),

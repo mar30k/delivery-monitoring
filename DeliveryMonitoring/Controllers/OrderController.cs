@@ -55,8 +55,15 @@ namespace DeliveryMonitoring.Controllers
                 if (string.IsNullOrWhiteSpace(CompanyTin)) { return new List<OrderDetail>(); }
 
                 //var response = GetSampleOrder.CreateSampleOrder();
-                var response = await _apiRequestService.GetOrderRequestsAsync();
-                var superVisors = await _apiRequestService.GetSupervisorsAsync();
+                
+                var orders =  _apiRequestService.GetOrderRequestsAsync();
+                var superVisorsTask = _apiRequestService.GetSupervisorsAsync();
+                var driversTaks = _apiRequestService.GetAvailableDriversAsync(skipCache: false);
+
+                await Task.WhenAll(orders, superVisorsTask, driversTaks);
+                var response = orders.Result;
+                var superVisors = superVisorsTask.Result;
+                var drivers = driversTaks.Result;
                 if (response.Count > 0)
                 {
                     if (!string.IsNullOrWhiteSpace(CompanyTin) && CompanyTin != AdminCompanyTin)
@@ -105,7 +112,7 @@ namespace DeliveryMonitoring.Controllers
                         x.SupervisorName = supervisor != null
                             ? $"{supervisor.FirstName} {supervisor.SecondName}"
                             : null;
-
+                        x.IsDriverFreelnace = drivers != null && (drivers.FirstOrDefault(d => d.PhoneNumber == x.AssignedDriverPhoneNumber)?.IsFreelance ?? false);
                         x.CurrentTime = DateTime.UtcNow;
                     });
                 }

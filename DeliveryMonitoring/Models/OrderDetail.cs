@@ -15,6 +15,7 @@ namespace DeliveryMonitoring.Models
         public string? Id { get; set; }
         public string? AssignedDriverPhoneNumber { get; set; }
         public string? AssignedDriverName{ get; set; }
+        public bool? IsDriverFreelnace { get; set; }
 
         public string? BranchName { get; set; }
         public int? CompanyCode { get; set; }

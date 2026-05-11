@@ -201,12 +201,10 @@ const Renderers = {
         return [geo, specific].filter(Boolean).join(' - ');
     },
 
-    booleanYesNo: (type, data) => {
-        if (type === 'sort' || type === 'type') return data ? 1 : 0;
-
+    booleanYesNo: (data) => {
         return `
-            <span class="${data ? 'text-success' : 'text-danger'}">
-                ${data ? 'Yes' : 'No'}
+            <span class="${data === 'Yes' ? 'text-success' : 'text-danger'}">
+                ${data}
             </span>
         `;
     },

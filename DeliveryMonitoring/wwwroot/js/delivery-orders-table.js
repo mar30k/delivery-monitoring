@@ -16,6 +16,7 @@ export const OrdersTable = (function () {
         'STATUS_REPORT',
         'PRINTED',
         'DRIVER_PHONE',
+        'IS_FREELANCE',
         'SUPERVISOR',
         'TOTAL_AMOUNT',
         'PAYMENT_METHOD',
@@ -94,17 +95,19 @@ export const OrdersTable = (function () {
             }),
 
             center({
-                data: "orderPrinted",
-                render: (data, type) => Renderers.booleanYesNo(type, data)
+                data: row => row.orderPrinted ? 'Yes' : 'No',
+                render: (data) => Renderers.booleanYesNo(data)
             }),
-
             center({
                 data: function (row) {
                     return row.assignedDriverName ?? row.assignedDriverPhoneNumber ?? 'N/A';
                 },
                 render: (data, type, row) => Renderers.driver(type, row.assignedDriverPhoneNumber , row.assignedDriverName)
             }),
-
+            center({
+                data: row => row.isDriverFreelnace ? 'Yes' : 'No',
+                render: (data) => Renderers.booleanYesNo(data)
+            }),
             center({
                 data: function (row) {
                     return row.supervisorName ?? row.supervisedBy ?? 'Unassigned';
@@ -138,6 +141,7 @@ export const OrdersTable = (function () {
             { index: COL_INDEX.PRINTED, name: "Order Printed" },
             { index: COL_INDEX.PAYMENT_METHOD, name: "Payment Method" },
             { index: COL_INDEX.DRIVER_PHONE, name: "Driver" },
+            { index: COL_INDEX.IS_FREELANCE, name: "Is Freelance" },
         ];
 
         return Object.assign({}, baseConfig, {
