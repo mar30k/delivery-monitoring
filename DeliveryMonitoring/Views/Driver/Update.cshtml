@@ -4,162 +4,148 @@
     ViewData["Title"] = "Update Driver Info";
 }
 
-<div class="container-fluid col-10 col-lg-6">
-    <div class="row pt-5">
-        
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="card-title mb-4">Update Driver Info</h3>
+                    
+                    <form id="myForm">
+                        <div asp-validation-summary="All" class="text-danger small mb-3"></div>
 
-        <div class="card">
-            <div class="col-10" style="margin-left: 30px;">
-                <br /><br />
-                <h3>Update Driver Info</h3>
-                <br/>
-                <form id="myForm" method="post" action="@Url.Action("Update", "Driver", new { phoneNumber = Model.phoneNumber })">
-                    <div asp-validation-summary="All" class="text-danger"></div>
-                    <div class="form-group">
-                        <label asp-for="companyTin" class="control-label">Company TIN *</label>
-                        <input asp-for="companyTin" class="form-control" id="companyTin" pattern="^[0-9]*$" title="Company TIN must contain only numbers." required />
-                        <span asp-validation-for="companyTin" class="text-danger"></span>
-                    </div>
-                    <br />
-
-                    <div class="form-group">
-                        <label asp-for="firstName" class="control-label">Name *</label>
-                        <input asp-for="firstName" class="form-control" id="firstName" required />
-                        <span asp-validation-for="firstName" class="text-danger"></span>
-                    </div>
-                    <br />
-                    <div class="form-group">
-                        <label asp-for="phoneNumber" class="control-label"></label>
-                        <input asp-for="phoneNumber" class="form-control" id="phoneNumber" readonly />
-                        <span asp-validation-for="phoneNumber" class="text-danger"></span>
-                    </div>
-                    <br />
-
-
-                    <div class="form">
-                        <label asp-for="isDisabled" class="control-label"></label>
-                        <br />
-                        <input type="radio" id="enableRadio" name="isDisabled" value="false" @(Model != null && !Model.isDisabled ? "checked" : "")>
-                        <label for="isDisabled">Enable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
-                        <input type="radio" id="disableRadio" name="isDisabled" value="true" @(Model != null && Model.isDisabled ? "checked" : "")>
-                        <label for="isDisabled">Disable</label>
-                    </div>
-                    <br />
-
-                    <div class="row">
-                        <div class="col-5">
-                            <a class="btn btn-danger" href="/driverdetail/@Model?.phoneNumber" >Back</a>
+                        <!-- Company TIN -->
+                        <div class="mb-3">
+                            <label asp-for="companyTin" class="form-label fw-bold">Company TIN *</label>
+                            <input asp-for="companyTin" class="form-control" id="companyTin" placeholder="e.g. 1234567890" required />
+                            <span asp-validation-for="companyTin" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-group col-5">
-                            <button id="saveButton" type="button" class="btn btn-primary"><i class="bi bi-floppy"></i>&nbsp;&nbsp;Save</button>
+                        <!-- Name -->
+                        <div class="mb-3">
+                            <label asp-for="firstName" class="form-label fw-bold">Name *</label>
+                            <input asp-for="firstName" class="form-control" id="firstName" required />
+                            <span asp-validation-for="firstName" class="text-danger small"></span>
                         </div>
-                    </div>
 
+                        <!-- Phone (Read Only) -->
+                        <div class="mb-3">
+                            <label asp-for="phoneNumber" class="form-label fw-bold">Phone Number</label>
+                            <input asp-for="phoneNumber" class="form-control bg-light" id="phoneNumber" readonly />
+                        </div>
 
-                </form>
-                <br /><br /><br /><br />
+                        <div class="row mb-4">
+                            <!-- Status Radio -->
+                            <div class="col-6">
+                                <label class="form-label d-block fw-bold">
+                                    Eligibility To Work
+                                </label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="isDisabled" id="statusActive" value="false" @(Model != null && !Model.isDisabled ? "checked" : "")>
+                                    <label class="form-check-label" for="statusActive">Enable</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="isDisabled" id="statusDisabled" value="true" @(Model != null && Model.isDisabled ? "checked" : "")>
+                                    <label class="form-check-label" for="statusDisabled">Disable</label>
+                                </div>
+                            </div>
+
+                            <!-- Freelance Radio -->
+                            <div class="col-6">
+                                <label class="form-label d-block fw-bold">Freelance?</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="isFreelance" id="freelanceYes" value="true" @(Model != null && Model.isFreelance ? "checked" : "")>
+                                    <label class="form-check-label" for="freelanceYes">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="isFreelance" id="freelanceNo" value="false" @(Model != null && !Model.isFreelance ? "checked" : "")>
+                                    <label class="form-check-label" for="freelanceNo">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                            <a class="btn btn-outline-secondary" href="/driverdetail/@Model?.phoneNumber">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                            <button id="saveButton" type="button" class="btn btn-primary px-4">
+                                <i class="bi bi-floppy"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-        
     </div>
-
-
 </div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-body text-center p-4">
+                <div class="text-success mb-2">
+                    <i class="bi bi-check-circle-fill" style="font-size: 3rem;"></i>
+                </div>
+                <h5>Updated!</h5>
+                <p class="text-muted mb-0">Driver info has been saved.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js" integrity="sha512-WMEKGZ7L5LWgaPeJtw9MBM4i5w5OSBlSjTjCtSnvFJGSVD26gE5+Td12qN5pvWXhuWaWcVwF++F7aqu9cvqP0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/jquery.validate.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
 
 <script>
-    // Function to enable or disable the save button based on the input fields
     function toggleSaveButton() {
-        var companyTinValue = document.getElementById("companyTin").value;
-        var firstNameValue = document.getElementById("firstName").value;
+        const companyTin = document.getElementById("companyTin");
+        const firstName = document.getElementById("firstName");
+        const saveButton = document.getElementById("saveButton");
 
-        var saveButton = document.getElementById("saveButton");
+        const isTinValid = /^\d{10}$/.test(companyTin.value);
+        const isNameValid = firstName.value.trim() !== "";
 
-        // Check if companyTIN contains only numbers and has a length of 10
-        var isCompanyTinValid = /^\d+$/.test(companyTinValue) && companyTinValue.length === 10;
-
-        if (companyTinValue.trim() === "" || firstNameValue.trim() === "" || !isCompanyTinValid) {
-            // Disable the button if companyTIN or firstName is empty or if companyTIN is not valid
-            saveButton.disabled = true;
+        // UI Feedback
+        const tinError = document.querySelector('[data-valmsg-for="companyTin"]');
+        if (companyTin.value && !isTinValid) {
+            tinError.textContent = "Must be exactly 10 digits.";
         } else {
-            // Enable the button if both fields are not empty and companyTIN is valid
-            saveButton.disabled = false;
+            tinError.textContent = "";
         }
 
-        // Trigger validation immediately on input
-        var companyTinValidationMessage = document.querySelector('[data-valmsg-for="companyTin"]');
-        var firstNameValidationMessage = document.querySelector('[data-valmsg-for="firstName"]');
-
-        if (companyTinValue.trim() === "") {
-            companyTinValidationMessage.textContent = "Company TIN is required.";
-        } else if (!isCompanyTinValid) {
-            companyTinValidationMessage.textContent = "Company TIN must be exactly 10 numbers and It must not contain letters.";
-        } else {
-            companyTinValidationMessage.textContent = "";
-        }
-
-        if (firstNameValue.trim() === "") {
-            firstNameValidationMessage.textContent = "Name is required.";
-        } else {
-            firstNameValidationMessage.textContent = "";
-        }
+        saveButton.disabled = !(isTinValid && isNameValid);
     }
 
-    // Attach the toggleSaveButton function to the input events of the relevant fields
     document.getElementById("companyTin").addEventListener("input", toggleSaveButton);
     document.getElementById("firstName").addEventListener("input", toggleSaveButton);
-
-    // Trigger validation immediately on page load
-    toggleSaveButton();
+    window.onload = toggleSaveButton;
 
     document.getElementById("saveButton").addEventListener("click", function () {
-        var formData = {
+        const formData = {
             companyTin: document.getElementById("companyTin").value,
             firstName: document.getElementById("firstName").value,
             phoneNumber: document.getElementById("phoneNumber").value,
-            isDisabled: document.querySelector('input[name="isDisabled"]:checked').value === "true"
+            isDisabled: document.querySelector('input[name="isDisabled"]:checked').value === "true",
+            isFreelance: document.querySelector('input[name="isFreelance"]:checked').value === "true"
         };
 
-        fetch('@Url.Action("Update", "Driver", new { phoneNumber = Model.phoneNumber })', {
+        fetch('@Url.Action("Update", "Driver")', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         })
         .then(response => {
             if (response.ok) {
-                $('#successModal').modal('show');
-                setTimeout(() => {
-                    $('#successModal').modal('hide');
-                    window.location.href = '@Url.Action("Index", "Driver")';
-                }, 2000);
+                const myModal = new bootstrap.Modal(document.getElementById('successModal'));
+                myModal.show();
+                setTimeout(() => window.location.href = '@Url.Action("Index", "Driver")', 1500);
             } else {
-                return response.text().then(text => { throw new Error(text) });
+                alert("Error updating record.");
             }
         })
-        .catch(error => {
-            console.error('Fetch Error:', error);
-            alert("Failed to update driver: " + error.message);
-        });
+        .catch(err => console.error(err));
     });
 </script>
-
-
-<!-- Bootstrap Success Modal -->
-<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <!-- Added bg-success for green background and text-white for white text -->
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="successModalLabel">Success</h5>
-            </div>
-            <div class="modal-body">
-                <span>Driver Info Updated Successfully!</span>
-            </div>
-
-        </div>
-    </div>
-</div>
-

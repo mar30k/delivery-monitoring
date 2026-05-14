@@ -11,6 +11,9 @@ namespace DeliveryMonitoring.Models
         [Display(Name = "Eligibility To Work")]
         [Required(ErrorMessage = "Eligibility To Work is required.")]
         public bool isDisabled { get; set; }
+        [Display(Name = "Is Freelance")]
+        [Required(ErrorMessage = "Is Freelance is required.")]
+        public bool isFreelance { get; set; }
 
         [Display(Name = "Phone Number")]
         [Required(ErrorMessage = "Phone Number is required.")]
