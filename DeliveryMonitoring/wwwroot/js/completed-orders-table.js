@@ -17,7 +17,7 @@ const BASE_COLS = [
     'VOUCHER',
     'COMPANY',
     'BRANCH',
-    'BUSINESS_UNIT',
+    /*'BUSINESS_UNIT',*/
     'FIRST_NAME',
     'PHONE',
     'REQUEST_DATE',
@@ -65,7 +65,7 @@ const baseColumns = [
     center({ data: "voucherCode", render: Renderers.voucherCode }),
     center({ data: "companyName" }),
     center({ data: "branchName" }),
-    center({ data: "businessUnit" }),
+    /*center({ data: "businessUnit" }),*/
     center({ data: "firstName" }),
     center({ data: "phoneNumber", render: Renderers.phone }),
     center({
@@ -187,7 +187,9 @@ const TableTypeConfigs = {
             { index: NON_DELIVERY_COL_INDEX.COMPANY, name: 'Company' },
             { index: NON_DELIVERY_COL_INDEX.BRANCH, name: 'Branch' },
             { index: NON_DELIVERY_COL_INDEX.FIRST_NAME, name: 'Customer' },
-            { index: NON_DELIVERY_COL_INDEX.SUPERVISOR, name: 'Supervisor' }
+            { index: NON_DELIVERY_COL_INDEX.SUPERVISOR, name: 'Supervisor' },
+            { index: NON_DELIVERY_COL_INDEX.PAYMENT_METHOD, name: 'Payment Method' },
+
         ]
     }
 };

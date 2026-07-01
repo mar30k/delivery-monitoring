@@ -18,8 +18,8 @@ js( ()=> {
     if (!js.fn.DataTable.isDataTable('#tablelist')) {
         tablelist = js('#tablelist').DataTable({
             responsive: true,
-            pageLength: 25,
-            "lengthMenu": [[10, 13, 25, 50, 100], [10, 13, 25, 50, 100]],
+            pageLength: 50,
+            "lengthMenu": [[ 25, 50, 100], [ 25, 50, 100]],
             columnDefs: [
                 {
                     orderable: false, targets: [3, 1, 7]
@@ -86,18 +86,16 @@ function fetchDataAndUpdateMarkers() {
             // Iterate over each object in the array
             var places = [];
             data.forEach(driver => {
-                // Extract the relevant information from each object
-                if (driver.latLng && typeof driver.latLng === 'object' && driver.latLng.lat !== undefined && driver.latLng.lng !== undefined) {
-                    var placeInfo = {
+                if (driver.lat !== undefined && driver.lng !== undefined) {
+                    places.push({
                         Name: driver.firstName,
-                        lat: driver.latLng.lat,
-                        lng: driver.latLng.lng,
+                        lat: driver.lat,
+                        lng: driver.lng,
                         Phone: driver.phoneNumber,
                         LastUpdatedAt: driver.updatedAt,
                         Status: driver.status
-                    };
+                    });
                 }
-                places.push(placeInfo);
             })
             // Push the extracted information into the places array
             // Filter out undefined values

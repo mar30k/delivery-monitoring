@@ -317,11 +317,11 @@ namespace DeliveryMonitoring.Controllers
         /// Retrieves delivery activity for a specific voucher.
         /// </summary>
         [HttpGet("/getDeliveryActivity")]
-        public async Task<IActionResult> GetDeliveryActivity(string voucherCode, string companyCode)
+        public async Task<IActionResult> GetDeliveryActivity(string voucherCode, string companyCode, string tableId)
         {
             try
             {
-                var response = await _apiRequestService.GetDriverActivity(voucherCode);
+                var response = tableId == "null" ?await _apiRequestService.GetDriverActivity(voucherCode) : await _apiRequestService.GetDriverActivityAsync(companyCode, voucherCode);
                 if (response == null)
                     return NotFound("Failed to retrieve delivery activity.");
 

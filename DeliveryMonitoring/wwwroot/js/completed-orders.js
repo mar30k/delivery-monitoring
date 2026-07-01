@@ -241,7 +241,9 @@ if (reviewFormButton) {
 async function showActivity(button) {
     const voucherCode = button.getAttribute('data-voucher');
     const companyCode = button.getAttribute('data-company-code');
-    const url = `/getDeliveryActivity?voucherCode=${encodeURIComponent(voucherCode)}&companyCode=${encodeURIComponent(companyCode)}`;
+    const tableId = button.getAttribute('data-table-id');
+    const url = `/getDeliveryActivity?voucherCode=${encodeURIComponent(voucherCode)}
+    &companyCode=${encodeURIComponent(companyCode)}&tableId=${encodeURIComponent(tableId)}`;
 
     // Get modal elements
     const modalEl = document.getElementById('activityModal');

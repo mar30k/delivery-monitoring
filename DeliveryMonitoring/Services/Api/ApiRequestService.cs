@@ -275,7 +275,7 @@ namespace DeliveryMonitoring.Services.Api
                 cacheKey,
                 async () =>
                 {
-                    var response = await _deliveryClient.GetAsync($"{_getDriverActivity}/{voucherCode}/activity");
+                    var response = await _deliveryClient.GetAsync($"{_getDriverActivity}/{voucherCode.Trim()}/activity");
                     if (response.IsSuccessStatusCode)
                     {
                         var data = await response.Content.ReadAsStringAsync();

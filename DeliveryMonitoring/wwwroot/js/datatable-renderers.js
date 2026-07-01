@@ -158,6 +158,7 @@ const Renderers = {
         <button class="btn btn-outline-primary activityBtn btn-sm"
             data-voucher="${row.voucherCode}"
             data-company-code="${row.companyCode}"
+            data-table-id="${row.tableId}"
             onclick="showActivity(this)">
             Show
         </button>`,
