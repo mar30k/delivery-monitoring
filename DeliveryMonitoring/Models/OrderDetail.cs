@@ -138,7 +138,7 @@ namespace DeliveryMonitoring.Models
         public Dictionary<string, string>? ExtraData { get; set; }
 
         [DisplayName("Issued Date")]
-        public DateTime IssuedDate { get; set; }
+        public DateTime? IssuedDate { get; set; }
 
         [DisplayName("Branch Code")]
         public int? BranchCode { get; set; }

@@ -56,7 +56,7 @@ function initTable({
             },
             dataSrc: function (json) {
                 if (typeof onDataLoaded === 'function') {
-                    onDataLoaded(json); // call the callback with the full JSON
+                    onDataLoaded(json);
                 }
                 return json.data ?? json;
             }
@@ -136,8 +136,12 @@ function initTable({
     }
 
     js(tableSelector).on("xhr.dt", function (e, settings, json, xhr) {
+        // Status 0 or null indicates aborted request - this is normal when reloading
+        if (xhr.status === 0 || xhr.status == null) {
+            return;
+        }
         if (xhr.status !== 200) {
-            console.log("❌ AJAX load failed:", xhr.status);
+            console.log("AJAX load failed:", xhr.status);
             const $table = js(tableSelector);
             const dt = $table.DataTable();
             const colCount = $table.find("thead th").length;
